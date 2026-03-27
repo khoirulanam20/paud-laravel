@@ -1,13 +1,16 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\GuestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
-use Illuminate\Support\Facades\Route;
 
 // Lembaga Controllers
 use App\Http\Controllers\Lembaga\SekolahController;
 use App\Http\Controllers\Lembaga\AdminSekolahController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
+use App\Http\Controllers\Lembaga\CmsController;
 
 // Admin Sekolah Controllers
 use App\Http\Controllers\Admin\AnakController;
@@ -17,11 +20,22 @@ use App\Http\Controllers\Admin\MenuMakananController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\CashflowController;
 use App\Http\Controllers\Admin\PresensiController;
+use App\Http\Controllers\Admin\PendaftaranController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// ─────────────────────────────────────────────
+// PUBLIC GUEST ROUTES
+// ─────────────────────────────────────────────
+Route::get('/', [GuestController::class, 'beranda'])->name('guest.beranda');
+Route::get('/tentang', [GuestController::class, 'tentang'])->name('guest.tentang');
+Route::get('/fasilitas', [GuestController::class, 'fasilitas'])->name('guest.fasilitas');
+Route::get('/galeri', [GuestController::class, 'galeri'])->name('guest.galeri');
+Route::get('/pendaftaran', [GuestController::class, 'pendaftaran'])->name('guest.pendaftaran');
+Route::get('/kontak', [GuestController::class, 'kontak'])->name('guest.kontak');
+Route::post('/kontak', [GuestController::class, 'kontakSend'])->name('guest.kontak.send');
 
+// ─────────────────────────────────────────────
+// AUTH REQUIRED
+// ─────────────────────────────────────────────
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -32,12 +46,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// ─────────────────────────────────────────────
+// LEMBAGA
+// ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')->group(function () {
     Route::resource('sekolah', SekolahController::class)->except(['create', 'edit', 'show']);
     Route::resource('admin-sekolah', AdminSekolahController::class)->except(['create', 'edit', 'show']);
     Route::get('kritik-saran', [LembagaKritikSaranController::class, 'index'])->name('kritik-saran.index');
+    Route::get('cms', [CmsController::class, 'index'])->name('cms.index');
+    Route::post('cms', [CmsController::class, 'update'])->name('cms.update');
 });
 
+// ─────────────────────────────────────────────
+// ADMIN SEKOLAH
+// ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('anak', AnakController::class)->except(['create', 'edit', 'show']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
@@ -47,9 +69,15 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PresensiController::class, 'store'])->name('presensi.store');
+    // Pendaftaran approval
+    Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
+    Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');
+    Route::post('pendaftaran/{anak}/reject', [PendaftaranController::class, 'reject'])->name('pendaftaran.reject');
 });
 
-// Pengajar Controllers
+// ─────────────────────────────────────────────
+// PENGAJAR
+// ─────────────────────────────────────────────
 use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
 use App\Http\Controllers\Pengajar\MatrikulasiController;
 use App\Http\Controllers\Pengajar\PencapaianController;
@@ -60,7 +88,9 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
     Route::resource('pencapaian', PencapaianController::class)->except(['create', 'edit', 'show']);
 });
 
-// Orang Tua Controllers
+// ─────────────────────────────────────────────
+// ORANG TUA
+// ─────────────────────────────────────────────
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
 use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
@@ -75,4 +105,4 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::post('kritik-saran', [OrangTuaKritikSaranController::class, 'store'])->name('kritik-saran.store');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
