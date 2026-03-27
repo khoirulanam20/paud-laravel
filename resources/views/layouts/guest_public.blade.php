@@ -50,7 +50,7 @@
             <!-- Logo -->
             <a href="{{ route('guest.beranda') }}" class="flex items-center gap-2.5">
                 <div class="h-10 w-10 rounded-2xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg,#FFD93D,#FF8C42);">🌈</div>
-                <span style="font-family:'Baloo 2',sans-serif; font-size:1.25rem; font-weight:800; color:#FF8C42;">{{ $cms['hero_title'] }}</span>
+                <span style="font-family:'Baloo 2',sans-serif; font-size:1.25rem; font-weight:800; color:#FF8C42;">{{ $cms['hero_title'] ?? 'PAUD Kita' }}</span>
             </a>
             <!-- Desktop Nav -->
             <div class="hidden sm:flex items-center gap-1">
