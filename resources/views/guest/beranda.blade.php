@@ -5,7 +5,7 @@
     <section class="hero-section relative overflow-hidden py-20 md:py-32">
         <div class="blob h-72 w-72 top-0 left-0" style="background:#FFD93D; transform:translate(-40%,-40%);"></div>
         <div class="blob h-56 w-56 bottom-0 right-0" style="background:#FF6B9D; transform:translate(30%,30%);"></div>
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 relative">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6 relative">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
                     <span class="badge-pill mb-4">✨ Aman, Nyaman, Menyenangkan</span>
@@ -40,7 +40,7 @@
 
     {{-- BRANCH SHOWCASE --}}
     <section class="py-16" style="background:#FFF8F0;">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6">
             <div class="text-center mb-10">
                 <span class="badge-pill">📍 Lokasi Kami</span>
                 <h2 style="font-family:'Baloo 2',sans-serif; font-size:2rem; font-weight:800; color:#1F2937; margin-top:.75rem;">Cabang Sekolah Kami</h2>
@@ -64,7 +64,7 @@
 
     {{-- WHY US --}}
     <section class="py-20" style="background: linear-gradient(135deg, #FFF0F5, #F0F4FF);">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6 text-center">
             <span class="badge-pill">💛 Kenapa Kami?</span>
             <h2 style="font-family:'Baloo 2',sans-serif; font-size:2rem; font-weight:800; color:#1F2937; margin-top:.75rem;">Mengapa Orang Tua Mempercayai Kami</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">

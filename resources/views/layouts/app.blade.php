@@ -1,3 +1,48 @@
+@php
+    $user = auth()->user();
+    // Badge: pending enrollments for Admin Sekolah
+    $pendingCount = 0;
+    if ($user && $user->hasRole('Admin Sekolah') && $user->sekolah_id) {
+        $pendingCount = \App\Models\Anak::where('sekolah_id', $user->sekolah_id)->where('status', 'pending')->count();
+    }
+    $roleNavItems = match (true) {
+        $user && $user->hasRole('Lembaga') => [
+            ['route' => 'lembaga.sekolah.index', 'label' => 'Sekolah', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'pattern' => 'lembaga.sekolah.*'],
+            ['route' => 'lembaga.admin-sekolah.index', 'label' => 'Admin Sekolah', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'pattern' => 'lembaga.admin-sekolah.*'],
+            ['route' => 'lembaga.kritik-saran.index', 'label' => 'Kritik & Saran', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'lembaga.kritik-saran.*'],
+            ['route' => 'lembaga.cms.index', 'label' => 'Kelola Website', 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', 'pattern' => 'lembaga.cms.*'],
+        ],
+        $user && $user->hasRole('Admin Sekolah') => [
+            ['route' => 'admin.pendaftaran.index', 'label' => 'Pendaftaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'admin.pendaftaran.*', 'badge' => $pendingCount],
+            ['route' => 'admin.anak.index', 'label' => 'Siswa', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'admin.anak.*'],
+            ['route' => 'admin.presensi.index', 'label' => 'Presensi', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'admin.presensi.*'],
+            ['route' => 'admin.pengajar.index', 'label' => 'Pengajar', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'pattern' => 'admin.pengajar.*'],
+            ['route' => 'admin.sarana.index', 'label' => 'Sarana', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'pattern' => 'admin.sarana.*'],
+            ['route' => 'admin.menu-makanan.index', 'label' => 'Menu Makanan', 'icon' => 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z', 'pattern' => 'admin.menu-makanan.*'],
+            ['route' => 'admin.kegiatan.index', 'label' => 'Kegiatan', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'pattern' => 'admin.kegiatan.*'],
+            ['route' => 'admin.cashflow.index', 'label' => 'Cashflow', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.cashflow.*'],
+        ],
+        $user && $user->hasRole('Pengajar') => [
+            ['route' => 'pengajar.kegiatan.index', 'label' => 'Jurnal Kegiatan', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'pattern' => 'pengajar.kegiatan.*'],
+            ['route' => 'pengajar.matrikulasi.index', 'label' => 'Matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.matrikulasi.*'],
+            ['route' => 'pengajar.pencapaian.index', 'label' => 'Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.pencapaian.*'],
+        ],
+        $user && $user->hasRole('Orang Tua') => [
+            ['route' => 'orangtua.kegiatan.index', 'label' => 'Kegiatan', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'],
+            ['route' => 'orangtua.pencapaian.index', 'label' => 'Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.pencapaian.*'],
+            ['route' => 'orangtua.menu-makanan.index', 'label' => 'Menu Makanan', 'icon' => 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z', 'pattern' => 'orangtua.menu-makanan.*'],
+            ['route' => 'orangtua.kritik-saran.index', 'label' => 'Saran & Kritik', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'orangtua.kritik-saran.*'],
+        ],
+        default => [],
+    };
+    $roleLabel = match (true) {
+        $user && $user->hasRole('Lembaga') => 'Yayasan',
+        $user && $user->hasRole('Admin Sekolah') => 'Admin Sekolah',
+        $user && $user->hasRole('Pengajar') => 'Pengajar',
+        $user && $user->hasRole('Orang Tua') => 'Orang Tua',
+        default => 'Pengguna',
+    };
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -12,21 +57,36 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased" style="background-color: #F5F0E8; color: #2C2C2C;">
-        <div class="min-h-screen">
-            @include('layouts.navigation')
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="page-header sticky top-0 z-30">
-                    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+    <body class="font-sans antialiased text-[#2C2C2C] bg-[#F5F0E8]">
+        <div x-data="{ sidebarOpen: false, moreMenuOpen: false }" class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            @include('layouts.sidebar')
+
+            <!-- Main Content Wrapper -->
+            <div class="flex-1 flex flex-col overflow-hidden relative">
+                <!-- Topbar -->
+                @include('layouts.topbar')
+
+                <!-- Main Content Area -->
+                <main class="flex-1 overflow-y-auto w-full pb-20 lg:pb-0">
+                    <!-- Page Heading -->
+                    @isset($header)
+                        <header class="page-header sticky top-0 z-20 bg-[#F5F0E8]/90 backdrop-blur-sm border-b border-black/5">
+                            <div class="max-w-7xl mx-auto py-2 px-4 md:py-4 sm:px-6 lg:px-8">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endisset
+
+                    <!-- Page Content -->
+                    <div class="min-h-[calc(100vh-64px)] w-full">
+                        {{ $slot }}
                     </div>
-                </header>
-            @endisset
-            <!-- Page Content -->
-            <main class="min-h-[calc(100vh-64px)]">
-                {{ $slot }}
-            </main>
+                </main>
+                
+                <!-- Bottom Navbar (Mobile only) -->
+                @include('layouts.bottom-nav')
+            </div>
         </div>
     </body>
 </html>

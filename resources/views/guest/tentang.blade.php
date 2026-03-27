@@ -2,7 +2,7 @@
     <x-slot name="title">Tentang Kami</x-slot>
 
     <section class="py-20" style="background: linear-gradient(135deg,#FFF3E0,#FFFBF0);">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
                 <div>
                     <span class="badge-pill">💛 Tentang Kami</span>
@@ -27,7 +27,7 @@
     </section>
 
     <section class="py-16" style="background:#FFF8F0;">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6">
             <div class="text-center mb-10">
                 <h2 style="font-family:'Baloo 2',sans-serif; font-size:2rem; font-weight:800; color:#1F2937;">Visi & Misi Kami</h2>
             </div>

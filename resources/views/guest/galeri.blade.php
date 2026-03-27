@@ -2,7 +2,7 @@
     <x-slot name="title">Galeri</x-slot>
 
     <section class="py-20" style="background: linear-gradient(135deg,#FFF0F5,#F0F4FF);">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6 text-center">
             <span class="badge-pill">📸 Galeri</span>
             <h1 style="font-family:'Baloo 2',sans-serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; color:#1F2937; margin-top:.75rem;">Momen Ceria Bersama Si Kecil</h1>
             <p class="text-gray-500 mt-3">Sekilas pandang keseruan sehari-hari di sekolah kami.</p>

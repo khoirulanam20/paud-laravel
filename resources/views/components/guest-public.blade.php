@@ -37,7 +37,7 @@
 <body>
     <!-- NAVBAR -->
     <nav class="bg-white shadow-sm sticky top-0 z-50" x-data="{ open: false }">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex justify-between items-center h-16">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6 flex justify-between items-center h-16">
             <a href="{{ route('guest.beranda') }}" class="flex items-center gap-2.5">
                 <div class="h-10 w-10 rounded-2xl flex items-center justify-center text-xl shrink-0" style="background: linear-gradient(135deg,#FFD93D,#FF8C42);">🌈</div>
                 <span style="font-family:'Baloo 2',sans-serif; font-size:1.25rem; font-weight:800; color:#FF8C42;">{{ $cms['hero_title'] ?? 'PAUD Kita' }}</span>
@@ -83,7 +83,7 @@
 
     <!-- FOOTER -->
     <footer class="pt-12 pb-8" style="background:#1F2937; color:#D1D5DB;">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-10 pb-10 border-b" style="border-color:rgba(255,255,255,0.08);">
                 <div>
                     <div class="flex items-center gap-2 mb-3">

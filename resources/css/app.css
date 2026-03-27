@@ -36,7 +36,7 @@
 @layer components {
     /* ─── Base Layer Card ─── */
     .card {
-        @apply rounded-2xl;
+        @apply rounded-xl md:rounded-2xl;
         background: var(--cream-raised);
         box-shadow: var(--shadow-raised);
         border: 1px solid rgba(255,255,255,0.6);
@@ -49,14 +49,14 @@
     .card-inset {
         background: var(--cream-inset);
         box-shadow: var(--shadow-inset);
-        @apply rounded-xl;
+        @apply rounded-lg md:rounded-xl;
     }
 
     /* ─── Primary Button ─── */
     .btn-primary {
         background-color: var(--teal);
         color: #ffffff;
-        @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200;
+        @apply inline-flex items-center justify-center px-4 py-2 text-[13px] md:px-5 md:py-2.5 md:text-sm rounded-xl font-semibold transition-all duration-200;
         box-shadow: 2px 4px 10px rgba(26,107,107,0.35);
     }
 
@@ -76,7 +76,7 @@
     .btn-secondary {
         background: var(--cream-raised);
         color: var(--text-primary);
-        @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200;
+        @apply inline-flex items-center justify-center px-4 py-2 text-[13px] md:px-5 md:py-2.5 md:text-sm rounded-xl font-medium transition-all duration-200;
         border: 1px solid var(--border-regular);
         box-shadow: var(--shadow-raised);
     }
@@ -88,7 +88,7 @@
 
     /* ─── Danger Button ─── */
     .btn-danger {
-        @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200;
+        @apply inline-flex items-center justify-center px-4 py-2 text-[13px] md:px-5 md:py-2.5 md:text-sm rounded-xl font-semibold transition-all duration-200;
         background-color: #C0392B;
         color: #ffffff;
         box-shadow: 2px 4px 10px rgba(192,57,43,0.35);
@@ -105,7 +105,7 @@
         border: 1px solid var(--border-thin);
         color: var(--text-primary);
         box-shadow: var(--shadow-inset);
-        @apply block w-full rounded-xl px-4 py-2.5 text-sm transition-all duration-200;
+        @apply block w-full rounded-xl px-3 py-2 text-[13px] md:px-4 md:py-2.5 md:text-sm transition-all duration-200;
     }
 
     .input-field:focus {
@@ -126,21 +126,21 @@
 
     /* ─── Table ─── */
     .data-table {
-        @apply w-full text-sm text-left;
+        @apply w-full text-[12px] md:text-sm text-left;
     }
 
     .data-table thead {
-        @apply text-xs uppercase tracking-wider;
+        @apply text-[10px] md:text-xs uppercase tracking-wider;
         color: var(--text-muted);
         background: var(--cream-inset);
     }
 
     .data-table th {
-        @apply px-5 py-3 font-semibold;
+        @apply px-3 py-2 md:px-5 md:py-3 font-semibold;
     }
 
     .data-table td {
-        @apply px-5 py-4;
+        @apply px-3 py-2.5 md:px-5 md:py-4;
         color: var(--text-secondary);
     }
 
@@ -201,7 +201,7 @@
 
     /* ─── Stat Card ─── */
     .stat-card {
-        @apply rounded-2xl p-6 flex items-start gap-4;
+        @apply rounded-xl md:rounded-2xl p-4 md:p-6 flex items-start gap-3 md:gap-4;
         background: var(--cream-raised);
         box-shadow: var(--shadow-raised);
         border: 1px solid rgba(255,255,255,0.6);
@@ -222,7 +222,7 @@
     /* ─── Modal ─── */
     .modal-box {
         background: var(--cream-raised);
-        @apply rounded-2xl text-left overflow-hidden;
+        @apply rounded-xl md:rounded-2xl text-left overflow-hidden;
         box-shadow: var(--shadow-modal);
         border: 1px solid rgba(255,255,255,0.7);
         max-width: 560px;
@@ -230,28 +230,28 @@
     }
 
     .modal-header {
-        @apply px-6 pt-6 pb-4;
+        @apply px-4 pt-4 pb-3 md:px-6 md:pt-6 md:pb-4;
         border-bottom: 1px solid var(--border-thin);
     }
 
     .modal-body {
-        @apply px-6 py-5;
+        @apply px-4 py-4 md:px-6 md:py-5;
     }
 
     .modal-footer {
-        @apply px-6 pb-6 flex gap-3 justify-end;
+        @apply px-4 pb-4 md:px-6 md:pb-6 flex gap-3 justify-end;
         border-top: 1px solid var(--border-thin);
         padding-top: 1rem;
     }
 
     /* ─── Section Title ─── */
     .section-title {
-        @apply text-lg font-bold;
+        @apply text-base md:text-lg font-bold;
         color: var(--text-primary);
     }
 
     .section-subtitle {
-        @apply text-sm mt-0.5;
+        @apply text-[12px] md:text-sm mt-0.5;
         color: var(--text-muted);
     }
 

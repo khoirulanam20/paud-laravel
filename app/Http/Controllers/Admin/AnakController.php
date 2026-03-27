@@ -14,7 +14,11 @@ class AnakController extends Controller
     public function index()
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $anaks = Anak::where('sekolah_id', $sekolah_id)->with('user')->latest()->paginate(10);
+        $anaks = Anak::where('sekolah_id', $sekolah_id)
+            ->where('status', 'approved')
+            ->with('user')
+            ->latest()
+            ->paginate(10);
         return view('admin.anak.index', compact('anaks'));
     }
 
@@ -48,6 +52,7 @@ class AnakController extends Controller
             'name' => $request->name,
             'dob' => $request->dob,
             'parent_name' => $user->name,
+            'status' => 'approved',
         ]);
 
         return redirect()->route('admin.anak.index')->with('success', 'Data Anak dan Orang Tua berhasil ditambahkan. Password default Ortu: password123');

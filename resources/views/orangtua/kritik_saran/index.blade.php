@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{ showModal: {{ $errors->any() ? 'true' : 'false' }} }">
         @if(session('success'))
             <div class="alert-success mb-5">

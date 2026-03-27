@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Menu Makanan</h2>
         </div>
     </x-slot>
-    <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
         showCreateModal: false,
         showEditModal: false,
         showDeleteModal: false,
@@ -67,7 +67,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="5" class="py-12 text-center" style="color:#9E9790;">Belum ada jadwal menu yang diinput.</td></tr>
+                        <tr><td colspan="5" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada jadwal menu yang diinput.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

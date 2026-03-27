@@ -2,7 +2,7 @@
     <x-slot name="title">Pendaftaran Anak Baru</x-slot>
 
     <section class="py-16" style="background: linear-gradient(135deg,#FFF3E0,#FFF0F5);">
-        <div class="max-w-2xl mx-auto px-4 sm:px-6">
+        <div class="max-w-2xl mx-auto px-3 md:px-4 sm:px-6">
             <div class="text-center mb-10">
                 <span class="badge-pill">🌟 Pendaftaran</span>
                 <h1 style="font-family:'Baloo 2',sans-serif; font-size:2.2rem; font-weight:800; color:#1F2937; margin-top:.75rem;">Daftarkan Buah Hati Anda!</h1>

@@ -2,7 +2,7 @@
     <x-slot name="title">Kontak</x-slot>
 
     <section class="py-20" style="background: linear-gradient(135deg,#FFF3E0,#F0FFF4);">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6">
             <div class="text-center mb-12">
                 <span class="badge-pill">📞 Kontak</span>
                 <h1 style="font-family:'Baloo 2',sans-serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; color:#1F2937; margin-top:.75rem;">Kami Siap Membantu Anda!</h1>

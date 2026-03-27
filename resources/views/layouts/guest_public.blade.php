@@ -46,7 +46,7 @@
 <body>
     <!-- NAVBAR -->
     <nav class="guest-nav" x-data="{ open: false }">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex justify-between items-center h-16">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6 flex justify-between items-center h-16">
             <!-- Logo -->
             <a href="{{ route('guest.beranda') }}" class="flex items-center gap-2.5">
                 <div class="h-10 w-10 rounded-2xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg,#FFD93D,#FF8C42);">🌈</div>
@@ -96,7 +96,7 @@
 
     <!-- FOOTER -->
     <footer class="footer-guest mt-0 pt-12 pb-8">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-10 pb-10 border-b border-gray-700">
                 <div>
                     <div class="flex items-center gap-2 mb-3">

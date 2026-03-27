@@ -26,6 +26,21 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+        if ($user && $user->hasRole('Orang Tua')) {
+            // A parent must have at least one approved Anak to access the application
+            $hasApprovedAnak = $user->anaks()->where('status', 'approved')->exists();
+            if (!$hasApprovedAnak) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Akun Anda belum aktif. Silakan tunggu persetujuan dari Admin Sekolah.',
+                ]);
+            }
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
