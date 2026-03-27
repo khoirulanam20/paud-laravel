@@ -11,7 +11,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased flex min-h-screen items-center justify-center py-10 px-4" style="background-color: #F5F0E8;">
-        <div class="w-full max-w-md">
+        <div class="w-full {{ $maxWidth ?? 'max-w-md' }}">
             <!-- Logo -->
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center h-16 w-16 rounded-2xl mb-4" style="background-color: #1A6B6B; box-shadow: 4px 4px 14px rgba(26,107,107,0.4);">
