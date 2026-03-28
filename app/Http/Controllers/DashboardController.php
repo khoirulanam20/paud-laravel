@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Sekolah;
-use App\Models\User;
-use App\Models\KritikSaran;
 use App\Models\Anak;
-use App\Models\Pengajar;
-use App\Models\Sarana;
 use App\Models\Cashflow;
 use App\Models\Kegiatan;
+use App\Models\KritikSaran;
 use App\Models\MenuMakanan;
 use App\Models\Pencapaian;
+use App\Models\Pengajar;
+use App\Models\Sarana;
+use App\Models\Sekolah;
+use App\Models\User;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -34,11 +33,11 @@ class DashboardController extends Controller
             $data['totalAnak'] = Anak::where('sekolah_id', $sekolahId)->count();
             $data['totalPengajar'] = Pengajar::where('sekolah_id', $sekolahId)->count();
             $data['totalSarana'] = Sarana::where('sekolah_id', $sekolahId)->count();
-            
+
             $uangMasuk = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'in')->sum('amount');
             $uangKeluar = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
             $data['saldoKas'] = $uangMasuk - $uangKeluar;
-            
+
             $data['kegiatanHariIni'] = Kegiatan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->count();
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
 
@@ -56,10 +55,14 @@ class DashboardController extends Controller
             $sekolahId = $user->sekolah_id;
             $data['anaks'] = Anak::where('user_id', $user->id)->get();
             $data['anakIds'] = $data['anaks']->pluck('id');
-            
+
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
             $data['kegiatanTerbaru'] = Kegiatan::where('sekolah_id', $sekolahId)->latest('date')->take(3)->get();
-            $data['pencapaianTerbaru'] = Pencapaian::whereIn('anak_id', $data['anakIds'])->latest()->take(3)->get();
+            $data['pencapaianTerbaru'] = Pencapaian::whereIn('anak_id', $data['anakIds'])
+                ->with(['matrikulasi', 'kegiatan', 'anak'])
+                ->latest()
+                ->take(3)
+                ->get();
         }
 
         return view('dashboard', $data);

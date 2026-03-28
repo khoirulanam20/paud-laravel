@@ -239,7 +239,7 @@
                             <div class="px-6 py-4 flex items-center justify-between gap-4">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-xs" style="color: #9E9790;">{{ $p->anak->name ?? '' }} · {{ \Carbon\Carbon::parse($p->created_at)->format('d M Y') }}</p>
-                                    <h4 class="font-semibold text-sm mt-0.5" style="color: #2C2C2C;">{{ $p->matrikulasi->indicator ?? '-' }}</h4>
+                                    <h4 class="font-semibold text-sm mt-0.5" style="color: #2C2C2C;">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
                                     <p class="text-sm italic line-clamp-1 mt-0.5" style="color: #9E9790;">"{{ $p->feedback }}"</p>
                                 </div>
                                 <span class="badge badge-teal shrink-0 text-center">{{ $p->score }}</span>

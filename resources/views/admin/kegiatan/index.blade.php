@@ -5,36 +5,44 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Agenda Kegiatan</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+         x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', calDeleteRoute:'',
+            openEdit(d){ this.editData=d; this.showEditModal=true },
+            openDelete(r){ this.deleteRoute=r; this.showDeleteModal=true },
+            onCalClick(detail){
+                const p = detail.extendedProps || {};
+                if (p.mode !== 'admin' || !p.edit) return;
+                this.calDeleteRoute = p.delete_url || '';
+                this.openEdit(p.edit);
+            }
+         }"
+         @kegiatan-cal-click.window="onCalClick($event.detail)">
+
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
-        <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div><h3 class="section-title">Log Jurnal & Agenda Kegiatan</h3><p class="section-subtitle">Dokumentasi kegiatan harian yang dikelola oleh pengajar sekolah</p></div>
-                <button @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah Kegiatan</button>
+
+        <div class="card overflow-hidden mb-6">
+            <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                <div><h3 class="section-title">Kalender Jurnal & Agenda</h3><p class="section-subtitle">Klik tanggal pada kalender untuk mengedit. Ganti bulan memuat ulang data.</p></div>
+
+            <form method="get" class="px-6 py-4 flex flex-wrap items-end gap-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                <input type="hidden" name="year" value="{{ $year }}">
+                <input type="hidden" name="month" value="{{ $month }}">
+                <div class="min-w-[200px]">
+                    <label class="input-label">Filter pengajar</label>
+                    <select name="pengajar_id" class="input-field" onchange="this.form.submit()">
+                        <option value="">Semua pengajar</option>
+                        @foreach($pengajars as $pg)
+                            <option value="{{ $pg->id }}" @selected(request('pengajar_id') == $pg->id)>{{ $pg->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                </div>
+            </form>
+            <div class="p-4 md:p-6">
+                <x-jurnal-kalender :events="$calendarEvents" :year="$year" :month="$month" />
             </div>
-            <div class="overflow-x-auto">
-                <table class="data-table">
-                    <thead><tr><th>Tanggal</th><th>Judul Kegiatan</th><th>Pengajar PIC</th><th>Deskripsi</th><th class="text-right">Aksi</th></tr></thead>
-                    <tbody>
-                        @forelse($kegiatans as $k)
-                        <tr>
-                            <td class="whitespace-nowrap font-medium" style="color:#2C2C2C;">{{ \Carbon\Carbon::parse($k->date)->format('d M Y') }}</td>
-                            <td><span class="font-semibold" style="color:#2C2C2C;">{{ $k->title }}</span></td>
-                            <td><span class="badge badge-teal">{{ $k->pengajar->name ?? 'Staff' }}</span></td>
-                            <td class="max-w-sm truncate">{{ $k->description ?? '-' }}</td>
-                            <td class="text-right"><div class="flex items-center justify-end gap-2">
-                                <button @click="openEdit({{ json_encode($k) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button @click="openDelete('{{ route('admin.kegiatan.destroy', $k) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
-                            </div></td>
-                        </tr>
-                        @empty
-                        <tr><td colspan="5" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kegiatan dicatat.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            @if($kegiatans->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $kegiatans->links() }}</div>@endif
         </div>
+
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
@@ -69,7 +77,11 @@
                         <div><label class="input-label">Deskripsi</label><textarea name="description" x-model="editData.description" rows="3" class="input-field"></textarea></div>
                         <div><label class="input-label">Ganti Foto (opsional)</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
+                    <div class="modal-footer flex flex-wrap gap-2 justify-end">
+                        <button type="button" x-show="calDeleteRoute" @click="openDelete(calDeleteRoute); showEditModal=false" class="btn-danger mr-auto">Hapus</button>
+                        <button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                    </div>
                 </form>
             </div>
         </div>

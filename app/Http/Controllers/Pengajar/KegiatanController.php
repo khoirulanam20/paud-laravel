@@ -7,6 +7,7 @@ use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
+use App\Support\KegiatanCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,20 +18,33 @@ class KegiatanController extends Controller
         return Pengajar::where('user_id', auth()->id())->firstOrFail();
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $pengajar = $this->getPengajar();
         $sekolah_id = $pengajar->sekolah_id;
 
-        $kegiatans = Kegiatan::where('pengajar_id', $pengajar->id)
-            ->with(['matrikulasis', 'pencapaians.anak'])
-            ->orderBy('date', 'desc')
-            ->paginate(10);
+        [$year, $month] = KegiatanCalendar::resolveYearMonth($request);
+        [$from, $to] = KegiatanCalendar::dateRangeForCalendar($year, $month);
+
+        $query = Kegiatan::query()
+            ->where('pengajar_id', $pengajar->id)
+            ->with(['matrikulasis', 'pencapaians.anak', 'pencapaians.matrikulasi'])
+            ->whereBetween('date', [$from, $to]);
+
+        if ($request->filled('matrikulasi_id')) {
+            $mid = $request->integer('matrikulasi_id');
+            if (Matrikulasi::where('id', $mid)->where('sekolah_id', $sekolah_id)->exists()) {
+                $query->whereHas('matrikulasis', fn ($q) => $q->where('matrikulasis.id', $mid));
+            }
+        }
+
+        $kegiatans = $query->orderBy('date')->orderBy('id')->get();
+        $calendarEvents = $kegiatans->map(fn (Kegiatan $k) => KegiatanCalendar::toPengajarEvent($k))->values()->all();
 
         $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();
         $anaks = Anak::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
-        return view('pengajar.kegiatan.index', compact('kegiatans', 'matrikulasis', 'anaks'));
+        return view('pengajar.kegiatan.index', compact('calendarEvents', 'year', 'month', 'matrikulasis', 'anaks'));
     }
 
     public function store(Request $request)
@@ -88,7 +102,9 @@ class KegiatanController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            if ($kegiatan->photo) Storage::disk('public')->delete($kegiatan->photo);
+            if ($kegiatan->photo) {
+                Storage::disk('public')->delete($kegiatan->photo);
+            }
             $data['photo'] = $request->file('photo')->store('kegiatan', 'public');
         }
 
@@ -103,7 +119,9 @@ class KegiatanController extends Controller
         $pengajar = $this->getPengajar();
         abort_if($kegiatan->pengajar_id !== $pengajar->id, 403);
 
-        if ($kegiatan->photo) Storage::disk('public')->delete($kegiatan->photo);
+        if ($kegiatan->photo) {
+            Storage::disk('public')->delete($kegiatan->photo);
+        }
         $kegiatan->delete();
 
         return redirect()->route('pengajar.kegiatan.index')->with('success', 'Kegiatan berhasil dihapus.');

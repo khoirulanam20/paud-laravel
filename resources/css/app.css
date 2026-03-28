@@ -276,4 +276,25 @@
         border-right: 1px solid var(--border-thin);
         box-shadow: 2px 0 8px rgba(0,0,0,0.04);
     }
+
+    /* ─── FullCalendar (jurnal kegiatan) ─── */
+    .jurnal-fc .fc .fc-button-primary {
+        background-color: var(--teal);
+        border-color: var(--teal-dark);
+    }
+    .jurnal-fc .fc .fc-button-primary:hover {
+        background-color: var(--teal-dark);
+        border-color: var(--teal-dark);
+    }
+    .jurnal-fc .fc .fc-button-primary:disabled {
+        opacity: 0.55;
+    }
+    .jurnal-fc .fc .fc-daygrid-day.fc-day-today {
+        background-color: rgba(26, 107, 107, 0.08);
+    }
+    .jurnal-fc .fc .fc-toolbar-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
 }

@@ -23,4 +23,9 @@ class Pencapaian extends Model
     {
         return $this->belongsTo(Kegiatan::class);
     }
+
+    public function matrikulasi(): BelongsTo
+    {
+        return $this->belongsTo(Matrikulasi::class);
+    }
 }

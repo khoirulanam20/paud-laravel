@@ -1,26 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\GuestController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardController;
-
-// Lembaga Controllers
-use App\Http\Controllers\Lembaga\SekolahController;
-use App\Http\Controllers\Lembaga\AdminSekolahController;
-use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
-use App\Http\Controllers\Lembaga\CmsController;
-
-// Admin Sekolah Controllers
 use App\Http\Controllers\Admin\AnakController;
-use App\Http\Controllers\Admin\SaranaController;
-use App\Http\Controllers\Admin\PengajarController;
-use App\Http\Controllers\Admin\MenuMakananController;
-use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\CashflowController;
-use App\Http\Controllers\Admin\PresensiController;
+use App\Http\Controllers\Admin\KegiatanController;
+use App\Http\Controllers\Admin\MenuMakananController;
+// Lembaga Controllers
 use App\Http\Controllers\Admin\PendaftaranController;
+use App\Http\Controllers\Admin\PengajarController;
+use App\Http\Controllers\Admin\PresensiController;
+use App\Http\Controllers\Admin\SaranaController;
+// Admin Sekolah Controllers
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GuestController;
+use App\Http\Controllers\Lembaga\AdminSekolahController;
+use App\Http\Controllers\Lembaga\CmsController;
+use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
+use App\Http\Controllers\Lembaga\SekolahController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
 // PUBLIC GUEST ROUTES
@@ -44,7 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     Route::patch('/profile/sekolah', [ProfileController::class, 'updateSekolah'])->name('profile.sekolah.update');
     Route::patch('/profile/pengajar', [ProfileController::class, 'updatePengajar'])->name('profile.pengajar.update');
     Route::patch('/profile/orangtua', [ProfileController::class, 'updateOrangTua'])->name('profile.orangtua.update');
@@ -65,7 +62,7 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('kelas', \App\Http\Controllers\Admin\KelasController::class)->except(['create', 'edit', 'show']);
+    Route::resource('kelas', KelasController::class)->except(['create', 'edit', 'show']);
     Route::resource('anak', AnakController::class)->except(['create', 'edit', 'show']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
@@ -84,10 +81,12 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
 // ADMIN KELAS
 // ─────────────────────────────────────────────
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
+use App\Http\Controllers\AdminKelas\KegiatanController as AdminKelasKegiatanController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
 
 Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
     Route::get('anak', [AdminKelasAnakController::class, 'index'])->name('anak.index');
+    Route::get('kegiatan', [AdminKelasKegiatanController::class, 'index'])->name('kegiatan.index');
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
 });
@@ -102,16 +101,19 @@ use App\Http\Controllers\Pengajar\PencapaianController;
 Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar.')->group(function () {
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);
     Route::resource('matrikulasi', MatrikulasiController::class)->except(['create', 'edit', 'show']);
-    Route::resource('pencapaian', PencapaianController::class)->except(['create', 'edit', 'show']);
+    Route::post('pencapaian/sync', [PencapaianController::class, 'sync'])->name('pencapaian.sync');
+    Route::delete('pencapaian/bundle', [PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
+    Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);
 });
 
 // ─────────────────────────────────────────────
 // ORANG TUA
 // ─────────────────────────────────────────────
+use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
-use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
-use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
+use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
+use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
 
 Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtua.')->group(function () {
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');
@@ -122,4 +124,4 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::post('kritik-saran', [OrangTuaKritikSaranController::class, 'store'])->name('kritik-saran.store');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
