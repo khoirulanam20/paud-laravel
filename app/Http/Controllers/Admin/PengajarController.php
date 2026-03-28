@@ -13,8 +13,9 @@ class PengajarController extends Controller
     public function index()
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with('user')->latest()->paginate(10);
-        return view('admin.pengajar.index', compact('pengajars'));
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user.kelas'])->latest()->paginate(10);
+        $kelas = \App\Models\Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        return view('admin.pengajar.index', compact('pengajars', 'kelas'));
     }
 
     public function store(Request $request)
@@ -23,7 +24,12 @@ class PengajarController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
             'jabatan' => 'nullable|string|max:255',
-            'education_history' => 'nullable|string',
+            'nik' => 'nullable|string|max:50',
+            'alamat' => 'nullable|string',
+            'phone' => 'nullable|string|max:50',
+            'pendidikan' => 'nullable|string|max:255',
+            'jenis_kelamin' => 'nullable|in:Pria,Wanita',
+            'kelas_id' => 'nullable|exists:kelas,id',
         ]);
 
         $sekolah_id = auth()->user()->sekolah_id;
@@ -33,6 +39,7 @@ class PengajarController extends Controller
             'email' => $request->email,
             'password' => Hash::make('password123'),
             'sekolah_id' => $sekolah_id,
+            'kelas_id' => $request->kelas_id,
         ]);
         $user->assignRole('Pengajar');
 
@@ -41,7 +48,11 @@ class PengajarController extends Controller
             'sekolah_id' => $sekolah_id,
             'name' => $request->name,
             'jabatan' => $request->jabatan,
-            'education_history' => $request->education_history,
+            'nik' => $request->nik,
+            'alamat' => $request->alamat,
+            'phone' => $request->phone,
+            'pendidikan' => $request->pendidikan,
+            'jenis_kelamin' => $request->jenis_kelamin,
         ]);
 
         return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil ditambahkan. Password default: password123');
@@ -54,16 +65,29 @@ class PengajarController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'jabatan' => 'nullable|string|max:255',
-            'education_history' => 'nullable|string',
+            'nik' => 'nullable|string|max:50',
+            'alamat' => 'nullable|string',
+            'phone' => 'nullable|string|max:50',
+            'pendidikan' => 'nullable|string|max:255',
+            'jenis_kelamin' => 'nullable|in:Pria,Wanita',
+            'kelas_id' => 'nullable|exists:kelas,id',
         ]);
 
         $pengajar->update([
             'name' => $request->name,
             'jabatan' => $request->jabatan,
-            'education_history' => $request->education_history,
+            'nik' => $request->nik,
+            'alamat' => $request->alamat,
+            'phone' => $request->phone,
+            'pendidikan' => $request->pendidikan,
+            'jenis_kelamin' => $request->jenis_kelamin,
         ]);
         
-        $pengajar->user->update(['name' => $request->name]);
+        $user = $pengajar->user;
+        $user->update([
+            'name' => $request->name,
+            'kelas_id' => $request->kelas_id,
+        ]);
 
         return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil diperbarui.');
     }

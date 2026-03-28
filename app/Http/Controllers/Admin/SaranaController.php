@@ -21,6 +21,8 @@ class SaranaController extends Controller
             'name' => 'required|string|max:255',
             'condition' => 'nullable|string|max:255',
             'quantity' => 'required|integer|min:1',
+            'lokasi' => 'nullable|in:Outdoor,Indoor',
+            'jenis' => 'nullable|in:Edukasi,Permainan',
         ]);
 
         Sarana::create([
@@ -28,6 +30,8 @@ class SaranaController extends Controller
             'name' => $request->name,
             'condition' => $request->condition,
             'quantity' => $request->quantity,
+            'lokasi' => $request->lokasi,
+            'jenis' => $request->jenis,
         ]);
 
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil ditambahkan.');
@@ -41,12 +45,16 @@ class SaranaController extends Controller
             'name' => 'required|string|max:255',
             'condition' => 'nullable|string|max:255',
             'quantity' => 'required|integer|min:1',
+            'lokasi' => 'nullable|in:Outdoor,Indoor',
+            'jenis' => 'nullable|in:Edukasi,Permainan',
         ]);
 
         $sarana->update([
             'name' => $request->name,
             'condition' => $request->condition,
             'quantity' => $request->quantity,
+            'lokasi' => $request->lokasi,
+            'jenis' => $request->jenis,
         ]);
 
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil diperbarui.');

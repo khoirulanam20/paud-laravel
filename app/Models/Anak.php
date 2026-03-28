@@ -10,6 +10,7 @@ class Anak extends Model
     protected $fillable = [
         'user_id',
         'sekolah_id',
+        'kelas_id',
         'name',
         'dob',
         'parent_name',
@@ -17,6 +18,13 @@ class Anak extends Model
         'status',
         'catatan_ortu',
         'catatan_admin',
+        'nik',
+        'alamat',
+        'jenis_kelamin',
+        'nik_bapak',
+        'nama_bapak',
+        'nik_ibu',
+        'nama_ibu',
     ];
 
     public function user(): BelongsTo
@@ -27,5 +35,10 @@ class Anak extends Model
     public function sekolah(): BelongsTo
     {
         return $this->belongsTo(Sekolah::class);
+    }
+
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class);
     }
 }

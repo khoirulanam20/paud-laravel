@@ -13,6 +13,12 @@ class Pengajar extends Model
         'name',
         'jabatan',
         'education_history',
+        'nik',
+        'alamat',
+        'phone',
+        'pendidikan',
+        'jenis_kelamin',
+        'photo',
     ];
 
     public function user(): BelongsTo

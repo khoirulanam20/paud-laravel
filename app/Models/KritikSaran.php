@@ -12,6 +12,10 @@ class KritikSaran extends Model
         'user_id',
         'message',
         'status',
+        'nik_bapak',
+        'nama_bapak',
+        'nama_anak',
+        'umpan_balik',
     ];
 
     public function sekolah(): BelongsTo

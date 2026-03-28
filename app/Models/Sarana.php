@@ -12,6 +12,9 @@ class Sarana extends Model
         'name',
         'condition',
         'quantity',
+        'lokasi',
+        'jenis',
+        'photo',
     ];
 
     public function sekolah(): BelongsTo

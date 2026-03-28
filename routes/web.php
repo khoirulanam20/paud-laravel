@@ -44,6 +44,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    Route::patch('/profile/sekolah', [ProfileController::class, 'updateSekolah'])->name('profile.sekolah.update');
+    Route::patch('/profile/pengajar', [ProfileController::class, 'updatePengajar'])->name('profile.pengajar.update');
+    Route::patch('/profile/orangtua', [ProfileController::class, 'updateOrangTua'])->name('profile.orangtua.update');
 });
 
 // ─────────────────────────────────────────────
@@ -61,6 +65,7 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('kelas', \App\Http\Controllers\Admin\KelasController::class)->except(['create', 'edit', 'show']);
     Route::resource('anak', AnakController::class)->except(['create', 'edit', 'show']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
@@ -73,6 +78,18 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
     Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');
     Route::post('pendaftaran/{anak}/reject', [PendaftaranController::class, 'reject'])->name('pendaftaran.reject');
+});
+
+// ─────────────────────────────────────────────
+// ADMIN KELAS
+// ─────────────────────────────────────────────
+use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
+use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
+
+Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
+    Route::get('anak', [AdminKelasAnakController::class, 'index'])->name('anak.index');
+    Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
+    Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
 });
 
 // ─────────────────────────────────────────────

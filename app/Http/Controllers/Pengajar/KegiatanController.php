@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Pengajar;
 
 use App\Http\Controllers\Controller;
+use App\Models\Anak;
 use App\Models\Kegiatan;
+use App\Models\Matrikulasi;
 use App\Models\Pengajar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,9 +20,17 @@ class KegiatanController extends Controller
     public function index()
     {
         $pengajar = $this->getPengajar();
-        $kegiatans = Kegiatan::where('pengajar_id', $pengajar->id)->orderBy('date', 'desc')->paginate(10);
-        
-        return view('pengajar.kegiatan.index', compact('kegiatans'));
+        $sekolah_id = $pengajar->sekolah_id;
+
+        $kegiatans = Kegiatan::where('pengajar_id', $pengajar->id)
+            ->with(['matrikulasis', 'pencapaians.anak'])
+            ->orderBy('date', 'desc')
+            ->paginate(10);
+
+        $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();
+        $anaks = Anak::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+
+        return view('pengajar.kegiatan.index', compact('kegiatans', 'matrikulasis', 'anaks'));
     }
 
     public function store(Request $request)
@@ -30,6 +40,8 @@ class KegiatanController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'matrikulasi_ids' => 'nullable|array',
+            'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
 
         $pengajar = $this->getPengajar();
@@ -43,11 +55,14 @@ class KegiatanController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('kegiatan', 'public');
-            $data['photo'] = $path;
+            $data['photo'] = $request->file('photo')->store('kegiatan', 'public');
         }
 
-        Kegiatan::create($data);
+        $kegiatan = Kegiatan::create($data);
+
+        if ($request->matrikulasi_ids) {
+            $kegiatan->matrikulasis()->sync($request->matrikulasi_ids);
+        }
 
         return redirect()->route('pengajar.kegiatan.index')->with('success', 'Kegiatan berhasil dicatat.');
     }
@@ -62,6 +77,8 @@ class KegiatanController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'matrikulasi_ids' => 'nullable|array',
+            'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
 
         $data = [
@@ -71,14 +88,12 @@ class KegiatanController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            if ($kegiatan->photo) {
-                Storage::disk('public')->delete($kegiatan->photo);
-            }
-            $path = $request->file('photo')->store('kegiatan', 'public');
-            $data['photo'] = $path;
+            if ($kegiatan->photo) Storage::disk('public')->delete($kegiatan->photo);
+            $data['photo'] = $request->file('photo')->store('kegiatan', 'public');
         }
 
         $kegiatan->update($data);
+        $kegiatan->matrikulasis()->sync($request->matrikulasi_ids ?? []);
 
         return redirect()->route('pengajar.kegiatan.index')->with('success', 'Kegiatan berhasil diperbarui.');
     }
@@ -87,12 +102,10 @@ class KegiatanController extends Controller
     {
         $pengajar = $this->getPengajar();
         abort_if($kegiatan->pengajar_id !== $pengajar->id, 403);
-        
-        if ($kegiatan->photo) {
-            Storage::disk('public')->delete($kegiatan->photo);
-        }
+
+        if ($kegiatan->photo) Storage::disk('public')->delete($kegiatan->photo);
         $kegiatan->delete();
-        
+
         return redirect()->route('pengajar.kegiatan.index')->with('success', 'Kegiatan berhasil dihapus.');
     }
 }

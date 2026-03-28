@@ -10,5 +10,9 @@ class Lembaga extends Model
         'name',
         'address',
         'phone',
+        'pendiri',
+        'organisasi',
+        'no_akta',
+        'no_pengesahan',
     ];
 }

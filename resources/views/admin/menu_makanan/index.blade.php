@@ -58,8 +58,11 @@
                             <td class="max-w-xs whitespace-pre-line text-sm">{{ $m->menu }}</td>
                             <td class="max-w-xs" style="color:#9E9790;">{{ $m->nutrition_info ?? '-' }}</td>
                             <td>
-                                @if($m->photo)<img src="{{ Storage::url($m->photo) }}" class="h-12 w-16 object-cover rounded-lg">
-                                @else<span class="text-xs" style="color:#9E9790;">Tidak ada</span>@endif
+                                <div class="flex gap-2">
+                                    @if($m->photo)<img src="{{ Storage::url($m->photo) }}" class="h-12 w-16 object-cover rounded-lg" title="Foto Makanan">@endif
+                                    @if($m->photo_kegiatan)<img src="{{ Storage::url($m->photo_kegiatan) }}" class="h-12 w-16 object-cover rounded-lg" title="Foto Kegiatan Makan">@endif
+                                    @if(!$m->photo && !$m->photo_kegiatan)<span class="text-xs" style="color:#9E9790;">Tanpa foto</span>@endif
+                                </div>
                             </td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
                                 <button type="button" @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
@@ -102,7 +105,10 @@
                             </div>
                         </div>
                         <div><label class="input-label">Informasi Gizi & Catatan Alergi</label><textarea name="nutrition_info" rows="2" class="input-field" placeholder="Tanpa kacang, tinggi protein..."></textarea></div>
-                        <div><label class="input-label">Foto Menu (opsional)</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Foto Makanan (opsional)</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
+                            <div><label class="input-label">Foto Kegiatan Makan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2"></div>
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(menuLines)">Simpan Menu</button></div>
                 </form>
@@ -135,7 +141,10 @@
                             </div>
                         </div>
                         <div><label class="input-label">Informasi Gizi</label><textarea name="nutrition_info" x-model="editData.nutrition_info" rows="2" class="input-field"></textarea></div>
-                        <div><label class="input-label">Ganti Foto (opsional)</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Ganti Foto Makanan</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
+                            <div><label class="input-label">Ganti Foto Kegiatan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2"></div>
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(editMenuLines)">Simpan Perubahan</button></div>
                 </form>

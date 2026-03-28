@@ -18,7 +18,7 @@
                     <tbody>
                         @forelse($matrikulasis as $m)
                         <tr>
-                            <td><span class="badge badge-teal">{{ $m->aspect ?? 'Umum' }}</span></td>
+                            <td><span class="badge badge-teal">{{ $m->aspek ?? 'Umum' }}</span></td>
                             <td><span class="font-semibold" style="color:#2C2C2C;">{{ $m->indicator }}</span></td>
                             <td class="max-w-xs truncate">{{ $m->description ?? '-' }}</td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
@@ -40,10 +40,12 @@
                 <form action="{{ route('pengajar.matrikulasi.store') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Tambah Indikator Matrikulasi</h3></div>
-                    <div class="modal-body space-y-4">
-                        <div><label class="input-label">Aspek / Bidang</label><input type="text" name="aspect" class="input-field" placeholder="Contoh: Kognitif, Motorik Halus..."></div>
-                        <div><label class="input-label">Indikator Perkembangan</label><input type="text" name="indicator" required class="input-field" placeholder="Contoh: Mampu menghitung 1-10"></div>
-                        <div><label class="input-label">Deskripsi (opsional)</label><textarea name="description" rows="2" class="input-field"></textarea></div>
+                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                        <div><label class="input-label">Aspek / Faktor</label><input type="text" name="aspek" class="input-field" placeholder="Contoh: Kognitif, Motorik Halus..."></div>
+                        <div><label class="input-label">Indikator Keberhasilan</label><input type="text" name="indicator" required class="input-field" placeholder="Contoh: Mampu menghitung 1-10"></div>
+                        <div><label class="input-label">Tujuan Pembelajaran</label><textarea name="tujuan" rows="2" class="input-field"></textarea></div>
+                        <div><label class="input-label">Strategi / Metode Edukasi</label><textarea name="strategi" rows="2" class="input-field"></textarea></div>
+                        <div><label class="input-label">Deskripsi Tambahan</label><textarea name="description" rows="2" class="input-field"></textarea></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
                 </form>
@@ -55,10 +57,12 @@
                 <form :action="`/pengajar/matrikulasi/${editData.id}`" method="POST">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Indikator</h3></div>
-                    <div class="modal-body space-y-4">
-                        <div><label class="input-label">Aspek</label><input type="text" name="aspect" x-model="editData.aspect" class="input-field"></div>
-                        <div><label class="input-label">Indikator</label><input type="text" name="indicator" x-model="editData.indicator" required class="input-field"></div>
-                        <div><label class="input-label">Deskripsi</label><textarea name="description" x-model="editData.description" rows="2" class="input-field"></textarea></div>
+                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                        <div><label class="input-label">Aspek / Faktor</label><input type="text" name="aspek" x-model="editData.aspek" class="input-field"></div>
+                        <div><label class="input-label">Indikator Keberhasilan</label><input type="text" name="indicator" x-model="editData.indicator" required class="input-field"></div>
+                        <div><label class="input-label">Tujuan Pembelajaran</label><textarea name="tujuan" x-model="editData.tujuan" rows="2" class="input-field"></textarea></div>
+                        <div><label class="input-label">Strategi / Metode Edukasi</label><textarea name="strategi" x-model="editData.strategi" rows="2" class="input-field"></textarea></div>
+                        <div><label class="input-label">Deskripsi Tambahan</label><textarea name="description" x-model="editData.description" rows="2" class="input-field"></textarea></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
                 </form>

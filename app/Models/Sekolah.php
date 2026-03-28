@@ -12,6 +12,9 @@ class Sekolah extends Model
         'name',
         'address',
         'phone',
+        'nisn',
+        'location_coordinate',
+        'photo',
     ];
 
     public function lembaga(): BelongsTo

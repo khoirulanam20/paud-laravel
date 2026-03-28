@@ -43,6 +43,7 @@
                     <thead>
                         <tr>
                             <th>Nama Anak</th>
+                            <th>Kelas</th>
                             <th>Tgl. Lahir</th>
                             <th>Nama Orang Tua</th>
                             <th>Email Login Ortu</th>
@@ -57,6 +58,10 @@
                                         <div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background: #1A6B6B;">{{ substr($anak->name, 0, 1) }}</div>
                                         <span class="font-semibold" style="color: #2C2C2C;">{{ $anak->name }}</span>
                                     </div>
+                                </td>
+                                <td>
+                                    @if($anak->kelas)<span class="badge badge-teal font-medium">{{ $anak->kelas->name }}</span>
+                                    @else<span class="text-xs italic" style="color:#9E9790;">Belum Ditugaskan</span>@endif
                                 </td>
                                 <td>{{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->format('d M Y') : '-' }}</td>
                                 <td>{{ $anak->parent_name }}</td>
@@ -76,7 +81,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-6 md:py-12 text-center" style="color: #9E9790;">
+                                <td colspan="6" class="py-6 md:py-12 text-center" style="color: #9E9790;">
                                     <div class="flex flex-col items-center gap-2">
                                         <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                                         Belum ada data siswa terdaftar.
@@ -104,21 +109,60 @@
                         <h3 class="section-title">Registrasi Siswa & Orang Tua</h3>
                         <p class="section-subtitle">Akun login orang tua akan dibuat otomatis (pass: <code>password123</code>)</p>
                     </div>
-                    <div class="modal-body grid grid-cols-2 gap-4">
-                        <div class="col-span-2">
+                    <div class="modal-body max-h-[75vh] overflow-y-auto grid grid-cols-2 gap-4">
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak (Siswa)</div>
+                        <div class="col-span-1">
                             <label class="input-label">Nama Lengkap Anak</label>
                             <input type="text" name="name" required class="input-field" placeholder="Contoh: Budi Santoso">
                         </div>
-                        <div class="col-span-2">
+                        <div class="col-span-1">
+                            <label class="input-label">Penempatan Kelas</label>
+                            <select name="kelas_id" class="input-field"><option value="">-- Belum Ditugaskan --</option>
+                            @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
+                            </select>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">NIK Anak</label>
+                            <input type="text" name="nik" class="input-field" placeholder="NIK">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+                        </div>
+                        <div class="col-span-1">
                             <label class="input-label">Tanggal Lahir</label>
                             <input type="date" name="dob" class="input-field">
                         </div>
+                        <div class="col-span-2">
+                            <label class="input-label">Alamat Lengkap</label>
+                            <textarea name="alamat" class="input-field" rows="2" placeholder="Prov, Kab, Kec, Kel..."></textarea>
+                        </div>
+                        
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Data Orang Tua</div>
                         <div class="col-span-1">
-                            <label class="input-label">Nama Orang Tua / Wali</label>
+                            <label class="input-label">NIK Bapak</label>
+                            <input type="text" name="nik_bapak" class="input-field" placeholder="NIK">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Bapak</label>
+                            <input type="text" name="nama_bapak" class="input-field" placeholder="Nama">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">NIK Ibu</label>
+                            <input type="text" name="nik_ibu" class="input-field" placeholder="NIK">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Ibu</label>
+                            <input type="text" name="nama_ibu" class="input-field" placeholder="Nama">
+                        </div>
+                        
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Akun Login Utama (Wali)</div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Wali Untuk Login</label>
                             <input type="text" name="parent_name" required class="input-field" placeholder="Nama lengkap">
                         </div>
                         <div class="col-span-1">
-                            <label class="input-label">Email Orang Tua</label>
+                            <label class="input-label">Email Wali</label>
                             <input type="email" name="parent_email" required class="input-field" placeholder="email@contoh.com">
                         </div>
                     </div>
@@ -138,14 +182,51 @@
                     <div class="modal-header">
                         <h3 class="section-title">Edit Data Anak</h3>
                     </div>
-                    <div class="modal-body space-y-4">
-                        <div>
+                    <div class="modal-body max-h-[75vh] overflow-y-auto grid grid-cols-2 gap-4">
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak (Siswa)</div>
+                        <div class="col-span-1">
                             <label class="input-label">Nama Lengkap Anak</label>
                             <input type="text" name="name" x-model="editData.name" required class="input-field">
                         </div>
-                        <div>
+                        <div class="col-span-1">
+                            <label class="input-label">Pindah Kelas</label>
+                            <select name="kelas_id" x-model="editData.kelas_id" class="input-field"><option value="">-- Kosongkan Kelas --</option>
+                            @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
+                            </select>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">NIK Anak</label>
+                            <input type="text" name="nik" x-model="editData.nik" class="input-field">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" x-model="editData.jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+                        </div>
+                        <div class="col-span-1">
                             <label class="input-label">Tanggal Lahir</label>
                             <input type="date" name="dob" x-model="editData.dob" class="input-field">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="input-label">Alamat Lengkap</label>
+                            <textarea name="alamat" x-model="editData.alamat" class="input-field" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Data Orang Tua</div>
+                        <div class="col-span-1">
+                            <label class="input-label">NIK Bapak</label>
+                            <input type="text" name="nik_bapak" x-model="editData.nik_bapak" class="input-field">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Bapak</label>
+                            <input type="text" name="nama_bapak" x-model="editData.nama_bapak" class="input-field">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">NIK Ibu</label>
+                            <input type="text" name="nik_ibu" x-model="editData.nik_ibu" class="input-field">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Ibu</label>
+                            <input type="text" name="nama_ibu" x-model="editData.nama_ibu" class="input-field">
                         </div>
                     </div>
                     <div class="modal-footer">

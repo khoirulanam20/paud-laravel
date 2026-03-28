@@ -13,6 +13,7 @@ class MenuMakanan extends Model
         'menu',
         'nutrition_info',
         'photo',
+        'photo_kegiatan',
     ];
 
     public function sekolah(): BelongsTo

@@ -14,13 +14,13 @@ class Pencapaian extends Model
         return $this->belongsTo(Anak::class);
     }
 
-    public function matrikulasi(): BelongsTo
-    {
-        return $this->belongsTo(Matrikulasi::class);
-    }
-
     public function pengajar(): BelongsTo
     {
         return $this->belongsTo(Pengajar::class);
+    }
+
+    public function kegiatan(): BelongsTo
+    {
+        return $this->belongsTo(Kegiatan::class);
     }
 }

@@ -14,14 +14,20 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Pengajar</th><th>Email Login</th><th>Jabatan</th><th>Riwayat Pendidikan</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Pengajar</th><th>Email Login</th><th>Jabatan / Posisi</th><th>Penempatan Kelas</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($pengajars as $p)
                         <tr>
                             <td><div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background:#1A6B6B;">{{ substr($p->name, 0, 1) }}</div><span class="font-semibold" style="color:#2C2C2C;">{{ $p->name }}</span></div></td>
                             <td><span class="badge badge-teal">{{ $p->user->email ?? '-' }}</span></td>
                             <td>{{ $p->jabatan ?? '-' }}</td>
-                            <td class="max-w-xs truncate">{{ $p->education_history ?? '-' }}</td>
+                            <td>
+                                @if($p->user && $p->user->kelas)
+                                    <span class="badge badge-teal font-medium">{{ $p->user->kelas->name }}</span>
+                                @else
+                                    <span class="text-xs italic" style="color:#9E9790;">Tanpa Kelas</span>
+                                @endif
+                            </td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
                                 <button @click="openEdit({{ json_encode($p) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @click="openDelete('{{ route('admin.pengajar.destroy', $p) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
@@ -41,11 +47,28 @@
                 <form action="{{ route('admin.pengajar.store') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Pengajar Baru</h3><p class="section-subtitle">Password login awal: <code>password123</code></p></div>
-                    <div class="modal-body space-y-4">
+                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
                         <div><label class="input-label">Nama Lengkap</label><input type="text" name="name" required class="input-field" placeholder="Nama lengkap pengajar"></div>
-                        <div><label class="input-label">Alamat Email Valid</label><input type="email" name="email" required class="input-field" placeholder="email@sekolah.com"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Alamat Email Valid</label><input type="email" name="email" required class="input-field" placeholder="email@sekolah.com"></div>
+                            <div>
+                                <label class="input-label">Penempatan Kelas</label>
+                                <select name="kelas_id" class="input-field">
+                                    <option value="">-- Tidak Ditugaskan (Umum) --</option>
+                                    @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">NIK KTP</label><input type="text" name="nik" class="input-field" placeholder="NIK Pengajar"></div>
+                            <div><label class="input-label">Kontak / WA</label><input type="text" name="phone" class="input-field" placeholder="08..."></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Pendidikan Terakhir</label><input type="text" name="pendidikan" class="input-field" placeholder="SD/SMP/SMA/D3/Sarjana"></div>
+                            <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
+                        </div>
                         <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" class="input-field" placeholder="Contoh: Guru Kelas A"></div>
-                        <div><label class="input-label">Riwayat Pendidikan</label><textarea name="education_history" rows="3" class="input-field" placeholder="S1 PGPAUD, Universitas..."></textarea></div>
+                        <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" rows="2" class="input-field" placeholder="Prov, Kab, Kec, Kel..."></textarea></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Registrasikan</button></div>
                 </form>
@@ -57,10 +80,25 @@
                 <form :action="`/admin/pengajar/${editData.id}`" method="POST">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Pengajar</h3></div>
-                    <div class="modal-body space-y-4">
+                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
                         <div><label class="input-label">Nama Lengkap</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
+                        <div>
+                            <label class="input-label">Pindah Penempatan Kelas</label>
+                            <select name="kelas_id" class="input-field" :value="editData.user ? editData.user.kelas_id : ''">
+                                <option value="">-- Lepas Jabatan Kelas --</option>
+                                @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">NIK KTP</label><input type="text" name="nik" x-model="editData.nik" class="input-field"></div>
+                            <div><label class="input-label">Kontak / WA</label><input type="text" name="phone" x-model="editData.phone" class="input-field"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Pendidikan Terakhir</label><input type="text" name="pendidikan" x-model="editData.pendidikan" class="input-field"></div>
+                            <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" x-model="editData.jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
+                        </div>
                         <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" x-model="editData.jabatan" class="input-field"></div>
-                        <div><label class="input-label">Riwayat Pendidikan</label><textarea name="education_history" x-model="editData.education_history" rows="3" class="input-field"></textarea></div>
+                        <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" x-model="editData.alamat" rows="2" class="input-field"></textarea></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>

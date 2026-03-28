@@ -14,11 +14,13 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Sarana</th><th class="text-center">Jumlah</th><th>Kondisi</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Sarana</th><th>Lokasi</th><th>Jenis</th><th class="text-center">Jumlah</th><th>Kondisi</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($saranas as $s)
                         <tr>
                             <td><span class="font-semibold" style="color:#2C2C2C;">{{ $s->name }}</span></td>
+                            <td><span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50">{{ $s->lokasi ?? '-' }}</span></td>
+                            <td><span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50">{{ $s->jenis ?? '-' }}</span></td>
                             <td class="text-center"><span class="badge badge-teal">{{ $s->quantity }}</span></td>
                             <td>
                                 @if(strtolower($s->condition)==='baik') <span class="badge badge-green">Baik</span>
@@ -31,7 +33,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada data sarana.</td></tr>
+                        <tr><td colspan="6" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada data sarana.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -46,6 +48,10 @@
                     <div class="modal-header"><h3 class="section-title">Tambah Sarana Baru</h3></div>
                     <div class="modal-body space-y-4">
                         <div><label class="input-label">Nama Sarana / Alat / Ruangan</label><input type="text" name="name" required class="input-field" placeholder="Contoh: Kursi Belajar"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Lokasi Penempatan</label><select name="lokasi" class="input-field"><option value="">Pilih...</option><option value="Indoor">Indoor (Dalam Ruangan)</option><option value="Outdoor">Outdoor (Luar Ruangan)</option></select></div>
+                            <div><label class="input-label">Jenis Sarana</label><select name="jenis" class="input-field"><option value="">Pilih...</option><option value="Edukasi">Edukasi / Pembelajaran</option><option value="Permainan">Permainan Bebas</option></select></div>
+                        </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Jumlah</label><input type="number" name="quantity" min="1" value="1" required class="input-field"></div>
                             <div><label class="input-label">Kondisi</label><select name="condition" class="input-field"><option value="Baik">Baik</option><option value="Rusak">Rusak</option><option value="Dalam Perbaikan">Dalam Perbaikan</option></select></div>
@@ -63,6 +69,10 @@
                     <div class="modal-header"><h3 class="section-title">Edit Data Sarana</h3></div>
                     <div class="modal-body space-y-4">
                         <div><label class="input-label">Nama Sarana</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Lokasi Penempatan</label><select name="lokasi" x-model="editData.lokasi" class="input-field"><option value="">Pilih...</option><option value="Indoor">Indoor (Dalam Ruangan)</option><option value="Outdoor">Outdoor (Luar Ruangan)</option></select></div>
+                            <div><label class="input-label">Jenis Sarana</label><select name="jenis" x-model="editData.jenis" class="input-field"><option value="">Pilih...</option><option value="Edukasi">Edukasi / Pembelajaran</option><option value="Permainan">Permainan Bebas</option></select></div>
+                        </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Jumlah</label><input type="number" name="quantity" x-model="editData.quantity" min="1" required class="input-field"></div>
                             <div><label class="input-label">Kondisi</label><select name="condition" x-model="editData.condition" class="input-field"><option value="Baik">Baik</option><option value="Rusak">Rusak</option><option value="Dalam Perbaikan">Dalam Perbaikan</option></select></div>

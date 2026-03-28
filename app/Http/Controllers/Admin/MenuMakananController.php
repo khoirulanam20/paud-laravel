@@ -23,6 +23,7 @@ class MenuMakananController extends Controller
             'menu' => 'required|string|max:5000',
             'nutrition_info' => 'nullable|string',
             'photo' => 'nullable|image|max:2048', // max 2MB
+            'photo_kegiatan' => 'nullable|image|max:2048',
         ]);
 
         $data = [
@@ -35,6 +36,9 @@ class MenuMakananController extends Controller
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('menu_makanan', 'public');
             $data['photo'] = $path;
+        }
+        if ($request->hasFile('photo_kegiatan')) {
+            $data['photo_kegiatan'] = $request->file('photo_kegiatan')->store('menu_kegiatan', 'public');
         }
 
         MenuMakanan::create($data);
@@ -51,6 +55,7 @@ class MenuMakananController extends Controller
             'menu' => 'required|string|max:5000',
             'nutrition_info' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'photo_kegiatan' => 'nullable|image|max:2048',
         ]);
 
         $data = [
@@ -67,6 +72,12 @@ class MenuMakananController extends Controller
             $path = $request->file('photo')->store('menu_makanan', 'public');
             $data['photo'] = $path;
         }
+        if ($request->hasFile('photo_kegiatan')) {
+            if ($menu_makanan->photo_kegiatan) {
+                Storage::disk('public')->delete($menu_makanan->photo_kegiatan);
+            }
+            $data['photo_kegiatan'] = $request->file('photo_kegiatan')->store('menu_kegiatan', 'public');
+        }
 
         $menu_makanan->update($data);
 
@@ -79,6 +90,9 @@ class MenuMakananController extends Controller
         
         if ($menu_makanan->photo) {
             Storage::disk('public')->delete($menu_makanan->photo);
+        }
+        if ($menu_makanan->photo_kegiatan) {
+            Storage::disk('public')->delete($menu_makanan->photo_kegiatan);
         }
         $menu_makanan->delete();
         

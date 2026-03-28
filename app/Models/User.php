@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'lembaga_id',
         'sekolah_id',
+        'kelas_id',
     ];
 
     /**
@@ -51,6 +52,7 @@ class User extends Authenticatable
     public function lembaga() { return $this->belongsTo(Lembaga::class); }
     public function sekolah() { return $this->belongsTo(Sekolah::class); }
     public function pengajar() { return $this->hasOne(Pengajar::class); }
+    public function kelas() { return $this->belongsTo(Kelas::class); }
     public function anaks() { return $this->hasMany(Anak::class, 'user_id'); }
     public function kritikSarans() { return $this->hasMany(KritikSaran::class); }
 }

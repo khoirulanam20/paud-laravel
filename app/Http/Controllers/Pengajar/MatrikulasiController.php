@@ -25,14 +25,20 @@ class MatrikulasiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'aspek' => 'nullable|string|max:255',
             'indicator' => 'required|string|max:255',
             'description' => 'required|string',
+            'tujuan' => 'nullable|string',
+            'strategi' => 'nullable|string',
         ]);
 
         Matrikulasi::create([
             'sekolah_id' => $this->getSekolahId(),
+            'aspek' => $request->aspek,
             'indicator' => $request->indicator,
             'description' => $request->description,
+            'tujuan' => $request->tujuan,
+            'strategi' => $request->strategi,
         ]);
 
         return redirect()->route('pengajar.matrikulasi.index')->with('success', 'Indikator Matrikulasi berhasil ditambahkan.');
@@ -43,13 +49,19 @@ class MatrikulasiController extends Controller
         abort_if($matrikulasi->sekolah_id !== $this->getSekolahId(), 403);
 
         $request->validate([
+            'aspek' => 'nullable|string|max:255',
             'indicator' => 'required|string|max:255',
             'description' => 'required|string',
+            'tujuan' => 'nullable|string',
+            'strategi' => 'nullable|string',
         ]);
 
         $matrikulasi->update([
+            'aspek' => $request->aspek,
             'indicator' => $request->indicator,
             'description' => $request->description,
+            'tujuan' => $request->tujuan,
+            'strategi' => $request->strategi,
         ]);
 
         return redirect()->route('pengajar.matrikulasi.index')->with('success', 'Indikator Matrikulasi berhasil diperbarui.');

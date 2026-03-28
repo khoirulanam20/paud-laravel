@@ -9,9 +9,11 @@ class Presensi extends Model
 {
     protected $fillable = [
         'sekolah_id',
+        'kelas_id',
         'anak_id',
         'tanggal',
         'hadir',
+        'status',
     ];
 
     protected function casts(): array
