@@ -32,5 +32,8 @@
         <x-primary-button class="w-full justify-center py-3">
             Masuk ke Sistem
         </x-primary-button>
+        <div class="text-center">
+            <a href="{{ route('guest.pendaftaran') }}" class="text-sm font-medium hover:underline" style="color: #1A6B6B;">Belum punya akun? Daftar</a>
+        </div>
     </form>
 </x-guest-layout>

@@ -20,7 +20,7 @@ use Spatie\Permission\PermissionRegistrar;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Form pendaftaran (tampilan sama dengan /pendaftaran — kartu auth SIPP).
      */
     public function create(): View
     {

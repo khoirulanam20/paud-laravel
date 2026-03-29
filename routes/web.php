@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\PengajarController;
 use App\Http\Controllers\Admin\PresensiController;
 use App\Http\Controllers\Admin\SaranaController;
 // Admin Sekolah Controllers
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Lembaga\AdminSekolahController;
@@ -29,6 +30,9 @@ Route::get('/tentang', [GuestController::class, 'tentang'])->name('guest.tentang
 Route::get('/fasilitas', [GuestController::class, 'fasilitas'])->name('guest.fasilitas');
 Route::get('/galeri', [GuestController::class, 'galeri'])->name('guest.galeri');
 Route::get('/pendaftaran', [GuestController::class, 'pendaftaran'])->name('guest.pendaftaran');
+Route::post('/pendaftaran', [RegisteredUserController::class, 'store'])
+    ->middleware('guest')
+    ->name('guest.pendaftaran.store');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('guest.kontak');
 Route::post('/kontak', [GuestController::class, 'kontakSend'])->name('guest.kontak.send');
 
