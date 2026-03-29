@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
 // Lembaga Controllers
+use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
 use App\Http\Controllers\Admin\MenuMakananController;
 use App\Http\Controllers\Admin\PendaftaranController;
 use App\Http\Controllers\Admin\PengajarController;
@@ -69,6 +70,7 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('kelas', KelasController::class)->except(['create', 'edit', 'show']);
+    Route::resource('matrikulasi', AdminMatrikulasiController::class)->except(['create', 'edit', 'show']);
     Route::resource('anak', AnakController::class)->except(['create', 'edit', 'show']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
@@ -89,12 +91,10 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
 // ADMIN KELAS
 // ─────────────────────────────────────────────
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
-use App\Http\Controllers\AdminKelas\KegiatanController as AdminKelasKegiatanController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
 
 Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
     Route::get('anak', [AdminKelasAnakController::class, 'index'])->name('anak.index');
-    Route::get('kegiatan', [AdminKelasKegiatanController::class, 'index'])->name('kegiatan.index');
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
 });

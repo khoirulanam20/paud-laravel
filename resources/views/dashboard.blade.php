@@ -141,7 +141,9 @@
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ route('adminkelas.anak.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Siswa Kelasku</a>
                     <a href="{{ route('adminkelas.presensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white text-[#1A6B6B] hover:bg-opacity-95">Presensi Kelasku</a>
-                    <a href="{{ route('adminkelas.kegiatan.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Jurnal Kelas</a>
+                    @hasrole('Pengajar')
+                    <a href="{{ route('pengajar.kegiatan.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Jurnal Kegiatan</a>
+                    @endhasrole
                 </div>
             </div>
         </div>
