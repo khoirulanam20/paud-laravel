@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Pengajar;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kegiatan;
+use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
-use Carbon\Carbon;
+use App\Support\FilterAspekPencapaian;
+use App\Support\LabelSkorPencapaian;
+use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +18,7 @@ use Illuminate\Validation\Rule;
 
 class PencapaianController extends Controller
 {
-    private const SCORES = ['BB', 'MB', 'BSH', 'BSB'];
+    private const SCORES = LabelSkorPencapaian::CODES;
 
     private function getPengajar()
     {
@@ -36,30 +39,44 @@ class PencapaianController extends Controller
         $pengajar = $this->getPengajar();
         $sekolah_id = $pengajar->sekolah_id;
 
-        $tanggalInput = $request->query('tanggal', date('Y-m-d'));
-        try {
-            $tanggal = Carbon::parse($tanggalInput)->format('Y-m-d');
-        } catch (\Throwable) {
-            $tanggal = date('Y-m-d');
+        $range = TanggalRentang::dariSampaiQuery($request, 'today') ?? [date('Y-m-d'), date('Y-m-d')];
+        [$tanggalDari, $tanggalSampai] = $range;
+
+        $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
+        if (auth()->user()->kelas_id) {
+            $anakQuery->where('kelas_id', auth()->user()->kelas_id);
         }
+        $anaks = $anakQuery->get();
+
+        $filterAspekRaw = (string) $request->input('aspek', '');
+        $filterAspek = $filterAspekRaw === '' ? null : $filterAspekRaw;
 
         $hariQuery = Pencapaian::query()
             ->where('pengajar_id', $pengajar->id)
-            ->whereDate('created_at', $tanggal)
+            ->whereDate('created_at', '>=', $tanggalDari)
+            ->whereDate('created_at', '<=', $tanggalSampai)
             ->with(['anak', 'kegiatan.matrikulasis', 'matrikulasi'])
             ->orderByDesc('updated_at');
         if (auth()->user()->kelas_id) {
             $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', auth()->user()->kelas_id));
         }
-        $hari = $hariQuery->get();
+        if ($request->filled('filter_anak_id')) {
+            $aid = (int) $request->input('filter_anak_id');
+            abort_unless($anaks->contains(fn ($a) => (int) $a->id === $aid), 403);
+            $hariQuery->where('anak_id', $aid);
+        }
+        $hariAll = $hariQuery->get();
+        $groupsAll = $hariAll->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
 
-        $groups = $hari->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
-        $keys = $groups->keys()->values();
+        $keysFiltered = $groupsAll->keys()->values()->filter(function ($k) use ($groupsAll, $filterAspek) {
+            return FilterAspekPencapaian::groupHasMatch($filterAspek, $groupsAll[$k]);
+        })->values();
+
         $perPage = 15;
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $total = $keys->count();
-        $sliceKeys = $keys->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $pageItems = $sliceKeys->mapWithKeys(fn ($k) => [$k => $groups[$k]]);
+        $total = $keysFiltered->count();
+        $sliceKeys = $keysFiltered->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $pageItems = $sliceKeys->mapWithKeys(fn ($k) => [$k => $groupsAll[$k]]);
 
         $groupedPencapaian = new LengthAwarePaginator(
             $pageItems,
@@ -74,7 +91,7 @@ class PencapaianController extends Controller
         );
 
         $editBundles = [];
-        foreach ($groups as $k => $rows) {
+        foreach ($groupsAll as $k => $rows) {
             $first = $rows->first();
             $nilai = [];
             $catatan = [];
@@ -100,18 +117,27 @@ class PencapaianController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
-        if (auth()->user()->kelas_id) {
-            $anakQuery->where('kelas_id', auth()->user()->kelas_id);
-        }
-        $anaks = $anakQuery->get();
+        $aspekPilihan = Matrikulasi::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->whereNotNull('aspek')
+            ->where('aspek', '!=', '')
+            ->distinct()
+            ->orderBy('aspek')
+            ->pluck('aspek');
+
+        $filterAnakId = $request->filled('filter_anak_id') ? (int) $request->input('filter_anak_id') : null;
 
         return view('pengajar.pencapaian.index', compact(
             'groupedPencapaian',
             'editBundles',
             'anaks',
             'kegiatans',
-            'tanggal',
+            'tanggalDari',
+            'tanggalSampai',
+            'filterAnakId',
+            'filterAspek',
+            'filterAspekRaw',
+            'aspekPilihan',
         ));
     }
 
@@ -205,7 +231,7 @@ class PencapaianController extends Controller
             ->delete();
 
         return redirect()
-            ->route('pengajar.pencapaian.index', ['tanggal' => $request->query('tanggal', date('Y-m-d'))])
+            ->route('pengajar.pencapaian.index', $this->pencapaianFilterQuery($request))
             ->with('success', 'Pencapaian per aspek berhasil disimpan.');
     }
 
@@ -234,7 +260,7 @@ class PencapaianController extends Controller
         $pencapaian->delete();
 
         return redirect()
-            ->route('pengajar.pencapaian.index', ['tanggal' => request('tanggal', date('Y-m-d'))])
+            ->route('pengajar.pencapaian.index', $this->pencapaianFilterQuery(request()))
             ->with('success', 'Satu baris pencapaian dihapus.');
     }
 
@@ -273,7 +299,22 @@ class PencapaianController extends Controller
         }
 
         return redirect()
-            ->route('pengajar.pencapaian.index', ['tanggal' => $request->query('tanggal', date('Y-m-d'))])
+            ->route('pengajar.pencapaian.index', $this->pencapaianFilterQuery($request))
             ->with('success', 'Seluruh pencapaian untuk kegiatan ini dihapus.');
+    }
+
+    /** @return array<string, string> */
+    private function pencapaianFilterQuery(Request $request): array
+    {
+        $range = TanggalRentang::dariSampaiQuery($request, 'today') ?? [date('Y-m-d'), date('Y-m-d')];
+        $q = TanggalRentang::toQueryParams($range[0], $range[1]);
+        if ($request->filled('filter_anak_id')) {
+            $q['filter_anak_id'] = (string) (int) $request->input('filter_anak_id');
+        }
+        if ($request->filled('aspek')) {
+            $q['aspek'] = (string) $request->input('aspek');
+        }
+
+        return $q;
     }
 }

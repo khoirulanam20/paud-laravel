@@ -21,7 +21,6 @@
         if ($payloadJson === false) {
             $payloadJson = '{}';
         }
-        $scoreColors = ['BB'=>'#FAD7D2','MB'=>'#FDE9BC','BSH'=>'#D0E8E8','BSB'=>'#C5E8C5'];
     @endphp
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
@@ -94,21 +93,65 @@
         @if($errors->any())<div class="alert-error mb-5 text-sm">{{ $errors->first() }}</div>@endif
 
         <div class="card overflow-hidden mb-6">
-            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4" style="border-color: rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Filter Tanggal</h3>
-                    <p class="section-subtitle">Menampilkan evaluasi yang disimpan pada tanggal input (created_at).</p>
+            <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="border-color: rgba(0,0,0,0.06);">
+                <div class="space-y-1">
+                    <h3 class="section-title mb-0">Filter evaluasi</h3>
+                    <p class="text-sm leading-relaxed m-0 max-w-3xl" style="color:#9E9790;">Sesuaikan rentang tanggal penyimpanan, anak, dan aspek. Tanggal bersifat inklusif.</p>
                 </div>
-                <form method="get" action="{{ route('pengajar.pencapaian.index') }}" class="flex flex-wrap items-end gap-3">
-                    <div>
-                        <label class="input-label">Tanggal Input</label>
-                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field" onchange="this.form.submit()" required>
+                <form method="get" action="{{ route('pengajar.pencapaian.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
+                        <label class="input-label" for="penc-filter-dari">Dari</label>
+                        <input id="penc-filter-dari" type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full min-w-0" required>
                     </div>
-                    <button type="submit" class="btn-primary">Tampilkan</button>
+                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
+                        <label class="input-label" for="penc-filter-sampai">Sampai</label>
+                        <input id="penc-filter-sampai" type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full min-w-0" required>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3 min-w-0">
+                        <label class="input-label" for="penc-filter-anak">Anak</label>
+                        <select id="penc-filter-anak" name="filter_anak_id" class="input-field w-full min-w-0">
+                            <option value="">Semua anak</option>
+                            @foreach($anaks as $a)
+                                <option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3 min-w-0">
+                        <label class="input-label" for="penc-filter-aspek">Aspek</label>
+                        <select id="penc-filter-aspek" name="aspek" class="input-field w-full min-w-0">
+                            <option value="">Semua aspek</option>
+                            <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}" @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum / tanpa aspek</option>
+                            @foreach($aspekPilihan as $asp)
+                                <option value="{{ $asp }}" @selected($filterAspekRaw === $asp)>{{ $asp }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-2 flex flex-col gap-1.5 min-w-0">
+                        <span class="input-label opacity-0 text-[0.65rem] leading-none max-sm:hidden" aria-hidden="true">&nbsp;</span>
+                        <button type="submit" class="btn-primary w-full shrink-0">Tampilkan</button>
+                    </div>
                 </form>
             </div>
-            <div class="px-6 py-3 text-sm" style="background: #FAF6F0; color: #6B6560;">
-                Menampilkan data tercatat pada <strong style="color:#2C2C2C;">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d M Y') }}</strong>
+            <div class="px-5 sm:px-6 py-3 border-t text-sm flex flex-wrap items-center gap-x-2 gap-y-1" style="background:#FAF6F0; border-color:rgba(0,0,0,0.04); color:#6B6560;">
+                <span class="inline-flex items-center gap-1.5 shrink-0">
+                    <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Ringkasan:</span>
+                </span>
+                <span style="color:#2C2C2C;">
+                    @if($tanggalDari === $tanggalSampai)
+                        {{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }}
+                    @else
+                        {{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }} – {{ \Carbon\Carbon::parse($tanggalSampai)->translatedFormat('d M Y') }}
+                    @endif
+                </span>
+                @if($filterAnakId)
+                    <span class="text-black/25 hidden sm:inline">·</span>
+                    <span>{{ $anaks->firstWhere('id', $filterAnakId)?->name ?? 'Anak terpilih' }}</span>
+                @endif
+                @if($filterAspekRaw !== '')
+                    <span class="text-black/25 hidden sm:inline">·</span>
+                    <span>{{ $filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM ? 'Umum / tanpa aspek' : $filterAspekRaw }}</span>
+                @endif
             </div>
         </div>
 
@@ -143,7 +186,7 @@
                             </td>
                             <td class="min-w-[240px]">
                                 <div class="space-y-2">
-                                    @foreach($rows->sortBy(fn ($p) => ($p->matrikulasi->aspek ?? '').($p->matrikulasi->indicator ?? '')) as $p)
+                                    @foreach($rows->filter(fn ($p) => \App\Support\FilterAspekPencapaian::rowMatches($filterAspek, $p))->sortBy(fn ($p) => ($p->matrikulasi->aspek ?? '').($p->matrikulasi->indicator ?? '')) as $p)
                                         <div class="text-xs rounded-lg px-2 py-1.5 border" style="border-color:rgba(0,0,0,0.06);background:#FAF6F0;">
                                             @if($p->matrikulasi)
                                                 <div class="font-semibold" style="color:#1A6B6B;">{{ $p->matrikulasi->aspek ?: 'Aspek' }}</div>
@@ -152,7 +195,7 @@
                                                 <div class="font-semibold" style="color:#9E9790;">Data lama (tanpa aspek)</div>
                                             @endif
                                             <div class="mt-1 flex flex-wrap items-center gap-2">
-                                                <span class="text-xs font-bold px-2 py-0.5 rounded" style="background:{{ $scoreColors[$p->score] ?? '#eee' }};">{{ $p->score }}</span>
+                                                <span class="text-xs font-bold px-2 py-0.5 rounded leading-snug max-w-[14rem]" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
                                                 @if($p->feedback)<span class="text-[11px] italic truncate max-w-[200px]" style="color:#9E9790;">{{ Str::limit($p->feedback, 40) }}</span>@endif
                                             </div>
                                         </div>
@@ -168,7 +211,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="6" class="py-12 text-center" style="color:#9E9790;">Belum ada evaluasi pada tanggal ini.</td></tr>
+                        <tr><td colspan="6" class="py-12 text-center" style="color:#9E9790;">Belum ada evaluasi pada rentang tanggal ini.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -181,7 +224,10 @@
             <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full" @click.away="showCreateModal=false">
                 <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                    <input type="hidden" name="tanggal_dari" value="{{ $tanggalDari }}">
+                    <input type="hidden" name="tanggal_sampai" value="{{ $tanggalSampai }}">
+                    @if($filterAnakId)<input type="hidden" name="filter_anak_id" value="{{ $filterAnakId }}">@endif
+                    @if($filterAspekRaw !== '')<input type="hidden" name="aspek" value="{{ $filterAspekRaw }}">@endif
                     <div class="modal-header"><h3 class="section-title">Buat evaluasi per aspek</h3></div>
                     <div class="modal-body space-y-4 max-h-[75vh] overflow-y-auto">
                         <div>
@@ -211,10 +257,10 @@
                                         :name="'nilai[' + opt.id + ']'"
                                         x-model="createNilai[String(opt.id)]">
                                         <option value="">— Pilih —</option>
-                                        <option value="BB">BB — Belum Berkembang</option>
-                                        <option value="MB">MB — Mulai Berkembang</option>
-                                        <option value="BSH">BSH — Sesuai Harapan</option>
-                                        <option value="BSB">BSB — Sangat Baik</option>
+                                        <option value="BB">Belum Berkembang</option>
+                                        <option value="MB">Mulai Berkembang</option>
+                                        <option value="BSH">Berkembang Sesuai Harapan</option>
+                                        <option value="BSB">Berkembang Sangat Baik</option>
                                     </select>
                                 </div>
                                 <div>
@@ -238,7 +284,10 @@
             <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full" @click.away="showEditModal=false">
                 <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                    <input type="hidden" name="tanggal_dari" value="{{ $tanggalDari }}">
+                    <input type="hidden" name="tanggal_sampai" value="{{ $tanggalSampai }}">
+                    @if($filterAnakId)<input type="hidden" name="filter_anak_id" value="{{ $filterAnakId }}">@endif
+                    @if($filterAspekRaw !== '')<input type="hidden" name="aspek" value="{{ $filterAspekRaw }}">@endif
                     <input type="hidden" name="anak_id" :value="editBundles[editBundleKey]?.anak_id">
                     <input type="hidden" name="kegiatan_id" :value="editBundles[editBundleKey]?.kegiatan_id">
                     <div class="modal-header"><h3 class="section-title">Edit evaluasi per aspek</h3></div>
@@ -251,10 +300,10 @@
                                     <select class="input-field" required
                                         :name="'nilai[' + opt.id + ']'"
                                         x-model="editNilai[String(opt.id)]">
-                                        <option value="BB">BB</option>
-                                        <option value="MB">MB</option>
-                                        <option value="BSH">BSH</option>
-                                        <option value="BSB">BSB</option>
+                                        <option value="BB">Belum Berkembang</option>
+                                        <option value="MB">Mulai Berkembang</option>
+                                        <option value="BSH">Berkembang Sesuai Harapan</option>
+                                        <option value="BSB">Berkembang Sangat Baik</option>
                                     </select>
                                 </div>
                                 <div>
@@ -279,7 +328,10 @@
                 <form method="POST" action="{{ route('pengajar.pencapaian.destroy-bundle') }}">
                     @csrf
                     @method('DELETE')
-                    <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                    <input type="hidden" name="tanggal_dari" value="{{ $tanggalDari }}">
+                    <input type="hidden" name="tanggal_sampai" value="{{ $tanggalSampai }}">
+                    @if($filterAnakId)<input type="hidden" name="filter_anak_id" value="{{ $filterAnakId }}">@endif
+                    @if($filterAspekRaw !== '')<input type="hidden" name="aspek" value="{{ $filterAspekRaw }}">@endif
                     <input type="hidden" name="anak_id" :value="deleteBundleAnak">
                     <input type="hidden" name="kegiatan_id" :value="deleteBundleKeg">
                     <div class="modal-body text-center py-6">

@@ -63,6 +63,8 @@ class KegiatanCalendar
                 return [
                     'id' => $p->id,
                     'score' => $p->score,
+                    'score_label' => LabelSkorPencapaian::label($p->score),
+                    'score_color' => LabelSkorPencapaian::color($p->score),
                     'feedback' => $p->feedback,
                     'aspek' => $p->matrikulasi->aspek ?? null,
                     'indicator' => $p->matrikulasi->indicator ?? null,
@@ -118,6 +120,8 @@ class KegiatanCalendar
                 return [
                     'id' => $p->id,
                     'score' => $p->score,
+                    'score_label' => LabelSkorPencapaian::label($p->score),
+                    'score_color' => LabelSkorPencapaian::color($p->score),
                     'feedback' => $p->feedback,
                     'aspek' => $p->matrikulasi->aspek ?? null,
                     'indicator' => $p->matrikulasi->indicator ?? null,

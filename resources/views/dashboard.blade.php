@@ -319,7 +319,7 @@
                                         <h4 class="font-semibold text-sm mt-1 leading-snug" style="color: #2C2C2C;">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
                                         <p class="text-sm italic line-clamp-1 mt-1" style="color: #9E9790;">"{{ $p->feedback }}"</p>
                                     </div>
-                                    <span class="badge badge-teal shrink-0 text-center min-w-[2.25rem]">{{ $p->score }}</span>
+                                    <span class="badge badge-teal shrink-0 text-center text-xs leading-tight max-w-[11rem] px-2 py-1 whitespace-normal">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
                                 </div>
                             @empty
                                 <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada laporan evaluasi.</div>

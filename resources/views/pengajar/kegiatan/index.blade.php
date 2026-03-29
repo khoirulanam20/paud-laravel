@@ -81,9 +81,9 @@
                                                 <span x-show="pc.indicator" class="block mt-0.5" x-text="pc.indicator"></span>
                                             </td>
                                             <td class="px-4 py-3">
-                                                <span class="text-xs font-bold px-2 py-1 rounded"
-                                                    x-bind:style="(pc.score=='BB') ? 'background:#FAD7D2' : (pc.score=='MB' ? 'background:#FDE9BC' : (pc.score=='BSH' ? 'background:#D0E8E8' : (pc.score=='BSB' ? 'background:#C5E8C5' : 'background:#eee')))"
-                                                    x-text="pc.score"></span>
+                                                <span class="text-xs font-bold px-2 py-1 rounded max-w-[12rem] leading-snug"
+                                                    x-bind:style="'background:' + (pc.score_color || '#eee')"
+                                                    x-text="pc.score_label || pc.score"></span>
                                             </td>
                                             <td class="px-4 py-3 text-xs" style="color:#5A5A5A;" x-text="pc.feedback"></td>
                                         </tr>

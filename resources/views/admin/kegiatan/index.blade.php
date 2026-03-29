@@ -57,7 +57,7 @@
                             <template x-for="pc in (detailData.pencapaians || [])" :key="pc.id">
                                 <li class="rounded-lg px-3 py-2" style="background:#FAF6F0;">
                                     <span class="block text-xs font-semibold mt-1" style="color:#1A6B6B;" x-text="pc.aspek ? (pc.aspek + (pc.indicator ? ': ' + pc.indicator : '')) : (pc.indicator || 'Aspek')"></span>
-                                    <span class="text-xs font-bold mt-0.5 inline-block px-1.5 py-0.5 rounded" style="background:#D0E8E8;" x-text="pc.score"></span>
+                                    <span class="text-xs font-bold mt-0.5 inline-block px-1.5 py-0.5 rounded max-w-[12rem] leading-snug" x-bind:style="'background:' + (pc.score_color || '#eee')" x-text="pc.score_label || pc.score"></span>
                                     <span x-show="pc.anak_name" class="block text-xs mt-0.5" style="color:#6B6560;">Siswa: <span x-text="pc.anak_name"></span></span>
                                     <span x-show="pc.feedback" class="block text-xs mt-1" x-text="pc.feedback"></span>
                                 </li>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\OrangTua;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Pencapaian;
+use App\Support\LabelSkorPencapaian;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -27,6 +28,7 @@ class PencapaianController extends Controller
             return [
                 'id' => $p->id,
                 'score' => $p->score,
+                'score_label' => LabelSkorPencapaian::label($p->score),
                 'feedback' => $p->feedback,
                 'updated_at' => $p->updated_at?->toIso8601String(),
                 'anak' => $p->anak ? ['id' => $p->anak->id, 'name' => $p->anak->name] : null,

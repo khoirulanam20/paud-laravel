@@ -5,23 +5,77 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Laporan Pencapaian Anak</h2>
         </div>
     </x-slot>
-    @php
-        $scoreColors = ['BB'=>'#FAD7D2','MB'=>'#FDE9BC','BSH'=>'#D0E8E8','BSB'=>'#C5E8C5'];
-    @endphp
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="card overflow-hidden mb-5">
+            <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="border-color:rgba(0,0,0,0.06);">
+                <div class="space-y-1">
+                    <h3 class="section-title mb-0">Filter laporan</h3>
+                    <p class="text-sm leading-relaxed m-0 max-w-3xl" style="color:#9E9790;">Tanggal, anak, dan aspek bersifat opsional. Reset lewat &quot;Tampilkan semua&quot;.</p>
+                </div>
+                <form method="get" action="{{ route('orangtua.pencapaian.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
+                        <label class="input-label" for="ortu-penc-dari">Dari</label>
+                        <input id="ortu-penc-dari" type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full min-w-0">
+                    </div>
+                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
+                        <label class="input-label" for="ortu-penc-sampai">Sampai</label>
+                        <input id="ortu-penc-sampai" type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full min-w-0">
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3 min-w-0">
+                        <label class="input-label" for="ortu-penc-anak">Anak</label>
+                        <select id="ortu-penc-anak" name="filter_anak_id" class="input-field w-full min-w-0">
+                            <option value="">Semua anak</option>
+                            @foreach($anakList as $a)
+                                <option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3 min-w-0">
+                        <label class="input-label" for="ortu-penc-aspek">Aspek</label>
+                        <select id="ortu-penc-aspek" name="aspek" class="input-field w-full min-w-0">
+                            <option value="">Semua aspek</option>
+                            <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}" @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum / tanpa aspek</option>
+                            @foreach($aspekPilihan as $asp)
+                                <option value="{{ $asp }}" @selected($filterAspekRaw === $asp)>{{ $asp }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-2 flex flex-col gap-2 min-w-0">
+                        <span class="input-label opacity-0 text-[0.65rem] leading-none max-sm:hidden" aria-hidden="true">&nbsp;</span>
+                        <button type="submit" class="btn-primary w-full">Terapkan</button>
+                        @if($filterAktif)
+                        <a href="{{ route('orangtua.pencapaian.index') }}" class="btn-secondary w-full text-center">Tampilkan semua</a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+            @if($filterAktif)
+            <div class="px-6 py-3 text-sm space-y-1" style="background:#FAF6F0; color:#6B6560;">
+                @if($filterTanggalAktif)
+                <p> Rentang tanggal input: <strong style="color:#2C2C2C;">{{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }}</strong> – <strong style="color:#2C2C2C;">{{ \Carbon\Carbon::parse($tanggalSampai)->translatedFormat('d M Y') }}</strong></p>
+                @endif
+                @if($filterAnakId)
+                <p>Anak: <strong style="color:#2C2C2C;">{{ $anakList->firstWhere('id', $filterAnakId)?->name ?? '—' }}</strong></p>
+                @endif
+                @if($filterAspek)
+                <p>Aspek: <strong style="color:#2C2C2C;">{{ $filterAspek === \App\Support\FilterAspekPencapaian::UMUM ? 'Umum / tanpa aspek' : $filterAspek }}</strong></p>
+                @endif
+            </div>
+            @endif
+        </div>
         <details class="card mb-5 overflow-hidden">
             <summary class="px-5 py-4 cursor-pointer list-none font-semibold text-sm flex items-center gap-2" style="color:#1A6B6B;">
                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Arti singkatan nilai (BB, MB, BSH, BSB)
+                Penjelasan tingkat penilaian
                 <span class="text-xs font-normal ml-auto" style="color:#9E9790;">Klik untuk membuka</span>
             </summary>
             <div class="px-5 pb-5 pt-0 border-t text-sm space-y-3 leading-relaxed" style="border-color:rgba(0,0,0,0.06); color:#5A5A5A;">
                 <p class="pt-4">Nilai mengacu pada penilaian perkembangan anak usia dini (biasanya dicatat per indikator matrikulasi).</p>
                 <ul class="space-y-2 pl-1">
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#FAD7D2;">BB</span> <strong>Belum Berkembang</strong> — Anak belum menunjukkan perilaku sesuai indikator yang diharapkan pada tahap ini.</li>
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#FDE9BC;">MB</span> <strong>Mulai Berkembang</strong> — Anak mulai menunjukkan kemampuan; masih perlu bimbingan dan pengulangan.</li>
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#D0E8E8;">BSH</span> <strong>Berkembang Sesuai Harapan</strong> — Anak sudah konsisten menunjukkan perilaku sesuai indikator.</li>
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#C5E8C5;">BSB</span> <strong>Berkembang Sangat Baik</strong> — Anak menunjukkan kemampuan di atas harapan umur/tahap untuk indikator tersebut.</li>
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug" style="background:#FAD7D2;">Belum Berkembang</span> — Anak belum menunjukkan perilaku sesuai indikator yang diharapkan pada tahap ini.</li>
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug" style="background:#FDE9BC;">Mulai Berkembang</span> — Anak mulai menunjukkan kemampuan; masih perlu bimbingan dan pengulangan.</li>
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug" style="background:#D0E8E8;">Berkembang Sesuai Harapan</span> — Anak sudah konsisten menunjukkan perilaku sesuai indikator.</li>
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug" style="background:#C5E8C5;">Berkembang Sangat Baik</span> — Anak menunjukkan kemampuan di atas harapan umur/tahap untuk indikator tersebut.</li>
                 </ul>
             </div>
         </details>
@@ -64,7 +118,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($rows->sortBy(fn ($p) => ($p->matrikulasi->aspek ?? '').($p->matrikulasi->indicator ?? '')) as $p)
+                                            @foreach($rows->filter(fn ($p) => \App\Support\FilterAspekPencapaian::rowMatches($filterAspek, $p))->sortBy(fn ($p) => ($p->matrikulasi->aspek ?? '').($p->matrikulasi->indicator ?? '')) as $p)
                                                 <tr class="border-t" style="border-color:rgba(0,0,0,0.05);">
                                                     <td class="px-3 py-2 align-top">
                                                         @if($p->matrikulasi)
@@ -84,7 +138,7 @@
                                                         @endif
                                                     </td>
                                                     <td class="px-3 py-2 align-top">
-                                                        <span class="text-xs font-bold px-2 py-1 rounded inline-block" style="background:{{ $scoreColors[$p->score] ?? '#eee' }};">{{ $p->score }}</span>
+                                                        <span class="text-xs font-bold px-2 py-1 rounded inline-block leading-snug max-w-[12rem]" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
                                                     </td>
                                                     <td class="px-3 py-2 text-xs align-top" style="color:#6B6560;">{{ $p->feedback ?: '—' }}</td>
                                                 </tr>

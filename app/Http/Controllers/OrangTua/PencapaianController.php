@@ -4,7 +4,10 @@ namespace App\Http\Controllers\OrangTua;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
+use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
+use App\Support\FilterAspekPencapaian;
+use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -12,24 +15,45 @@ class PencapaianController extends Controller
 {
     public function index(Request $request)
     {
-        $anakIds = Anak::where('user_id', auth()->id())->pluck('id');
+        $anakList = Anak::where('user_id', auth()->id())->orderBy('name')->get();
+        $anakIds = $anakList->pluck('id');
 
-        $all = Pencapaian::query()
+        $query = Pencapaian::query()
             ->with(['anak', 'kegiatan', 'matrikulasi', 'pengajar'])
-            ->whereIn('anak_id', $anakIds)
-            ->orderByDesc('updated_at')
-            ->get();
+            ->whereIn('anak_id', $anakIds);
 
-        $groups = $all->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
-        $keys = $groups->keys()->sortByDesc(function ($k) use ($groups) {
-            return $groups[$k]->max('updated_at');
+        $filterAnakId = null;
+        if ($request->filled('filter_anak_id')) {
+            $aid = (int) $request->input('filter_anak_id');
+            if ($anakIds->contains($aid)) {
+                $query->where('anak_id', $aid);
+                $filterAnakId = $aid;
+            }
+        }
+
+        $range = TanggalRentang::dariSampaiQuery($request, null);
+        if ($range !== null) {
+            $query->whereDate('created_at', '>=', $range[0])
+                ->whereDate('created_at', '<=', $range[1]);
+        }
+
+        $filterAspekRaw = (string) $request->input('aspek', '');
+        $filterAspek = $filterAspekRaw === '' ? null : $filterAspekRaw;
+
+        $all = $query->orderByDesc('updated_at')->get();
+        $groupsAll = $all->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
+
+        $keysFiltered = $groupsAll->keys()->sortByDesc(function ($k) use ($groupsAll) {
+            return $groupsAll[$k]->max('updated_at');
+        })->values()->filter(function ($k) use ($groupsAll, $filterAspek) {
+            return FilterAspekPencapaian::groupHasMatch($filterAspek, $groupsAll[$k]);
         })->values();
 
         $perPage = 15;
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $total = $keys->count();
-        $sliceKeys = $keys->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $pageItems = $sliceKeys->mapWithKeys(fn ($k) => [$k => $groups[$k]]);
+        $total = $keysFiltered->count();
+        $sliceKeys = $keysFiltered->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $pageItems = $sliceKeys->mapWithKeys(fn ($k) => [$k => $groupsAll[$k]]);
 
         $groupedPencapaian = new LengthAwarePaginator(
             $pageItems,
@@ -43,6 +67,34 @@ class PencapaianController extends Controller
             ]
         );
 
-        return view('orangtua.pencapaian.index', compact('groupedPencapaian'));
+        $filterTanggalAktif = $range !== null;
+        $tanggalDari = $filterTanggalAktif ? $range[0] : '';
+        $tanggalSampai = $filterTanggalAktif ? $range[1] : '';
+
+        $sekolahIds = $anakList->pluck('sekolah_id')->unique()->filter();
+        $aspekPilihan = $sekolahIds->isNotEmpty()
+            ? Matrikulasi::query()
+                ->whereIn('sekolah_id', $sekolahIds)
+                ->whereNotNull('aspek')
+                ->where('aspek', '!=', '')
+                ->distinct()
+                ->orderBy('aspek')
+                ->pluck('aspek')
+            : collect();
+
+        $filterAktif = $filterTanggalAktif || $filterAnakId !== null || $filterAspek !== null;
+
+        return view('orangtua.pencapaian.index', compact(
+            'groupedPencapaian',
+            'tanggalDari',
+            'tanggalSampai',
+            'filterAktif',
+            'filterTanggalAktif',
+            'anakList',
+            'filterAnakId',
+            'filterAspek',
+            'filterAspekRaw',
+            'aspekPilihan',
+        ));
     }
 }
