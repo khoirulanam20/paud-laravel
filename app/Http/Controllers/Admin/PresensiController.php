@@ -32,34 +32,4 @@ class PresensiController extends Controller
 
         return view('admin.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount'));
     }
-
-    public function store(Request $request)
-    {
-        $sekolah_id = auth()->user()->sekolah_id;
-
-        $validated = $request->validate([
-            'tanggal' => ['required', 'date'],
-            'hadir' => ['nullable', 'array'],
-            'hadir.*' => ['integer', 'exists:anaks,id'],
-        ]);
-
-        $anakIds = Anak::where('sekolah_id', $sekolah_id)->pluck('id')->all();
-        $hadirIds = array_values(array_unique(array_map('intval', $validated['hadir'] ?? [])));
-        $hadirIds = array_values(array_intersect($hadirIds, $anakIds));
-
-        foreach ($anakIds as $anakId) {
-            Presensi::updateOrCreate(
-                [
-                    'sekolah_id' => $sekolah_id,
-                    'anak_id' => $anakId,
-                    'tanggal' => $validated['tanggal'],
-                ],
-                ['hadir' => in_array((int) $anakId, $hadirIds, true)]
-            );
-        }
-
-        return redirect()
-            ->route('admin.presensi.index', ['tanggal' => $validated['tanggal']])
-            ->with('success', 'Presensi tanggal '.Carbon::parse($validated['tanggal'])->translatedFormat('d M Y').' berhasil disimpan.');
-    }
 }

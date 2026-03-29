@@ -22,6 +22,15 @@ class PencapaianController extends Controller
         return Pengajar::where('user_id', auth()->id())->firstOrFail();
     }
 
+    private function assertAnakDalamLingkupPencapaian(Anak $anak, Pengajar $pengajar): void
+    {
+        abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
+        $kelasId = auth()->user()->kelas_id;
+        if ($kelasId !== null) {
+            abort_if((int) $anak->kelas_id !== (int) $kelasId, 403);
+        }
+    }
+
     public function index(Request $request)
     {
         $pengajar = $this->getPengajar();
@@ -34,12 +43,15 @@ class PencapaianController extends Controller
             $tanggal = date('Y-m-d');
         }
 
-        $hari = Pencapaian::query()
+        $hariQuery = Pencapaian::query()
             ->where('pengajar_id', $pengajar->id)
             ->whereDate('created_at', $tanggal)
             ->with(['anak', 'kegiatan.matrikulasis', 'matrikulasi'])
-            ->orderByDesc('updated_at')
-            ->get();
+            ->orderByDesc('updated_at');
+        if (auth()->user()->kelas_id) {
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', auth()->user()->kelas_id));
+        }
+        $hari = $hariQuery->get();
 
         $groups = $hari->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
         $keys = $groups->keys()->values();
@@ -88,7 +100,11 @@ class PencapaianController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        $anaks = Anak::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
+        if (auth()->user()->kelas_id) {
+            $anakQuery->where('kelas_id', auth()->user()->kelas_id);
+        }
+        $anaks = $anakQuery->get();
 
         return view('pengajar.pencapaian.index', compact(
             'groupedPencapaian',
@@ -127,7 +143,7 @@ class PencapaianController extends Controller
         }
 
         $anak = Anak::findOrFail($request->integer('anak_id'));
-        abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
+        $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
 
         $nilaiInput = $request->input('nilai', []);
         foreach ($matIds as $mid) {
@@ -197,6 +213,10 @@ class PencapaianController extends Controller
     {
         $pengajar = $this->getPengajar();
         abort_if($pencapaian->pengajar_id !== $pengajar->id, 403);
+        $pencapaian->loadMissing('anak');
+        if ($pencapaian->anak) {
+            $this->assertAnakDalamLingkupPencapaian($pencapaian->anak, $pengajar);
+        }
 
         if ($pencapaian->photo) {
             $stillUsed = Pencapaian::query()
@@ -227,7 +247,7 @@ class PencapaianController extends Controller
         ]);
 
         $anak = Anak::findOrFail($request->integer('anak_id'));
-        abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
+        $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
         Kegiatan::query()
             ->where('id', $request->integer('kegiatan_id'))
             ->where('pengajar_id', $pengajar->id)

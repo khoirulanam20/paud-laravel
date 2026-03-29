@@ -10,11 +10,22 @@ class KritikSaranController extends Controller
 {
     public function index()
     {
-        $feedbacks = KritikSaran::where('user_id', auth()->id())
+        $feedbacks = KritikSaran::query()
+            ->where('user_id', auth()->id())
+            ->with('sekolah')
             ->latest()
             ->paginate(15);
 
         return view('orangtua.kritik_saran.index', compact('feedbacks'));
+    }
+
+    public function show(KritikSaran $kritik_saran)
+    {
+        abort_if((int) $kritik_saran->user_id !== (int) auth()->id(), 403);
+
+        $kritik_saran->load('sekolah');
+
+        return view('orangtua.kritik_saran.show', compact('kritik_saran'));
     }
 
     public function store(Request $request)

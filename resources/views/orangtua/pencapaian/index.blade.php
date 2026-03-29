@@ -9,10 +9,27 @@
         $scoreColors = ['BB'=>'#FAD7D2','MB'=>'#FDE9BC','BSH'=>'#D0E8E8','BSB'=>'#C5E8C5'];
     @endphp
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <details class="card mb-5 overflow-hidden">
+            <summary class="px-5 py-4 cursor-pointer list-none font-semibold text-sm flex items-center gap-2" style="color:#1A6B6B;">
+                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Arti singkatan nilai (BB, MB, BSH, BSB)
+                <span class="text-xs font-normal ml-auto" style="color:#9E9790;">Klik untuk membuka</span>
+            </summary>
+            <div class="px-5 pb-5 pt-0 border-t text-sm space-y-3 leading-relaxed" style="border-color:rgba(0,0,0,0.06); color:#5A5A5A;">
+                <p class="pt-4">Nilai mengacu pada penilaian perkembangan anak usia dini (biasanya dicatat per indikator matrikulasi).</p>
+                <ul class="space-y-2 pl-1">
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#FAD7D2;">BB</span> <strong>Belum Berkembang</strong> — Anak belum menunjukkan perilaku sesuai indikator yang diharapkan pada tahap ini.</li>
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#FDE9BC;">MB</span> <strong>Mulai Berkembang</strong> — Anak mulai menunjukkan kemampuan; masih perlu bimbingan dan pengulangan.</li>
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#D0E8E8;">BSH</span> <strong>Berkembang Sesuai Harapan</strong> — Anak sudah konsisten menunjukkan perilaku sesuai indikator.</li>
+                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2" style="background:#C5E8C5;">BSB</span> <strong>Berkembang Sangat Baik</strong> — Anak menunjukkan kemampuan di atas harapan umur/tahap untuk indikator tersebut.</li>
+                </ul>
+            </div>
+        </details>
+
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Rapor per kegiatan &amp; aspek</h3>
-                <p class="section-subtitle">Setiap kartu = satu kegiatan; di dalamnya nilai per indikator matrikulasi.</p>
+                <p class="section-subtitle">Setiap kartu = satu kegiatan; di dalamnya nilai per indikator matrikulasi beserta tujuan &amp; strategi jika tersedia.</p>
             </div>
             <div class="divide-y" style="border-color:rgba(0,0,0,0.06);">
                 @forelse($groupedPencapaian as $bundleKey => $rows)
@@ -53,6 +70,15 @@
                                                         @if($p->matrikulasi)
                                                             <span class="font-semibold text-xs block" style="color:#1A6B6B;">{{ $p->matrikulasi->aspek ?: 'Aspek' }}</span>
                                                             <span class="text-xs mt-0.5 block" style="color:#5A5A5A;">{{ $p->matrikulasi->indicator }}</span>
+                                                            @if(filled($p->matrikulasi->description))
+                                                                <p class="text-xs mt-1.5" style="color:#6B6560;">{{ $p->matrikulasi->description }}</p>
+                                                            @endif
+                                                            @if(filled($p->matrikulasi->tujuan))
+                                                                <p class="text-xs mt-2 rounded-lg px-2 py-1.5" style="background:#F5F5F3; color:#4A4A4A;"><strong style="color:#1A6B6B;">Tujuan pembelajaran:</strong> {{ $p->matrikulasi->tujuan }}</p>
+                                                            @endif
+                                                            @if(filled($p->matrikulasi->strategi))
+                                                                <p class="text-xs mt-1.5 rounded-lg px-2 py-1.5" style="background:#F0FAFA; color:#4A4A4A;"><strong style="color:#1A6B6B;">Strategi:</strong> {{ $p->matrikulasi->strategi }}</p>
+                                                            @endif
                                                         @else
                                                             <span class="text-xs italic" style="color:#9E9790;">Catatan lama</span>
                                                         @endif

@@ -32,15 +32,20 @@
         .badge-pill { display: inline-block; background: var(--guest-yellow); color: #92400E; font-weight: 800; font-size: .7rem; padding: .25rem .75rem; border-radius: 99px; letter-spacing: .05em; text-transform: uppercase; }
         .blob { position: absolute; border-radius: 50%; opacity: .15; pointer-events: none; }
         input, textarea, select { font-family: 'Nunito', sans-serif; }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 <body>
     <!-- NAVBAR -->
     <nav class="bg-white shadow-sm sticky top-0 z-50" x-data="{ open: false }">
-        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6 flex justify-between items-center h-16">
-            <a href="{{ route('guest.beranda') }}" class="flex items-center gap-2.5">
-                <div class="h-10 w-10 rounded-2xl flex items-center justify-center text-xl shrink-0" style="background: linear-gradient(135deg,#FFD93D,#FF8C42);">🌈</div>
-                <span style="font-family:'Baloo 2',sans-serif; font-size:1.25rem; font-weight:800; color:#FF8C42;">{{ $cms['hero_title'] ?? 'PAUD Kita' }}</span>
+        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6 flex justify-between items-center gap-2 min-h-16 py-2">
+            <a href="{{ route('guest.beranda') }}" class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1 sm:flex-none pr-2">
+                <div class="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl flex items-center justify-center text-lg sm:text-xl shrink-0" style="background: linear-gradient(135deg,#FFD93D,#FF8C42);">🌈</div>
+                @php($brandTitle = $cms['hero_title'] ?? 'PAUD Kita')
+                <span class="min-w-0 text-left" style="font-family:'Baloo 2',sans-serif; font-weight:800; color:#FF8C42;">
+                    <span class="truncate block sm:hidden text-base max-w-[9.5rem]">{{ \Illuminate\Support\Str::limit($brandTitle, 22) }}</span>
+                    <span class="hidden sm:block text-lg sm:text-xl">{{ $brandTitle }}</span>
+                </span>
             </a>
             <!-- Desktop Nav -->
             <div class="hidden sm:flex items-center gap-0.5 overflow-x-auto">
@@ -58,23 +63,35 @@
                     <a href="{{ route('guest.pendaftaran') }}" class="btn-cta text-sm px-4 py-2">Daftar Sekarang</a>
                 @endauth
             </div>
-            <!-- Mobile Hamburger -->
-            <button @click="open=!open" class="sm:hidden p-2 rounded-xl" style="color:#FF8C42; background:#FFF3E0;">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    <path x-show="open" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+            <!-- Mobile: Masuk cepat + menu -->
+            <div class="sm:hidden flex items-center gap-2 shrink-0">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="text-xs font-extrabold px-3 py-2 rounded-xl whitespace-nowrap" style="color:#FF8C42; background:#FFF3E0;">Dashboard</a>
+                @else
+                    <a href="{{ route('login') }}" class="text-xs font-extrabold px-3 py-2 rounded-xl whitespace-nowrap" style="color:#FF8C42; background:#FFF3E0;">Masuk</a>
+                @endauth
+                <button type="button" @click="open=!open" :aria-expanded="open" aria-controls="guest-mobile-nav" class="p-2 rounded-xl" style="color:#FF8C42; background:#FFF3E0;">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        <path x-show="open" x-cloak stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         </div>
         <!-- Mobile Menu -->
-        <div x-show="open" x-transition class="sm:hidden border-t px-4 py-4 space-y-1 bg-white" style="display:none; border-color:rgba(0,0,0,0.06);">
-            <a href="{{ route('guest.beranda') }}" @click="open=false" class="guest-nav-link block">🏠 Beranda</a>
-            <a href="{{ route('guest.tentang') }}" @click="open=false" class="guest-nav-link block">💛 Tentang</a>
-            <a href="{{ route('guest.fasilitas') }}" @click="open=false" class="guest-nav-link block">🏫 Fasilitas</a>
-            <a href="{{ route('guest.galeri') }}" @click="open=false" class="guest-nav-link block">📸 Galeri</a>
-            <a href="{{ route('guest.kontak') }}" @click="open=false" class="guest-nav-link block">📞 Kontak</a>
-            <hr class="my-2" style="border-color:rgba(0,0,0,0.06);">
-            <a href="{{ route('guest.pendaftaran') }}" @click="open=false" class="btn-cta block text-center">Daftar Sekarang 🌟</a>
+        <div id="guest-mobile-nav" x-show="open" x-transition class="sm:hidden border-t px-4 py-4 space-y-1 bg-white shadow-inner max-h-[min(70vh,calc(100dvh-5rem))] overflow-y-auto" style="display:none; border-color:rgba(0,0,0,0.06);">
+            <a href="{{ route('guest.beranda') }}" @click="open=false" class="guest-nav-link block">Beranda</a>
+            <a href="{{ route('guest.tentang') }}" @click="open=false" class="guest-nav-link block">Tentang</a>
+            <a href="{{ route('guest.fasilitas') }}" @click="open=false" class="guest-nav-link block">Fasilitas</a>
+            <a href="{{ route('guest.galeri') }}" @click="open=false" class="guest-nav-link block">Galeri</a>
+            <a href="{{ route('guest.kontak') }}" @click="open=false" class="guest-nav-link block">Kontak</a>
+            <hr class="my-3" style="border-color:rgba(0,0,0,0.06);">
+            @auth
+                <a href="{{ route('dashboard') }}" @click="open=false" class="btn-cta block text-center text-sm py-3">Buka dashboard</a>
+            @else
+                <a href="{{ route('login') }}" @click="open=false" class="btn-cta-outline block text-center text-sm py-3 justify-center">Masuk ke akun</a>
+            @endauth
+            <a href="{{ route('guest.pendaftaran') }}" @click="open=false" class="btn-cta block text-center text-sm py-3 mt-2">Daftar sekarang</a>
         </div>
     </nav>
 

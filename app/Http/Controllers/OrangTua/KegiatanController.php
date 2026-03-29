@@ -42,6 +42,8 @@ class KegiatanController extends Controller
         if (! $semuaSekolah) {
             if ($anakId) {
                 $query->whereHas('pencapaians', fn ($q) => $q->where('anak_id', $anakId));
+            } elseif ($anakIds !== []) {
+                $query->whereHas('pencapaians', fn ($q) => $q->whereIn('anak_id', $anakIds));
             } else {
                 $query->whereRaw('1 = 0');
             }
@@ -54,17 +56,19 @@ class KegiatanController extends Controller
             $limitAnakIds = $anakIds !== [] ? $anakIds : [-1];
         }
 
-        $calendarEvents = $kegiatans->map(function (Kegiatan $k) use ($anakId, $limitAnakIds, $semuaSekolah) {
+        $calendarEvents = $kegiatans->map(function (Kegiatan $k) use ($anakId, $limitAnakIds, $semuaSekolah, $anakIds) {
             $subset = null;
-            if (! $semuaSekolah && $anakId) {
+            $limitForEvent = null;
+
+            if ($semuaSekolah) {
+                $limitForEvent = $limitAnakIds;
+            } elseif ($anakId) {
                 $subset = $k->pencapaians->where('anak_id', $anakId)->pluck('id')->values()->all();
+            } elseif ($anakIds !== []) {
+                $limitForEvent = $anakIds;
             }
 
-            return KegiatanCalendar::toReadonlyEvent(
-                $k,
-                $subset,
-                $semuaSekolah ? $limitAnakIds : null,
-            );
+            return KegiatanCalendar::toReadonlyEvent($k, $subset, $limitForEvent);
         })->values()->all();
 
         return view('orangtua.kegiatan.index', compact(

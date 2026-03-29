@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kelas;
 use App\Models\Pengajar;
 use App\Models\User;
+use App\Support\PendidikanTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class PengajarController extends Controller
 {
@@ -14,8 +17,16 @@ class PengajarController extends Controller
     {
         $sekolah_id = auth()->user()->sekolah_id;
         $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user.kelas'])->latest()->paginate(10);
-        $kelas = \App\Models\Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
-        return view('admin.pengajar.index', compact('pengajars', 'kelas'));
+        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $pendidikanOptions = PendidikanTerakhir::options();
+        foreach ($pengajars as $p) {
+            if (filled($p->pendidikan) && ! in_array($p->pendidikan, $pendidikanOptions, true)) {
+                $pendidikanOptions[] = $p->pendidikan;
+            }
+        }
+        $pendidikanOptions = array_values(array_unique($pendidikanOptions));
+
+        return view('admin.pengajar.index', compact('pengajars', 'kelas', 'pendidikanOptions'));
     }
 
     public function store(Request $request)
@@ -27,7 +38,7 @@ class PengajarController extends Controller
             'nik' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'phone' => 'nullable|string|max:50',
-            'pendidikan' => 'nullable|string|max:255',
+            'pendidikan' => ['nullable', Rule::in(PendidikanTerakhir::options())],
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
             'kelas_id' => 'nullable|exists:kelas,id',
         ]);
@@ -62,13 +73,18 @@ class PengajarController extends Controller
     {
         abort_if($pengajar->sekolah_id !== auth()->user()->sekolah_id, 403);
 
+        $pendidikanPilihan = PendidikanTerakhir::options();
+        if (filled($pengajar->pendidikan) && ! in_array($pengajar->pendidikan, $pendidikanPilihan, true)) {
+            $pendidikanPilihan[] = $pengajar->pendidikan;
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'jabatan' => 'nullable|string|max:255',
             'nik' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'phone' => 'nullable|string|max:50',
-            'pendidikan' => 'nullable|string|max:255',
+            'pendidikan' => ['nullable', Rule::in($pendidikanPilihan)],
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
             'kelas_id' => 'nullable|exists:kelas,id',
         ]);
@@ -82,7 +98,7 @@ class PengajarController extends Controller
             'pendidikan' => $request->pendidikan,
             'jenis_kelamin' => $request->jenis_kelamin,
         ]);
-        
+
         $user = $pengajar->user;
         $user->update([
             'name' => $request->name,
@@ -96,6 +112,7 @@ class PengajarController extends Controller
     {
         abort_if($pengajar->sekolah_id !== auth()->user()->sekolah_id, 403);
         $pengajar->delete();
+
         return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil dihapus.');
     }
 }

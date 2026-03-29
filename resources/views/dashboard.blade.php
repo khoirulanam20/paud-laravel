@@ -128,12 +128,32 @@
         </div>
         @endhasrole
 
+        <!-- ═══ ADMIN KELAS / WALI KELAS ═══ -->
+        @hasrole('Admin Kelas')
+        @if(auth()->user()->kelas_id)
+        <div class="card overflow-hidden mb-2">
+            <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);">
+                <div class="text-white">
+                    <p class="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">Wali kelas</p>
+                    <h3 class="text-xl font-bold">{{ $kelasWali->name ?? 'Kelas' }}</h3>
+                    <p class="text-sm opacity-90 mt-1">Total siswa di kelasmu: <strong>{{ $kelasAnakCount ?? 0 }}</strong></p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('adminkelas.anak.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Siswa Kelasku</a>
+                    <a href="{{ route('adminkelas.presensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white text-[#1A6B6B] hover:bg-opacity-95">Presensi Kelasku</a>
+                    <a href="{{ route('adminkelas.kegiatan.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Jurnal Kelas</a>
+                </div>
+            </div>
+        </div>
+        @endif
+        @endhasrole
+
         <!-- ═══ PENGAJAR DASHBOARD ═══ -->
         @hasrole('Pengajar')
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div class="stat-card">
                 <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg></div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #9E9790;">Siswa di Sekolah</p><p class="text-3xl font-bold" style="color: #2C2C2C;">{{ $totalAnakSekolah ?? 0 }}</p></div>
+                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #9E9790;">{{ $dashboardAnakLabel ?? 'Siswa di sekolah' }}</p><p class="text-3xl font-bold" style="color: #2C2C2C;">{{ $totalAnakSekolah ?? 0 }}</p></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg></div>
@@ -159,94 +179,150 @@
 
         <!-- ═══ ORANG TUA DASHBOARD ═══ -->
         @hasrole('Orang Tua')
-        <div class="flex items-baseline gap-3 mb-2">
-            <h1 class="text-2xl font-bold" style="color: #2C2C2C;">Halo, Bunda/Yanda! 👋</h1>
-        </div>
+        <div class="space-y-6">
+            <header class="space-y-1">
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: #2C2C2C;">Halo, Bunda / Ayah</h1>
+                <p class="text-sm max-w-xl" style="color: #9E9790;">Ringkasan kehadiran anak, menu hari ini, serta jurnal dan laporan perkembangan terbaru.</p>
+            </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1 space-y-5">
-                <!-- Child Profile Card -->
-                <div class="rounded-2xl p-6 text-white relative overflow-hidden" style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%); box-shadow: 4px 6px 20px rgba(26,107,107,0.4);">
-                    <div class="absolute -right-4 -top-4 opacity-10">
-                        <svg class="h-28 w-28" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
-                    </div>
-                    <p class="text-xs font-semibold uppercase tracking-widest mb-4 opacity-80">Profil Anak Terdaftar</p>
-                    @forelse($anaks ?? [] as $anak)
-                        <div class="flex items-center gap-3 mb-3 last:mb-0">
-                            <div class="h-11 w-11 rounded-xl bg-white bg-opacity-20 flex items-center justify-center font-bold text-lg">{{ substr($anak->name, 0, 1) }}</div>
-                            <div>
-                                <p class="font-bold text-base leading-tight">{{ $anak->name }}</p>
-                                <p class="text-xs opacity-70">{{ \Carbon\Carbon::parse($anak->dob)->format('d M Y') }}</p>
-                            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div class="lg:col-span-1 flex flex-col gap-5">
+                    <div class="rounded-2xl text-white overflow-hidden relative shadow-lg" style="background: linear-gradient(145deg, #1A6B6B 0%, #237a7a 45%, #2D8585 100%); box-shadow: 4px 8px 28px rgba(26,107,107,0.35);">
+                        <div class="absolute -right-8 -top-8 pointer-events-none opacity-[0.07]">
+                            <svg class="h-40 w-40" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
                         </div>
-                    @empty
-                        <p class="text-sm opacity-80">Belum ada anak tertaut.</p>
-                    @endforelse
-                </div>
 
-                <!-- Menu Hari Ini -->
-                <div class="card">
-                    <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
-                        <h3 class="font-bold text-sm" style="color: #2C2C2C;">🍱 Menu Hari Ini</h3>
-                        <a href="{{ route('orangtua.menu-makanan.index') }}" class="text-xs font-medium" style="color: #1A6B6B;">Lihat Semua</a>
-                    </div>
-                    <div class="px-5 py-4">
-                        @if(!empty($menuHariIni))
-                            <p class="font-bold text-base mb-1 whitespace-pre-line" style="color: #2C2C2C;">{{ $menuHariIni->menu }}</p>
-                            <p class="text-xs" style="color: #9E9790;">{{ $menuHariIni->nutrition_info }}</p>
-                        @else
-                            <p class="text-sm" style="color: #9E9790;">Belum ada info menu hari ini.</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2 space-y-5">
-                <!-- Jurnal Kegiatan -->
-                <div class="card">
-                    <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
-                        <h3 class="section-title">📸 Kegiatan Terbaru</h3>
-                        <a href="{{ route('orangtua.kegiatan.index') }}" class="text-sm font-medium" style="color: #1A6B6B;">Lihat Jurnal &rarr;</a>
-                    </div>
-                    <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
-                        @forelse($kegiatanTerbaru ?? [] as $keg)
-                            <div class="px-6 py-4 flex gap-4">
-                                @if($keg->photo)
-                                    <div class="hidden sm:block w-16 h-16 rounded-xl overflow-hidden shrink-0">
-                                        <img src="{{ Storage::url($keg->photo) }}" class="w-full h-full object-cover">
+                        <div class="relative px-5 pt-5 pb-4 border-b border-white/15">
+                            <div class="flex items-start gap-3 mb-4">
+                                <div class="h-10 w-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0 border border-white/20">
+                                    <svg class="h-5 w-5 text-white/95" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0 flex-1 pt-0.5">
+                                    <p class="text-[11px] font-semibold uppercase tracking-widest text-white/75">Kehadiran</p>
+                                    <p class="text-sm font-medium text-white/95 mt-0.5 leading-snug">{{ $presensiFilter['label'] ?? '' }}</p>
+                                </div>
+                            </div>
+                            <form method="get" action="{{ route('dashboard') }}" class="relative flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+                                <div class="w-full sm:w-auto sm:min-w-[8.5rem] sm:flex-1">
+                                    <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Rentang</label>
+                                    <select name="periode" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
+                                        <option value="bulan" @selected(($presensiFilter['periode'] ?? 'bulan') === 'bulan')>Per bulan</option>
+                                        <option value="minggu" @selected(($presensiFilter['periode'] ?? '') === 'minggu')>Per minggu</option>
+                                    </select>
+                                </div>
+                                @if(($presensiFilter['periode'] ?? 'bulan') === 'bulan')
+                                    <div class="w-full sm:w-auto sm:min-w-[9rem] sm:flex-1">
+                                        <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Bulan</label>
+                                        <select name="month" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
+                                            @foreach(range(1, 12) as $m)
+                                                <option value="{{ $m }}" @selected((int) ($presensiFilter['bulan'] ?? now()->month) === $m)>{{ \Carbon\Carbon::createFromDate((int) ($presensiFilter['tahun'] ?? now()->year), $m, 1)->translatedFormat('F') }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="w-full sm:w-auto sm:min-w-[5.5rem]">
+                                        <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Tahun</label>
+                                        <select name="year" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
+                                            @foreach(range(now()->year - 2, now()->year + 1) as $y)
+                                                <option value="{{ $y }}" @selected((int) ($presensiFilter['tahun'] ?? now()->year) === $y)>{{ $y }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @else
+                                    <div class="w-full sm:flex-1 sm:min-w-[12rem]">
+                                        <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Minggu</label>
+                                        <input type="week" name="week" value="{{ $presensiFilter['minggu'] ?? '' }}" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
                                     </div>
                                 @endif
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold mb-1" style="color: #1A6B6B;">{{ \Carbon\Carbon::parse($keg->date)->format('d M Y') }}</p>
-                                    <h4 class="font-bold text-sm truncate" style="color: #2C2C2C;">{{ $keg->title }}</h4>
-                                    <p class="text-sm line-clamp-2 mt-0.5" style="color: #9E9790;">{{ $keg->description }}</p>
+                            </form>
+                        </div>
+
+                        <div class="relative px-5 py-5 md:px-6 md:py-6">
+                            <p class="text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-3">Anak terdaftar</p>
+                            @forelse($anaks ?? [] as $anak)
+                                <div class="rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 mb-3 last:mb-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center font-bold text-lg shrink-0 border border-white/10">{{ substr($anak->name, 0, 1) }}</div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="font-bold text-[15px] leading-tight">{{ $anak->name }}</p>
+                                            <p class="text-xs text-white/65 mt-1">{{ \Carbon\Carbon::parse($anak->dob)->format('d M Y') }}</p>
+                                        </div>
+                                        <div class="text-right shrink-0 pl-2">
+                                            <p class="text-2xl font-bold tabular-nums leading-none text-white">{{ (int) ($presensiHadirPerAnak[$anak->id] ?? 0) }}</p>
+                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-white/60 mt-1.5">hari hadir</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="px-6 py-8 text-center text-sm" style="color: #9E9790;">Belum ada jurnal kegiatan.</div>
-                        @endforelse
+                            @empty
+                                <p class="text-sm text-white/75 py-2">Belum ada anak tertaut pada akun ini.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="card overflow-hidden">
+                        <div class="px-5 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
+                            <h3 class="section-title mb-0">Menu hari ini</h3>
+                            <a href="{{ route('orangtua.menu-makanan.index') }}" class="text-xs font-semibold shrink-0" style="color: #1A6B6B;">Jadwal lengkap</a>
+                        </div>
+                        <div class="px-5 py-5">
+                            @if(!empty($menuHariIni))
+                                <p class="font-bold text-base mb-2 whitespace-pre-line leading-snug" style="color: #2C2C2C;">{{ $menuHariIni->menu }}</p>
+                                @if($menuHariIni->nutrition_info)
+                                    <p class="text-sm leading-relaxed" style="color: #9E9790;">{{ $menuHariIni->nutrition_info }}</p>
+                                @endif
+                            @else
+                                <p class="text-sm" style="color: #9E9790;">Belum ada informasi menu untuk hari ini.</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
-                <!-- Pencapaian Terbaru -->
-                <div class="card">
-                    <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
-                        <h3 class="section-title">🌟 Pencapaian Terbaru</h3>
-                        <a href="{{ route('orangtua.pencapaian.index') }}" class="text-sm font-medium" style="color: #1A6B6B;">Lihat Laporan &rarr;</a>
-                    </div>
-                    <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
-                        @forelse($pencapaianTerbaru ?? [] as $p)
-                            <div class="px-6 py-4 flex items-center justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs" style="color: #9E9790;">{{ $p->anak->name ?? '' }} · {{ \Carbon\Carbon::parse($p->created_at)->format('d M Y') }}</p>
-                                    <h4 class="font-semibold text-sm mt-0.5" style="color: #2C2C2C;">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
-                                    <p class="text-sm italic line-clamp-1 mt-0.5" style="color: #9E9790;">"{{ $p->feedback }}"</p>
+                <div class="lg:col-span-2 flex flex-col gap-5 min-w-0">
+                    <div class="card overflow-hidden">
+                        <div class="px-5 sm:px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
+                            <h3 class="section-title mb-0">Kegiatan terbaru</h3>
+                            <a href="{{ route('orangtua.kegiatan.index') }}" class="text-sm font-semibold shrink-0" style="color: #1A6B6B;">Lihat jurnal</a>
+                        </div>
+                        <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
+                            @forelse($kegiatanTerbaru ?? [] as $keg)
+                                <div class="px-5 sm:px-6 py-4 flex gap-4">
+                                    @if($keg->photo)
+                                        <div class="hidden sm:block w-[4.5rem] h-[4.5rem] rounded-xl overflow-hidden shrink-0 ring-1 ring-black/5">
+                                            <img src="{{ Storage::url($keg->photo) }}" alt="" class="w-full h-full object-cover">
+                                        </div>
+                                    @endif
+                                    <div class="flex-1 min-w-0 py-0.5">
+                                        <p class="text-xs font-semibold mb-1" style="color: #1A6B6B;">{{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}</p>
+                                        <h4 class="font-bold text-sm leading-snug" style="color: #2C2C2C;">{{ $keg->title }}</h4>
+                                        <p class="text-sm line-clamp-2 mt-1 leading-relaxed" style="color: #9E9790;">{{ $keg->description }}</p>
+                                    </div>
                                 </div>
-                                <span class="badge badge-teal shrink-0 text-center">{{ $p->score }}</span>
-                            </div>
-                        @empty
-                            <div class="px-6 py-8 text-center text-sm" style="color: #9E9790;">Belum ada laporan evaluasi.</div>
-                        @endforelse
+                            @empty
+                                <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada jurnal kegiatan.</div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="card overflow-hidden">
+                        <div class="px-5 sm:px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
+                            <h3 class="section-title mb-0">Pencapaian terbaru</h3>
+                            <a href="{{ route('orangtua.pencapaian.index') }}" class="text-sm font-semibold shrink-0" style="color: #1A6B6B;">Lihat laporan</a>
+                        </div>
+                        <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
+                            @forelse($pencapaianTerbaru ?? [] as $p)
+                                <div class="px-5 sm:px-6 py-4 flex items-center justify-between gap-4">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs" style="color: #9E9790;">{{ $p->anak->name ?? '' }} · {{ \Carbon\Carbon::parse($p->created_at)->translatedFormat('d M Y') }}</p>
+                                        <h4 class="font-semibold text-sm mt-1 leading-snug" style="color: #2C2C2C;">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
+                                        <p class="text-sm italic line-clamp-1 mt-1" style="color: #9E9790;">"{{ $p->feedback }}"</p>
+                                    </div>
+                                    <span class="badge badge-teal shrink-0 text-center min-w-[2.25rem]">{{ $p->score }}</span>
+                                </div>
+                            @empty
+                                <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada laporan evaluasi.</div>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
             </div>

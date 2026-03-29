@@ -4,24 +4,37 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
+use App\Models\Kelas;
+use App\Models\Presensi;
 use App\Models\User;
+use App\Support\PresensiPeriodeFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AnakController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
+        $presensiFilter = PresensiPeriodeFilter::resolve($request);
+
         $anaks = Anak::where('sekolah_id', $sekolah_id)
             ->where('status', 'approved')
             ->with(['user', 'kelas'])
             ->latest()
             ->paginate(10);
-            
-        $kelas = \App\Models\Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
-        return view('admin.anak.index', compact('anaks', 'kelas'));
+
+        $hadirPeriode = Presensi::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->whereBetween('tanggal', [$presensiFilter['from'], $presensiFilter['to']])
+            ->where('hadir', true)
+            ->selectRaw('anak_id, count(*) as total')
+            ->groupBy('anak_id')
+            ->pluck('total', 'anak_id');
+
+        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+
+        return view('admin.anak.index', compact('anaks', 'kelas', 'hadirPeriode', 'presensiFilter'));
     }
 
     public function store(Request $request)
@@ -46,7 +59,7 @@ class AnakController extends Controller
 
         // Check if parent user already exists
         $user = User::where('email', $request->parent_email)->first();
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'name' => $request->parent_name,
                 'email' => $request->parent_email,
@@ -112,6 +125,7 @@ class AnakController extends Controller
     {
         abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
         $anak->delete();
+
         return redirect()->route('admin.anak.index')->with('success', 'Data Anak berhasil dihapus.');
     }
 }

@@ -64,7 +64,10 @@
                             <div><label class="input-label">Kontak / WA</label><input type="text" name="phone" class="input-field" placeholder="08..."></div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Pendidikan Terakhir</label><input type="text" name="pendidikan" class="input-field" placeholder="SD/SMP/SMA/D3/Sarjana"></div>
+                            <div>
+                                <label class="input-label">Pendidikan terakhir</label>
+                                <x-pendidikan-select name="pendidikan" />
+                            </div>
                             <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
                         </div>
                         <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" class="input-field" placeholder="Contoh: Guru Kelas A"></div>
@@ -94,7 +97,15 @@
                             <div><label class="input-label">Kontak / WA</label><input type="text" name="phone" x-model="editData.phone" class="input-field"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Pendidikan Terakhir</label><input type="text" name="pendidikan" x-model="editData.pendidikan" class="input-field"></div>
+                            <div>
+                                <label class="input-label">Pendidikan terakhir</label>
+                                <select name="pendidikan" class="input-field" x-model="editData.pendidikan">
+                                    <option value="">— Pilih —</option>
+                                    @foreach($pendidikanOptions as $opt)
+                                        <option value="{{ $opt }}">{{ $opt }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" x-model="editData.jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
                         </div>
                         <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" x-model="editData.jabatan" class="input-field"></div>

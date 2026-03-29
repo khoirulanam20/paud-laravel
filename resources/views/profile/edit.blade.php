@@ -65,7 +65,10 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="input-label">NIK (KTP)</label><input type="text" name="nik" value="{{ $pengajar->nik }}" class="input-field"></div>
                     <div><label class="input-label">Kontak / WA</label><input type="text" name="phone" value="{{ $pengajar->phone }}" class="input-field"></div>
-                    <div><label class="input-label">Pendidikan Terakhir</label><input type="text" name="pendidikan" value="{{ $pengajar->pendidikan }}" class="input-field" placeholder="contoh: S1 PGPAUD"></div>
+                    <div>
+                        <label class="input-label">Pendidikan terakhir</label>
+                        <x-pendidikan-select name="pendidikan" :value="$pengajar->pendidikan" />
+                    </div>
                     <div><label class="input-label">Jenis Kelamin</label>
                         <select name="jenis_kelamin" class="input-field">
                             <option value="">Pilih...</option>

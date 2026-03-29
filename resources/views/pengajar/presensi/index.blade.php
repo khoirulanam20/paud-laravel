@@ -6,7 +6,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
             </div>
-            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Presensi Harian Kelas</h2>
+            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Presensi harian</h2>
         </div>
     </x-slot>
 
@@ -22,13 +22,14 @@
             <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4" style="border-color: rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Filter tanggal</h3>
-                    <p class="section-subtitle">Pilih hari untuk melihat dan mengisi checklist kehadiran siswa kelasku</p>
+                    <p class="section-subtitle">Pilih hari untuk mengisi checklist kehadiran seluruh siswa sekolah</p>
                 </div>
-                <form method="get" action="{{ route('adminkelas.presensi.index') }}" class="flex flex-wrap items-end gap-3">
+                <form method="get" action="{{ route('pengajar.presensi.index') }}" class="flex flex-wrap items-end gap-3">
                     <div>
                         <label class="input-label">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field" required onchange="this.form.submit()">
+                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field" required>
                     </div>
+                    <button type="submit" class="btn-primary">Tampilkan</button>
                 </form>
             </div>
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">
@@ -48,9 +49,9 @@
             </div>
 
             @if($anaks->isEmpty())
-                <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada data siswa di kelas ini.</div>
+                <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada data siswa di sekolah ini.</div>
             @else
-                <form method="post" action="{{ route('adminkelas.presensi.store') }}">
+                <form method="post" action="{{ route('pengajar.presensi.store') }}">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <div class="overflow-x-auto">

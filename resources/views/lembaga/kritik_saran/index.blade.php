@@ -17,15 +17,15 @@
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-3 mb-2">
-                                <div class="h-8 w-8 rounded-xl flex items-center justify-center text-sm font-bold text-white shrink-0" style="background:#1A6B6B;">{{ substr($fb->name ?? 'A', 0, 1) }}</div>
+                                <div class="h-8 w-8 rounded-xl flex items-center justify-center text-sm font-bold text-white shrink-0" style="background:#1A6B6B;">{{ substr($fb->user?->name ?? $fb->nama_bapak ?? 'A', 0, 1) }}</div>
                                 <div>
-                                    <span class="font-semibold text-sm" style="color:#2C2C2C;">{{ $fb->name ?? 'Anonim' }}</span>
+                                    <span class="font-semibold text-sm" style="color:#2C2C2C;">{{ $fb->user?->name ?? $fb->nama_bapak ?? 'Anonim' }}</span>
                                     <span class="text-xs ml-2" style="color:#9E9790;">{{ \Carbon\Carbon::parse($fb->created_at)->diffForHumans() }}</span>
                                 </div>
                             </div>
                             <p class="text-sm leading-relaxed pl-11" style="color:#6B6560;">"{{ $fb->message }}"</p>
                         </div>
-                        <span class="badge badge-teal shrink-0">{{ $fb->type ?? 'Masukan' }}</span>
+                        <span class="badge badge-teal shrink-0">{{ $fb->status ?? 'Masukan' }}</span>
                     </div>
                 </div>
                 @empty

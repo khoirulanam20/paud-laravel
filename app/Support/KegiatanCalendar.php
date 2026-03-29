@@ -50,32 +50,6 @@ class KegiatanCalendar
     /**
      * @return array<string, mixed>
      */
-    public static function toAdminEvent(Kegiatan $k): array
-    {
-        $k->loadMissing('pengajar');
-
-        return [
-            'id' => (string) $k->id,
-            'title' => $k->title,
-            'start' => self::formatDate($k),
-            'allDay' => true,
-            'extendedProps' => [
-                'mode' => 'admin',
-                'delete_url' => route('admin.kegiatan.destroy', $k),
-                'edit' => [
-                    'id' => $k->id,
-                    'date' => self::formatDate($k),
-                    'title' => $k->title,
-                    'description' => $k->description,
-                    'pengajar_id' => (string) $k->pengajar_id,
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
     public static function toPengajarEvent(Kegiatan $k): array
     {
         $k->loadMissing(['pencapaians.anak', 'pencapaians.matrikulasi', 'matrikulasis']);
