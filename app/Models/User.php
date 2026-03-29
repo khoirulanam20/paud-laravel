@@ -6,11 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -49,10 +50,33 @@ class User extends Authenticatable
         ];
     }
 
-    public function lembaga() { return $this->belongsTo(Lembaga::class); }
-    public function sekolah() { return $this->belongsTo(Sekolah::class); }
-    public function pengajar() { return $this->hasOne(Pengajar::class); }
-    public function kelas() { return $this->belongsTo(Kelas::class); }
-    public function anaks() { return $this->hasMany(Anak::class, 'user_id'); }
-    public function kritikSarans() { return $this->hasMany(KritikSaran::class); }
+    public function lembaga()
+    {
+        return $this->belongsTo(Lembaga::class);
+    }
+
+    public function sekolah()
+    {
+        return $this->belongsTo(Sekolah::class);
+    }
+
+    public function pengajar()
+    {
+        return $this->hasOne(Pengajar::class);
+    }
+
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
+    }
+
+    public function anaks()
+    {
+        return $this->hasMany(Anak::class, 'user_id');
+    }
+
+    public function kritikSarans()
+    {
+        return $this->hasMany(KritikSaran::class);
+    }
 }
