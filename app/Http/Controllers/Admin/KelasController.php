@@ -16,12 +16,22 @@ class KelasController extends Controller
         $sekolah_id = auth()->user()->sekolah_id;
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah. Hubungi lembaga.');
 
-        // Load the kelas and the users who act as Admin Kelas for it
-        $kelasList = Kelas::with(['users' => function ($query) {
-            $query->role('Admin Kelas');
-        }])->withCount('anaks')->where('sekolah_id', $sekolah_id)->latest()->paginate(10);
+        $this->ensureKelasPageRolesExist();
 
-        $pengajars = User::role('Pengajar')->where('sekolah_id', $sekolah_id)->get();
+        // Hindari $query->role() di dalam eager load (rawan error SQL di beberapa server).
+        // User dengan kelas_id = kelas ini seharusnya wali/admin kelas.
+        $kelasList = Kelas::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->with(['users' => fn ($q) => $q->orderBy('name')])
+            ->withCount('anaks')
+            ->latest()
+            ->paginate(10);
+
+        $pengajars = User::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->whereHas('roles', fn ($q) => $q->where('name', 'Pengajar')->where('guard_name', 'web'))
+            ->orderBy('name')
+            ->get();
 
         return view('admin.kelas.index', compact('kelasList', 'pengajars'));
     }
@@ -117,6 +127,17 @@ class KelasController extends Controller
         Role::firstOrCreate(
             ['name' => 'Admin Kelas', 'guard_name' => 'web'],
         );
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    /** Pastikan peran yang dipakai halaman kelas ada (deploy tanpa seeder). */
+    private function ensureKelasPageRolesExist(): void
+    {
+        foreach (['Pengajar', 'Admin Kelas'] as $name) {
+            Role::firstOrCreate(
+                ['name' => $name, 'guard_name' => 'web'],
+            );
+        }
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

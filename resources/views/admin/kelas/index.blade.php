@@ -38,7 +38,15 @@
                             </td>
                             <td><span class="badge badge-teal">{{ $k->anaks_count ?? 0 }} Siswa</span></td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
-                                <button @click="openEdit({{ json_encode($k) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                @php
+                                    $kelasEditPayload = [
+                                        'id' => $k->id,
+                                        'name' => $k->name,
+                                        'description' => $k->description,
+                                        'users' => $k->users->map(fn ($u) => ['id' => $u->id])->values()->all(),
+                                    ];
+                                @endphp
+                                <button type="button" @click="openEdit(@js($kelasEditPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @click="openDelete('{{ route('admin.kelas.destroy', $k->id) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                         </tr>
