@@ -25,6 +25,7 @@
          @kegiatan-cal-click.window="onCalClick($event.detail)">
 
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ session('success') }}</div>@endif
+        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
         <div class="card overflow-hidden mb-6">
             <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b" style="border-color:rgba(0,0,0,0.06);">
@@ -122,20 +123,37 @@
                     <div class="modal-header"><h3 class="section-title">Buat Entri Jurnal Baru</h3></div>
                     <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Tanggal <span class="text-red-500">*</span></label><input type="date" name="date" required value="{{ date('Y-m-d') }}" class="input-field"></div>
+                            <div>
+                                <label class="input-label">Tanggal <span class="text-red-500">*</span></label>
+                                <input type="date" name="date" required value="{{ old('date', date('Y-m-d')) }}" class="input-field @error('date') border-red-500 @enderror">
+                                @error('date')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                             <div>
                                 <label class="input-label">Kelas <span class="text-red-500">*</span></label>
-                                <select name="kelas_id" required class="input-field">
+                                <select name="kelas_id" required class="input-field @error('kelas_id') border-red-500 @enderror">
                                     <option value="">-- Pilih Kelas --</option>
                                     @foreach($kelas as $k)
-                                        <option value="{{ $k->id }}">{{ $k->name }}</option>
+                                        <option value="{{ $k->id }}" @selected(old('kelas_id') == $k->id)>{{ $k->name }}</option>
                                     @endforeach
                                 </select>
+                                @error('kelas_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                             </div>
                         </div>
-                        <div><label class="input-label">Judul Kegiatan <span class="text-red-500">*</span></label><input type="text" name="title" required class="input-field" placeholder="Contoh: Bermain Sensori"></div>
-                        <div><label class="input-label">Foto Dokumentasi</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
-                        <div><label class="input-label">Deskripsi Kegiatan</label><textarea name="description" rows="3" class="input-field" placeholder="Ceritakan apa yang terjadi..."></textarea></div>
+                        <div>
+                            <label class="input-label">Judul Kegiatan <span class="text-red-500">*</span></label>
+                            <input type="text" name="title" required class="input-field @error('title') border-red-500 @enderror" placeholder="Contoh: Bermain Sensori" value="{{ old('title') }}">
+                            @error('title')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Foto Dokumentasi</label>
+                            <input type="file" name="photo" accept="image/*" class="input-field py-2 @error('photo') border-red-500 @enderror">
+                            @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Deskripsi Kegiatan</label>
+                            <textarea name="description" rows="3" class="input-field @error('description') border-red-500 @enderror" placeholder="Ceritakan apa yang terjadi...">{{ old('description') }}</textarea>
+                            @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         <div>
                             <label class="input-label">Kaitkan dengan Indikator Matrikulasi</label>
                             <div class="mt-2 rounded-xl border overflow-hidden max-h-48 overflow-y-auto" style="border-color:rgba(0,0,0,0.1);">
@@ -166,20 +184,37 @@
                     <div class="modal-header"><h3 class="section-title">Edit Jurnal Kegiatan</h3></div>
                     <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Tanggal <span class="text-red-500">*</span></label><input type="date" name="date" :value="editData.date ? editData.date.split('T')[0] : editData.date" required class="input-field"></div>
+                            <div>
+                                <label class="input-label">Tanggal <span class="text-red-500">*</span></label>
+                                <input type="date" name="date" :value="editData.date ? editData.date.split('T')[0] : editData.date" required class="input-field @error('date') border-red-500 @enderror">
+                                @error('date')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                             <div>
                                 <label class="input-label">Kelas <span class="text-red-500">*</span></label>
-                                <select name="kelas_id" required class="input-field" :value="editData.kelas_id || ''">
+                                <select name="kelas_id" required class="input-field @error('kelas_id') border-red-500 @enderror" :value="editData.kelas_id || ''">
                                     <option value="">-- Pilih Kelas --</option>
                                     @foreach($kelas as $k)
                                         <option value="{{ $k->id }}">{{ $k->name }}</option>
                                     @endforeach
                                 </select>
+                                @error('kelas_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                             </div>
                         </div>
-                        <div><label class="input-label">Judul <span class="text-red-500">*</span></label><input type="text" name="title" x-model="editData.title" required class="input-field"></div>
-                        <div><label class="input-label">Ganti Foto</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
-                        <div><label class="input-label">Deskripsi</label><textarea name="description" x-model="editData.description" rows="3" class="input-field"></textarea></div>
+                        <div>
+                            <label class="input-label">Judul <span class="text-red-500">*</span></label>
+                            <input type="text" name="title" x-model="editData.title" required class="input-field @error('title') border-red-500 @enderror">
+                            @error('title')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Ganti Foto</label>
+                            <input type="file" name="photo" accept="image/*" class="input-field py-2 @error('photo') border-red-500 @enderror">
+                            @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Deskripsi</label>
+                            <textarea name="description" x-model="editData.description" rows="3" class="input-field @error('description') border-red-500 @enderror"></textarea>
+                            @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         <div>
                             <label class="input-label">Indikator Matrikulasi</label>
                             <div class="mt-2 rounded-xl border overflow-hidden max-h-48 overflow-y-auto" style="border-color:rgba(0,0,0,0.1);">

@@ -117,8 +117,14 @@ class PengajarController extends Controller
     public function destroy(Pengajar $pengajar)
     {
         abort_if($pengajar->sekolah_id !== auth()->user()->sekolah_id, 403);
+        
+        $user = $pengajar->user;
         $pengajar->delete();
+        
+        if ($user) {
+            $user->delete();
+        }
 
-        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil dihapus.');
+        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar dan akun login berhasil dihapus.');
     }
 }

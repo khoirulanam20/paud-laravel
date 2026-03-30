@@ -57,17 +57,17 @@ class AnakController extends Controller
 
         $sekolah_id = auth()->user()->sekolah_id;
 
-        // Check if parent user already exists
-        $user = User::where('email', $request->parent_email)->first();
-        if (! $user) {
-            $user = User::create([
-                'name' => $request->parent_name,
-                'email' => $request->parent_email,
-                'password' => Hash::make('password123'), // standard initial password
-                'sekolah_id' => $sekolah_id,
-            ]);
-            $user->assignRole('Orang Tua');
-        }
+        $request->validate([
+            'parent_email' => 'unique:users,email',
+        ]);
+
+        $user = User::create([
+            'name' => $request->parent_name,
+            'email' => $request->parent_email,
+            'password' => Hash::make('password123'),
+            'sekolah_id' => $sekolah_id,
+        ]);
+        $user->assignRole('Orang Tua');
 
         Anak::create([
             'user_id' => $user->id,
@@ -103,7 +103,24 @@ class AnakController extends Controller
             'nama_bapak' => 'nullable|string|max:255',
             'nik_ibu' => 'nullable|string|max:50',
             'nama_ibu' => 'nullable|string|max:255',
+            'parent_name' => 'required|string|max:255',
+            'parent_email' => 'required|email|max:255',
         ]);
+
+        // If parent email changed, we need to handle it carefully
+        $user = $anak->user;
+        if ($user && $user->email !== $request->parent_email) {
+            // Check if new email is taken by someone else
+            $exists = User::where('email', $request->parent_email)->where('id', '!=', $user->id)->exists();
+            if ($exists) {
+                return back()->withInput()->withErrors(['parent_email' => 'Email wali sudah digunakan oleh pengguna lain.']);
+            }
+            $user->update(['email' => $request->parent_email]);
+        }
+
+        if ($user) {
+            $user->update(['name' => $request->parent_name]);
+        }
 
         $anak->update([
             'name' => $request->name,
@@ -116,6 +133,7 @@ class AnakController extends Controller
             'nama_bapak' => $request->nama_bapak,
             'nik_ibu' => $request->nik_ibu,
             'nama_ibu' => $request->nama_ibu,
+            'parent_name' => $request->parent_name,
         ]);
 
         return redirect()->route('admin.anak.index')->with('success', 'Data Anak berhasil diperbarui.');
@@ -124,8 +142,14 @@ class AnakController extends Controller
     public function destroy(Anak $anak)
     {
         abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
+        
+        $user = $anak->user;
         $anak->delete();
+        
+        if ($user && $user->hasRole('Orang Tua')) {
+            $user->delete();
+        }
 
-        return redirect()->route('admin.anak.index')->with('success', 'Data Anak berhasil dihapus.');
+        return redirect()->route('admin.anak.index')->with('success', 'Data Anak dan akun Orang Tua berhasil dihapus.');
     }
 }

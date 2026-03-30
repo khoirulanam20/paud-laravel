@@ -112,7 +112,15 @@
         <script type="application/json" id="pencapaian-payload-json">{!! $payloadJson !!}</script>
 
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ session('success') }}</div>@endif
-        @if($errors->any())<div class="alert-error mb-5 text-sm">{{ $errors->first() }}</div>@endif
+        @if($errors->any())
+            <div class="alert-danger mb-5">
+                <ul class="list-disc pl-5 text-sm">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div class="card overflow-hidden mb-6">
             <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="border-color: rgba(0,0,0,0.06);">
@@ -306,7 +314,8 @@
                         </template>
                         <div>
                             <label class="input-label">Foto bukti (opsional, berlaku untuk seluruh aspek)</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs">
+                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror">
+                            @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0">Simpan</button></div>
@@ -349,7 +358,8 @@
                         </template>
                         <div>
                             <label class="input-label">Ganti foto</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs">
+                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror">
+                            @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>

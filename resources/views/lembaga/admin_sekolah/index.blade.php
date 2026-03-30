@@ -5,8 +5,22 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Akun Admin Sekolah</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showDeleteModal:false, deleteRoute:'', openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ 
+        showCreateModal:false, 
+        showEditModal:false,
+        showDeleteModal:false, 
+        deleteRoute:'', 
+        editRoute:'',
+        editData: {id: '', name: '', email: '', sekolah_id: ''},
+        openDelete(r){this.deleteRoute=r;this.showDeleteModal=true;},
+        openEdit(a, route){
+            this.editData = {id: a.id, name: a.name, email: a.email, sekolah_id: a.sekolah_id};
+            this.editRoute = route;
+            this.showEditModal = true;
+        }
+    }">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
+        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Admin Sekolah</h3><p class="section-subtitle">Berikan akses manajemen ke staf terpercaya setiap cabang</p></div>
@@ -21,7 +35,8 @@
                             <td><div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background:#1A6B6B;">{{ substr($a->name, 0, 1) }}</div><span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span></div></td>
                             <td><span class="badge badge-teal">{{ $a->email }}</span></td>
                             <td>{{ $a->sekolah->name ?? '-' }}</td>
-                            <td class="text-right">
+                            <td class="text-right flex items-center justify-end gap-2">
+                                <button @click="openEdit({{ json_encode($a) }}, '{{ route('lembaga.admin-sekolah.update', $a) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#E8F2F2;">Edit</button>
                                 <button @click="openDelete('{{ route('lembaga.admin-sekolah.destroy', $a) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </td>
                         </tr>
@@ -40,16 +55,62 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Admin Sekolah Baru</h3><p class="section-subtitle">Password awal: <code>password123</code></p></div>
                     <div class="modal-body space-y-4">
-                        <div><label class="input-label">Nama Lengkap</label><input type="text" name="name" required class="input-field" placeholder="Nama admin"></div>
-                        <div><label class="input-label">Alamat Email Valid</label><input type="email" name="email" required class="input-field" placeholder="admin@sekolah.com"></div>
-                        <div><label class="input-label">Cabang Sekolah</label>
-                            <select name="sekolah_id" required class="input-field">
+                        <div>
+                            <label class="input-label">Nama Lengkap</label>
+                            <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Nama admin" value="{{ old('name') }}">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Alamat Email Valid</label>
+                            <input type="email" name="email" required class="input-field @error('email') border-red-500 @enderror" placeholder="admin@sekolah.com" value="{{ old('email') }}">
+                            @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Cabang Sekolah</label>
+                            <select name="sekolah_id" required class="input-field @error('sekolah_id') border-red-500 @enderror">
                                 <option value="">-- Pilih Cabang --</option>
-                                @foreach($sekolahs as $s)<option value="{{ $s->id }}">{{ $s->name }}</option>@endforeach
+                                @foreach($sekolahs as $s)<option value="{{ $s->id }}" @selected(old('sekolah_id') == $s->id)>{{ $s->name }}</option>@endforeach
                             </select>
+                            @error('sekolah_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+                </form>
+            </div>
+        </div>
+        <!-- EDIT MODAL -->
+        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+            <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
+                <form :action="editRoute" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div class="modal-header"><h3 class="section-title">Edit Admin Sekolah</h3><p class="section-subtitle">Perbarui kredensial atau penempatan admin</p></div>
+                    <div class="modal-body space-y-4">
+                        <div>
+                            <label class="input-label">Nama Lengkap</label>
+                            <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Alamat Email Login</label>
+                            <input type="email" name="email" x-model="editData.email" required class="input-field @error('email') border-red-500 @enderror">
+                            @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Cabang Sekolah</label>
+                            <select name="sekolah_id" x-model="editData.sekolah_id" required class="input-field @error('sekolah_id') border-red-500 @enderror">
+                                <option value="">-- Pilih Cabang --</option>
+                                @foreach($sekolahs as $s)<option value="{{ $s->id }}">{{ $s->name }}</option>@endforeach
+                            </select>
+                            @error('sekolah_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Password Baru (opsional)</label>
+                            <input type="password" name="password" class="input-field @error('password') border-red-500 @enderror" placeholder="Kosongkan jika tidak mau ganti">
+                            @error('password')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Update</button></div>
                 </form>
             </div>
         </div>

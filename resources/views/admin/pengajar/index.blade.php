@@ -7,6 +7,7 @@
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{ kelas_ids: [] }, deleteRoute:'', openEdit(d){this.editData=d; this.editData.kelas_ids = d.kelas ? d.kelas.map(k => k.id) : []; this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
+        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Guru & Pengajar</h3><p class="section-subtitle">Kelola data SDM dan akun login yang diberikan kepada pengajar</p></div>
@@ -52,9 +53,17 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Pengajar Baru</h3><p class="section-subtitle">Password login awal: <code>password123</code></p></div>
                     <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
-                        <div><label class="input-label">Nama Lengkap</label><input type="text" name="name" required class="input-field" placeholder="Nama lengkap pengajar"></div>
+                        <div>
+                            <label class="input-label">Nama Lengkap</label>
+                            <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Nama lengkap pengajar" value="{{ old('name') }}">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Alamat Email Valid</label><input type="email" name="email" required class="input-field" placeholder="email@sekolah.com"></div>
+                            <div>
+                                <label class="input-label">Alamat Email Valid</label>
+                                <input type="email" name="email" required class="input-field @error('email') border-red-500 @enderror" placeholder="email@sekolah.com" value="{{ old('email') }}">
+                                @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                             <div>
                                 <label class="input-label">Penempatan Kelas</label>
                                 <div class="mt-1 rounded-xl border p-3 max-h-32 overflow-y-auto bg-gray-50 space-y-2" style="border-color:rgba(0,0,0,0.1);">
@@ -70,15 +79,31 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">NIK KTP</label><input type="text" name="nik" class="input-field" placeholder="NIK Pengajar"></div>
-                            <div><label class="input-label">Kontak / WA</label><input type="text" name="phone" class="input-field" placeholder="08..."></div>
+                            <div>
+                                <label class="input-label">NIK KTP</label>
+                                <input type="text" name="nik" class="input-field @error('nik') border-red-500 @enderror" placeholder="NIK Pengajar" value="{{ old('nik') }}">
+                                @error('nik')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Kontak / WA</label>
+                                <input type="text" name="phone" class="input-field @error('phone') border-red-500 @enderror" placeholder="08..." value="{{ old('phone') }}">
+                                @error('phone')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="input-label">Pendidikan terakhir</label>
                                 <x-pendidikan-select name="pendidikan" />
                             </div>
-                            <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
+                            <div>
+                                <label class="input-label">Jenis Kelamin</label>
+                                <select name="jenis_kelamin" class="input-field @error('jenis_kelamin') border-red-500 @enderror">
+                                    <option value="">Pilih...</option>
+                                    <option value="Pria" @selected(old('jenis_kelamin') == 'Pria')>Pria</option>
+                                    <option value="Wanita" @selected(old('jenis_kelamin') == 'Wanita')>Wanita</option>
+                                </select>
+                                @error('jenis_kelamin')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                         <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" class="input-field" placeholder="Contoh: Guru Kelas A"></div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" rows="2" class="input-field" placeholder="Prov, Kab, Kec, Kel..."></textarea></div>
@@ -94,7 +119,11 @@
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Pengajar</h3></div>
                     <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
-                        <div><label class="input-label">Nama Lengkap</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
+                        <div>
+                            <label class="input-label">Nama Lengkap</label>
+                            <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         <div>
                             <label class="input-label">Penempatan Kelas</label>
                             <div class="mt-1 rounded-xl border p-3 max-h-40 overflow-y-auto bg-gray-50 grid grid-cols-1 sm:grid-cols-2 gap-2" style="border-color:rgba(0,0,0,0.1);">

@@ -7,6 +7,7 @@
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
+        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Indikator Matrikulasi</h3><p class="section-subtitle">Standar perkembangan yang digunakan sebagai dasar penilaian siswa</p></div>
@@ -41,7 +42,7 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Tambah Indikator Matrikulasi</h3></div>
                     <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
-                        <div><label class="input-label">Aspek / Faktor</label><input type="text" name="aspek" class="input-field" placeholder="Contoh: Kognitif, Motorik Halus..."></div>
+                        <div><label class="input-label">Aspek / Faktor </label><input type="text" name="aspek" class="input-field" placeholder="Contoh: Kognitif, Motorik Halus..."></div>
                         <div><label class="input-label">Indikator Keberhasilan</label><input type="text" name="indicator" required class="input-field" placeholder="Contoh: Mampu menghitung 1-10"></div>
                         <div><label class="input-label">Tujuan Pembelajaran</label><textarea name="tujuan" rows="2" class="input-field"></textarea></div>
                         <div><label class="input-label">Strategi / Metode Edukasi</label><textarea name="strategi" rows="2" class="input-field"></textarea></div>

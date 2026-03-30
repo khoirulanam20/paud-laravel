@@ -53,8 +53,16 @@
                     <div class="modal-header"><h3 class="section-title">Buat Kelas Baru</h3></div>
                     <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
                         <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Kelas</div>
-                        <div><label class="input-label">Nama Kelas</label><input type="text" name="name" required class="input-field" placeholder="Contoh: Kelas TK A - Mawar"></div>
-                        <div><label class="input-label">Deskripsi (Opsional)</label><textarea name="description" class="input-field" rows="2"></textarea></div>
+                        <div>
+                            <label class="input-label">Nama Kelas</label>
+                            <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Contoh: Kelas TK A - Mawar" value="{{ old('name') }}">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Deskripsi (Opsional)</label>
+                            <textarea name="description" class="input-field @error('description') border-red-500 @enderror" rows="2">{{ old('description') }}</textarea>
+                            @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         
 
                     </div>
@@ -70,8 +78,16 @@
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Kelas</h3></div>
                     <div class="modal-body space-y-4">
-                        <div><label class="input-label">Nama Kelas</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
-                        <div><label class="input-label">Deskripsi</label><textarea name="description" x-model="editData.description" rows="2" class="input-field"></textarea></div>
+                        <div>
+                            <label class="input-label">Nama Kelas</label>
+                            <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Deskripsi</label>
+                            <textarea name="description" x-model="editData.description" rows="2" class="input-field @error('description') border-red-500 @enderror"></textarea>
+                            @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
 
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>

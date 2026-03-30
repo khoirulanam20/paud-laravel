@@ -7,6 +7,7 @@
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
+        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Sekolah / Cabang</h3><p class="section-subtitle">Kelola semua cabang daycare & PAUD di bawah yayasan Anda</p></div>
@@ -41,9 +42,21 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Tambah Sekolah / Cabang Baru</h3></div>
                     <div class="modal-body space-y-4">
-                        <div><label class="input-label">Nama Sekolah</label><input type="text" name="name" required class="input-field" placeholder="PAUD Pelita Kasih Cabang A"></div>
-                        <div><label class="input-label">Alamat Lengkap</label><textarea name="address" rows="2" class="input-field" placeholder="Jl. ..."></textarea></div>
-                        <div><label class="input-label">Nomor Telepon</label><input type="text" name="phone" class="input-field" placeholder="021-..."></div>
+                        <div>
+                            <label class="input-label">Nama Sekolah</label>
+                            <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="PAUD Pelita Kasih Cabang A" value="{{ old('name') }}">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Alamat Lengkap</label>
+                            <textarea name="address" rows="2" class="input-field @error('address') border-red-500 @enderror" placeholder="Jl. ...">{{ old('address') }}</textarea>
+                            @error('address')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Nomor Telepon</label>
+                            <input type="text" name="phone" class="input-field @error('phone') border-red-500 @enderror" placeholder="021-..." value="{{ old('phone') }}">
+                            @error('phone')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
                 </form>
@@ -56,9 +69,21 @@
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Sekolah</h3></div>
                     <div class="modal-body space-y-4">
-                        <div><label class="input-label">Nama Sekolah</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
-                        <div><label class="input-label">Alamat Lengkap</label><textarea name="address" x-model="editData.address" rows="2" class="input-field"></textarea></div>
-                        <div><label class="input-label">Nomor Telepon</label><input type="text" name="phone" x-model="editData.phone" class="input-field"></div>
+                        <div>
+                            <label class="input-label">Nama Sekolah</label>
+                            <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Alamat Lengkap</label>
+                            <textarea name="address" x-model="editData.address" rows="2" class="input-field @error('address') border-red-500 @enderror"></textarea>
+                            @error('address')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Nomor Telepon</label>
+                            <input type="text" name="phone" x-model="editData.phone" class="input-field @error('phone') border-red-500 @enderror">
+                            @error('phone')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>

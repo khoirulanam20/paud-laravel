@@ -15,7 +15,12 @@
             showDeleteModal: false,
             editData: {},
             deleteRoute: '',
-            openEdit(d) { this.editData = d; this.showEditModal = true; },
+            openEdit(d) { 
+                this.editData = d; 
+                this.editData.parent_name = d.parent_name;
+                this.editData.parent_email = d.user ? d.user.email : '';
+                this.showEditModal = true; 
+            },
             openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true; }
          }">
 
@@ -25,6 +30,7 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex flex-col gap-4 border-b" style="border-color: rgba(0,0,0,0.06);">
@@ -152,29 +158,40 @@
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak (Siswa)</div>
                         <div class="col-span-1">
                             <label class="input-label">Nama Lengkap Anak</label>
-                            <input type="text" name="name" required class="input-field" placeholder="Contoh: Budi Santoso">
+                            <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Contoh: Budi Santoso" value="{{ old('name') }}">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Penempatan Kelas</label>
-                            <select name="kelas_id" class="input-field"><option value="">-- Belum Ditugaskan --</option>
-                            @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
+                            <select name="kelas_id" class="input-field @error('kelas_id') border-red-500 @enderror">
+                                <option value="">-- Belum Ditugaskan --</option>
+                                @foreach($kelas as $k)<option value="{{ $k->id }}" @selected(old('kelas_id') == $k->id)>{{ $k->name }}</option>@endforeach
                             </select>
+                            @error('kelas_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">NIK Anak</label>
-                            <input type="text" name="nik" class="input-field" placeholder="NIK">
+                            <input type="text" name="nik" class="input-field @error('nik') border-red-500 @enderror" placeholder="NIK" value="{{ old('nik') }}">
+                            @error('nik')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Jenis Kelamin</label>
-                            <select name="jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+                            <select name="jenis_kelamin" class="input-field @error('jenis_kelamin') border-red-500 @enderror">
+                                <option value="">Pilih...</option>
+                                <option value="Laki-laki" @selected(old('jenis_kelamin') == 'Laki-laki')>Laki-laki</option>
+                                <option value="Perempuan" @selected(old('jenis_kelamin') == 'Perempuan')>Perempuan</option>
+                            </select>
+                            @error('jenis_kelamin')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Tanggal Lahir</label>
-                            <input type="date" name="dob" class="input-field">
+                            <input type="date" name="dob" class="input-field @error('dob') border-red-500 @enderror" value="{{ old('dob') }}">
+                            @error('dob')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Alamat Lengkap</label>
-                            <textarea name="alamat" class="input-field" rows="2" placeholder="Prov, Kab, Kec, Kel..."></textarea>
+                            <textarea name="alamat" class="input-field @error('alamat') border-red-500 @enderror" rows="2" placeholder="Prov, Kab, Kec, Kel...">{{ old('alamat') }}</textarea>
+                            @error('alamat')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Data Orang Tua</div>
@@ -198,11 +215,15 @@
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Akun Login Utama (Wali)</div>
                         <div class="col-span-1">
                             <label class="input-label">Nama Wali Untuk Login</label>
-                            <input type="text" name="parent_name" required class="input-field" placeholder="Nama lengkap">
+                            <input type="text" name="parent_name" required class="input-field @error('parent_name') border-red-500 @enderror" placeholder="Nama lengkap" value="{{ old('parent_name') }}">
+                            @error('parent_name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Email Wali</label>
-                            <input type="email" name="parent_email" required class="input-field" placeholder="email@contoh.com">
+                            <input type="email" name="parent_email" required class="input-field @error('parent_email') border-red-500 @enderror" placeholder="email@contoh.com" value="{{ old('parent_email') }}">
+                            @error('parent_email')
+                                <p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -225,29 +246,35 @@
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak (Siswa)</div>
                         <div class="col-span-1">
                             <label class="input-label">Nama Lengkap Anak</label>
-                            <input type="text" name="name" x-model="editData.name" required class="input-field">
+                            <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
+                            @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Pindah Kelas</label>
-                            <select name="kelas_id" x-model="editData.kelas_id" class="input-field"><option value="">-- Kosongkan Kelas --</option>
+                            <select name="kelas_id" x-model="editData.kelas_id" class="input-field @error('kelas_id') border-red-500 @enderror"><option value="">-- Kosongkan Kelas --</option>
                             @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
                             </select>
+                            @error('kelas_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">NIK Anak</label>
-                            <input type="text" name="nik" x-model="editData.nik" class="input-field">
+                            <input type="text" name="nik" x-model="editData.nik" class="input-field @error('nik') border-red-500 @enderror">
+                            @error('nik')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Jenis Kelamin</label>
-                            <select name="jenis_kelamin" x-model="editData.jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+                            <select name="jenis_kelamin" x-model="editData.jenis_kelamin" class="input-field @error('jenis_kelamin') border-red-500 @enderror"><option value="">Pilih...</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+                            @error('jenis_kelamin')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Tanggal Lahir</label>
-                            <input type="date" name="dob" x-model="editData.dob" class="input-field">
+                            <input type="date" name="dob" x-model="editData.dob" class="input-field @error('dob') border-red-500 @enderror">
+                            @error('dob')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Alamat Lengkap</label>
-                            <textarea name="alamat" x-model="editData.alamat" class="input-field" rows="2"></textarea>
+                            <textarea name="alamat" x-model="editData.alamat" class="input-field @error('alamat') border-red-500 @enderror" rows="2"></textarea>
+                            @error('alamat')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Data Orang Tua</div>
@@ -265,7 +292,22 @@
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Nama Ibu</label>
-                            <input type="text" name="nama_ibu" x-model="editData.nama_ibu" class="input-field">
+                            <input type="text" name="nama_ibu" x-model="editData.nama_ibu" class="input-field @error('nama_ibu') border-red-500 @enderror">
+                            @error('nama_ibu')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Akun Login Utama (Wali)</div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Wali Untuk Login</label>
+                            <input type="text" name="parent_name" x-model="editData.parent_name" required class="input-field @error('parent_name') border-red-500 @enderror">
+                            @error('parent_name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Email Wali</label>
+                            <input type="email" name="parent_email" x-model="editData.parent_email" required class="input-field @error('parent_email') border-red-500 @enderror">
+                            @error('parent_email')
+                                <p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
