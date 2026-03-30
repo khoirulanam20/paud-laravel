@@ -30,4 +30,9 @@ class Pengajar extends Model
     {
         return $this->belongsTo(Sekolah::class);
     }
+
+    public function kelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'kelas_pengajar');
+    }
 }

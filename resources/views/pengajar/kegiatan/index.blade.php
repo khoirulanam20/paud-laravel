@@ -34,6 +34,15 @@
             <form method="get" class="px-6 py-4 flex flex-wrap items-end gap-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <input type="hidden" name="year" value="{{ $year }}">
                 <input type="hidden" name="month" value="{{ $month }}">
+                <div class="min-w-[200px]">
+                    <label class="input-label">Filter Kelas</label>
+                    <select name="kelas_id" class="input-field" onchange="this.form.submit()">
+                        <option value="">Semua Kelas</option>
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="min-w-[220px]">
                     <label class="input-label">Filter matrikulasi</label>
                     <select name="matrikulasi_id" class="input-field" onchange="this.form.submit()">
@@ -58,6 +67,7 @@
                 <div class="modal-body max-h-[75vh] overflow-y-auto space-y-5">
                     <div class="bg-gray-50 rounded-xl p-4 border" style="border-color:rgba(0,0,0,0.06);">
                         <p class="text-sm" style="color:#5A5A5A;"><strong class="text-gray-800">Tanggal:</strong> <span x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span></p>
+                        <p class="text-sm mt-2" style="color:#5A5A5A;"><strong class="text-gray-800">Kelas:</strong> <span x-text="detailData.kelas_name || '-'"></span></p>
                         <p class="text-sm mt-2" style="color:#5A5A5A;" x-show="detailData.description"><strong class="text-gray-800">Deskripsi:</strong> <br><span x-text="detailData.description"></span></p>
                     </div>
                     <div>
@@ -113,9 +123,18 @@
                     <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Tanggal <span class="text-red-500">*</span></label><input type="date" name="date" required value="{{ date('Y-m-d') }}" class="input-field"></div>
-                            <div><label class="input-label">Foto Dokumentasi</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
+                            <div>
+                                <label class="input-label">Kelas <span class="text-red-500">*</span></label>
+                                <select name="kelas_id" required class="input-field">
+                                    <option value="">-- Pilih Kelas --</option>
+                                    @foreach($kelas as $k)
+                                        <option value="{{ $k->id }}">{{ $k->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         <div><label class="input-label">Judul Kegiatan <span class="text-red-500">*</span></label><input type="text" name="title" required class="input-field" placeholder="Contoh: Bermain Sensori"></div>
+                        <div><label class="input-label">Foto Dokumentasi</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
                         <div><label class="input-label">Deskripsi Kegiatan</label><textarea name="description" rows="3" class="input-field" placeholder="Ceritakan apa yang terjadi..."></textarea></div>
                         <div>
                             <label class="input-label">Kaitkan dengan Indikator Matrikulasi</label>
@@ -148,9 +167,18 @@
                     <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Tanggal <span class="text-red-500">*</span></label><input type="date" name="date" :value="editData.date ? editData.date.split('T')[0] : editData.date" required class="input-field"></div>
-                            <div><label class="input-label">Ganti Foto</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
+                            <div>
+                                <label class="input-label">Kelas <span class="text-red-500">*</span></label>
+                                <select name="kelas_id" required class="input-field" :value="editData.kelas_id || ''">
+                                    <option value="">-- Pilih Kelas --</option>
+                                    @foreach($kelas as $k)
+                                        <option value="{{ $k->id }}">{{ $k->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         <div><label class="input-label">Judul <span class="text-red-500">*</span></label><input type="text" name="title" x-model="editData.title" required class="input-field"></div>
+                        <div><label class="input-label">Ganti Foto</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
                         <div><label class="input-label">Deskripsi</label><textarea name="description" x-model="editData.description" rows="3" class="input-field"></textarea></div>
                         <div>
                             <label class="input-label">Indikator Matrikulasi</label>

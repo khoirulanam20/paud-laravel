@@ -22,4 +22,9 @@ class Kelas extends Model
     {
         return $this->hasMany(Anak::class);
     }
+
+    public function pengajars()
+    {
+        return $this->belongsToMany(Pengajar::class, 'kelas_pengajar');
+    }
 }

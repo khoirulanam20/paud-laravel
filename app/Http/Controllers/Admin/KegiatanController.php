@@ -18,7 +18,7 @@ class KegiatanController extends Controller
 
         $query = Kegiatan::query()
             ->where('sekolah_id', $sekolah_id)
-            ->with('pengajar')
+            ->with(['pengajar', 'kelas'])
             ->whereBetween('date', [$from, $to]);
 
         if ($request->filled('pengajar_id')) {
@@ -28,11 +28,20 @@ class KegiatanController extends Controller
             }
         }
 
+        $kelas = \App\Models\Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+
+        if ($request->filled('kelas_id')) {
+            $kid = $request->integer('kelas_id');
+            if ($kelas->contains('id', $kid)) {
+                $query->where('kelas_id', $kid);
+            }
+        }
+
         $kegiatans = $query->orderBy('date')->orderBy('id')->get();
         $calendarEvents = $kegiatans->map(fn (Kegiatan $k) => KegiatanCalendar::toReadonlyEvent($k, null, null))->values()->all();
 
         $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
-        return view('admin.kegiatan.index', compact('calendarEvents', 'year', 'month', 'pengajars'));
+        return view('admin.kegiatan.index', compact('calendarEvents', 'year', 'month', 'pengajars', 'kelas'));
     }
 }

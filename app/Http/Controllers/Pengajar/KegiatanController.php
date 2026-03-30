@@ -31,6 +31,18 @@ class KegiatanController extends Controller
             ->with(['matrikulasis', 'pencapaians.anak', 'pencapaians.matrikulasi'])
             ->whereBetween('date', [$from, $to]);
 
+        $kelas = $pengajar->kelas()->orderBy('name')->get();
+        $kelasIds = $kelas->pluck('id')->toArray();
+
+        if ($request->filled('kelas_id')) {
+            $kid = $request->integer('kelas_id');
+            if (in_array($kid, $kelasIds, true)) {
+                $query->where('kelas_id', $kid);
+            }
+        } else {
+            $query->whereIn('kelas_id', $kelasIds);
+        }
+
         if ($request->filled('matrikulasi_id')) {
             $mid = $request->integer('matrikulasi_id');
             if (Matrikulasi::where('id', $mid)->where('sekolah_id', $sekolah_id)->exists()) {
@@ -44,7 +56,7 @@ class KegiatanController extends Controller
         $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();
         $anaks = Anak::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
-        return view('pengajar.kegiatan.index', compact('calendarEvents', 'year', 'month', 'matrikulasis', 'anaks'));
+        return view('pengajar.kegiatan.index', compact('calendarEvents', 'year', 'month', 'matrikulasis', 'anaks', 'kelas'));
     }
 
     public function store(Request $request)
@@ -54,15 +66,18 @@ class KegiatanController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'kelas_id' => 'required|exists:kelas,id',
             'matrikulasi_ids' => 'nullable|array',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
 
         $pengajar = $this->getPengajar();
+        abort_if(!$pengajar->kelas()->where('kelas.id', $request->kelas_id)->exists(), 403);
 
         $data = [
             'sekolah_id' => $pengajar->sekolah_id,
             'pengajar_id' => $pengajar->id,
+            'kelas_id' => $request->kelas_id,
             'date' => $request->date,
             'title' => $request->title,
             'description' => $request->description,
@@ -91,14 +106,18 @@ class KegiatanController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
+            'kelas_id' => 'required|exists:kelas,id',
             'matrikulasi_ids' => 'nullable|array',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
+
+        abort_if(!$pengajar->kelas()->where('kelas.id', $request->kelas_id)->exists(), 403);
 
         $data = [
             'date' => $request->date,
             'title' => $request->title,
             'description' => $request->description,
+            'kelas_id' => $request->kelas_id,
         ];
 
         if ($request->hasFile('photo')) {

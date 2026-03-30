@@ -16,7 +16,7 @@ class PengajarController extends Controller
     public function index()
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user.kelas'])->latest()->paginate(10);
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->latest()->paginate(10);
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
         $pendidikanOptions = PendidikanTerakhir::options();
         foreach ($pengajars as $p) {
@@ -40,7 +40,8 @@ class PengajarController extends Controller
             'phone' => 'nullable|string|max:50',
             'pendidikan' => ['nullable', Rule::in(PendidikanTerakhir::options())],
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
-            'kelas_id' => 'nullable|exists:kelas,id',
+            'kelas_id' => 'nullable|array',
+            'kelas_id.*' => 'exists:kelas,id',
         ]);
 
         $sekolah_id = auth()->user()->sekolah_id;
@@ -50,11 +51,10 @@ class PengajarController extends Controller
             'email' => $request->email,
             'password' => Hash::make('password123'),
             'sekolah_id' => $sekolah_id,
-            'kelas_id' => $request->kelas_id,
         ]);
         $user->assignRole('Pengajar');
 
-        Pengajar::create([
+        $pengajar = Pengajar::create([
             'user_id' => $user->id,
             'sekolah_id' => $sekolah_id,
             'name' => $request->name,
@@ -65,6 +65,10 @@ class PengajarController extends Controller
             'pendidikan' => $request->pendidikan,
             'jenis_kelamin' => $request->jenis_kelamin,
         ]);
+
+        if ($request->has('kelas_id')) {
+            $pengajar->kelas()->sync($request->kelas_id);
+        }
 
         return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil ditambahkan. Password default: password123');
     }
@@ -86,7 +90,8 @@ class PengajarController extends Controller
             'phone' => 'nullable|string|max:50',
             'pendidikan' => ['nullable', Rule::in($pendidikanPilihan)],
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
-            'kelas_id' => 'nullable|exists:kelas,id',
+            'kelas_id' => 'nullable|array',
+            'kelas_id.*' => 'exists:kelas,id',
         ]);
 
         $pengajar->update([
@@ -102,8 +107,9 @@ class PengajarController extends Controller
         $user = $pengajar->user;
         $user->update([
             'name' => $request->name,
-            'kelas_id' => $request->kelas_id,
         ]);
+
+        $pengajar->kelas()->sync($request->kelas_id ?? []);
 
         return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil diperbarui.');
     }

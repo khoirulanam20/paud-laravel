@@ -36,14 +36,21 @@ class KegiatanController extends Controller
 
         $query = Kegiatan::query()
             ->where('sekolah_id', $sekolah_id)
-            ->with(['pengajar', 'pencapaians.anak', 'pencapaians.matrikulasi'])
+            ->with(['pengajar', 'kelas', 'pencapaians.anak', 'pencapaians.matrikulasi'])
             ->whereBetween('date', [$from, $to]);
+
+        $anakKelasIds = $anaks->pluck('kelas_id')->filter()->unique()->toArray();
 
         if (! $semuaSekolah) {
             if ($anakId) {
-                $query->whereHas('pencapaians', fn ($q) => $q->where('anak_id', $anakId));
-            } elseif ($anakIds !== []) {
-                $query->whereHas('pencapaians', fn ($q) => $q->whereIn('anak_id', $anakIds));
+                $specificAnak = $anaks->firstWhere('id', $anakId);
+                if ($specificAnak && $specificAnak->kelas_id) {
+                    $query->where('kelas_id', $specificAnak->kelas_id);
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            } elseif ($anakKelasIds !== []) {
+                $query->whereIn('kelas_id', $anakKelasIds);
             } else {
                 $query->whereRaw('1 = 0');
             }

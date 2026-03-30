@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Data Pengajar</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{ kelas_ids: [] }, deleteRoute:'', openEdit(d){this.editData=d; this.editData.kelas_ids = d.kelas ? d.kelas.map(k => k.id) : []; this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
@@ -22,8 +22,12 @@
                             <td><span class="badge badge-teal">{{ $p->user->email ?? '-' }}</span></td>
                             <td>{{ $p->jabatan ?? '-' }}</td>
                             <td>
-                                @if($p->user && $p->user->kelas)
-                                    <span class="badge badge-teal font-medium">{{ $p->user->kelas->name }}</span>
+                                @if($p->kelas && $p->kelas->count() > 0)
+                                    <div class="flex flex-wrap gap-1">
+                                    @foreach($p->kelas as $k)
+                                        <span class="badge badge-teal font-medium">{{ $k->name }}</span>
+                                    @endforeach
+                                    </div>
                                 @else
                                     <span class="text-xs italic" style="color:#9E9790;">Tanpa Kelas</span>
                                 @endif
@@ -53,10 +57,16 @@
                             <div><label class="input-label">Alamat Email Valid</label><input type="email" name="email" required class="input-field" placeholder="email@sekolah.com"></div>
                             <div>
                                 <label class="input-label">Penempatan Kelas</label>
-                                <select name="kelas_id" class="input-field">
-                                    <option value="">-- Tidak Ditugaskan (Umum) --</option>
-                                    @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
-                                </select>
+                                <div class="mt-1 rounded-xl border p-3 max-h-32 overflow-y-auto bg-gray-50 space-y-2" style="border-color:rgba(0,0,0,0.1);">
+                                    @forelse($kelas as $k)
+                                    <label class="flex items-start gap-2.5 cursor-pointer">
+                                        <input type="checkbox" name="kelas_id[]" value="{{ $k->id }}" class="mt-1 accent-teal-600 rounded">
+                                        <span class="text-sm font-medium" style="color:#2C2C2C;">{{ $k->name }}</span>
+                                    </label>
+                                    @empty
+                                    <span class="text-xs italic text-gray-400">Belum ada kelas</span>
+                                    @endforelse
+                                </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -86,11 +96,17 @@
                     <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
                         <div><label class="input-label">Nama Lengkap</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
                         <div>
-                            <label class="input-label">Pindah Penempatan Kelas</label>
-                            <select name="kelas_id" class="input-field" :value="editData.user ? editData.user.kelas_id : ''">
-                                <option value="">-- Lepas Jabatan Kelas --</option>
-                                @foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach
-                            </select>
+                            <label class="input-label">Penempatan Kelas</label>
+                            <div class="mt-1 rounded-xl border p-3 max-h-40 overflow-y-auto bg-gray-50 grid grid-cols-1 sm:grid-cols-2 gap-2" style="border-color:rgba(0,0,0,0.1);">
+                                @forelse($kelas as $k)
+                                <label class="flex items-start gap-2.5 cursor-pointer">
+                                    <input type="checkbox" name="kelas_id[]" value="{{ $k->id }}" x-model="editData.kelas_ids" class="mt-1 accent-teal-600 rounded">
+                                    <span class="text-sm font-medium" style="color:#2C2C2C;">{{ $k->name }}</span>
+                                </label>
+                                @empty
+                                <span class="text-xs italic text-gray-400">Belum ada data kelas</span>
+                                @endforelse
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">NIK KTP</label><input type="text" name="nik" x-model="editData.nik" class="input-field"></div>

@@ -18,22 +18,14 @@ class KelasController extends Controller
 
         $this->ensureKelasPageRolesExist();
 
-        // Hindari $query->role() di dalam eager load (rawan error SQL di beberapa server).
-        // User dengan kelas_id = kelas ini seharusnya wali/admin kelas.
+        // User dengan kelas_id = kelas ini seharusnya wali/admin kelas (Sudah dihapus fiturnya)
         $kelasList = Kelas::query()
             ->where('sekolah_id', $sekolah_id)
-            ->with(['users' => fn ($q) => $q->orderBy('name')])
             ->withCount('anaks')
             ->latest()
             ->paginate(10);
 
-        $pengajars = User::query()
-            ->where('sekolah_id', $sekolah_id)
-            ->whereHas('roles', fn ($q) => $q->where('name', 'Pengajar')->where('guard_name', 'web'))
-            ->orderBy('name')
-            ->get();
-
-        return view('admin.kelas.index', compact('kelasList', 'pengajars'));
+        return view('admin.kelas.index', compact('kelasList'));
     }
 
     public function store(Request $request)
@@ -44,7 +36,6 @@ class KelasController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'admin_id' => 'nullable|exists:users,id',
         ]);
 
         $newKelas = Kelas::create([
@@ -52,16 +43,6 @@ class KelasController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-
-        if ($request->filled('admin_id')) {
-            $admin = User::find($request->admin_id);
-            if ($admin && (int) $admin->sekolah_id === (int) $sekolah_id) {
-                $this->ensureAdminKelasRoleExists();
-                $admin->kelas_id = $newKelas->id;
-                $admin->assignRole('Admin Kelas');
-                $admin->save();
-            }
-        }
 
         return redirect()->route('admin.kelas.index')->with('success', 'Kelas berhasil dibuat.');
     }
@@ -77,34 +58,12 @@ class KelasController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'admin_id' => 'nullable|exists:users,id',
         ]);
 
         $kelas->update([
             'name' => $request->name,
             'description' => $request->description,
         ]);
-
-        $oldAdmin = User::role('Admin Kelas')->where('kelas_id', $kelas->id)->first();
-        $oldAdminId = $oldAdmin?->id;
-        $newAdminId = $request->filled('admin_id') ? (int) $request->admin_id : null;
-
-        if ($oldAdminId !== $newAdminId) {
-            if ($oldAdmin) {
-                $oldAdmin->kelas_id = null;
-                $oldAdmin->removeRole('Admin Kelas');
-                $oldAdmin->save();
-            }
-            if ($newAdminId) {
-                $newAdmin = User::find($newAdminId);
-                if ($newAdmin && (int) $newAdmin->sekolah_id === (int) $sekolah_id) {
-                    $this->ensureAdminKelasRoleExists();
-                    $newAdmin->kelas_id = $kelas->id;
-                    $newAdmin->assignRole('Admin Kelas');
-                    $newAdmin->save();
-                }
-            }
-        }
 
         return redirect()->route('admin.kelas.index')->with('success', 'Data Kelas berhasil diperbarui.');
     }

@@ -12,11 +12,17 @@ class Kegiatan extends Model
     protected $fillable = [
         'sekolah_id',
         'pengajar_id',
+        'kelas_id',
         'date',
         'title',
         'description',
         'photo',
     ];
+
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class);
+    }
 
     public function sekolah(): BelongsTo
     {

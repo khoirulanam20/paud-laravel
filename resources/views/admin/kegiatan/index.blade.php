@@ -35,6 +35,15 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="min-w-[200px]">
+                    <label class="input-label">Filter Kelas</label>
+                    <select name="kelas_id" class="input-field" onchange="this.form.submit()">
+                        <option value="">Semua Kelas</option>
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </form>
             <div class="p-4 md:p-6">
                 <x-jurnal-kalender :events="$calendarEvents" :year="$year" :month="$month" />
@@ -47,6 +56,7 @@
                 <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
                     <p class="text-sm" style="color:#5A5A5A;"><strong>Tanggal:</strong> <span x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span></p>
                     <p class="text-sm" style="color:#5A5A5A;"><strong>Pengajar:</strong> <span x-text="detailData.pengajar_name || '-'"></span></p>
+                    <p class="text-sm" style="color:#5A5A5A;"><strong>Kelas:</strong> <span x-text="detailData.kelas_name || '-'"></span></p>
                     <div x-show="detailData.photo_url" class="rounded-xl overflow-hidden border" style="border-color:rgba(0,0,0,0.08);">
                         <img :src="detailData.photo_url" alt="" class="w-full max-h-64 object-cover">
                     </div>

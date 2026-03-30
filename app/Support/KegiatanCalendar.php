@@ -52,13 +52,14 @@ class KegiatanCalendar
      */
     public static function toPengajarEvent(Kegiatan $k): array
     {
-        $k->loadMissing(['pencapaians.anak', 'pencapaians.matrikulasi', 'matrikulasis']);
+        $k->loadMissing(['pencapaians.anak', 'pencapaians.matrikulasi', 'matrikulasis', 'kelas']);
 
         $detail = [
             'id' => $k->id,
             'title' => $k->title,
             'date' => self::formatDate($k),
             'description' => $k->description,
+            'kelas_name' => $k->kelas->name ?? '-',
             'pencapaians' => $k->pencapaians->map(function ($p) {
                 return [
                     'id' => $p->id,
@@ -87,6 +88,7 @@ class KegiatanCalendar
                     'date' => self::formatDate($k),
                     'title' => $k->title,
                     'description' => $k->description,
+                    'kelas_id' => $k->kelas_id,
                     'matrikulasi_ids' => $k->matrikulasis->pluck('id')->all(),
                 ],
             ],
@@ -98,13 +100,13 @@ class KegiatanCalendar
      * @param  list<int>|null  $limitAnakIds  Jika subset null, filter pencapaian ke anak_id dalam daftar
      * @return array<string, mixed>
      */
-    public static function toReadonlyEvent(Kegiatan $k, ?array $pencapaianSubset = null, ?array $limitAnakIds = null): array
+    public static function toReadonlyEvent(Kegiatan $k, ?array $pencapaiansSubset = null, ?array $limitAnakIds = null): array
     {
-        $k->loadMissing(['pengajar', 'pencapaians.anak', 'pencapaians.matrikulasi']);
+        $k->loadMissing(['pengajar', 'kelas', 'pencapaians.anak', 'pencapaians.matrikulasi']);
 
         $pencapaians = $k->pencapaians;
-        if ($pencapaianSubset !== null) {
-            $pencapaians = $pencapaians->whereIn('id', $pencapaianSubset);
+        if ($pencapaiansSubset !== null) {
+            $pencapaians = $pencapaians->whereIn('id', $pencapaiansSubset);
         } elseif ($limitAnakIds !== null && $limitAnakIds !== []) {
             $pencapaians = $pencapaians->whereIn('anak_id', $limitAnakIds);
         }
@@ -116,6 +118,7 @@ class KegiatanCalendar
             'description' => $k->description,
             'photo_url' => $k->photo ? Storage::url($k->photo) : null,
             'pengajar_name' => $k->pengajar->name ?? '-',
+            'kelas_name' => $k->kelas->name ?? '-',
             'pencapaians' => $pencapaians->map(function ($p) {
                 return [
                     'id' => $p->id,

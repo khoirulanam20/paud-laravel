@@ -15,7 +15,7 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Kelas</th><th>Admin Kelas</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Kelas</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($kelasList as $k)
                         <tr>
@@ -23,19 +23,7 @@
                                 <span class="font-semibold" style="color:#2C2C2C;">{{ $k->name }}</span>
                                 @if($k->description)<div class="text-xs text-gray-500 mt-0.5">{{ $k->description }}</div>@endif
                             </td>
-                            <td>
-                                @if($k->users->count() > 0)
-                                    <div class="flex items-center gap-2">
-                                        <div class="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs">{{ substr($k->users->first()->name, 0, 1) }}</div>
-                                        <div>
-                                            <div class="font-medium text-sm">{{ $k->users->first()->name }}</div>
-                                            <div class="text-xs text-gray-500">{{ $k->users->first()->email }}</div>
-                                        </div>
-                                    </div>
-                                @else
-                                    <span class="text-xs italic text-gray-400">Belum ada Admin</span>
-                                @endif
-                            </td>
+
                             <td><span class="badge badge-teal">{{ $k->anaks_count ?? 0 }} Siswa</span></td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
                                 @php
@@ -43,7 +31,6 @@
                                         'id' => $k->id,
                                         'name' => $k->name,
                                         'description' => $k->description,
-                                        'users' => $k->users->map(fn ($u) => ['id' => $u->id])->values()->all(),
                                     ];
                                 @endphp
                                 <button type="button" @click="openEdit(@js($kelasEditPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
@@ -51,7 +38,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
+                        <tr><td colspan="3" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -64,23 +51,13 @@
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('admin.kelas.store') }}" method="POST">
                     @csrf
-                    <div class="modal-header"><h3 class="section-title">Buat Kelas & Akun Admin Baru</h3></div>
+                    <div class="modal-header"><h3 class="section-title">Buat Kelas Baru</h3></div>
                     <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
                         <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Kelas</div>
                         <div><label class="input-label">Nama Kelas</label><input type="text" name="name" required class="input-field" placeholder="Contoh: Kelas TK A - Mawar"></div>
                         <div><label class="input-label">Deskripsi (Opsional)</label><textarea name="description" class="input-field" rows="2"></textarea></div>
                         
-                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-4 border-b pb-1">Distribusi Admin Kelas</div>
-                        <p class="text-xs text-gray-500 mb-2">Pilih akun Guru/Pengajar yang akan ditugaskan sebagai Admin untuk Kelas ini.</p>
-                        <div>
-                            <label class="input-label">Pilih Admin Kelas (Dari Data Pengajar)</label>
-                            <select name="admin_id" class="input-field">
-                                <option value="">-- Tanpa Admin --</option>
-                                @foreach($pengajars as $guru)
-                                    <option value="{{ $guru->id }}">{{ $guru->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Buat Kelas</button></div>
                 </form>
@@ -96,16 +73,7 @@
                     <div class="modal-body space-y-4">
                         <div><label class="input-label">Nama Kelas</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
                         <div><label class="input-label">Deskripsi</label><textarea name="description" x-model="editData.description" rows="2" class="input-field"></textarea></div>
-                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-4 border-b pb-1">Pindah / Ubah Admin Kelas</div>
-                        <div>
-                            <label class="input-label">Pilih Admin Kelas (Dari Data Pengajar)</label>
-                            <select name="admin_id" class="input-field" :value="editData.users && editData.users.length > 0 ? editData.users[0].id : ''">
-                                <option value="">-- Kosongkan / Cabut Admin --</option>
-                                @foreach($pengajars as $guru)
-                                    <option value="{{ $guru->id }}">{{ $guru->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>
