@@ -1,12 +1,23 @@
 @php
-    $maxBottomItems = 4; // Max items from roleNavItems (total 5 with Dashboard)
+    $flatItems = [];
+    foreach($roleNavItems as $nav) {
+        if(isset($nav['group'])) {
+            foreach($nav['items'] as $item) {
+                $flatItems[] = $item;
+            }
+        } else {
+            $flatItems[] = $nav;
+        }
+    }
+
+    $maxBottomItems = 4; // Max items from flatItems (total 5 with Dashboard)
     
-    if (count($roleNavItems) <= $maxBottomItems) {
-        $bottomItems = $roleNavItems;
+    if (count($flatItems) <= $maxBottomItems) {
+        $bottomItems = $flatItems;
         $moreItems = [];
     } else {
-        $bottomItems = array_slice($roleNavItems, 0, $maxBottomItems - 1); // take 3
-        $moreItems = array_slice($roleNavItems, $maxBottomItems - 1); // take the rest
+        $bottomItems = array_slice($flatItems, 0, $maxBottomItems - 1); // take 3
+        $moreItems = array_slice($flatItems, $maxBottomItems - 1); // take the rest
     }
 @endphp
 

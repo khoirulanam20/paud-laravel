@@ -7,17 +7,27 @@
     </x-slot>
 
     @php
-        $kegiatanMatrikulasi = [];
+        $kegiatanData = [];
         foreach ($kegiatans as $kg) {
-            $kegiatanMatrikulasi[$kg->id] = $kg->matrikulasis->map(fn ($m) => [
-                'id' => $m->id,
-                'aspek' => $m->aspek,
-                'indicator' => $m->indicator,
-                'label' => ($m->aspek ? $m->aspek.': ' : '').$m->indicator,
-            ])->values()->all();
+            $kegiatanData[$kg->id] = [
+                'id' => $kg->id,
+                'kelas_id' => $kg->kelas_id,
+                'title' => $kg->title,
+                'date_label' => \Carbon\Carbon::parse($kg->date)->format('d M Y'),
+                'matrikulasis' => $kg->matrikulasis->map(fn ($m) => [
+                    'id' => $m->id,
+                    'aspek' => $m->aspek,
+                    'indicator' => $m->indicator,
+                    'label' => ($m->aspek ? $m->aspek.': ' : '').$m->indicator,
+                ])->values()->all()
+            ];
+        }
+        $anakMap = [];
+        foreach($anaks as $a) {
+            $anakMap[$a->id] = ['id' => $a->id, 'kelas_id' => $a->kelas_id];
         }
         $flags = JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
-        $payloadJson = json_encode(['kegiatanMap' => $kegiatanMatrikulasi, 'editBundles' => $editBundles], $flags);
+        $payloadJson = json_encode(['kegiatanData' => $kegiatanData, 'anakMap' => $anakMap, 'editBundles' => $editBundles], $flags);
         if ($payloadJson === false) {
             $payloadJson = '{}';
         }
@@ -31,8 +41,7 @@
             deleteBundleAnak: '',
             deleteBundleKeg: '',
             payload: {},
-            selectedKegiatanId: '',
-            selectedKegiatanIdEdit: '',
+            selectedAnakId: '',
             editBundleKey: null,
             editNilai: {},
             editCatatan: {},
@@ -41,13 +50,25 @@
             init() {
                 const el = document.getElementById('pencapaian-payload-json');
                 if (el) {
-                    try { this.payload = JSON.parse(el.textContent); } catch (e) { this.payload = { kegiatanMap: {}, editBundles: {} }; }
+                    try { this.payload = JSON.parse(el.textContent); } catch (e) { this.payload = { kegiatanData: {}, anakMap: {}, editBundles: {} }; }
                 }
             },
-            get kegiatanMap() { return this.payload.kegiatanMap || {}; },
+            get kegiatanData() { return this.payload.kegiatanData || {}; },
+            get anakMap() { return this.payload.anakMap || {}; },
             get editBundles() { return this.payload.editBundles || {}; },
-            get matrikulasiOptions() { return this.kegiatanMap[this.selectedKegiatanId] || []; },
-            get matrikulasiOptionsEdit() { return this.kegiatanMap[this.selectedKegiatanIdEdit] || []; },
+            
+            // Filtered options for Create Modal
+            get filteredKegiatans() {
+                if (!this.selectedAnakId) return [];
+                const anakKelas = this.anakMap[this.selectedAnakId]?.kelas_id;
+                return Object.values(this.kegiatanData).filter(k => k.kelas_id == anakKelas);
+            },
+            get matrikulasiOptions() { 
+                return (this.kegiatanData[this.selectedKegiatanId] || {}).matrikulasis || []; 
+            },
+            get matrikulasiOptionsEdit() { 
+                return (this.kegiatanData[this.selectedKegiatanIdEdit] || {}).matrikulasis || []; 
+            },
             resetCreateMatrices() {
                 this.createNilai = {};
                 this.createCatatan = {};
@@ -58,6 +79,7 @@
                 });
             },
             openCreateModal() {
+                this.selectedAnakId = '';
                 this.selectedKegiatanId = '';
                 this.createNilai = {};
                 this.createCatatan = {};
@@ -70,7 +92,7 @@
                 this.selectedKegiatanIdEdit = String(b.kegiatan_id);
                 this.editNilai = {};
                 this.editCatatan = {};
-                const opts = this.kegiatanMap[this.selectedKegiatanIdEdit] || [];
+                const opts = (this.kegiatanData[this.selectedKegiatanIdEdit] || {}).matrikulasis || [];
                 opts.forEach(opt => {
                     const id = String(opt.id);
                     this.editNilai[id] = b.nilai[id] ?? b.nilai[opt.id] ?? '';
@@ -107,7 +129,16 @@
                         <label class="input-label" for="penc-filter-sampai">Sampai</label>
                         <input id="penc-filter-sampai" type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full min-w-0" required>
                     </div>
-                    <div class="sm:col-span-2 lg:col-span-3 min-w-0">
+                    <div class="sm:col-span-2 lg:col-span-2 min-w-0">
+                        <label class="input-label" for="penc-filter-kelas">Kelas</label>
+                        <select id="penc-filter-kelas" name="filter_kelas_id" class="input-field w-full min-w-0">
+                            <option value="">Semua kelas</option>
+                            @foreach($availableKelas as $k)
+                                <option value="{{ $k->id }}" @selected($filterKelasId === (int) $k->id)>{{ $k->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-2 min-w-0">
                         <label class="input-label" for="penc-filter-anak">Anak</label>
                         <select id="penc-filter-anak" name="filter_anak_id" class="input-field w-full min-w-0">
                             <option value="">Semua anak</option>
@@ -116,7 +147,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="sm:col-span-2 lg:col-span-3 min-w-0">
+                    <div class="sm:col-span-2 lg:col-span-2 min-w-0">
                         <label class="input-label" for="penc-filter-aspek">Aspek</label>
                         <select id="penc-filter-aspek" name="aspek" class="input-field w-full min-w-0">
                             <option value="">Semua aspek</option>
@@ -144,9 +175,13 @@
                         {{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }} – {{ \Carbon\Carbon::parse($tanggalSampai)->translatedFormat('d M Y') }}
                     @endif
                 </span>
+                @if($filterKelasId)
+                    <span class="text-black/25 hidden sm:inline">·</span>
+                    <span>Kelas: {{ $availableKelas->firstWhere('id', $filterKelasId)?->name ?? 'Terpilih' }}</span>
+                @endif
                 @if($filterAnakId)
                     <span class="text-black/25 hidden sm:inline">·</span>
-                    <span>{{ $anaks->firstWhere('id', $filterAnakId)?->name ?? 'Anak terpilih' }}</span>
+                    <span>Anak: {{ $anaks->firstWhere('id', $filterAnakId)?->name ?? 'Anak terpilih' }}</span>
                 @endif
                 @if($filterAspekRaw !== '')
                     <span class="text-black/25 hidden sm:inline">·</span>
@@ -232,18 +267,18 @@
                     <div class="modal-body space-y-4 max-h-[75vh] overflow-y-auto">
                         <div>
                             <label class="input-label">Anak <span class="text-red-500">*</span></label>
-                            <select name="anak_id" required class="input-field">
+                            <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''">
                                 <option value="">— Pilih —</option>
                                 @foreach($anaks as $a)<option value="{{ $a->id }}">{{ $a->name }}</option>@endforeach
                             </select>
                         </div>
-                        <div>
+                        <div x-show="selectedAnakId">
                             <label class="input-label">Kegiatan <span class="text-red-500">*</span></label>
                             <select name="kegiatan_id" required class="input-field" x-model="selectedKegiatanId" @change="resetCreateMatrices()">
                                 <option value="">— Pilih —</option>
-                                @foreach($kegiatans as $k)
-                                    <option value="{{ $k->id }}">{{ \Carbon\Carbon::parse($k->date)->format('d M Y') }} — {{ $k->title }}</option>
-                                @endforeach
+                                <template x-for="k in filteredKegiatans" :key="k.id">
+                                    <option :value="k.id" x-text="k.date_label + ' — ' + k.title"></option>
+                                </template>
                             </select>
                             <p class="text-xs mt-1" style="color:#9E9790;">Nilai wajib untuk setiap indikator yang terhubung ke kegiatan ini.</p>
                         </div>

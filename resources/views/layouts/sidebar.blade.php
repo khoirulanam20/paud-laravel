@@ -21,17 +21,35 @@
             </svg>
             Dashboard
         </a>
-        @foreach ($roleNavItems as $item)
-        <a href="{{ route($item['route']) }}" 
-           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs($item['pattern']) ? 'bg-[#1A6B6B] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-black/5' }}">
-            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
-            </svg>
-            {{ $item['label'] }}
-            @if(!empty($item['badge']) && $item['badge'] > 0)
-            <span class="ml-auto inline-flex items-center justify-center h-5 px-2 rounded-full text-white text-[10px] font-bold" style="background:#FF8C42;">{{ $item['badge'] }}</span>
+        @foreach ($roleNavItems as $nav)
+            @if(isset($nav['group']))
+                <div class="px-3 pt-4 pb-2 text-[10px] font-bold text-[#9E9790] uppercase tracking-wider">
+                    {{ $nav['group'] }}
+                </div>
+                @foreach($nav['items'] as $item)
+                    <a href="{{ route($item['route']) }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs($item['pattern']) ? 'bg-[#1A6B6B] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-black/5' }}">
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
+                        </svg>
+                        <span class="truncate">{{ $item['label'] }}</span>
+                        @if(!empty($item['badge']) && $item['badge'] > 0)
+                        <span class="ml-auto inline-flex items-center justify-center h-5 px-2 rounded-full text-white text-[10px] font-bold" style="background:#FF8C42;">{{ $item['badge'] }}</span>
+                        @endif
+                    </a>
+                @endforeach
+            @else
+                <a href="{{ route($nav['route']) }}" 
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs($nav['pattern']) ? 'bg-[#1A6B6B] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-black/5' }}">
+                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $nav['icon'] }}" />
+                    </svg>
+                    <span class="truncate">{{ $nav['label'] }}</span>
+                    @if(!empty($nav['badge']) && $nav['badge'] > 0)
+                    <span class="ml-auto inline-flex items-center justify-center h-5 px-2 rounded-full text-white text-[10px] font-bold" style="background:#FF8C42;">{{ $nav['badge'] }}</span>
+                    @endif
+                </a>
             @endif
-        </a>
         @endforeach
     </div>
 </aside>

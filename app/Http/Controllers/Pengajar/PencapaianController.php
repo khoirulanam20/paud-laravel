@@ -28,9 +28,9 @@ class PencapaianController extends Controller
     private function assertAnakDalamLingkupPencapaian(Anak $anak, Pengajar $pengajar): void
     {
         abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
-        $kelasId = auth()->user()->kelas_id;
-        if ($kelasId !== null) {
-            abort_if((int) $anak->kelas_id !== (int) $kelasId, 403);
+        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        if (!empty($kelasIds)) {
+            abort_if(!in_array((int) $anak->kelas_id, $kelasIds, true), 403);
         }
     }
 
@@ -43,8 +43,9 @@ class PencapaianController extends Controller
         [$tanggalDari, $tanggalSampai] = $range;
 
         $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
-        if (auth()->user()->kelas_id) {
-            $anakQuery->where('kelas_id', auth()->user()->kelas_id);
+        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        if (!empty($kelasIds)) {
+            $anakQuery->whereIn('kelas_id', $kelasIds);
         }
         $anaks = $anakQuery->get();
 
@@ -52,18 +53,25 @@ class PencapaianController extends Controller
         $filterAspek = $filterAspekRaw === '' ? null : $filterAspekRaw;
 
         $hariQuery = Pencapaian::query()
-            ->where('pengajar_id', $pengajar->id)
             ->whereDate('created_at', '>=', $tanggalDari)
             ->whereDate('created_at', '<=', $tanggalSampai)
             ->with(['anak', 'kegiatan.matrikulasis', 'matrikulasi'])
             ->orderByDesc('updated_at');
-        if (auth()->user()->kelas_id) {
-            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', auth()->user()->kelas_id));
+
+        if (!empty($kelasIds)) {
+            $hariQuery->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
+        } else {
+            // Jika guru belum punya kelas, pastikan dia hanya melihat pencapaian dari sekolahnya
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
         }
         if ($request->filled('filter_anak_id')) {
             $aid = (int) $request->input('filter_anak_id');
             abort_unless($anaks->contains(fn ($a) => (int) $a->id === $aid), 403);
             $hariQuery->where('anak_id', $aid);
+        }
+        if ($request->filled('filter_kelas_id')) {
+            $kid = (int) $request->input('filter_kelas_id');
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', $kid));
         }
         $hariAll = $hariQuery->get();
         $groupsAll = $hariAll->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
@@ -112,7 +120,7 @@ class PencapaianController extends Controller
             ];
         }
 
-        $kegiatans = Kegiatan::where('pengajar_id', $pengajar->id)
+        $kegiatans = Kegiatan::whereIn('kelas_id', $kelasIds)
             ->with('matrikulasis')
             ->orderBy('date', 'desc')
             ->get();
@@ -126,15 +134,19 @@ class PencapaianController extends Controller
             ->pluck('aspek');
 
         $filterAnakId = $request->filled('filter_anak_id') ? (int) $request->input('filter_anak_id') : null;
+        $filterKelasId = $request->filled('filter_kelas_id') ? (int) $request->input('filter_kelas_id') : null;
+        $availableKelas = $pengajar->kelas()->orderBy('name')->get();
 
         return view('pengajar.pencapaian.index', compact(
             'groupedPencapaian',
             'editBundles',
             'anaks',
             'kegiatans',
+            'availableKelas',
             'tanggalDari',
             'tanggalSampai',
             'filterAnakId',
+            'filterKelasId',
             'filterAspek',
             'filterAspekRaw',
             'aspekPilihan',
@@ -155,9 +167,11 @@ class PencapaianController extends Controller
             'photo' => 'nullable|image|max:2048',
         ]);
 
+        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+
         $kegiatan = Kegiatan::query()
             ->where('id', $request->integer('kegiatan_id'))
-            ->where('pengajar_id', $pengajar->id)
+            ->whereIn('kelas_id', $kelasIds)
             ->with('matrikulasis')
             ->firstOrFail();
 
@@ -170,6 +184,12 @@ class PencapaianController extends Controller
 
         $anak = Anak::findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
+
+        if ($anak->kelas_id !== $kegiatan->kelas_id) {
+            return back()
+                ->withInput()
+                ->withErrors(['kegiatan_id' => 'Data Siswa dan Jurnal Kegiatan harus berada di kelas yang sama.']);
+        }
 
         $nilaiInput = $request->input('nilai', []);
         foreach ($matIds as $mid) {
@@ -186,7 +206,6 @@ class PencapaianController extends Controller
             $existing = Pencapaian::query()
                 ->where('anak_id', $anak->id)
                 ->where('kegiatan_id', $kegiatan->id)
-                ->where('pengajar_id', $pengajar->id)
                 ->whereNotNull('photo')
                 ->first();
             if ($existing?->photo) {
@@ -197,7 +216,6 @@ class PencapaianController extends Controller
             $photoPath = Pencapaian::query()
                 ->where('anak_id', $anak->id)
                 ->where('kegiatan_id', $kegiatan->id)
-                ->where('pengajar_id', $pengajar->id)
                 ->whereNotNull('photo')
                 ->value('photo');
         }
@@ -225,7 +243,6 @@ class PencapaianController extends Controller
         Pencapaian::query()
             ->where('anak_id', $anak->id)
             ->where('kegiatan_id', $kegiatan->id)
-            ->where('pengajar_id', $pengajar->id)
             ->whereNotIn('matrikulasi_id', $matIds)
             ->whereNotNull('matrikulasi_id')
             ->delete();
@@ -248,7 +265,6 @@ class PencapaianController extends Controller
             $stillUsed = Pencapaian::query()
                 ->where('anak_id', $pencapaian->anak_id)
                 ->where('kegiatan_id', $pencapaian->kegiatan_id)
-                ->where('pengajar_id', $pengajar->id)
                 ->where('id', '!=', $pencapaian->id)
                 ->where('photo', $pencapaian->photo)
                 ->exists();
@@ -272,15 +288,18 @@ class PencapaianController extends Controller
             'kegiatan_id' => 'required|exists:kegiatans,id',
         ]);
 
+        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
         $anak = Anak::findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
-        Kegiatan::query()
+        
+        $kegiatan = Kegiatan::query()
             ->where('id', $request->integer('kegiatan_id'))
-            ->where('pengajar_id', $pengajar->id)
+            ->whereIn('kelas_id', $kelasIds)
             ->firstOrFail();
 
+        abort_if($anak->kelas_id !== $kegiatan->kelas_id, 403, 'Siswa dan Kegiatan berbeda kelas.');
+
         $rows = Pencapaian::query()
-            ->where('pengajar_id', $pengajar->id)
             ->where('anak_id', $request->integer('anak_id'))
             ->where('kegiatan_id', $request->integer('kegiatan_id'))
             ->get();
@@ -310,6 +329,9 @@ class PencapaianController extends Controller
         $q = TanggalRentang::toQueryParams($range[0], $range[1]);
         if ($request->filled('filter_anak_id')) {
             $q['filter_anak_id'] = (string) (int) $request->input('filter_anak_id');
+        }
+        if ($request->filled('filter_kelas_id')) {
+            $q['filter_kelas_id'] = (string) (int) $request->input('filter_kelas_id');
         }
         if ($request->filled('aspek')) {
             $q['aspek'] = (string) $request->input('aspek');
