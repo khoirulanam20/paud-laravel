@@ -25,12 +25,15 @@ function initKegiatanCalendar() {
     }
     mount.dataset.fcInitialized = '1';
 
+    const url = new URL(window.location.href);
+    const viewFromUrl = url.searchParams.get('view') || 'dayGridMonth';
+
     const events = loadEventsFromPage();
-    const year = parseInt(mount.dataset.year || '', 10);
-    const month = parseInt(mount.dataset.month || '', 10);
+    const yearFromData = parseInt(mount.dataset.year || '', 10);
+    const monthFromData = parseInt(mount.dataset.month || '', 10);
     const initialDate =
-        year > 0 && month >= 1 && month <= 12
-            ? `${year}-${String(month).padStart(2, '0')}-01`
+        yearFromData > 0 && monthFromData >= 1 && monthFromData <= 12
+            ? `${yearFromData}-${String(monthFromData).padStart(2, '0')}-01`
             : undefined;
 
     const calendarEl = document.createElement('div');
@@ -38,11 +41,11 @@ function initKegiatanCalendar() {
     mount.appendChild(calendarEl);
 
     let calInstance;
-    let firstDatesSet = true;
+    let isInternalNavigation = false;
 
     calInstance = new Calendar(calendarEl, {
         plugins: [dayGridPlugin, listPlugin],
-        initialView: 'dayGridMonth',
+        initialView: viewFromUrl,
         initialDate,
         locale: 'en',
         buttonText: {
@@ -70,23 +73,32 @@ function initKegiatanCalendar() {
                 }),
             );
         },
-        datesSet() {
-            if (firstDatesSet) {
-                firstDatesSet = false;
+        datesSet(dateInfo) {
+            if (isInternalNavigation) {
                 return;
             }
-            const d = calInstance.getDate();
+
+            const d = dateInfo.view.currentStart || calInstance.getDate();
             const y = d.getFullYear();
             const m = d.getMonth() + 1;
-            const url = new URL(window.location.href);
-            const curY = parseInt(url.searchParams.get('year') || '0', 10);
-            const curM = parseInt(url.searchParams.get('month') || '0', 10);
-            if (curY === y && curM === m) {
+            const currentView = dateInfo.view.type;
+
+            const curUrl = new URL(window.location.href);
+            const curY = parseInt(curUrl.searchParams.get('year') || '0', 10);
+            const curM = parseInt(curUrl.searchParams.get('month') || '0', 10);
+            const curV = curUrl.searchParams.get('view') || 'dayGridMonth';
+
+            // Refresh if year/month changed or if view changed from default without reflecting in URL
+            if (curY === y && curM === m && curV === currentView) {
                 return;
             }
-            url.searchParams.set('year', String(y));
-            url.searchParams.set('month', String(m));
-            window.location.href = url.toString();
+
+            isInternalNavigation = true;
+            curUrl.searchParams.set('year', String(y));
+            curUrl.searchParams.set('month', String(m));
+            curUrl.searchParams.set('view', currentView);
+
+            window.location.href = curUrl.toString();
         },
     });
 

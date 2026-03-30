@@ -15,15 +15,14 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Kelas</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Kelas</th><th>Deskripsi</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($kelasList as $k)
                         <tr>
                             <td>
                                 <span class="font-semibold" style="color:#2C2C2C;">{{ $k->name }}</span>
-                                @if($k->description)<div class="text-xs text-gray-500 mt-0.5">{{ $k->description }}</div>@endif
                             </td>
-
+                            <td><span class="text-sm" style="color:#5A5A5A;">{{ $k->description ?: '-' }}</span></td>
                             <td><span class="badge badge-teal">{{ $k->anaks_count ?? 0 }} Siswa</span></td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
                                 @php
@@ -38,7 +37,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
+                        <tr><td colspan="4" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
