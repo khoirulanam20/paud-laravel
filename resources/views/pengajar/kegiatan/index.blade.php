@@ -7,9 +7,67 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
-            openEdit(d){ this.editData=d; this.showEditModal=true },
+         x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
+            tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false,
+            photoToDelete: {id:null, path:''},
+            openEdit(d){ 
+                this.editData = JSON.parse(JSON.stringify(d)); 
+                if (!this.editData.matrikulasi_ids) this.editData.matrikulasi_ids = [];
+                // Ensure IDs are integers for consistency
+                this.editData.matrikulasi_ids = this.editData.matrikulasi_ids.map(id => parseInt(id));
+                this.showEditModal = true; 
+            },
             openDelete(r){ this.deleteRoute=r; this.showDeleteModal=true },
+            openDoc(d){ 
+                this.editData = JSON.parse(JSON.stringify(d)); 
+                this.tempNewPhotos = [];
+                this.tempDeletedPhotos = [];
+                this.showDocModal = true;
+            },
+            confirmDeletePhoto(id, path) {
+                this.photoToDelete = {id: id, path: path};
+                this.showPhotoDeleteModal = true;
+            },
+            executeDeletePhoto() {
+                this.showPhotoDeleteModal = false;
+                this.isUploading = true;
+                // Pre-fill required fields from the activity detail to satisfy backend validation
+                this.editData = JSON.parse(JSON.stringify(this.detailEditPayload));
+                this.tempDeletedPhotos = [this.photoToDelete.path];
+                this.tempNewPhotos = [];
+                this.$nextTick(() => { this.submitDoc(); });
+            },
+            immediateDelete(id, path) {
+                this.confirmDeletePhoto(id, path);
+            },
+            addPhotos(e) {
+                const files = Array.from(e.target.files);
+                files.forEach(file => {
+                    this.tempNewPhotos.push({
+                        file: file,
+                        preview: URL.createObjectURL(file)
+                    });
+                });
+                e.target.value = '';
+            },
+            removeNewPhoto(index) {
+                URL.revokeObjectURL(this.tempNewPhotos[index].preview);
+                this.tempNewPhotos.splice(index, 1);
+            },
+            removeExistingPhoto(path) {
+                if (!this.tempDeletedPhotos.includes(path)) {
+                    this.tempDeletedPhotos.push(path);
+                }
+            },
+            submitDoc() {
+                this.isUploading = true;
+                const dt = new DataTransfer();
+                this.tempNewPhotos.forEach(p => dt.items.add(p.file));
+                this.$refs.finalPhotosInput.files = dt.files;
+                this.$nextTick(() => {
+                    this.$refs.docForm.submit();
+                });
+            },
             openDetailFromCal(detail, edit){
                 this.detailData = detail;
                 this.detailEditPayload = edit || {};
@@ -71,6 +129,23 @@
                         <p class="text-sm mt-2" style="color:#5A5A5A;"><strong class="text-gray-800">Kelas:</strong> <span x-text="detailData.kelas_name || '-'"></span></p>
                         <p class="text-sm mt-2" style="color:#5A5A5A;" x-show="detailData.description"><strong class="text-gray-800">Deskripsi:</strong> <br><span x-text="detailData.description"></span></p>
                     </div>
+                    <div x-show="detailData.photo_urls && detailData.photo_urls.length > 0">
+                        <h4 class="font-bold mb-3 text-sm text-gray-800">Dokumentasi Kegiatan</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <template x-for="(url, idx) in detailData.photo_urls" :key="url">
+                                <div class="relative aspect-square rounded-xl overflow-hidden border bg-gray-100 shadow-sm transition-all hover:shadow-md flex flex-col group">
+                                    <div class="relative-grow h-full w-full overflow-hidden">
+                                        <img :src="url" class="w-full h-full object-cover cursor-pointer" @click="window.open(url, '_blank')">
+                                    </div>
+                                    <button type="button" @click="immediateDelete(detailData.id, detailData.photo_urls_raw[idx])" 
+                                            class="absolute -top-1 -right-1 p-2 bg-red-600 rounded-bl-xl text-white shadow-lg hover:bg-red-700 transition-colors z-10 scale-90 group-hover:scale-100 opacity-0 group-hover:opacity-100"
+                                            title="Hapus dokumentasi ini secara permanen">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                     <div>
                         <h4 class="font-bold mb-3 text-sm text-gray-800">Daftar Pencapaian Siswa</h4>
                         <div class="table-responsive border rounded-xl overflow-hidden" style="border-color:rgba(0,0,0,0.06);">
@@ -108,6 +183,10 @@
                     </div>
                 </div>
                 <div class="modal-footer flex flex-wrap gap-2">
+                    <button type="button" @click="showDetailModal=false; openDoc(detailEditPayload)" class="btn-primary" x-show="detailEditPayload.id" style="background:#10B981; border-color:#10B981;">
+                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        Dilaksanakan
+                    </button>
                     <button type="button" @click="showDetailModal=false; openEdit(detailEditPayload)" class="btn-secondary">Edit</button>
                     <button type="button" @click="openDelete(deleteRoute); showDetailModal=false" class="btn-danger" x-show="deleteRoute">Hapus</button>
                     <button type="button" @click="showDetailModal=false" class="btn-primary ml-auto">Tutup</button>
@@ -143,11 +222,6 @@
                             <label class="input-label">Judul Kegiatan <span class="text-red-500">*</span></label>
                             <input type="text" name="title" required class="input-field @error('title') border-red-500 @enderror" placeholder="Contoh: Bermain Sensori" value="{{ old('title') }}">
                             @error('title')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="input-label">Foto Dokumentasi</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-2 @error('photo') border-red-500 @enderror">
-                            @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="input-label">Deskripsi Kegiatan</label>
@@ -206,11 +280,6 @@
                             @error('title')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="input-label">Ganti Foto</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-2 @error('photo') border-red-500 @enderror">
-                            @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
                             <label class="input-label">Deskripsi</label>
                             <textarea name="description" x-model="editData.description" rows="3" class="input-field @error('description') border-red-500 @enderror"></textarea>
                             @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
@@ -220,8 +289,8 @@
                             <div class="mt-2 rounded-xl border overflow-hidden max-h-48 overflow-y-auto" style="border-color:rgba(0,0,0,0.1);">
                                 @forelse($matrikulasis as $m)
                                 <label class="flex items-start gap-3 px-4 py-2.5 hover:bg-teal-50 cursor-pointer border-b last:border-b-0" style="border-color:rgba(0,0,0,0.04);">
-                                    <input type="checkbox" name="matrikulasi_ids[]" value="{{ $m->id }}"
-                                        x-bind:checked="editData.matrikulasi_ids && editData.matrikulasi_ids.includes({{ $m->id }})"
+                                    <input type="checkbox" name="matrikulasi_ids[]" :value="{{ $m->id }}"
+                                        x-model="editData.matrikulasi_ids"
                                         class="mt-0.5 accent-teal-600">
                                     <div>
                                         @if($m->aspek)<span class="text-xs font-bold" style="color:#1A6B6B;">{{ $m->aspek }}</span><br>@endif
@@ -248,6 +317,114 @@
                         <h3 class="section-title">Hapus Jurnal?</h3><p class="section-subtitle mt-1">Semua pencapaian yang terkait juga akan terhapus.</p>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showDeleteModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-danger">Ya, Hapus</button></div>
+                </form>
+            </div>
+        </div>
+
+        {{-- DELETE PHOTO MODAL (Uniform Alert) --}}
+        <div x-show="showPhotoDeleteModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.6);">
+            <div x-show="showPhotoDeleteModal" x-transition class="modal-box max-w-sm border-0 shadow-2xl" @click.away="showPhotoDeleteModal=false">
+                <div class="modal-body text-center py-6 pt-8">
+                    <div class="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Hapus Foto?</h3>
+                    <p class="text-sm text-gray-500 mt-2 px-6">Foto ini akan dihapus secara permanen dari dokumentasi kegiatan.</p>
+                </div>
+                <div class="modal-footer grid grid-cols-2 gap-3 p-6 !pt-0">
+                    <button type="button" @click="showPhotoDeleteModal=false" class="btn-secondary w-full py-3">Batal</button>
+                    <button type="button" @click="executeDeletePhoto()" class="btn-danger w-full py-3 shadow-lg shadow-red-200">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- DOCUMENTATION MODAL --}}
+        <div x-show="showDocModal || isUploading" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+            <div x-show="showDocModal || isUploading" x-transition class="modal-box relative overflow-hidden max-w-2xl" @click.away="!isUploading && (showDocModal=false)">
+                {{-- Loading Overlay --}}
+                <div x-show="isUploading" class="absolute inset-0 z-[60] bg-white/80 backdrop-blur-[2px] flex flex-col items-center justify-center">
+                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
+                    <p class="mt-4 text-sm font-bold text-teal-800" x-text="tempNewPhotos.length > 0 || tempDeletedPhotos.length > 1 ? 'Menyimpan Perubahan...' : 'Menghapus Foto...'"></p>
+                </div>
+
+                <form :action="`/pengajar/kegiatan/${editData.id}`" method="POST" enctype="multipart/form-data" x-ref="docForm">
+                    @csrf @method('PUT')
+                    <input type="hidden" name="date" :value="editData.date">
+                    <input type="hidden" name="title" :value="editData.title">
+                    <input type="hidden" name="kelas_id" :value="editData.kelas_id">
+                    
+                    {{-- Hidden file input to be populated on submit --}}
+                    <input type="file" name="photos[]" multiple class="hidden" x-ref="finalPhotosInput">
+                    
+                    {{-- Hidden inputs for deleted photos --}}
+                    <template x-for="path in tempDeletedPhotos" :key="path">
+                        <input type="hidden" name="delete_photos[]" :value="path">
+                    </template>
+
+                    <div class="modal-header">
+                        <h3 class="section-title">Kelola Dokumentasi: <span x-text="editData.title"></span></h3>
+                    </div>
+                    <div class="modal-body max-h-[70vh] overflow-y-auto space-y-6 pt-2">
+                        <div class="p-6 rounded-2xl border-2 border-dashed bg-teal-50/30 flex flex-col items-center justify-center border-teal-200/50">
+                            <label class="btn-primary cursor-pointer px-8 py-3 shadow-md hover:shadow-lg transition-all scale-105 active:scale-95" style="background:#10B981; border-color:#10B981;">
+                                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                Tambah Foto
+                                <input type="file" accept="image/*" multiple class="hidden" @change="addPhotos($event)">
+                            </label>
+                            <p class="text-[12px] font-bold text-teal-800 mt-4 text-center">Bisa pilih lebih dari satu foto sekaligus</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            {{-- New Photos Previews --}}
+                            <div x-show="tempNewPhotos.length > 0">
+                                <h4 class="text-xs font-bold text-teal-600 uppercase tracking-wider mb-3">Foto Baru (<span x-text="tempNewPhotos.length"></span>)</h4>
+                                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                    <template x-for="(p, index) in tempNewPhotos" :key="index">
+                                        <div class="relative aspect-square rounded-xl overflow-hidden border-2 border-teal-100 group shadow-sm">
+                                            <img :src="p.preview" class="w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                                                <button type="button" @click="removeNewPhoto(index)" class="p-2 bg-red-600 rounded-full text-white hover:bg-red-700 shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                </button>
+                                            </div>
+                                            <div class="absolute top-1 left-1 bg-teal-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">BARU</div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            {{-- Existing Photos --}}
+                            <div x-show="editData.photo_urls && editData.photo_urls.length > 0">
+                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Foto Tersimpan</h4>
+                                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                    <template x-for="(url, index) in editData.photo_urls" :key="index">
+                                        <div class="relative aspect-square rounded-xl overflow-hidden border group bg-white shadow-sm ring-1 ring-black/5" x-show="!tempDeletedPhotos.includes(editData.photo_urls_raw[index])">
+                                            <img :src="url" class="w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                                                <button type="button" @click="removeExistingPhoto(editData.photo_urls_raw[index])" class="p-2 bg-red-600 rounded-full text-white hover:bg-red-700 shadow-lg transform scale-90 group-hover:scale-100 transition-transform" title="Hapus Foto">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="tempNewPhotos.length === 0 && (!editData.photo_urls || editData.photo_urls.filter((url, idx) => !tempDeletedPhotos.includes(editData.photo_urls_raw[idx])).length === 0)" class="text-center py-8">
+                            <div class="h-16 w-16 bg-gray-100 rounded-full mx-auto mb-3 flex items-center justify-center text-gray-300">
+                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            <p class="text-sm text-gray-400">Belum ada dokumentasi yang dipilih.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer flex items-center justify-between">
+                        <button type="button" @click="showDocModal=false; showDetailModal=true" class="btn-secondary">Batal</button>
+                        <button type="button" @click="submitDoc()" class="btn-primary" style="background:#1A6B6B; border-color:#1A6B6B;" :disabled="isUploading">
+                            <svg x-show="!isUploading" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            Simpan Perubahan
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

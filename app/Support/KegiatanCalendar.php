@@ -60,6 +60,7 @@ class KegiatanCalendar
             'date' => self::formatDate($k),
             'description' => $k->description,
             'kelas_name' => $k->kelas->name ?? '-',
+            'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
             'pencapaians' => $k->pencapaians->map(function ($p) {
                 return [
                     'id' => $p->id,
@@ -72,6 +73,7 @@ class KegiatanCalendar
                     'anak' => ['name' => $p->anak->name ?? '-'],
                 ];
             })->values()->all(),
+            'photo_urls_raw' => $k->photos ?? [],
         ];
 
         return [
@@ -79,6 +81,8 @@ class KegiatanCalendar
             'title' => $k->title,
             'start' => self::formatDate($k),
             'allDay' => true,
+            'backgroundColor' => !empty($k->photos) ? '#10B981' : null,
+            'borderColor' => !empty($k->photos) ? '#059669' : null,
             'extendedProps' => [
                 'mode' => 'pengajar',
                 'delete_url' => route('pengajar.kegiatan.destroy', $k),
@@ -89,7 +93,12 @@ class KegiatanCalendar
                     'title' => $k->title,
                     'description' => $k->description,
                     'kelas_id' => $k->kelas_id,
-                    'matrikulasi_ids' => $k->matrikulasis->pluck('id')->all(),
+                    'matrikulasi_ids' => collect($k->matrikulasis->pluck('id'))
+                        ->merge($k->pencapaians->pluck('matrikulasi_id'))
+                        ->unique()
+                        ->filter()
+                        ->values()
+                        ->all(),
                 ],
             ],
         ];
@@ -116,7 +125,7 @@ class KegiatanCalendar
             'title' => $k->title,
             'date' => self::formatDate($k),
             'description' => $k->description,
-            'photo_url' => $k->photo ? Storage::url($k->photo) : null,
+            'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
             'pengajar_name' => $k->pengajar->name ?? '-',
             'kelas_name' => $k->kelas->name ?? '-',
             'pencapaians' => $pencapaians->map(function ($p) {
@@ -138,6 +147,8 @@ class KegiatanCalendar
             'title' => $k->title,
             'start' => self::formatDate($k),
             'allDay' => true,
+            'backgroundColor' => !empty($k->photos) ? '#10B981' : null,
+            'borderColor' => !empty($k->photos) ? '#059669' : null,
             'extendedProps' => [
                 'mode' => 'readonly',
                 'detail' => $detail,

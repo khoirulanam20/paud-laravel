@@ -60,8 +60,15 @@
                     <p class="text-sm" style="color:#5A5A5A;"><strong>Tanggal:</strong> <span x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span></p>
                     <p class="text-sm" style="color:#5A5A5A;"><strong>Pengajar:</strong> <span x-text="detailData.pengajar_name || '-'"></span></p>
                     <p class="text-sm" style="color:#5A5A5A;"><strong>Kelas:</strong> <span x-text="detailData.kelas_name || '-'"></span></p>
-                    <div x-show="detailData.photo_url" class="rounded-xl overflow-hidden border" style="border-color:rgba(0,0,0,0.08);">
-                        <img :src="detailData.photo_url" alt="" class="w-full max-h-64 object-cover">
+                    <div x-show="detailData.photo_urls && detailData.photo_urls.length > 0" class="grid grid-cols-2 gap-2">
+                        <template x-for="url in detailData.photo_urls" :key="url">
+                            <div class="rounded-xl overflow-hidden border bg-gray-50" style="border-color:rgba(0,0,0,0.08);">
+                                <img :src="url" alt="" class="w-full aspect-video object-cover cursor-pointer" @click="window.open(url, '_blank')">
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="!detailData.photo_urls || detailData.photo_urls.length === 0" class="p-3 bg-gray-50 rounded-xl text-center">
+                        <span class="text-xs text-gray-400 italic">Dokumentasi belum diunggah</span>
                     </div>
                     <p class="text-sm leading-relaxed" style="color:#5A5A5A;" x-show="detailData.description" x-text="detailData.description"></p>
                     <div x-show="detailData.pencapaians && detailData.pencapaians.length">

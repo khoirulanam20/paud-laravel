@@ -65,7 +65,8 @@ class KegiatanController extends Controller
             'date' => 'required|date',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'photo' => 'nullable|image|max:2048',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|max:2048',
             'kelas_id' => 'required|exists:kelas,id',
             'matrikulasi_ids' => 'nullable|array',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
@@ -83,8 +84,12 @@ class KegiatanController extends Controller
             'description' => $request->description,
         ];
 
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('kegiatan', 'public');
+        if ($request->hasFile('photos')) {
+            $photos = [];
+            foreach ($request->file('photos') as $file) {
+                $photos[] = $file->store('kegiatan', 'public');
+            }
+            $data['photos'] = $photos;
         }
 
         $kegiatan = Kegiatan::create($data);
@@ -106,7 +111,8 @@ class KegiatanController extends Controller
             'date' => 'required|date',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'photo' => 'nullable|image|max:2048',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|max:2048',
             'kelas_id' => 'required|exists:kelas,id',
             'matrikulasi_ids' => 'nullable|array',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
@@ -121,11 +127,21 @@ class KegiatanController extends Controller
             'kelas_id' => $request->kelas_id,
         ];
 
-        if ($request->hasFile('photo')) {
-            if ($kegiatan->photo) {
-                Storage::disk('public')->delete($kegiatan->photo);
+        if ($request->hasFile('photos')) {
+            $photos = $kegiatan->photos ?? [];
+            foreach ($request->file('photos') as $file) {
+                $photos[] = $file->store('kegiatan', 'public');
             }
-            $data['photo'] = $request->file('photo')->store('kegiatan', 'public');
+            $data['photos'] = $photos;
+        }
+
+        if ($request->filled('delete_photos')) {
+            $photos = $kegiatan->photos ?? [];
+            foreach ($request->delete_photos as $p) {
+                Storage::disk('public')->delete($p);
+                $photos = array_values(array_filter($photos, fn($path) => $path !== $p));
+            }
+            $data['photos'] = $photos;
         }
 
         $kegiatan->update($data);

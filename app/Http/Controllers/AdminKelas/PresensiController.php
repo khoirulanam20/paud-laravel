@@ -15,7 +15,7 @@ class PresensiController extends Controller
         $user = auth()->user();
         $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
         $sekolah_id = $user->sekolah_id;
-        $kelas = $pengajar->kelas()->orderBy('name')->get();
+        $kelas = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->orderBy('name')->get();
         $kelasIds = $kelas->pluck('id')->toArray();
 
         $tanggalInput = $request->query('tanggal', now()->format('Y-m-d'));
@@ -52,7 +52,7 @@ class PresensiController extends Controller
         $user = auth()->user();
         $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
         $sekolah_id = $user->sekolah_id;
-        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        $kelasIds = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],

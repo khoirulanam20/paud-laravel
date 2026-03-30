@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Kelas extends Model
 {
-    protected $fillable = ['sekolah_id', 'name', 'description'];
+    protected $fillable = ['sekolah_id', 'name', 'description', 'wali_kelas_id'];
 
     public function sekolah()
     {
         return $this->belongsTo(Sekolah::class);
+    }
+
+    public function waliKelas()
+    {
+        return $this->belongsTo(Pengajar::class, 'wali_kelas_id');
     }
 
     public function users()

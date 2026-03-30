@@ -17,6 +17,11 @@ class Kegiatan extends Model
         'title',
         'description',
         'photo',
+        'photos',
+    ];
+
+    protected $casts = [
+        'photos' => 'array',
     ];
 
     public function kelas(): BelongsTo

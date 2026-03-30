@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
+use App\Models\Pengajar;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -21,11 +22,13 @@ class KelasController extends Controller
         // User dengan kelas_id = kelas ini seharusnya wali/admin kelas (Sudah dihapus fiturnya)
         $kelasList = Kelas::query()
             ->where('sekolah_id', $sekolah_id)
-            ->withCount('anaks')
+            ->with(['anaks', 'waliKelas', 'pengajars'])
             ->latest()
             ->paginate(10);
 
-        return view('admin.kelas.index', compact('kelasList'));
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+
+        return view('admin.kelas.index', compact('kelasList', 'pengajars'));
     }
 
     public function store(Request $request)
@@ -58,12 +61,33 @@ class KelasController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'wali_kelas_id' => [
+                'nullable',
+                'exists:pengajars,id',
+                function ($attribute, $value, $fail) use ($kelas) {
+                    if ($value && ! $kelas->pengajars()->where('pengajars.id', $value)->exists()) {
+                        $fail('Guru yang terpilih harus terdaftar di kelas ini terlebih dahulu.');
+                    }
+                },
+            ],
         ]);
+
+        $oldWaliId = $kelas->wali_kelas_id;
 
         $kelas->update([
             'name' => $request->name,
             'description' => $request->description,
+            'wali_kelas_id' => $request->wali_kelas_id,
         ]);
+
+        if ($request->wali_kelas_id != $oldWaliId) {
+            if ($request->filled('wali_kelas_id')) {
+                $this->syncWaliKelasRole($request->wali_kelas_id);
+            }
+            if ($oldWaliId) {
+                $this->removeWaliKelasRoleIfNecessary($oldWaliId);
+            }
+        }
 
         return redirect()->route('admin.kelas.index')->with('success', 'Data Kelas berhasil diperbarui.');
     }
@@ -73,10 +97,12 @@ class KelasController extends Controller
         $sekolah_id = auth()->user()->sekolah_id;
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah. Hubungi lembaga.');
 
-        $kelas = Kelas::findOrFail($id);
-        abort_if((int) $kelas->sekolah_id !== (int) $sekolah_id, 403);
-
+        $oldWaliId = $kelas->wali_kelas_id;
         $kelas->delete();
+
+        if ($oldWaliId) {
+            $this->removeWaliKelasRoleIfNecessary($oldWaliId);
+        }
 
         return redirect()->route('admin.kelas.index')->with('success', 'Data Kelas berhasil dihapus.');
     }
@@ -98,5 +124,24 @@ class KelasController extends Controller
             );
         }
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    private function syncWaliKelasRole($pengajarId)
+    {
+        $pengajar = Pengajar::find($pengajarId);
+        if ($pengajar && $pengajar->user) {
+            $pengajar->user->assignRole('Admin Kelas');
+        }
+    }
+
+    private function removeWaliKelasRoleIfNecessary($pengajarId)
+    {
+        $isStillWali = Kelas::where('wali_kelas_id', $pengajarId)->exists();
+        if (!$isStillWali) {
+            $pengajar = Pengajar::find($pengajarId);
+            if ($pengajar && $pengajar->user) {
+                $pengajar->user->removeRole('Admin Kelas');
+            }
+        }
     }
 }

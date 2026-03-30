@@ -15,12 +15,22 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Kelas</th><th>Deskripsi</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Kelas</th><th>Wali Kelas</th><th>Deskripsi</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($kelasList as $k)
                         <tr>
                             <td>
                                 <span class="font-semibold" style="color:#2C2C2C;">{{ $k->name }}</span>
+                            </td>
+                            <td>
+                                @if($k->waliKelas)
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-6 w-6 rounded-lg flex items-center justify-center font-bold text-[10px] text-white shrink-0" style="background:#1A6B6B;">{{ substr($k->waliKelas->name, 0, 1) }}</div>
+                                        <span class="text-sm font-medium" style="color:#2C2C2C;">{{ $k->waliKelas->name }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-xs italic" style="color:#9E9790;">Belum ditentukan</span>
+                                @endif
                             </td>
                             <td><span class="text-sm" style="color:#5A5A5A;">{{ $k->description ?: '-' }}</span></td>
                             <td><span class="badge badge-teal">{{ $k->anaks_count ?? 0 }} Siswa</span></td>
@@ -30,6 +40,8 @@
                                         'id' => $k->id,
                                         'name' => $k->name,
                                         'description' => $k->description,
+                                        'wali_id' => $k->wali_kelas_id,
+                                        'pengajar_ids' => $k->pengajars->pluck('id')->toArray(),
                                     ];
                                 @endphp
                                 <button type="button" @click="openEdit(@js($kelasEditPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
@@ -63,6 +75,12 @@
                             <textarea name="description" class="input-field @error('description') border-red-500 @enderror" rows="2">{{ old('description') }}</textarea>
                             @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        <div class="p-3 rounded-xl bg-orange-50 border border-orange-100">
+                           <p class="text-[11px] text-orange-700 leading-relaxed font-medium">
+                               <svg class="h-3.5 w-3.5 inline mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                               Wali Kelas ditambahkan setelah kelas dibuat melalui tombol <b>Edit</b>, dan hanya bisa memilih pengajar yang sudah ditempatkan di kelas ini.
+                           </p>
+                        </div>
                         
 
                     </div>
@@ -87,6 +105,24 @@
                             <label class="input-label">Deskripsi</label>
                             <textarea name="description" x-model="editData.description" rows="2" class="input-field @error('description') border-red-500 @enderror"></textarea>
                             @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="input-label">Tentukan Wali Kelas</label>
+                            <select name="wali_kelas_id" x-model="editData.wali_id" class="input-field @error('wali_kelas_id') border-red-500 @enderror">
+                                <option value="">— Pilih Pengajar —</option>
+                                @foreach($pengajars as $p)
+                                    <template x-if="editData.pengajar_ids && editData.pengajar_ids.includes({{ $p->id }})">
+                                        <option value="{{ $p->id }}">{{ $p->name }}</option>
+                                    </template>
+                                @endforeach
+                            </select>
+                            @error('wali_kelas_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            <div class="mt-1.5 p-2 rounded-lg bg-teal-50 border border-teal-100" x-show="editData.pengajar_ids && editData.pengajar_ids.length > 0">
+                                <p class="text-[10px] text-teal-800">Hanya menampilkan pengajar yang terdaftar di kelas ini.</p>
+                            </div>
+                            <div class="mt-1.5 p-2 rounded-lg bg-red-50 border border-red-100" x-show="!editData.pengajar_ids || editData.pengajar_ids.length === 0">
+                                <p class="text-[10px] text-red-700">Belum ada pengajar di kelas ini. Tambahkan pengajar di menu <b>Data Pengajar</b> dulu.</p>
+                            </div>
                         </div>
 
                     </div>
