@@ -26,13 +26,13 @@ class KegiatanController extends Controller
         [$year, $month] = KegiatanCalendar::resolveYearMonth($request);
         [$from, $to] = KegiatanCalendar::dateRangeForCalendar($year, $month);
 
+        $kelas = $pengajar->kelas;
+        $kelasIds = $kelas->pluck('id')->toArray();
+
         $query = Kegiatan::query()
-            ->where('pengajar_id', $pengajar->id)
+            ->whereIn('kelas_id', $kelasIds)
             ->with(['matrikulasis', 'pencapaians.anak', 'pencapaians.matrikulasi'])
             ->whereBetween('date', [$from, $to]);
-
-        $kelas = $pengajar->kelas()->orderBy('name')->get();
-        $kelasIds = $kelas->pluck('id')->toArray();
 
         if ($request->filled('kelas_id')) {
             $kid = $request->integer('kelas_id');
@@ -99,7 +99,8 @@ class KegiatanController extends Controller
     public function update(Request $request, Kegiatan $kegiatan)
     {
         $pengajar = $this->getPengajar();
-        abort_if($kegiatan->pengajar_id !== $pengajar->id, 403);
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        abort_if(!in_array($kegiatan->kelas_id, $kelasIds), 403);
 
         $request->validate([
             'date' => 'required|date',
@@ -111,7 +112,7 @@ class KegiatanController extends Controller
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
 
-        abort_if(!$pengajar->kelas()->where('kelas.id', $request->kelas_id)->exists(), 403);
+        abort_if(!in_array((int)$request->kelas_id, $kelasIds), 403);
 
         $data = [
             'date' => $request->date,
@@ -136,7 +137,8 @@ class KegiatanController extends Controller
     public function destroy(Kegiatan $kegiatan)
     {
         $pengajar = $this->getPengajar();
-        abort_if($kegiatan->pengajar_id !== $pengajar->id, 403);
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        abort_if(!in_array($kegiatan->kelas_id, $kelasIds), 403);
 
         if ($kegiatan->photo) {
             Storage::disk('public')->delete($kegiatan->photo);

@@ -47,27 +47,35 @@ class DashboardController extends Controller
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
         }
 
-        if ($user->hasRole('Admin Kelas') && $user->kelas_id) {
-            $data['kelasWali'] = Kelas::where('id', $user->kelas_id)
-                ->where('sekolah_id', $user->sekolah_id)
-                ->first();
-            $data['kelasAnakCount'] = Anak::where('kelas_id', $user->kelas_id)->count();
+        if ($user->hasRole('Admin Kelas')) {
+            $pengajar = Pengajar::where('user_id', $user->id)->first();
+            if ($pengajar) {
+                $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+                $data['kelasWaliCount'] = count($kelasIds);
+                $data['kelasAnakCount'] = Anak::whereIn('kelas_id', $kelasIds)->count();
+            }
         }
 
         if ($user->hasRole('Pengajar')) {
             $pengajar = Pengajar::where('user_id', $user->id)->first();
             if ($pengajar) {
                 $sekolahId = $pengajar->sekolah_id;
-                if ($user->kelas_id) {
-                    $data['totalAnakSekolah'] = Anak::where('kelas_id', $user->kelas_id)->count();
-                    $data['dashboardAnakLabel'] = 'Siswa di kelas';
+                $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+                
+                if (!empty($kelasIds)) {
+                    $data['totalAnakSekolah'] = Anak::whereIn('kelas_id', $kelasIds)->count();
+                    $data['dashboardAnakLabel'] = 'Siswa di kelasku';
+                    
+                    $data['kegiatanSayaHariIni'] = Kegiatan::whereIn('kelas_id', $kelasIds)->whereDate('date', Carbon::today())->count();
+                    $data['totalKegiatanSaya'] = Kegiatan::whereIn('kelas_id', $kelasIds)->count();
+                    $data['totalEvaluasiSaya'] = Pencapaian::whereHas('anak', fn($q) => $q->whereIn('kelas_id', $kelasIds))->count();
                 } else {
                     $data['totalAnakSekolah'] = Anak::where('sekolah_id', $sekolahId)->count();
                     $data['dashboardAnakLabel'] = 'Siswa di sekolah';
+                    $data['kegiatanSayaHariIni'] = 0;
+                    $data['totalKegiatanSaya'] = 0;
+                    $data['totalEvaluasiSaya'] = 0;
                 }
-                $data['kegiatanSayaHariIni'] = Kegiatan::where('pengajar_id', $pengajar->id)->whereDate('date', Carbon::today())->count();
-                $data['totalKegiatanSaya'] = Kegiatan::where('pengajar_id', $pengajar->id)->count();
-                $data['totalEvaluasiSaya'] = Pencapaian::where('pengajar_id', $pengajar->id)->count();
             }
         }
 

@@ -26,10 +26,18 @@
                 </div>
                 <form method="get" action="{{ route('pengajar.presensi.index') }}" class="flex flex-wrap items-end gap-3">
                     <div>
-                        <label class="input-label">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field" required>
+                        <label class="input-label">Kelola Kelas</label>
+                        <select name="filter_kelas_id" class="input-field" onchange="this.form.submit()">
+                            <option value="">Semua Siswa Terdaftar</option>
+                            @foreach($kelas as $k)
+                                <option value="{{ $k->id }}" @selected($filterKelasId == $k->id)>{{ $k->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <button type="submit" class="btn-primary">Tampilkan</button>
+                    <div>
+                        <label class="input-label">Tanggal</label>
+                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field" required onchange="this.form.submit()">
+                    </div>
                 </form>
             </div>
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">
@@ -54,6 +62,7 @@
                 <form method="post" action="{{ route('pengajar.presensi.store') }}">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                    <input type="hidden" name="filter_kelas_id" value="{{ $filterKelasId }}">
                     <div class="overflow-x-auto">
                         <table class="data-table">
                             <thead>

@@ -10,8 +10,11 @@ class AnakController extends Controller
 {
     public function index()
     {
-        $kelas_id = auth()->user()->kelas_id;
-        $anaks = Anak::where('kelas_id', $kelas_id)->with('kelas')->orderBy('name')->paginate(20);
+        $user = auth()->user();
+        $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+
+        $anaks = Anak::whereIn('kelas_id', $kelasIds)->with('kelas')->orderBy('name')->paginate(20);
         return view('adminkelas.anak.index', compact('anaks'));
     }
 }

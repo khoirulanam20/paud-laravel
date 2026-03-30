@@ -16,7 +16,9 @@ class PresensiController extends Controller
             return redirect()->route('adminkelas.presensi.index', $request->only('tanggal'));
         }
 
-        $sekolah_id = auth()->user()->sekolah_id;
+        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $sekolah_id = $pengajar->sekolah_id;
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
 
         $tanggalInput = $request->query('tanggal', now()->format('Y-m-d'));
         try {
@@ -25,16 +27,26 @@ class PresensiController extends Controller
             $tanggal = now()->format('Y-m-d');
         }
 
-        $anaks = Anak::where('sekolah_id', $sekolah_id)->with('user')->orderBy('name')->get();
+        $filterKelasId = $request->query('filter_kelas_id');
+        $queryAnak = Anak::query()->where('sekolah_id', $sekolah_id);
+        if ($filterKelasId && in_array((int)$filterKelasId, $kelasIds)) {
+            $queryAnak->where('kelas_id', $filterKelasId);
+        } else {
+            $queryAnak->whereIn('kelas_id', $kelasIds);
+        }
+
+        $anaks = $queryAnak->with('user')->orderBy('name')->get();
 
         $presensiByAnak = Presensi::where('sekolah_id', $sekolah_id)
+            ->whereIn('anak_id', $anaks->pluck('id'))
             ->whereDate('tanggal', $tanggal)
             ->get()
             ->keyBy('anak_id');
 
         $hadirCount = $presensiByAnak->where('hadir', true)->count();
+        $kelas = $pengajar->kelas()->orderBy('name')->get();
 
-        return view('pengajar.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount'));
+        return view('pengajar.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'kelas', 'filterKelasId'));
     }
 
     public function store(Request $request)
@@ -43,15 +55,22 @@ class PresensiController extends Controller
             abort(403);
         }
 
-        $sekolah_id = auth()->user()->sekolah_id;
+        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $sekolah_id = $pengajar->sekolah_id;
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
 
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],
             'hadir' => ['nullable', 'array'],
             'hadir.*' => ['integer', 'exists:anaks,id'],
+            'filter_kelas_id' => ['nullable', 'integer'],
         ]);
 
-        $anakIds = Anak::where('sekolah_id', $sekolah_id)->pluck('id')->all();
+        $queryAnak = Anak::where('sekolah_id', $sekolah_id)->whereIn('kelas_id', $kelasIds);
+        if ($request->filled('filter_kelas_id')) {
+            $queryAnak->where('kelas_id', $request->filter_kelas_id);
+        }
+        $anakIds = $queryAnak->pluck('id')->all();
         $hadirIds = array_values(array_unique(array_map('intval', $validated['hadir'] ?? [])));
         $hadirIds = array_values(array_intersect($hadirIds, $anakIds));
 
@@ -70,7 +89,7 @@ class PresensiController extends Controller
         }
 
         return redirect()
-            ->route('pengajar.presensi.index', ['tanggal' => $validated['tanggal']])
+            ->route('pengajar.presensi.index', array_filter(['tanggal' => $validated['tanggal'], 'filter_kelas_id' => $request->filter_kelas_id]))
             ->with('success', 'Presensi tanggal '.Carbon::parse($validated['tanggal'])->translatedFormat('d M Y').' berhasil disimpan.');
     }
 }

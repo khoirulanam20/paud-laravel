@@ -28,7 +28,7 @@ class PencapaianController extends Controller
     private function assertAnakDalamLingkupPencapaian(Anak $anak, Pengajar $pengajar): void
     {
         abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
-        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
         if (!empty($kelasIds)) {
             abort_if(!in_array((int) $anak->kelas_id, $kelasIds, true), 403);
         }
@@ -43,7 +43,7 @@ class PencapaianController extends Controller
         [$tanggalDari, $tanggalSampai] = $range;
 
         $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
-        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
         if (!empty($kelasIds)) {
             $anakQuery->whereIn('kelas_id', $kelasIds);
         }
@@ -255,7 +255,6 @@ class PencapaianController extends Controller
     public function destroy(Pencapaian $pencapaian)
     {
         $pengajar = $this->getPengajar();
-        abort_if($pencapaian->pengajar_id !== $pengajar->id, 403);
         $pencapaian->loadMissing('anak');
         if ($pencapaian->anak) {
             $this->assertAnakDalamLingkupPencapaian($pencapaian->anak, $pengajar);
@@ -288,7 +287,7 @@ class PencapaianController extends Controller
             'kegiatan_id' => 'required|exists:kegiatans,id',
         ]);
 
-        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
         $anak = Anak::findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
         

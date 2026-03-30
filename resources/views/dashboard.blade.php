@@ -130,13 +130,12 @@
 
         <!-- ═══ ADMIN KELAS / WALI KELAS ═══ -->
         @hasrole('Admin Kelas')
-        @if(auth()->user()->kelas_id)
         <div class="card overflow-hidden mb-2">
             <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);">
                 <div class="text-white">
                     <p class="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">Wali kelas</p>
-                    <h3 class="text-xl font-bold">{{ $kelasWali->name ?? 'Kelas' }}</h3>
-                    <p class="text-sm opacity-90 mt-1">Total siswa di kelasmu: <strong>{{ $kelasAnakCount ?? 0 }}</strong></p>
+                    <h3 class="text-xl font-bold">Terdaftar di {{ $kelasWaliCount ?? 0 }} Kelas</h3>
+                    <p class="text-sm opacity-90 mt-1">Total siswa di seluruh kelasmu: <strong>{{ $kelasAnakCount ?? 0 }}</strong></p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ route('adminkelas.anak.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Siswa Kelasku</a>
@@ -147,7 +146,6 @@
                 </div>
             </div>
         </div>
-        @endif
         @endhasrole
 
         <!-- ═══ PENGAJAR DASHBOARD ═══ -->
