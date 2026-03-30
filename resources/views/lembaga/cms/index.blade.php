@@ -6,7 +6,31 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto" x-data="{
+        isCompressing: false,
+        compressedFiles: {},
+        async handleFile(e, key) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.isCompressing = true;
+            try {
+                this.compressedFiles[key] = await window.compressImage(file);
+            } finally {
+                this.isCompressing = false;
+            }
+        },
+        submitWithCompression() {
+            Object.keys(this.compressedFiles).forEach(name => {
+                if (this.compressedFiles[name]) {
+                    const dt = new DataTransfer();
+                    dt.items.add(this.compressedFiles[name]);
+                    const input = this.$refs.cmsForm.querySelector(`input[name='${name}']`);
+                    if (input) input.files = dt.files;
+                }
+            });
+            this.$refs.cmsForm.submit();
+        }
+    }">
         @if(session('success'))<div class="alert-success mb-6"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
 
         <div class="mb-5 flex items-center justify-between">
@@ -16,8 +40,13 @@
                 Lihat Website
             </a>
         </div>
-
-        <form method="POST" action="{{ route('lembaga.cms.update') }}" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="{{ route('lembaga.cms.update') }}" enctype="multipart/form-data" class="space-y-6 relative" x-ref="cmsForm" @submit.prevent="submitWithCompression()">
+            {{-- Compressing Overlay --}}
+            <div x-show="isCompressing" class="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6" style="display:none;">
+                <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
+                <p class="mt-4 text-sm font-bold text-teal-800 uppercase tracking-widest">Mengoptimalkan Foto...</p>
+                <p class="mt-1 text-xs text-teal-600">Mohon tunggu, sedang memperkecil ukuran gambar</p>
+            </div>
             @csrf
 
             {{-- HERO --}}
@@ -31,7 +60,7 @@
                     <div>
                         <label class="input-label">Foto Hero</label>
                         @if($cms['hero_photo'])<img src="{{ Storage::url($cms['hero_photo']) }}" class="h-24 w-32 object-cover rounded-xl mb-2">@endif
-                        <input type="file" name="hero_photo" accept="image/*" class="input-field py-2">
+                        <input type="file" name="hero_photo" accept="image/*" class="input-field py-2" @change="handleFile($event, 'hero_photo')">
                     </div>
                 </div>
             </div>
@@ -47,7 +76,7 @@
                     <div>
                         <label class="input-label">Foto</label>
                         @if($cms['about_photo'])<img src="{{ Storage::url($cms['about_photo']) }}" class="h-24 w-32 object-cover rounded-xl mb-2">@endif
-                        <input type="file" name="about_photo" accept="image/*" class="input-field py-2">
+                        <input type="file" name="about_photo" accept="image/*" class="input-field py-2" @change="handleFile($event, 'about_photo')">
                     </div>
                 </div>
             </div>
@@ -84,7 +113,7 @@
                         <div>
                             <p class="text-xs font-bold uppercase mb-2" style="color:#9E9790;">Foto {{ $i }}</p>
                             @if($cms['gallery_'.$i])<img src="{{ Storage::url($cms['gallery_'.$i]) }}" class="h-24 w-full object-cover rounded-xl mb-2">@endif
-                            <input type="file" name="gallery_{{ $i }}" accept="image/*" class="input-field py-1.5 text-xs">
+                            <input type="file" name="gallery_{{ $i }}" accept="image/*" class="input-field py-1.5 text-xs" @change="handleFile($event, 'gallery_{{ $i }}')">
                         </div>
                         @endforeach
                     </div>

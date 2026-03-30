@@ -110,5 +110,45 @@
                 @include('layouts.bottom-nav')
             </div>
         </div>
+        <script>
+            window.compressImage = function(file, maxWidth = 1280, quality = 0.8) {
+                return new Promise((resolve, reject) => {
+                    if (!file || !file.type.startsWith('image/')) return resolve(file);
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > height) {
+                                if (width > maxWidth) {
+                                    height *= maxWidth / width;
+                                    width = maxWidth;
+                                }
+                            } else {
+                                if (height > maxWidth) {
+                                    width *= maxWidth / height;
+                                    height = maxWidth;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob((blob) => {
+                                const fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+                                const compressedFile = new File([blob], fileName, { type: 'image/jpeg' });
+                                resolve(compressedFile);
+                            }, 'image/jpeg', quality);
+                        };
+                        img.onerror = reject;
+                    };
+                    reader.onerror = reject;
+                });
+            };
+        </script>
     </body>
 </html>

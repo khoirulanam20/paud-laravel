@@ -8,7 +8,7 @@
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
-            tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false,
+            tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false, isCompressing: false,
             photoToDelete: {id:null, path:''},
             openEdit(d){ 
                 this.editData = JSON.parse(JSON.stringify(d)); 
@@ -40,15 +40,29 @@
             immediateDelete(id, path) {
                 this.confirmDeletePhoto(id, path);
             },
-            addPhotos(e) {
+            async addPhotos(e) {
                 const files = Array.from(e.target.files);
-                files.forEach(file => {
-                    this.tempNewPhotos.push({
-                        file: file,
-                        preview: URL.createObjectURL(file)
-                    });
-                });
+                if (files.length === 0) return;
+                
+                this.isCompressing = true;
+                try {
+                    for (let file of files) {
+                        const compressedBlob = await this.compressImage(file);
+                        const fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+                        const compressedFile = new File([compressedBlob], fileName, { type: 'image/jpeg' });
+                        
+                        this.tempNewPhotos.push({
+                            file: compressedFile,
+                            preview: URL.createObjectURL(compressedFile)
+                        });
+                    }
+                } finally {
+                    this.isCompressing = false;
+                }
                 e.target.value = '';
+            },
+            async compressImage(file) {
+                return window.compressImage(file);
             },
             removeNewPhoto(index) {
                 URL.revokeObjectURL(this.tempNewPhotos[index].preview);
@@ -347,11 +361,27 @@
                     <p class="mt-4 text-sm font-bold text-teal-800" x-text="tempNewPhotos.length > 0 || tempDeletedPhotos.length > 1 ? 'Menyimpan Perubahan...' : 'Menghapus Foto...'"></p>
                 </div>
 
+                {{-- Compressing Overlay --}}
+                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
+                    <div class="relative h-16 w-16">
+                        <div class="absolute inset-0 border-4 border-teal-100 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-teal-500 rounded-full animate-spin border-t-transparent"></div>
+                    </div>
+                    <p class="mt-4 text-sm font-bold text-teal-800 uppercase tracking-widest">Memproses Foto...</p>
+                    <p class="mt-1 text-[10px] text-teal-600 font-medium">Mengoptimalkan gambar agar lebih ringan</p>
+                </div>
+
                 <form :action="`/pengajar/kegiatan/${editData.id}`" method="POST" enctype="multipart/form-data" x-ref="docForm">
                     @csrf @method('PUT')
                     <input type="hidden" name="date" :value="editData.date">
                     <input type="hidden" name="title" :value="editData.title">
                     <input type="hidden" name="kelas_id" :value="editData.kelas_id">
+                    <input type="hidden" name="description" :value="editData.description">
+                    
+                    {{-- Hidden inputs for matrikulasi_ids to prevent data loss --}}
+                    <template x-for="mid in (editData.matrikulasi_ids || [])" :key="mid">
+                        <input type="hidden" name="matrikulasi_ids[]" :value="mid">
+                    </template>
                     
                     {{-- Hidden file input to be populated on submit --}}
                     <input type="file" name="photos[]" multiple class="hidden" x-ref="finalPhotosInput">

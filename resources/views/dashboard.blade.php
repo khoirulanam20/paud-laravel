@@ -179,7 +179,14 @@
 
         <!-- ═══ ORANG TUA DASHBOARD ═══ -->
         @hasrole('Orang Tua')
-        <div class="space-y-6">
+        <div class="space-y-6" x-data="{
+            selectedActivity: null,
+            showActivityModal: false,
+            openActivity(k) {
+                this.selectedActivity = k;
+                this.showActivityModal = true;
+            }
+        }">
             <header class="space-y-1">
                 <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: #2C2C2C;">Halo, Bunda / Ayah</h1>
                 <p class="text-sm max-w-xl" style="color: #9E9790;">Ringkasan kehadiran anak, menu hari ini, serta jurnal dan laporan perkembangan terbaru.</p>
@@ -281,12 +288,29 @@
                 <div class="lg:col-span-2 flex flex-col gap-5 min-w-0">
                     <div class="card overflow-hidden">
                         <div class="px-5 sm:px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
-                            <h3 class="section-title mb-0">Kegiatan terbaru</h3>
+                            <h3 class="section-title mb-0">Kegiatan hari ini</h3>
                             <a href="{{ route('orangtua.kegiatan.index') }}" class="text-sm font-semibold shrink-0" style="color: #1A6B6B;">Lihat jurnal</a>
                         </div>
                         <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
-                            @forelse($kegiatanTerbaru ?? [] as $keg)
-                                <div class="px-5 sm:px-6 py-4 flex gap-4">
+                            @forelse($kegiatanHariIni ?? [] as $keg)
+                                @php
+                                    $activityData = [
+                                        'title' => $keg->title,
+                                        'date' => \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y'),
+                                        'description' => $keg->description,
+                                        'pengajar' => $keg->pengajar->name ?? '-',
+                                        'photos' => collect($keg->photos ?? [])->map(fn($p) => Storage::url($p))->values()->all(),
+                                        'pencapaians' => $keg->pencapaians->map(fn($p) => [
+                                            'aspek' => $p->matrikulasi->aspek ?? '',
+                                            'indicator' => $p->matrikulasi->indicator ?? '',
+                                            'score_label' => \App\Support\LabelSkorPencapaian::label($p->score),
+                                            'score_color' => \App\Support\LabelSkorPencapaian::color($p->score),
+                                            'feedback' => $p->feedback,
+                                            'anak_name' => $p->anak->name ?? '-'
+                                        ])->values()->all()
+                                    ];
+                                @endphp
+                                <div class="px-5 sm:px-6 py-4 flex gap-4 cursor-pointer hover:bg-gray-50 transition" @click="openActivity(@js($activityData))">
                                     @if($keg->photo)
                                         <div class="hidden sm:block w-[4.5rem] h-[4.5rem] rounded-xl overflow-hidden shrink-0 ring-1 ring-black/5">
                                             <img src="{{ Storage::url($keg->photo) }}" alt="" class="w-full h-full object-cover">
@@ -299,7 +323,7 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada jurnal kegiatan.</div>
+                                <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Tidak ada kegiatan hari ini.</div>
                             @endforelse
                         </div>
                     </div>
@@ -315,13 +339,62 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-xs" style="color: #9E9790;">{{ $p->anak->name ?? '' }} · {{ \Carbon\Carbon::parse($p->created_at)->translatedFormat('d M Y') }}</p>
                                         <h4 class="font-semibold text-sm mt-1 leading-snug" style="color: #2C2C2C;">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
-                                        <p class="text-sm italic line-clamp-1 mt-1" style="color: #9E9790;">"{{ $p->feedback }}"</p>
                                     </div>
                                     <span class="badge badge-teal shrink-0 text-center text-xs leading-tight max-w-[11rem] px-2 py-1 whitespace-normal">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
                                 </div>
                             @empty
                                 <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada laporan evaluasi.</div>
                             @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Detail Activity Modal --}}
+            <div x-show="showActivityModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+                <div x-show="showActivityModal" x-transition class="modal-box max-w-2xl w-full" @click.away="showActivityModal=false">
+                    <div class="modal-header flex justify-between items-center">
+                        <h3 class="section-title mb-0" x-text="selectedActivity?.title || 'Detail Kegiatan'"></h3>
+                        <button @click="showActivityModal=false" class="text-gray-400 hover:text-gray-600">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                    <div class="modal-body space-y-5 max-h-[75vh] overflow-y-auto">
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold uppercase tracking-wider" style="color: #9E9790;">
+                            <span class="flex items-center gap-1"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a12 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span x-text="selectedActivity?.date"></span></span>
+                            <span class="flex items-center gap-1"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg><span x-text="selectedActivity?.pengajar"></span></span>
+                        </div>
+
+                        <div class="text-sm leading-relaxed" style="color: #5A5A5A;" x-text="selectedActivity?.description"></div>
+
+                        <template x-if="selectedActivity?.photos?.length > 0">
+                            <div class="space-y-3">
+                                <h4 class="text-xs font-bold uppercase tracking-widest" style="color: #9E9790;">Dokumentasi Foto</h4>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <template x-for="(url, index) in selectedActivity.photos" :key="index">
+                                        <div class="aspect-square rounded-xl overflow-hidden ring-1 ring-black/5">
+                                            <img :src="url" class="w-full h-full object-cover cursor-pointer" @click="window.open(url, '_blank')">
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="space-y-4 pt-4 border-t" style="border-color: rgba(0,0,0,0.06);">
+                            <h4 class="text-xs font-bold uppercase tracking-widest" style="color: #975A16;">Laporan Perkembangan Anak</h4>
+                            <div class="space-y-3">
+                                <template x-for="(p, pi) in selectedActivity?.pencapaians" :key="pi">
+                                    <div class="rounded-xl p-4 border" style="background:#FFFBF0; border-color:rgba(151,90,22,0.1);">
+                                        <div class="flex items-start justify-between gap-3 mb-2">
+                                            <div class="min-w-0">
+                                                <p class="text-[11px] font-bold uppercase tracking-wider text-amber-800" x-text="p.aspek || 'Evaluasi'"></p>
+                                                <p class="text-sm font-bold text-gray-900 mt-0.5" x-text="p.indicator"></p>
+                                            </div>
+                                            <span class="badge shrink-0 text-xs py-1 px-2.5" :style="'background:'+p.score_color+';color:white;border:none;'" x-text="p.score_label"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </div>

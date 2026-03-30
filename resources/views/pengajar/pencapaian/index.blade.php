@@ -47,11 +47,31 @@
             editCatatan: {},
             createNilai: {},
             createCatatan: {},
+            isCompressing: false,
+            compressedFile: null,
             init() {
                 const el = document.getElementById('pencapaian-payload-json');
                 if (el) {
                     try { this.payload = JSON.parse(el.textContent); } catch (e) { this.payload = { kegiatanData: {}, anakMap: {}, editBundles: {} }; }
                 }
+            },
+            async handleFile(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                this.isCompressing = true;
+                try {
+                    this.compressedFile = await window.compressImage(file);
+                } finally {
+                    this.isCompressing = false;
+                }
+            },
+            submitWithCompression(formRef) {
+                if (this.compressedFile) {
+                    const dt = new DataTransfer();
+                    dt.items.add(this.compressedFile);
+                    this.$refs[formRef].querySelector('input[type=file]').files = dt.files;
+                }
+                this.$refs[formRef].submit();
             },
             get kegiatanData() { return this.payload.kegiatanData || {}; },
             get anakMap() { return this.payload.anakMap || {}; },
@@ -264,8 +284,13 @@
 
         {{-- CREATE --}}
         <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;background:rgba(0,0,0,0.45);">
-            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full" @click.away="showCreateModal=false">
-                <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data">
+            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative overflow-hidden" @click.away="!isCompressing && (showCreateModal=false)">
+                {{-- Compressing Overlay --}}
+                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
+                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
+                    <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
+                </div>
+                <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data" x-ref="createForm" @submit.prevent="submitWithCompression('createForm')">
                     @csrf
                     <input type="hidden" name="tanggal_dari" value="{{ $tanggalDari }}">
                     <input type="hidden" name="tanggal_sampai" value="{{ $tanggalSampai }}">
@@ -314,7 +339,7 @@
                         </template>
                         <div>
                             <label class="input-label">Foto bukti (opsional, berlaku untuk seluruh aspek)</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror">
+                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror" @change="handleFile($event)">
                             @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
@@ -325,8 +350,13 @@
 
         {{-- EDIT --}}
         <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;background:rgba(0,0,0,0.45);">
-            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full" @click.away="showEditModal=false">
-                <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data">
+            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative overflow-hidden" @click.away="!isCompressing && (showEditModal=false)">
+                {{-- Compressing Overlay --}}
+                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
+                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
+                    <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
+                </div>
+                <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data" x-ref="editForm" @submit.prevent="submitWithCompression('editForm')">
                     @csrf
                     <input type="hidden" name="tanggal_dari" value="{{ $tanggalDari }}">
                     <input type="hidden" name="tanggal_sampai" value="{{ $tanggalSampai }}">
@@ -358,7 +388,7 @@
                         </template>
                         <div>
                             <label class="input-label">Ganti foto</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror">
+                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror" @change="handleFile($event)">
                             @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>

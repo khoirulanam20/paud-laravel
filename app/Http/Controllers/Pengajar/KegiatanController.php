@@ -127,22 +127,24 @@ class KegiatanController extends Controller
             'kelas_id' => $request->kelas_id,
         ];
 
-        if ($request->hasFile('photos')) {
-            $photos = $kegiatan->photos ?? [];
-            foreach ($request->file('photos') as $file) {
-                $photos[] = $file->store('kegiatan', 'public');
-            }
-            $data['photos'] = $photos;
-        }
-
+        $currentPhotos = $kegiatan->photos ?? [];
+        
+        // Handle deletions first
         if ($request->filled('delete_photos')) {
-            $photos = $kegiatan->photos ?? [];
             foreach ($request->delete_photos as $p) {
                 Storage::disk('public')->delete($p);
-                $photos = array_values(array_filter($photos, fn($path) => $path !== $p));
+                $currentPhotos = array_values(array_filter($currentPhotos, fn($path) => $path !== $p));
             }
-            $data['photos'] = $photos;
         }
+
+        // Handle new uploads
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $file) {
+                $currentPhotos[] = $file->store('kegiatan', 'public');
+            }
+        }
+
+        $data['photos'] = $currentPhotos;
 
         $kegiatan->update($data);
         $kegiatan->matrikulasis()->sync($request->matrikulasi_ids ?? []);

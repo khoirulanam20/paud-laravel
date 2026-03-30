@@ -89,16 +89,16 @@ class DashboardController extends Controller
 
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
 
-            // Sama seperti halaman Jurnal Kegiatan: hanya kegiatan yang punya pencapaian untuk anak ortu di sekolah ini.
+            // Kegiatan hari ini: hanya kegiatan yang punya pencapaian untuk anak ortu di sekolah ini pada hari ini.
             if ($data['anakIds']->isEmpty()) {
-                $data['kegiatanTerbaru'] = collect();
+                $data['kegiatanHariIni'] = collect();
             } else {
-                $data['kegiatanTerbaru'] = Kegiatan::query()
+                $data['kegiatanHariIni'] = Kegiatan::query()
                     ->where('sekolah_id', $sekolahId)
+                    ->whereDate('date', Carbon::today())
                     ->whereHas('pencapaians', fn ($q) => $q->whereIn('anak_id', $data['anakIds']))
-                    ->latest('date')
+                    ->with(['pengajar', 'pencapaians' => fn($q) => $q->whereIn('anak_id', $data['anakIds'])->with('matrikulasi')])
                     ->latest('id')
-                    ->take(3)
                     ->get();
             }
 

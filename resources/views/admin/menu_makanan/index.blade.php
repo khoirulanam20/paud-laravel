@@ -37,7 +37,31 @@
         removeMenuLine(i) { if (this.menuLines.length > 1) this.menuLines.splice(i, 1); },
         addEditMenuLine() { this.editMenuLines.push(''); },
         removeEditMenuLine(i) { if (this.editMenuLines.length > 1) this.editMenuLines.splice(i, 1); },
-        openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true; }
+        openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true; },
+        isCompressing: false,
+        compressedFiles: {},
+        async handleFile(e, key) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.isCompressing = true;
+            try {
+                this.compressedFiles[key] = await window.compressImage(file);
+            } finally {
+                this.isCompressing = false;
+            }
+        },
+        submitWithCompression(formRef) {
+            const form = this.$refs[formRef];
+            Object.keys(this.compressedFiles).forEach(name => {
+                if (this.compressedFiles[name]) {
+                    const dt = new DataTransfer();
+                    dt.items.add(this.compressedFiles[name]);
+                    const input = form.querySelector(`input[name="${name}"]`);
+                    if (input) input.files = dt.files;
+                }
+            });
+            form.submit();
+        }
     }">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -80,8 +104,13 @@
         </div>
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
-            <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
-                <form action="{{ route('admin.menu-makanan.store') }}" method="POST" enctype="multipart/form-data">
+            <div x-show="showCreateModal" x-transition class="modal-box relative overflow-hidden" @click.away="!isCompressing && (showCreateModal=false)">
+                {{-- Compressing Overlay --}}
+                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center text-center p-6">
+                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
+                    <p class="mt-4 text-sm font-bold text-teal-800 uppercase tracking-wider">Mengecilkan Ukuran Foto...</p>
+                </div>
+                <form action="{{ route('admin.menu-makanan.store') }}" method="POST" enctype="multipart/form-data" x-ref="createForm" @submit.prevent="submitWithCompression('createForm')">
                     @csrf
                     <input type="hidden" name="menu" :value="joinMenuLines(menuLines)">
                     <div class="modal-header"><h3 class="section-title">Input Jadwal Menu Baru</h3></div>
@@ -107,8 +136,8 @@
                         </div>
                         <div><label class="input-label">Informasi Gizi & Catatan Alergi</label><textarea name="nutrition_info" rows="2" class="input-field" placeholder="Tanpa kacang, tinggi protein..."></textarea></div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Foto Makanan (opsional)</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
-                            <div><label class="input-label">Foto Kegiatan Makan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2"></div>
+                            <div><label class="input-label">Foto Makanan (opsional)</label><input type="file" name="photo" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo')"></div>
+                            <div><label class="input-label">Foto Kegiatan Makan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo_kegiatan')"></div>
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(menuLines)">Simpan Menu</button></div>
@@ -117,8 +146,13 @@
         </div>
         <!-- EDIT MODAL -->
         <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
-            <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
-                <form :action="`/admin/menu-makanan/${editData.id}`" method="POST" enctype="multipart/form-data">
+            <div x-show="showEditModal" x-transition class="modal-box relative overflow-hidden" @click.away="!isCompressing && (showEditModal=false)">
+                {{-- Compressing Overlay --}}
+                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center text-center p-6">
+                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
+                    <p class="mt-4 text-sm font-bold text-teal-800 uppercase tracking-wider">Mengecilkan Ukuran Foto...</p>
+                </div>
+                <form :action="`/admin/menu-makanan/${editData.id}`" method="POST" enctype="multipart/form-data" x-ref="editForm" @submit.prevent="submitWithCompression('editForm')">
                     @csrf @method('PUT')
                     <input type="hidden" name="menu" :value="joinMenuLines(editMenuLines)">
                     <div class="modal-header"><h3 class="section-title">Edit Menu Makanan</h3></div>
@@ -143,8 +177,8 @@
                         </div>
                         <div><label class="input-label">Informasi Gizi</label><textarea name="nutrition_info" x-model="editData.nutrition_info" rows="2" class="input-field"></textarea></div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Ganti Foto Makanan</label><input type="file" name="photo" accept="image/*" class="input-field py-2"></div>
-                            <div><label class="input-label">Ganti Foto Kegiatan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2"></div>
+                            <div><label class="input-label">Ganti Foto Makanan</label><input type="file" name="photo" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo')"></div>
+                            <div><label class="input-label">Ganti Foto Kegiatan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo_kegiatan')"></div>
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(editMenuLines)">Simpan Perubahan</button></div>
