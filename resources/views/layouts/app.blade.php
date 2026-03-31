@@ -20,6 +20,7 @@
                 ['route' => 'admin.pendaftaran.index', 'label' => 'Pendaftaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'admin.pendaftaran.*', 'badge' => $pendingCount],
                 ['route' => 'admin.kelas.index', 'label' => 'Kelola Kelas', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'pattern' => 'admin.kelas.*'],
                 ['route' => 'admin.presensi.index', 'label' => 'Rekap Presensi', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'admin.presensi.*'],
+                ['route' => 'admin.kesehatan.index', 'label' => 'Kesehatan Siswa', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'admin.kesehatan.*'],
             ]],
             ['group' => 'Kurikulum', 'items' => [
                 ['route' => 'admin.matrikulasi.index', 'label' => 'Matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.matrikulasi.*'],
@@ -39,6 +40,7 @@
     if ($user && $user->hasRole('Admin Kelas')) {
         $roleNavItems = array_merge($roleNavItems, [
             ['route' => 'adminkelas.presensi.index', 'label' => 'Presensi Kelasku', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'adminkelas.presensi.*'],
+            ['route' => 'adminkelas.kesehatan.index', 'label' => 'Kesehatan Kelasku', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'adminkelas.kesehatan.*'],
         ]);
     }
     if ($user && $user->hasRole('Pengajar')) {
@@ -56,6 +58,7 @@
             ['route' => 'orangtua.pencapaian.index', 'label' => 'Laporan Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.pencapaian.*'],
             ['route' => 'orangtua.menu-makanan.index', 'label' => 'Menu Makanan', 'icon' => 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z', 'pattern' => 'orangtua.menu-makanan.*'],
             ['route' => 'orangtua.kritik-saran.index', 'label' => 'Saran & Kritik', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'orangtua.kritik-saran.*'],
+            ['route' => 'orangtua.kesehatan.index', 'label' => 'Kesehatan Anak', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'orangtua.kesehatan.*'],
         ]);
     }
     $roleLabel = 'Pengguna Khusus';

@@ -41,4 +41,8 @@ class Anak extends Model
     {
         return $this->belongsTo(Kelas::class);
     }
+    public function kesehatans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Kesehatan::class);
+    }
 }

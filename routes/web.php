@@ -85,6 +85,7 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
     Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');
     Route::post('pendaftaran/{anak}/reject', [PendaftaranController::class, 'reject'])->name('pendaftaran.reject');
+    Route::resource('kesehatan', \App\Http\Controllers\Admin\KesehatanController::class)->only(['index', 'store']);
 });
 
 // ─────────────────────────────────────────────
@@ -97,6 +98,7 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
     Route::get('anak', [AdminKelasAnakController::class, 'index'])->name('anak.index');
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
+    Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store']);
 });
 
 // ─────────────────────────────────────────────
@@ -133,6 +135,7 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kritik-saran', [OrangTuaKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'show'])->name('kritik-saran.show');
     Route::post('kritik-saran', [OrangTuaKritikSaranController::class, 'store'])->name('kritik-saran.store');
+    Route::get('kesehatan', [\App\Http\Controllers\OrangTua\KesehatanController::class, 'index'])->name('kesehatan.index');
 });
 
 require __DIR__.'/auth.php';

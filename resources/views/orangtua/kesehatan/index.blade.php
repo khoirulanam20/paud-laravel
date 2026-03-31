@@ -1,0 +1,101 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center gap-3">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
+                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+            </div>
+            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Laporan Kesehatan Anak</h2>
+        </div>
+    </x-slot>
+
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+        @forelse($anaks as $anak)
+            <div class="card overflow-hidden">
+                <div class="px-6 py-4 bg-[#F8F5F1] border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-2xl flex items-center justify-center font-bold text-xl text-white shrink-0" style="background: #1A6B6B;">{{ substr($anak->name, 0, 1) }}</div>
+                        <div>
+                            <h3 class="font-bold text-lg text-[#2C2C2C]">{{ $anak->name }}</h3>
+                            <p class="text-sm text-gray-500">{{ $anak->kelas ? $anak->kelas->name : 'Belum ada kelas' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    @if($anak->kesehatans->isEmpty())
+                        <div class="text-center py-8 text-gray-400">
+                            <svg class="h-12 w-12 mx-auto mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Belum ada catatan kesehatan untuk {{ $anak->name }}.
+                        </div>
+                    @else
+                        <div class="space-y-6">
+                            @foreach($anak->kesehatans as $record)
+                                <div class="relative pl-8 border-l-2 border-[#1A6B6B]/20 pb-6 last:pb-0">
+                                    <div class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white bg-[#1A6B6B]"></div>
+                                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
+                                        <div class="text-sm font-bold text-[#1A6B6B] bg-[#D0E8E8] px-3 py-1 rounded-full w-fit">
+                                            {{ \Carbon\Carbon::parse($record->tanggal_pemeriksaan)->translatedFormat('d F Y') }}
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Berat Badan</p>
+                                            <p class="font-bold text-[#2C2C2C]">{{ $record->berat_badan ?? '-' }} <span class="text-xs font-normal text-gray-500">kg</span></p>
+                                        </div>
+                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Tinggi Badan</p>
+                                            <p class="font-bold text-[#2C2C2C]">{{ $record->tinggi_badan ?? '-' }} <span class="text-xs font-normal text-gray-500">cm</span></p>
+                                        </div>
+                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Lingkar Kepala</p>
+                                            <p class="font-bold text-[#2C2C2C]">{{ $record->lingkar_kepala ?? '-' }} <span class="text-xs font-normal text-gray-500">cm</span></p>
+                                        </div>
+                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Alergi</p>
+                                            <p class="font-bold {{ $record->alergi ? 'text-red-600' : 'text-gray-400' }}">{{ $record->alergi ?: 'Tidak ada' }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
+                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ $record->gigi == 'Bersih' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
+                                            </div>
+                                            <div>
+                                                <p class="text-[10px] text-gray-400 font-bold uppercase">Kebersihan Gigi</p>
+                                                <p class="text-sm font-bold">{{ $record->gigi }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
+                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ $record->telinga == 'Bersih' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
+                                            </div>
+                                            <div>
+                                                <p class="text-[10px] text-gray-400 font-bold uppercase">Kebersihan Telinga</p>
+                                                <p class="text-sm font-bold">{{ $record->telinga }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
+                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ $record->kuku == 'Bersih' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
+                                            </div>
+                                            <div>
+                                                <p class="text-[10px] text-gray-400 font-bold uppercase">Kebersihan Kuku</p>
+                                                <p class="text-sm font-bold">{{ $record->kuku }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @empty
+            <div class="card p-12 text-center text-gray-400">
+                Data anak tidak ditemukan.
+            </div>
+        @endforelse
+    </div>
+</x-app-layout>
