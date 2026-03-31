@@ -59,7 +59,7 @@
 
                                     <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
-                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ $record->gigi == 'Bersih' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ Str::contains($record->gigi, 'Bersih') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
                                             </div>
                                             <div>
@@ -68,7 +68,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
-                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ $record->telinga == 'Bersih' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ Str::contains($record->telinga, 'Bersih') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
                                             </div>
                                             <div>
@@ -77,7 +77,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
-                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ $record->kuku == 'Bersih' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ Str::contains($record->kuku, 'Bersih') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
                                             </div>
                                             <div>

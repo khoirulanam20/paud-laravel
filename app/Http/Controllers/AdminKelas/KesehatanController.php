@@ -31,7 +31,7 @@ class KesehatanController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'anak_id' => 'required|exists:anaks,id',
             'berat_badan' => 'nullable|numeric',
             'tinggi_badan' => 'nullable|numeric',
@@ -43,8 +43,11 @@ class KesehatanController extends Controller
             'tanggal_pemeriksaan' => 'required|date',
         ]);
 
-        Kesehatan::create($request->all());
+        Kesehatan::updateOrCreate(
+            ['anak_id' => $data['anak_id'], 'tanggal_pemeriksaan' => $data['tanggal_pemeriksaan']],
+            $data
+        );
 
-        return back()->with('success', 'Data kesehatan berhasil disimpan.');
+        return back()->with('success', 'Data kesehatan berhasil diperbarui.');
     }
 }

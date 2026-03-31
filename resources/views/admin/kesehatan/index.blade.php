@@ -122,9 +122,9 @@
                                 <td>
                                     @if($latest)
                                         <div class="flex gap-1">
-                                            <span title="Gigi" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $latest->gigi == 'Bersih' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">G</span>
-                                            <span title="Telinga" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $latest->telinga == 'Bersih' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">T</span>
-                                            <span title="Kuku" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $latest->kuku == 'Bersih' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">K</span>
+                                            <span title="Gigi: {{ $latest->gigi }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ Str::contains($latest->gigi, 'Bersih') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">G</span>
+                                            <span title="Telinga: {{ $latest->telinga }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ Str::contains($latest->telinga, 'Bersih') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">T</span>
+                                            <span title="Kuku: {{ $latest->kuku }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ Str::contains($latest->kuku, 'Bersih') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">K</span>
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-400">-</span>
@@ -197,6 +197,9 @@
                                 <label class="input-label">Gigi</label>
                                 <select name="gigi" class="input-field" x-model="form.gigi">
                                     <option value="Bersih">Bersih</option>
+                                    <option value="Cukup Bersih">Cukup Bersih</option>
+                                    <option value="Kotor">Kotor</option>
+                                    <option value="Berlubang">Berlubang</option>
                                     <option value="Perlu Tindakan">Perlu Tindakan</option>
                                 </select>
                             </div>
@@ -204,13 +207,17 @@
                                 <label class="input-label">Telinga</label>
                                 <select name="telinga" class="input-field" x-model="form.telinga">
                                     <option value="Bersih">Bersih</option>
+                                    <option value="Cukup Bersih">Cukup Bersih</option>
+                                    <option value="Kotor">Kotor</option>
                                     <option value="Perlu Tindakan">Perlu Tindakan</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="input-label">Kuku</label>
                                 <select name="kuku" class="input-field" x-model="form.kuku">
-                                    <option value="Bersih">Bersih</option>
+                                    <option value="Bersih dan rapi">Bersih dan rapi</option>
+                                    <option value="Cukup Bersih">Cukup Bersih</option>
+                                    <option value="Kotor dan panjang">Kotor dan panjang</option>
                                     <option value="Perlu Tindakan">Perlu Tindakan</option>
                                 </select>
                             </div>
