@@ -37,6 +37,19 @@ class AnakController extends Controller
         return view('admin.anak.index', compact('anaks', 'kelas', 'hadirPeriode', 'presensiFilter'));
     }
 
+    public function show(Anak $anak)
+    {
+        abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $anak->load([
+            'user',
+            'kelas',
+            'kesehatans' => fn($q) => $q->orderBy('tanggal_pemeriksaan', 'desc')
+        ]);
+
+        return view('admin.anak.show', compact('anak'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

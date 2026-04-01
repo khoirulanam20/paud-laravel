@@ -87,42 +87,95 @@ class DashboardController extends Controller
                 ->get();
             $data['anakIds'] = $data['anaks']->pluck('id');
 
-            $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
+            $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)
+                ->whereDate('date', Carbon::today())
+                ->withCount(['votes as likes_count' => fn($q) => $q->where('vote_type', 'like')])
+                ->withCount(['votes as dislikes_count' => fn($q) => $q->where('vote_type', 'dislike')])
+                ->first();
 
-            // Kegiatan hari ini: hanya kegiatan yang punya pencapaian untuk anak ortu di sekolah ini pada hari ini.
-            if ($data['anakIds']->isEmpty()) {
-                $data['kegiatanHariIni'] = collect();
-            } else {
-                $data['kegiatanHariIni'] = Kegiatan::query()
+            $data['myVote'] = null;
+            if ($data['menuHariIni']) {
+                $data['myVote'] = MenuMakananVote::where('menu_makanan_id', $data['menuHariIni']->id)
+                    ->where('user_id', $user->id)
+                    ->first();
+            }
+
+            // Combine Activities and Achievements into a single feed
+            $feeds = collect();
+
+            if ($data['anakIds']->isNotEmpty()) {
+                $kegiatans = Kegiatan::query()
                     ->where('sekolah_id', $sekolahId)
                     ->whereDate('date', Carbon::today())
                     ->whereHas('pencapaians', fn ($q) => $q->whereIn('anak_id', $data['anakIds']))
                     ->with(['pengajar', 'pencapaians' => fn($q) => $q->whereIn('anak_id', $data['anakIds'])->with('matrikulasi')])
                     ->latest('id')
                     ->get();
-            }
 
-            if ($data['anakIds']->isEmpty()) {
-                $data['pencapaianTerbaru'] = collect();
-            } else {
-                $data['pencapaianTerbaru'] = Pencapaian::whereIn('anak_id', $data['anakIds'])
+                foreach ($kegiatans as $keg) {
+                    $feeds->push([
+                        'type' => 'kegiatan',
+                        'time' => $keg->created_at,
+                        'data' => $keg
+                    ]);
+                }
+
+                $pencapaians = Pencapaian::whereIn('anak_id', $data['anakIds'])
                     ->with(['matrikulasi', 'kegiatan', 'anak'])
                     ->latest()
-                    ->take(3)
+                    ->take(5)
                     ->get();
+
+                foreach ($pencapaians as $p) {
+                    // Avoid duplicating if it's already linked to a kegiatan in today's list
+                    if ($p->kegiatan_id && $kegiatans->contains('id', $p->kegiatan_id)) {
+                        continue;
+                    }
+                    $feeds->push([
+                        'type' => 'pencapaian',
+                        'time' => $p->created_at,
+                        'data' => $p
+                    ]);
+                }
             }
+
+            $data['dashboardFeed'] = $feeds->sortByDesc('time');
 
             $data['presensiFilter'] = PresensiPeriodeFilter::resolve($request);
             if ($data['anakIds']->isEmpty()) {
-                $data['presensiHadirPerAnak'] = collect();
+                $data['presensiSummaryPerAnak'] = collect();
             } else {
-                $data['presensiHadirPerAnak'] = Presensi::query()
-                    ->whereIn('anak_id', $data['anakIds'])
-                    ->where('hadir', true)
-                    ->whereBetween('tanggal', [$data['presensiFilter']['from'], $data['presensiFilter']['to']])
-                    ->selectRaw('anak_id, count(*) as total')
-                    ->groupBy('anak_id')
-                    ->pluck('total', 'anak_id');
+                $from = Carbon::parse($data['presensiFilter']['from']);
+                $to = Carbon::parse($data['presensiFilter']['to']);
+                
+                // Calculate effective days (weekdays between from and to)
+                $effectiveDays = 0;
+                $tempDate = clone $from;
+                while ($tempDate <= $to) {
+                    if (!$tempDate->isWeekend()) {
+                        $effectiveDays++;
+                    }
+                    $tempDate->addDay();
+                }
+                $data['effectiveDaysCount'] = $effectiveDays;
+
+                $data['presensiSummaryPerAnak'] = $data['anaks']->mapWithKeys(function($anak) use ($from, $to, $effectiveDays) {
+                    $hadir = Presensi::where('anak_id', $anak->id)
+                        ->where('hadir', true)
+                        ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
+                        ->count();
+                    
+                    $tidakHadir = Presensi::where('anak_id', $anak->id)
+                        ->where('hadir', false)
+                        ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
+                        ->count();
+
+                    return [$anak->id => [
+                        'hadir' => $hadir,
+                        'tidak_hadir' => $tidakHadir,
+                        'efektif' => $effectiveDays
+                    ]];
+                });
             }
         }
 

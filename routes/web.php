@@ -71,7 +71,7 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
 Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('kelas', KelasController::class)->except(['create', 'edit', 'show']);
     Route::resource('matrikulasi', AdminMatrikulasiController::class)->except(['create', 'edit', 'show']);
-    Route::resource('anak', AnakController::class)->except(['create', 'edit', 'show']);
+    Route::resource('anak', AnakController::class)->except(['create', 'edit']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
     Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
@@ -86,6 +86,8 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');
     Route::post('pendaftaran/{anak}/reject', [PendaftaranController::class, 'reject'])->name('pendaftaran.reject');
     Route::resource('kesehatan', \App\Http\Controllers\Admin\KesehatanController::class)->only(['index', 'store']);
+    Route::get('presensi-guru', [\App\Http\Controllers\Admin\PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
+    Route::post('presensi-guru', [\App\Http\Controllers\Admin\PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
 });
 
 // ─────────────────────────────────────────────
@@ -96,6 +98,7 @@ use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiCont
 
 Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
     Route::get('anak', [AdminKelasAnakController::class, 'index'])->name('anak.index');
+    Route::get('anak/{anak}', [AdminKelasAnakController::class, 'show'])->name('anak.show');
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store']);
@@ -117,6 +120,8 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
     Route::post('pencapaian/sync', [PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
     Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);
+    Route::get('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
+    Route::post('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
 });
 
 // ─────────────────────────────────────────────
@@ -136,6 +141,8 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'show'])->name('kritik-saran.show');
     Route::post('kritik-saran', [OrangTuaKritikSaranController::class, 'store'])->name('kritik-saran.store');
     Route::get('kesehatan', [\App\Http\Controllers\OrangTua\KesehatanController::class, 'index'])->name('kesehatan.index');
+    Route::get('presensi', [\App\Http\Controllers\OrangTua\PresensiController::class, 'index'])->name('presensi.index');
+    Route::post('menu-makanan/vote', [\App\Http\Controllers\OrangTua\MenuMakananVoteController::class, 'vote'])->name('menu-makanan.vote');
 });
 
 require __DIR__.'/auth.php';

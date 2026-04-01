@@ -200,64 +200,48 @@
                         </div>
 
                         <div class="relative px-5 pt-5 pb-4 border-b border-white/15">
-                            <div class="flex items-start gap-3 mb-4">
-                                <div class="h-10 w-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0 border border-white/20">
-                                    <svg class="h-5 w-5 text-white/95" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-10 w-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0 border border-white/20">
+                                        <svg class="h-5 w-5 text-white/95" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-0.5">
+                                        <p class="text-[11px] font-semibold uppercase tracking-widest text-white/75">Ringkasan Kehadiran</p>
+                                        <p class="text-sm font-medium text-white/95 mt-0.5">{{ $presensiFilter['label'] ?? '' }}</p>
+                                    </div>
                                 </div>
-                                <div class="min-w-0 flex-1 pt-0.5">
-                                    <p class="text-[11px] font-semibold uppercase tracking-widest text-white/75">Kehadiran</p>
-                                    <p class="text-sm font-medium text-white/95 mt-0.5 leading-snug">{{ $presensiFilter['label'] ?? '' }}</p>
-                                </div>
+                                <a href="{{ route('orangtua.presensi.index') }}" class="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition border border-white/10" title="Filter & Detail">
+                                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                                </a>
                             </div>
-                            <form method="get" action="{{ route('dashboard') }}" class="relative flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-                                <div class="w-full sm:w-auto sm:min-w-[8.5rem] sm:flex-1">
-                                    <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Rentang</label>
-                                    <select name="periode" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
-                                        <option value="bulan" @selected(($presensiFilter['periode'] ?? 'bulan') === 'bulan')>Per bulan</option>
-                                        <option value="minggu" @selected(($presensiFilter['periode'] ?? '') === 'minggu')>Per minggu</option>
-                                    </select>
-                                </div>
-                                @if(($presensiFilter['periode'] ?? 'bulan') === 'bulan')
-                                    <div class="w-full sm:w-auto sm:min-w-[9rem] sm:flex-1">
-                                        <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Bulan</label>
-                                        <select name="month" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
-                                            @foreach(range(1, 12) as $m)
-                                                <option value="{{ $m }}" @selected((int) ($presensiFilter['bulan'] ?? now()->month) === $m)>{{ \Carbon\Carbon::createFromDate((int) ($presensiFilter['tahun'] ?? now()->year), $m, 1)->translatedFormat('F') }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="w-full sm:w-auto sm:min-w-[5.5rem]">
-                                        <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Tahun</label>
-                                        <select name="year" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
-                                            @foreach(range(now()->year - 2, now()->year + 1) as $y)
-                                                <option value="{{ $y }}" @selected((int) ($presensiFilter['tahun'] ?? now()->year) === $y)>{{ $y }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                @else
-                                    <div class="w-full sm:flex-1 sm:min-w-[12rem]">
-                                        <label class="block text-[11px] font-semibold uppercase tracking-wide text-white/65 mb-1.5">Minggu</label>
-                                        <input type="week" name="week" value="{{ $presensiFilter['minggu'] ?? '' }}" class="input-field w-full text-sm py-2" onchange="this.form.submit()">
-                                    </div>
-                                @endif
-                            </form>
                         </div>
 
                         <div class="relative px-5 py-5 md:px-6 md:py-6">
-                            <p class="text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-3">Anak terdaftar</p>
+                            <p class="text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-3">Siswa & Presensi</p>
                             @forelse($anaks ?? [] as $anak)
+                                @php $summary = $presensiSummaryPerAnak[$anak->id] ?? ['hadir' => 0, 'tidak_hadir' => 0, 'efektif' => 0]; @endphp
                                 <div class="rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 mb-3 last:mb-0">
                                     <div class="flex items-center gap-3">
                                         <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center font-bold text-lg shrink-0 border border-white/10">{{ substr($anak->name, 0, 1) }}</div>
                                         <div class="min-w-0 flex-1">
                                             <p class="font-bold text-[15px] leading-tight">{{ $anak->name }}</p>
-                                            <p class="text-xs text-white/65 mt-1">{{ \Carbon\Carbon::parse($anak->dob)->format('d M Y') }}</p>
+                                            <div class="flex items-center gap-3 mt-1.5">
+                                                <div class="flex flex-col">
+                                                    <span class="text-[10px] text-white/60 uppercase font-bold tracking-wider">Hadir</span>
+                                                    <span class="text-sm font-bold">{{ $summary['hadir'] }} hari</span>
+                                                </div>
+                                                <div class="h-6 w-px bg-white/10"></div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-[10px] text-white/60 uppercase font-bold tracking-wider">Izin/Sakit/Alpa</span>
+                                                    <span class="text-sm font-bold text-amber-200">{{ $summary['tidak_hadir'] }} hari</span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="text-right shrink-0 pl-2">
-                                            <p class="text-2xl font-bold tabular-nums leading-none text-white">{{ (int) ($presensiHadirPerAnak[$anak->id] ?? 0) }}</p>
-                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-white/60 mt-1.5">hari hadir</p>
+                                            <p class="text-xl font-bold tabular-nums leading-none text-white">{{ $summary['efektif'] }}</p>
+                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-white/60 mt-1.5">Hari Efektif</p>
                                         </div>
                                     </div>
                                 </div>
@@ -276,8 +260,29 @@
                             @if(!empty($menuHariIni))
                                 <p class="font-bold text-base mb-2 whitespace-pre-line leading-snug" style="color: #2C2C2C;">{{ $menuHariIni->menu }}</p>
                                 @if($menuHariIni->nutrition_info)
-                                    <p class="text-sm leading-relaxed" style="color: #9E9790;">{{ $menuHariIni->nutrition_info }}</p>
+                                    <p class="text-sm leading-relaxed mb-4" style="color: #9E9790;">{{ $menuHariIni->nutrition_info }}</p>
                                 @endif
+                                
+                                <div class="flex items-center gap-3 pt-4 border-t border-gray-50">
+                                    <form action="{{ route('orangtua.menu-makanan.vote') }}" method="POST" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="menu_makanan_id" value="{{ $menuHariIni->id }}">
+                                        <button type="submit" name="vote_type" value="like" 
+                                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ ($myVote?->vote_type === 'like') ? 'bg-green-100 text-green-700 ring-1 ring-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                            <svg class="h-3.5 w-3.5" fill="{{ ($myVote?->vote_type === 'like') ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.708C19.747 10 21 11.253 21 12.8c0 .964-.46 1.83-1.18 2.373l-.403.303a11.953 11.953 0 011.583 3.992c.114.71-.46 1.332-1.173 1.332H8.3a2 2 0 01-2-2V10h2l3-6h2v6h3z" /></svg>
+                                            {{ $menuHariIni->likes_count ?? 0 }} Suka
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('orangtua.menu-makanan.vote') }}" method="POST" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="menu_makanan_id" value="{{ $menuHariIni->id }}">
+                                        <button type="submit" name="vote_type" value="dislike" 
+                                            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition {{ ($myVote?->vote_type === 'dislike') ? 'bg-red-100 text-red-700 ring-1 ring-red-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                            <svg class="h-3.5 w-3.5" fill="{{ ($myVote?->vote_type === 'dislike') ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.292C4.253 14 3 12.747 3 11.2c0-.964.46-1.83 1.18-2.373l.403-.303A11.953 11.953 0 013.001 4.532c-.114-.71.46-1.332 1.173-1.332H15.7a2 2 0 012 2V14h-2l-3 6h-2v-6z" /></svg>
+                                            {{ $menuHariIni->dislikes_count ?? 0 }} Tidak Suka
+                                        </button>
+                                    </form>
+                                </div>
                             @else
                                 <p class="text-sm" style="color: #9E9790;">Belum ada informasi menu untuk hari ini.</p>
                             @endif
@@ -285,65 +290,65 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-2 flex flex-col gap-5 min-w-0">
-                    <div class="card overflow-hidden">
+                                <div class="card overflow-hidden">
                         <div class="px-5 sm:px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
-                            <h3 class="section-title mb-0">Kegiatan hari ini</h3>
-                            <a href="{{ route('orangtua.kegiatan.index') }}" class="text-sm font-semibold shrink-0" style="color: #1A6B6B;">Lihat jurnal</a>
+                            <h3 class="section-title mb-0 text-amber-900">Laporan Perkembangan & Kegiatan</h3>
+                            <div class="flex gap-2">
+                                <a href="{{ route('orangtua.kegiatan.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Jurnal</a>
+                                <a href="{{ route('orangtua.pencapaian.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Laporan</a>
+                            </div>
                         </div>
-                        <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
-                            @forelse($kegiatanHariIni ?? [] as $keg)
-                                @php
-                                    $activityData = [
-                                        'title' => $keg->title,
-                                        'date' => \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y'),
-                                        'description' => $keg->description,
-                                        'pengajar' => $keg->pengajar->name ?? '-',
-                                        'photos' => collect($keg->photos ?? [])->map(fn($p) => Storage::url($p))->values()->all(),
-                                        'pencapaians' => $keg->pencapaians->map(fn($p) => [
-                                            'aspek' => $p->matrikulasi->aspek ?? '',
-                                            'indicator' => $p->matrikulasi->indicator ?? '',
-                                            'score_label' => \App\Support\LabelSkorPencapaian::label($p->score),
-                                            'score_color' => \App\Support\LabelSkorPencapaian::color($p->score),
-                                            'feedback' => $p->feedback,
-                                            'anak_name' => $p->anak->name ?? '-'
-                                        ])->values()->all()
-                                    ];
-                                @endphp
-                                <div class="px-5 sm:px-6 py-4 flex gap-4 cursor-pointer hover:bg-gray-50 transition" @click="openActivity(@js($activityData))">
-                                    @if($keg->photo)
-                                        <div class="hidden sm:block w-[4.5rem] h-[4.5rem] rounded-xl overflow-hidden shrink-0 ring-1 ring-black/5">
-                                            <img src="{{ Storage::url($keg->photo) }}" alt="" class="w-full h-full object-cover">
+                        <div class="divide-y divide-gray-50">
+                            @forelse($dashboardFeed ?? [] as $item)
+                                @if($item['type'] === 'kegiatan')
+                                    @php
+                                        $keg = $item['data'];
+                                        $activityData = [
+                                            'title' => $keg->title,
+                                            'date' => \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y'),
+                                            'description' => $keg->description,
+                                            'pengajar' => $keg->pengajar->name ?? '-',
+                                            'photos' => collect($keg->photos ?? [])->map(fn($p) => Storage::url($p))->values()->all(),
+                                            'pencapaians' => $keg->pencapaians->map(fn($p) => [
+                                                'aspek' => $p->matrikulasi->aspek ?? '',
+                                                'indicator' => $p->matrikulasi->indicator ?? '',
+                                                'score_label' => \App\Support\LabelSkorPencapaian::label($p->score),
+                                                'score_color' => \App\Support\LabelSkorPencapaian::color($p->score),
+                                                'feedback' => $p->feedback,
+                                                'anak_name' => $p->anak->name ?? '-'
+                                            ])->values()->all()
+                                        ];
+                                    @endphp
+                                    <div class="px-5 sm:px-6 py-5 flex gap-4 cursor-pointer hover:bg-gray-50 transition border-l-4 border-l-[#1A6B6B]" @click="openActivity(@js($activityData))">
+                                        <div class="h-10 w-10 rounded-full bg-[#1A6B6B]/10 flex items-center justify-center shrink-0 border border-[#1A6B6B]/20">
+                                            <svg class="h-5 w-5 text-[#1A6B6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                                         </div>
-                                    @endif
-                                    <div class="flex-1 min-w-0 py-0.5">
-                                        <p class="text-xs font-semibold mb-1" style="color: #1A6B6B;">{{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}</p>
-                                        <h4 class="font-bold text-sm leading-snug" style="color: #2C2C2C;">{{ $keg->title }}</h4>
-                                        <p class="text-sm line-clamp-2 mt-1 leading-relaxed" style="color: #9E9790;">{{ $keg->description }}</p>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <span class="text-[10px] font-bold uppercase tracking-widest text-[#1A6B6B]">Kegiatan • {{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}</span>
+                                            </div>
+                                            <h4 class="font-bold text-[15px] text-gray-900 leading-tight mb-1">{{ $keg->title }}</h4>
+                                            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">{{ $keg->description }}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            @empty
-                                <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Tidak ada kegiatan hari ini.</div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <div class="card overflow-hidden">
-                        <div class="px-5 sm:px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
-                            <h3 class="section-title mb-0">Pencapaian terbaru</h3>
-                            <a href="{{ route('orangtua.pencapaian.index') }}" class="text-sm font-semibold shrink-0" style="color: #1A6B6B;">Lihat laporan</a>
-                        </div>
-                        <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
-                            @forelse($pencapaianTerbaru ?? [] as $p)
-                                <div class="px-5 sm:px-6 py-4 flex items-center justify-between gap-4">
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs" style="color: #9E9790;">{{ $p->anak->name ?? '' }} · {{ \Carbon\Carbon::parse($p->created_at)->translatedFormat('d M Y') }}</p>
-                                        <h4 class="font-semibold text-sm mt-1 leading-snug" style="color: #2C2C2C;">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
+                                @else
+                                    @php $p = $item['data']; @endphp
+                                    <div class="px-5 sm:px-6 py-5 flex gap-4 border-l-4 border-l-amber-500">
+                                        <div class="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0 border border-amber-100">
+                                            <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <span class="text-[10px] font-bold uppercase tracking-widest text-amber-600">Pencapaian • {{ \Carbon\Carbon::parse($p->created_at)->translatedFormat('d M Y') }}</span>
+                                            </div>
+                                            <p class="text-xs font-semibold text-gray-500 mb-1">{{ $p->anak->name ?? '' }}</p>
+                                            <h4 class="font-bold text-[15px] text-gray-900 leading-tight mb-2">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
+                                            <span class="inline-block badge shrink-0 text-center text-[10px] font-bold py-1 px-2.5 rounded-full" style="background: {{ \App\Support\LabelSkorPencapaian::color($p->score) }}; color: white; border: none;">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
+                                        </div>
                                     </div>
-                                    <span class="badge badge-teal shrink-0 text-center text-xs leading-tight max-w-[11rem] px-2 py-1 whitespace-normal">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
-                                </div>
+                                @endif
                             @empty
-                                <div class="px-5 sm:px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada laporan evaluasi.</div>
+                                </div>
                             @endforelse
                         </div>
                     </div>

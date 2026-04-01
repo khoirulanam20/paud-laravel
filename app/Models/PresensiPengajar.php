@@ -5,15 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class MenuMakanan extends Model
+class PresensiPengajar extends Model
 {
     protected $fillable = [
         'sekolah_id',
-        'date',
-        'menu',
-        'nutrition_info',
-        'photo',
-        'photo_kegiatan',
+        'pengajar_id',
+        'tanggal',
+        'hadir',
+        'status',
+    ];
+
+    protected $casts = [
+        'tanggal' => 'date',
+        'hadir' => 'boolean',
     ];
 
     public function sekolah(): BelongsTo
@@ -21,8 +25,8 @@ class MenuMakanan extends Model
         return $this->belongsTo(Sekolah::class);
     }
 
-    public function votes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function pengajar(): BelongsTo
     {
-        return $this->hasMany(MenuMakananVote::class);
+        return $this->belongsTo(Pengajar::class);
     }
 }

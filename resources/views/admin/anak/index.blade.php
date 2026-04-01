@@ -119,6 +119,7 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('admin.anak.show', $anak) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Detail</a>
                                         <button @click="openEdit({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Edit</button>
                                         <button @click="openDelete('{{ route('admin.anak.destroy', $anak) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #C0392B; background: #FAD7D2;">Hapus</button>
                                     </div>

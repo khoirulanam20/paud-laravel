@@ -121,10 +121,18 @@
                                 </td>
                                 <td>
                                     @if($latest)
-                                        <div class="flex gap-1">
-                                            <span title="Gigi: {{ $latest->gigi }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ Str::contains($latest->gigi, 'Bersih') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">G</span>
-                                            <span title="Telinga: {{ $latest->telinga }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ Str::contains($latest->telinga, 'Bersih') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">T</span>
-                                            <span title="Kuku: {{ $latest->kuku }}" class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ Str::contains($latest->kuku, 'Bersih') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">K</span>
+                                        <div class="flex gap-1.5">
+                                            @foreach(['gigi' => 'G', 'telinga' => 'T', 'kuku' => 'K'] as $field => $label)
+                                                @php 
+                                                    $val = $latest->$field;
+                                                    $isGood = Str::contains(strtolower($val), 'bersih') || Str::contains(strtolower($val), 'rapi');
+                                                    $bg = $isGood ? 'bg-[#E8F5E9]' : 'bg-[#FFEBEE]';
+                                                    $text = $isGood ? 'text-[#2E7D32]' : 'text-[#C62828]';
+                                                @endphp
+                                                <div title="{{ ucfirst($field) }}: {{ $val }}" class="h-7 w-7 rounded-full flex items-center justify-center font-bold text-[10px] {{ $bg }} {{ $text }} border-2 border-white shadow-sm cursor-help shrink-0">
+                                                    {{ $label }}
+                                                </div>
+                                            @endforeach
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-400">-</span>
@@ -145,7 +153,10 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    <button @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('admin.anak.show', $anak) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Riwayat</a>
+                                        <button @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

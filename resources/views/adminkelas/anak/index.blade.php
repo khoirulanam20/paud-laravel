@@ -20,6 +20,7 @@
                             <th>Jenis Kelamin</th>
                             <th>Tanggal Lahir</th>
                             <th>Nama Orang Tua</th>
+                            <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -35,6 +36,9 @@
                             <td>{{ $anak->jenis_kelamin ?? '-' }}</td>
                             <td>{{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->format('d M Y') : '-' }}</td>
                             <td>{{ $anak->parent_name ?? '-' }}</td>
+                            <td class="text-right">
+                                <a href="{{ route('adminkelas.anak.show', $anak) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Detail</a>
+                            </td>
                         </tr>
                         @empty
                         <tr>

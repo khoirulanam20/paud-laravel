@@ -57,34 +57,25 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
-                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ Str::contains($record->gigi, 'Bersih') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
-                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
+                                    <div class="mt-4 flex flex-wrap gap-4">
+                                        @foreach(['gigi' => 'Gigi', 'telinga' => 'Telinga', 'kuku' => 'Kuku'] as $field => $label)
+                                            <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100 flex-1 min-w-[120px]">
+                                                @php 
+                                                    $val = $record->$field;
+                                                    $isGood = Str::contains(strtolower($val), 'bersih') || Str::contains(strtolower($val), 'rapi');
+                                                    $bg = $isGood ? 'bg-[#E8F5E9]' : 'bg-[#FFEBEE]';
+                                                    $text = $isGood ? 'text-[#2E7D32]' : 'text-[#C62828]';
+                                                    $letter = strtoupper(substr($field, 0, 1));
+                                                @endphp
+                                                <div class="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm {{ $bg }} {{ $text }} border-2 border-white shadow-sm shrink-0">
+                                                    {{ $letter }}
+                                                </div>
+                                                <div>
+                                                    <p class="text-[10px] text-gray-400 font-bold uppercase">Kebersihan {{ $label }}</p>
+                                                    <p class="text-sm font-bold text-[#2C2C2C]">{{ $val ?: '-' }}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p class="text-[10px] text-gray-400 font-bold uppercase">Kebersihan Gigi</p>
-                                                <p class="text-sm font-bold">{{ $record->gigi }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
-                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ Str::contains($record->telinga, 'Bersih') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
-                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
-                                            </div>
-                                            <div>
-                                                <p class="text-[10px] text-gray-400 font-bold uppercase">Kebersihan Telinga</p>
-                                                <p class="text-sm font-bold">{{ $record->telinga }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100">
-                                            <div class="h-8 w-8 rounded-lg flex items-center justify-center {{ Str::contains($record->kuku, 'Bersih') ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
-                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
-                                            </div>
-                                            <div>
-                                                <p class="text-[10px] text-gray-400 font-bold uppercase">Kebersihan Kuku</p>
-                                                <p class="text-sm font-bold">{{ $record->kuku }}</p>
-                                            </div>
-                                        </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             @endforeach
