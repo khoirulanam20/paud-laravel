@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pengajar;
 use App\Models\PresensiPengajar;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PresensiPengajarController extends Controller
@@ -24,7 +25,27 @@ class PresensiPengajarController extends Controller
             ->get()
             ->keyBy('pengajar_id');
 
-        return view('admin.presensi-guru.index', compact('pengajars', 'presensis', 'tanggal'));
+        // Monthly Summary Filter
+        $rekapMonth = $request->input('rekap_month', date('n'));
+        $rekapYear = $request->input('rekap_year', date('Y'));
+        
+        $startOfMonth = Carbon::create($rekapYear, $rekapMonth, 1)->startOfMonth()->toDateString();
+        $endOfMonth = Carbon::create($rekapYear, $rekapMonth, 1)->endOfMonth()->toDateString();
+        
+        $rekapBulanan = PresensiPengajar::where('sekolah_id', $sekolahId)
+            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+            ->get()
+            ->groupBy('pengajar_id')
+            ->map(function($items) {
+                return [
+                    'hadir' => $items->where('hadir', true)->count(),
+                    'sakit' => $items->where('status', 'Sakit')->count(),
+                    'izin' => $items->where('status', 'Izin')->count(),
+                    'alpa' => $items->where('status', 'Alpa')->count(),
+                ];
+            });
+
+        return view('admin.presensi-guru.index', compact('pengajars', 'presensis', 'tanggal', 'rekapBulanan', 'rekapMonth', 'rekapYear'));
     }
 
     public function store(Request $request)

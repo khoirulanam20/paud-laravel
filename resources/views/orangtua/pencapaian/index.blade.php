@@ -102,6 +102,9 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex flex-wrap items-center gap-2 mb-1">
                                     <span class="font-bold" style="color:#2C2C2C;">{{ $first->anak->name ?? '-' }}</span>
+                                    @if($first->anak && $first->anak->dob)
+                                        <span class="text-[10px] font-bold text-[#1A6B6B]">({{ $first->anak->age }})</span>
+                                    @endif
                                     <span class="text-xs" style="color:#9E9790;">{{ \Carbon\Carbon::parse($first->created_at)->translatedFormat('d M Y') }}</span>
                                 </div>
                                 @if($first->kegiatan)

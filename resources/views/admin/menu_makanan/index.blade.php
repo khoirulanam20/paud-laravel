@@ -11,21 +11,21 @@
         showDeleteModal: false,
         editData: {},
         deleteRoute: '',
-        menuLines: [''],
-        editMenuLines: [''],
+        menuLines: [{id: Date.now(), value: ''}],
+        editMenuLines: [],
         parseMenuToLines(text) {
-            if (!text || !String(text).trim()) return [''];
+            if (!text || !String(text).trim()) return [{id: Date.now(), value: ''}];
             let t = String(text).trim();
             let parts = t.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
             if (parts.length <= 1 && t.includes(' • ')) parts = t.split(' • ').map(s => s.trim()).filter(Boolean);
             if (parts.length <= 1 && t.includes(',')) parts = t.split(',').map(s => s.trim()).filter(Boolean);
-            return parts.length ? parts : [t];
+            return parts.map(v => ({id: Math.random(), value: v}));
         },
         joinMenuLines(lines) {
-            return lines.map(s => String(s || '').trim()).filter(Boolean).join('\n');
+            return lines.map(l => String(l.value || '').trim()).filter(Boolean).join('\n');
         },
         openCreateModal() {
-            this.menuLines = [''];
+            this.menuLines = [{id: Date.now(), value: ''}];
             this.showCreateModal = true;
         },
         openEdit(d) {
@@ -33,9 +33,9 @@
             this.editMenuLines = this.parseMenuToLines(d.menu);
             this.showEditModal = true;
         },
-        addMenuLine() { this.menuLines.push(''); },
+        addMenuLine() { this.menuLines.push({id: Date.now(), value: ''}); },
         removeMenuLine(i) { if (this.menuLines.length > 1) this.menuLines.splice(i, 1); },
-        addEditMenuLine() { this.editMenuLines.push(''); },
+        addEditMenuLine() { this.editMenuLines.push({id: Date.now(), value: ''}); },
         removeEditMenuLine(i) { if (this.editMenuLines.length > 1) this.editMenuLines.splice(i, 1); },
         openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true; },
         isCompressing: false,
@@ -46,17 +46,23 @@
             this.isCompressing = true;
             try {
                 this.compressedFiles[key] = await window.compressImage(file);
+            } catch(err) {
+                console.error(err);
             } finally {
                 this.isCompressing = false;
             }
         },
-        submitWithCompression(formRef) {
+        submitForm(formRef, lines) {
+            if (!this.joinMenuLines(lines)) {
+                alert('Daftar menu tidak boleh kosong.');
+                return;
+            }
             const form = this.$refs[formRef];
             Object.keys(this.compressedFiles).forEach(name => {
                 if (this.compressedFiles[name]) {
                     const dt = new DataTransfer();
                     dt.items.add(this.compressedFiles[name]);
-                    const input = form.querySelector(`input[name="${name}"]`);
+                    const input = form.querySelector(`input[name='${name}']`);
                     if (input) input.files = dt.files;
                 }
             });
@@ -68,11 +74,13 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Jadwal Menu Makanan Harian</h3><p class="section-subtitle">Informasi menu dan gizi yang dikonsumsi siswa di sekolah</p></div>
-                <button type="button" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Input Menu</button>
+                @if(auth()->user()->hasRole('Admin Sekolah'))
+                    <button type="button" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Input Menu</button>
+                @endif
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Tanggal</th><th>Daftar Menu</th><th>Informasi Gizi</th><th>Foto</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Tanggal</th><th>Daftar Menu</th><th>Informasi Gizi</th><th>Foto</th><th class="text-center">Respon Wali</th>@if(auth()->user()->hasRole('Admin Sekolah'))<th class="text-right">Aksi</th>@endif</tr></thead>
                     <tbody>
                         @forelse($menus as $m)
                         <tr>
@@ -89,13 +97,27 @@
                                     @if(!$m->photo && !$m->photo_kegiatan)<span class="text-xs" style="color:#9E9790;">Tanpa foto</span>@endif
                                 </div>
                             </td>
+                            <td class="text-center">
+                                <div class="flex items-center justify-center gap-3">
+                                    <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-md">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.757c1.246 0 2.228 1.053 2.115 2.285l-1.157 12.63c-.105 1.157-1.077 2.085-2.238 2.085H6.115c-1.161 0-2.133-.928-2.238-2.085L2.72 12.285C2.607 11.053 3.589 10 4.835 10H8.5l.5-5a3 3 0 013 3v2h2z" /></svg>
+                                        {{ $m->likes_count }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 text-xs font-bold text-orange-700 bg-orange-50 px-2 py-1 rounded-md">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.243c-1.246 0-2.228-1.053-2.115-2.285l1.157-12.63C4.39 1.157 5.362.23 6.523.23h11.362c1.161 0 2.133.928 2.238 2.085l1.157 12.63c.113 1.232-.869 2.285-2.115 2.285H15.5l-.5 5a3 3 0 01-3-3v-2h-2z" /></svg>
+                                        {{ $m->dislikes_count }}
+                                    </span>
+                                </div>
+                            </td>
+                            @if(auth()->user()->hasRole('Admin Sekolah'))
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
                                 <button type="button" @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button type="button" @click="openDelete('{{ route('admin.menu-makanan.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
+                            @endif
                         </tr>
                         @empty
-                        <tr><td colspan="5" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada jadwal menu yang diinput.</td></tr>
+                        <tr><td colspan="6" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada jadwal menu yang diinput.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -110,7 +132,7 @@
                     <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm font-bold text-teal-800 uppercase tracking-wider">Mengecilkan Ukuran Foto...</p>
                 </div>
-                <form action="{{ route('admin.menu-makanan.store') }}" method="POST" enctype="multipart/form-data" x-ref="createForm" @submit.prevent="submitWithCompression('createForm')">
+                <form action="{{ route('admin.menu-makanan.store') }}" method="POST" enctype="multipart/form-data" x-ref="createForm" @submit.prevent="submitForm('createForm', menuLines)">
                     @csrf
                     <input type="hidden" name="menu" :value="joinMenuLines(menuLines)">
                     <div class="modal-header"><h3 class="section-title">Input Jadwal Menu Baru</h3></div>
@@ -118,7 +140,7 @@
                         <div><label class="input-label">Tanggal</label><input type="date" name="date" required value="{{ date('Y-m-d') }}" class="input-field"></div>
                         <div>
                             <div class="flex items-center justify-between gap-2 mb-2">
-                                <label class="input-label mb-0">Daftar hidangan</label>
+                                <label class="input-label mb-0">Daftar hidangan <span class="text-red-500">*</span></label>
                                 <button type="button" @click="addMenuLine()" class="text-xs font-semibold px-2.5 py-1 rounded-lg inline-flex items-center gap-1" style="color:#1A6B6B;background:#D0E8E8;">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                                     Tambah
@@ -126,9 +148,9 @@
                             </div>
                             <p class="text-xs mb-2" style="color:#9E9790;">Satu baris per hidangan. Klik Tambah untuk menambah baris baru.</p>
                             <div class="space-y-2">
-                                <template x-for="(line, index) in menuLines" :key="index">
+                                <template x-for="(line, index) in menuLines" :key="line.id">
                                     <div class="flex gap-2 items-center">
-                                        <input type="text" class="input-field flex-1" x-model="menuLines[index]" placeholder="Contoh: Nasi putih, Ayam goreng…">
+                                        <input type="text" class="input-field flex-1" x-model="line.value" placeholder="Contoh: Nasi putih, Ayam goreng…">
                                         <button type="button" @click="removeMenuLine(index)" class="shrink-0 text-xs font-semibold px-2 py-2 rounded-lg disabled:opacity-40" style="color:#C0392B;background:#FAD7D2;" :disabled="menuLines.length <= 1" title="Hapus baris">Hapus</button>
                                     </div>
                                 </template>
@@ -140,7 +162,7 @@
                             <div><label class="input-label">Foto Kegiatan Makan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo_kegiatan')"></div>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(menuLines)">Simpan Menu</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(menuLines) || isCompressing">Simpan Menu</button></div>
                 </form>
             </div>
         </div>
@@ -152,7 +174,7 @@
                     <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm font-bold text-teal-800 uppercase tracking-wider">Mengecilkan Ukuran Foto...</p>
                 </div>
-                <form :action="`/admin/menu-makanan/${editData.id}`" method="POST" enctype="multipart/form-data" x-ref="editForm" @submit.prevent="submitWithCompression('editForm')">
+                <form :action="`/admin/menu-makanan/${editData.id}`" method="POST" enctype="multipart/form-data" x-ref="editForm" @submit.prevent="submitForm('editForm', editMenuLines)">
                     @csrf @method('PUT')
                     <input type="hidden" name="menu" :value="joinMenuLines(editMenuLines)">
                     <div class="modal-header"><h3 class="section-title">Edit Menu Makanan</h3></div>
@@ -160,16 +182,16 @@
                         <div><label class="input-label">Tanggal</label><input type="date" name="date" :value="editData.date ? editData.date.split('T')[0] : ''" required class="input-field"></div>
                         <div>
                             <div class="flex items-center justify-between gap-2 mb-2">
-                                <label class="input-label mb-0">Daftar hidangan</label>
+                                <label class="input-label mb-0">Daftar hidangan <span class="text-red-500">*</span></label>
                                 <button type="button" @click="addEditMenuLine()" class="text-xs font-semibold px-2.5 py-1 rounded-lg inline-flex items-center gap-1" style="color:#1A6B6B;background:#D0E8E8;">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                                     Tambah
                                 </button>
                             </div>
                             <div class="space-y-2">
-                                <template x-for="(line, index) in editMenuLines" :key="index">
+                                <template x-for="(line, index) in editMenuLines" :key="line.id">
                                     <div class="flex gap-2 items-center">
-                                        <input type="text" class="input-field flex-1" x-model="editMenuLines[index]" placeholder="Nama hidangan">
+                                        <input type="text" class="input-field flex-1" x-model="line.value" placeholder="Nama hidangan">
                                         <button type="button" @click="removeEditMenuLine(index)" class="shrink-0 text-xs font-semibold px-2 py-2 rounded-lg disabled:opacity-40" style="color:#C0392B;background:#FAD7D2;" :disabled="editMenuLines.length <= 1">Hapus</button>
                                     </div>
                                 </template>
@@ -181,7 +203,7 @@
                             <div><label class="input-label">Ganti Foto Kegiatan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo_kegiatan')"></div>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(editMenuLines)">Simpan Perubahan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(editMenuLines) || isCompressing">Simpan Perubahan</button></div>
                 </form>
             </div>
         </div>

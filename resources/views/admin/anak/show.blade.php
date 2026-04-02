@@ -35,7 +35,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-gray-100">
                     <div>
                         <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Tanggal Lahir</p>
-                        <p class="font-bold text-[#2C2C2C]">{{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->translatedFormat('d F Y') : '-' }}</p>
+                        <p class="font-bold text-[#2C2C2C]">
+                            {{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->translatedFormat('d F Y') : '-' }}
+                            @if($anak->dob)<span class="ml-1 text-[#1A6B6B] font-bold text-sm">({{ $anak->age }})</span>@endif
+                        </p>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Nama Wali</p>

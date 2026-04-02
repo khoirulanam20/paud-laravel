@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/sekolah', [ProfileController::class, 'updateSekolah'])->name('profile.sekolah.update');
     Route::patch('/profile/pengajar', [ProfileController::class, 'updatePengajar'])->name('profile.pengajar.update');
     Route::patch('/profile/orangtua', [ProfileController::class, 'updateOrangTua'])->name('profile.orangtua.update');
+    Route::patch('/profile/anak/{anak}', [ProfileController::class, 'updateAnak'])->name('profile.anak.update');
 });
 
 // ─────────────────────────────────────────────
@@ -75,6 +76,10 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
     Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
+});
+
+Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('menu-makanan', [MenuMakananController::class, 'index'])->name('menu-makanan.index');
     Route::get('kegiatan', [KegiatanController::class, 'index'])->name('kegiatan.index');
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');

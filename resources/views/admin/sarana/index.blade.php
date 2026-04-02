@@ -19,7 +19,16 @@
                     <tbody>
                         @forelse($saranas as $s)
                         <tr>
-                            <td><span class="font-semibold" style="color:#2C2C2C;">{{ $s->name }}</span></td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    @if($s->photo)
+                                        <img src="{{ Storage::url($s->photo) }}" class="h-8 w-8 rounded-xl object-cover shrink-0">
+                                    @else
+                                        <div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-xs text-white shrink-0" style="background:#1A6B6B;">{{ substr($s->name, 0, 1) }}</div>
+                                    @endif
+                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $s->name }}</span>
+                                </div>
+                            </td>
                             <td><span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50">{{ $s->lokasi ?? '-' }}</span></td>
                             <td><span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50">{{ $s->jenis ?? '-' }}</span></td>
                             <td class="text-center"><span class="badge badge-teal">{{ $s->quantity }}</span></td>
@@ -44,7 +53,7 @@
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
-                <form action="{{ route('admin.sarana.store') }}" method="POST">
+                <form action="{{ route('admin.sarana.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Tambah Sarana Baru</h3></div>
                     <div class="modal-body space-y-4">
@@ -57,6 +66,7 @@
                             <div><label class="input-label">Jumlah</label><input type="number" name="quantity" min="1" value="1" required class="input-field"></div>
                             <div><label class="input-label">Kondisi</label><select name="condition" class="input-field"><option value="Baik">Baik</option><option value="Rusak">Rusak</option><option value="Dalam Perbaikan">Dalam Perbaikan</option></select></div>
                         </div>
+                        <div><label class="input-label">Foto Sarana</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5"></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
                 </form>
@@ -65,7 +75,7 @@
         <!-- EDIT MODAL -->
         <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
-                <form :action="`/admin/sarana/${editData.id}`" method="POST">
+                <form :action="`/admin/sarana/${editData.id}`" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Sarana</h3></div>
                     <div class="modal-body space-y-4">
@@ -78,6 +88,7 @@
                             <div><label class="input-label">Jumlah</label><input type="number" name="quantity" x-model="editData.quantity" min="1" required class="input-field"></div>
                             <div><label class="input-label">Kondisi</label><select name="condition" x-model="editData.condition" class="input-field"><option value="Baik">Baik</option><option value="Rusak">Rusak</option><option value="Dalam Perbaikan">Dalam Perbaikan</option></select></div>
                         </div>
+                        <div><label class="input-label">Ganti Foto</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5"></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>

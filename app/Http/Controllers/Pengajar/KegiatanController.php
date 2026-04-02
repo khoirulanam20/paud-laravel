@@ -64,11 +64,11 @@ class KegiatanController extends Controller
         $request->validate([
             'date' => 'required|date',
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'photos' => 'nullable|array',
             'photos.*' => 'image|max:2048',
             'kelas_id' => 'required|exists:kelas,id',
-            'matrikulasi_ids' => 'nullable|array',
+            'matrikulasi_ids' => 'required|array|min:1',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
 
@@ -110,11 +110,11 @@ class KegiatanController extends Controller
         $request->validate([
             'date' => 'required|date',
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'photos' => 'nullable|array',
             'photos.*' => 'image|max:2048',
             'kelas_id' => 'required|exists:kelas,id',
-            'matrikulasi_ids' => 'nullable|array',
+            'matrikulasi_ids' => 'required|array|min:1',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
 

@@ -82,7 +82,7 @@ class AnakController extends Controller
         ]);
         $user->assignRole('Orang Tua');
 
-        Anak::create([
+        $data = [
             'user_id' => $user->id,
             'sekolah_id' => $sekolah_id,
             'kelas_id' => $request->kelas_id,
@@ -97,7 +97,13 @@ class AnakController extends Controller
             'nama_ibu' => $request->nama_ibu,
             'parent_name' => $user->name,
             'status' => 'approved',
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('anak', 'public');
+        }
+
+        Anak::create($data);
 
         return redirect()->route('admin.anak.index')->with('success', 'Data Anak dan Orang Tua berhasil ditambahkan. Password default Ortu: password123');
     }
@@ -135,7 +141,7 @@ class AnakController extends Controller
             $user->update(['name' => $request->parent_name]);
         }
 
-        $anak->update([
+        $dataArr = [
             'name' => $request->name,
             'dob' => $request->dob,
             'kelas_id' => $request->kelas_id,
@@ -147,7 +153,16 @@ class AnakController extends Controller
             'nik_ibu' => $request->nik_ibu,
             'nama_ibu' => $request->nama_ibu,
             'parent_name' => $request->parent_name,
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            if ($anak->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+            }
+            $dataArr['photo'] = $request->file('photo')->store('anak', 'public');
+        }
+
+        $anak->update($dataArr);
 
         return redirect()->route('admin.anak.index')->with('success', 'Data Anak berhasil diperbarui.');
     }
@@ -157,6 +172,9 @@ class AnakController extends Controller
         abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
         
         $user = $anak->user;
+        if ($anak->photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+        }
         $anak->delete();
         
         if ($user && $user->hasRole('Orang Tua')) {

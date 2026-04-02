@@ -27,6 +27,22 @@ class Anak extends Model
         'nama_ibu',
     ];
 
+    protected $casts = [
+        'dob' => 'date',
+    ];
+
+    public function getAgeAttribute()
+    {
+        if (!$this->dob) return '-';
+        
+        $diff = $this->dob->diff(now());
+        $parts = [];
+        if ($diff->y > 0) $parts[] = $diff->y . ' thn';
+        if ($diff->m > 0) $parts[] = $diff->m . ' bln';
+        
+        return count($parts) > 0 ? implode(' ', $parts) : '0 bln';
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

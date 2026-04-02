@@ -8,7 +8,7 @@
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto space-y-6">
 
-        @if(session('status') && in_array(session('status'), ['profile-updated','profile-sekolah-updated','profile-pengajar-updated','profile-orangtua-updated','password-updated']))
+        @if(session('status') && in_array(session('status'), ['profile-updated','profile-sekolah-updated','profile-pengajar-updated','profile-orangtua-updated','profile-anak-updated','password-updated']))
             <div class="alert-success"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Perubahan berhasil disimpan.</div>
         @endif
 
@@ -101,6 +101,39 @@
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data Wali</button></div>
             </form>
         </div>
+
+        {{-- SECTION: Data Anak --}}
+        @foreach($anaks as $anak)
+        <div class="card">
+            <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color:rgba(0,0,0,0.06);">
+                <div>
+                    <h3 class="section-title">Data Anak: {{ $anak->name }}</h3>
+                    <p class="section-subtitle">Informasi detail mengenai anak Anda.</p>
+                </div>
+                @if($anak->photo)
+                    <img src="{{ Storage::url($anak->photo) }}" class="h-12 w-12 rounded-full object-cover border-2 border-teal-600/20">
+                @endif
+            </div>
+            <form method="post" action="{{ route('profile.anak.update', $anak) }}" enctype="multipart/form-data" class="px-6 py-5 space-y-4">
+                @csrf @method('patch')
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2"><label class="input-label">Nama Lengkap Anak</label><input type="text" name="name" value="{{ $anak->name }}" required class="input-field"></div>
+                    <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" value="{{ $anak->dob }}" required class="input-field"></div>
+                    <div><label class="input-label">NIK Anak (opsional)</label><input type="text" name="nik" value="{{ $anak->nik }}" class="input-field"></div>
+                    <div><label class="input-label">Jenis Kelamin</label>
+                        <select name="jenis_kelamin" class="input-field">
+                            <option value="">Pilih...</option>
+                            <option value="Laki-laki" {{ $anak->jenis_kelamin == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="Perempuan" {{ $anak->jenis_kelamin == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                        </select>
+                    </div>
+                    <div><label class="input-label">Foto Anak</label><input type="file" name="photo" accept="image/*" class="input-field py-1 text-xs"></div>
+                    <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="2">{{ $anak->alamat }}</textarea></div>
+                </div>
+                <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data {{ $anak->name }}</button></div>
+            </form>
+        </div>
+        @endforeach
         @endif
 
         {{-- SECTION: Ganti Password --}}

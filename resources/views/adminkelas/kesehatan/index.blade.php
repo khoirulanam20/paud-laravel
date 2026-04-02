@@ -79,7 +79,7 @@
                             <th>Kebersihan (G/T/K)</th>
                             <th>Alergi</th>
                             <th>Pemeriksaan Terakhir</th>
-                            <th class="text-right">Aksi</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,7 +91,10 @@
                                         <div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background: #1A6B6B;">{{ substr($anak->name, 0, 1) }}</div>
                                         <div>
                                             <span class="font-semibold block text-[#2C2C2C]">{{ $anak->name }}</span>
-                                            <span class="text-[10px] text-gray-500 uppercase tracking-wider">{{ $anak->jenis_kelamin }}</span>
+                                            <div class="flex items-center gap-1.5 mt-0.5">
+                                                <span class="text-[10px] text-gray-500 uppercase tracking-wider">{{ $anak->jenis_kelamin }}</span>
+                                                <span class="text-[10px] font-bold text-[#1A6B6B]">• {{ $anak->age }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -112,16 +115,18 @@
                                 </td>
                                 <td>
                                     @if($latest)
-                                        <div class="flex gap-1.5">
-                                            @foreach(['gigi' => 'G', 'telinga' => 'T', 'kuku' => 'K'] as $field => $label)
+                                        <div class="flex flex-col gap-1 text-[10px] py-1">
+                                            @foreach(['gigi' => 'Gigi', 'telinga' => 'Telinga', 'kuku' => 'Kuku'] as $field => $label)
                                                 @php 
                                                     $val = $latest->$field;
                                                     $isGood = Str::contains(strtolower($val), 'bersih') || Str::contains(strtolower($val), 'rapi');
-                                                    $bg = $isGood ? 'bg-[#E8F5E9]' : 'bg-[#FFEBEE]';
-                                                    $text = $isGood ? 'text-[#2E7D32]' : 'text-[#C62828]';
+                                                    $color = $isGood ? 'text-[#2E7D32]' : 'text-[#C62828]';
+                                                    $dot = $isGood ? 'bg-[#4CAF50]' : 'bg-[#F44336]';
                                                 @endphp
-                                                <div title="{{ ucfirst($field) }}: {{ $val }}" class="h-7 w-7 rounded-full flex items-center justify-center font-bold text-[10px] {{ $bg }} {{ $text }} border-2 border-white shadow-sm cursor-help shrink-0">
-                                                    {{ $label }}
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full {{ $dot }} shrink-0"></span>
+                                                    <span class="font-bold text-gray-600 whitespace-nowrap">{{ $label }}:</span>
+                                                    <span class="{{ $color }} font-medium">{{ $val }}</span>
                                                 </div>
                                             @endforeach
                                         </div>

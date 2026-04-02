@@ -238,12 +238,12 @@
                             @error('title')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="input-label">Deskripsi Kegiatan</label>
-                            <textarea name="description" rows="3" class="input-field @error('description') border-red-500 @enderror" placeholder="Ceritakan apa yang terjadi...">{{ old('description') }}</textarea>
+                            <label class="input-label">Deskripsi Kegiatan <span class="text-red-500">*</span></label>
+                            <textarea name="description" required rows="3" class="input-field @error('description') border-red-500 @enderror" placeholder="Ceritakan apa yang terjadi...">{{ old('description') }}</textarea>
                             @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="input-label">Kaitkan dengan Indikator Matrikulasi</label>
+                            <label class="input-label">Kaitkan dengan Indikator Matrikulasi <span class="text-red-500">*</span></label>
                             <div class="mt-2 rounded-xl border overflow-hidden max-h-48 overflow-y-auto" style="border-color:rgba(0,0,0,0.1);">
                                 @forelse($matrikulasis as $m)
                                 <label class="flex items-start gap-3 px-4 py-2.5 hover:bg-teal-50 cursor-pointer border-b last:border-b-0" style="border-color:rgba(0,0,0,0.04);">
@@ -294,12 +294,12 @@
                             @error('title')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="input-label">Deskripsi</label>
-                            <textarea name="description" x-model="editData.description" rows="3" class="input-field @error('description') border-red-500 @enderror"></textarea>
+                            <label class="input-label">Deskripsi <span class="text-red-500">*</span></label>
+                            <textarea name="description" required x-model="editData.description" rows="3" class="input-field @error('description') border-red-500 @enderror"></textarea>
                             @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="input-label">Indikator Matrikulasi</label>
+                            <label class="input-label">Indikator Matrikulasi <span class="text-red-500">*</span></label>
                             <div class="mt-2 rounded-xl border overflow-hidden max-h-48 overflow-y-auto" style="border-color:rgba(0,0,0,0.1);">
                                 @forelse($matrikulasis as $m)
                                 <label class="flex items-start gap-3 px-4 py-2.5 hover:bg-teal-50 cursor-pointer border-b last:border-b-0" style="border-color:rgba(0,0,0,0.04);">

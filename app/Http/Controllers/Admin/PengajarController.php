@@ -54,7 +54,7 @@ class PengajarController extends Controller
         ]);
         $user->assignRole('Pengajar');
 
-        $pengajar = Pengajar::create([
+        $data = [
             'user_id' => $user->id,
             'sekolah_id' => $sekolah_id,
             'name' => $request->name,
@@ -64,7 +64,13 @@ class PengajarController extends Controller
             'phone' => $request->phone,
             'pendidikan' => $request->pendidikan,
             'jenis_kelamin' => $request->jenis_kelamin,
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('pengajar', 'public');
+        }
+
+        $pengajar = Pengajar::create($data);
 
         if ($request->has('kelas_id')) {
             $pengajar->kelas()->sync($request->kelas_id);
@@ -94,7 +100,7 @@ class PengajarController extends Controller
             'kelas_id.*' => 'exists:kelas,id',
         ]);
 
-        $pengajar->update([
+        $dataArr = [
             'name' => $request->name,
             'jabatan' => $request->jabatan,
             'nik' => $request->nik,
@@ -102,7 +108,16 @@ class PengajarController extends Controller
             'phone' => $request->phone,
             'pendidikan' => $request->pendidikan,
             'jenis_kelamin' => $request->jenis_kelamin,
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            if ($pengajar->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajar->photo);
+            }
+            $dataArr['photo'] = $request->file('photo')->store('pengajar', 'public');
+        }
+
+        $pengajar->update($dataArr);
 
         $user = $pengajar->user;
         $user->update([
@@ -119,6 +134,9 @@ class PengajarController extends Controller
         abort_if($pengajar->sekolah_id !== auth()->user()->sekolah_id, 403);
         
         $user = $pengajar->user;
+        if ($pengajar->photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajar->photo);
+        }
         $pengajar->delete();
         
         if ($user) {

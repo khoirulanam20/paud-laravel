@@ -16,7 +16,10 @@
                         <div class="h-12 w-12 rounded-2xl flex items-center justify-center font-bold text-xl text-white shrink-0" style="background: #1A6B6B;">{{ substr($anak->name, 0, 1) }}</div>
                         <div>
                             <h3 class="font-bold text-lg text-[#2C2C2C]">{{ $anak->name }}</h3>
-                            <p class="text-sm text-gray-500">{{ $anak->kelas ? $anak->kelas->name : 'Belum ada kelas' }}</p>
+                            <p class="text-sm text-gray-500">
+                                {{ $anak->kelas ? $anak->kelas->name : 'Belum ada kelas' }}
+                                @if($anak->dob)<span class="ml-1 text-[#1A6B6B] font-bold text-xs">• {{ $anak->age }}</span>@endif
+                            </p>
                         </div>
                     </div>
                 </div>

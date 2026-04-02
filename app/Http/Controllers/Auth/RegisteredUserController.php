@@ -41,6 +41,7 @@ class RegisteredUserController extends Controller
             'sekolah_id' => ['required', 'exists:sekolahs,id'],
             'anak_name' => ['required', 'string', 'max:255'],
             'anak_dob' => ['required', 'date', 'before:today'],
+            'photo' => ['nullable', 'image', 'max:2048'],
             'catatan_ortu' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -71,6 +72,11 @@ class RegisteredUserController extends Controller
                 'dob' => $request->anak_dob,
                 'parent_name' => $request->name,
             ];
+
+            if ($request->hasFile('photo')) {
+                $path = $request->file('photo')->store('anak_photos', 'public');
+                $anakData['photo'] = $path;
+            }
 
             if (Schema::hasColumn('anaks', 'status')) {
                 $anakData['status'] = 'pending';

@@ -25,14 +25,20 @@ class SaranaController extends Controller
             'jenis' => 'nullable|in:Edukasi,Permainan',
         ]);
 
-        Sarana::create([
+        $data = [
             'sekolah_id' => auth()->user()->sekolah_id,
             'name' => $request->name,
             'condition' => $request->condition,
             'quantity' => $request->quantity,
             'lokasi' => $request->lokasi,
             'jenis' => $request->jenis,
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('sarana', 'public');
+        }
+
+        Sarana::create($data);
 
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil ditambahkan.');
     }
@@ -49,13 +55,22 @@ class SaranaController extends Controller
             'jenis' => 'nullable|in:Edukasi,Permainan',
         ]);
 
-        $sarana->update([
+        $dataArr = [
             'name' => $request->name,
             'condition' => $request->condition,
             'quantity' => $request->quantity,
             'lokasi' => $request->lokasi,
             'jenis' => $request->jenis,
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            if ($sarana->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($sarana->photo);
+            }
+            $dataArr['photo'] = $request->file('photo')->store('sarana', 'public');
+        }
+
+        $sarana->update($dataArr);
 
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil diperbarui.');
     }
@@ -63,6 +78,9 @@ class SaranaController extends Controller
     public function destroy(Sarana $sarana)
     {
         abort_if($sarana->sekolah_id !== auth()->user()->sekolah_id, 403);
+        if ($sarana->photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($sarana->photo);
+        }
         $sarana->delete();
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil dihapus.');
     }

@@ -11,6 +11,7 @@ use App\Models\MenuMakanan;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
 use App\Models\Presensi;
+use App\Models\MenuMakananVote;
 use App\Models\Sarana;
 use App\Models\Sekolah;
 use App\Models\User;

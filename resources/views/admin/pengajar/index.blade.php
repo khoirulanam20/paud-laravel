@@ -19,7 +19,13 @@
                     <tbody>
                         @forelse($pengajars as $p)
                         <tr>
-                            <td><div class="flex items-center gap-3"><div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background:#1A6B6B;">{{ substr($p->name, 0, 1) }}</div><span class="font-semibold" style="color:#2C2C2C;">{{ $p->name }}</span></div></td>
+                            <td><div class="flex items-center gap-3">
+                                @if($p->photo)
+                                    <img src="{{ Storage::url($p->photo) }}" class="h-8 w-8 rounded-xl object-cover shrink-0">
+                                @else
+                                    <div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background:#1A6B6B;">{{ substr($p->name, 0, 1) }}</div>
+                                @endif
+                                <span class="font-semibold" style="color:#2C2C2C;">{{ $p->name }}</span></div></td>
                             <td><span class="badge badge-teal">{{ $p->user->email ?? '-' }}</span></td>
                             <td>{{ $p->jabatan ?? '-' }}</td>
                             <td>
@@ -49,7 +55,7 @@
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
-                <form action="{{ route('admin.pengajar.store') }}" method="POST">
+                <form action="{{ route('admin.pengajar.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Pengajar Baru</h3><p class="section-subtitle">Password login awal: <code>password123</code></p></div>
                     <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
@@ -105,7 +111,10 @@
                                 @error('jenis_kelamin')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                             </div>
                         </div>
-                        <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" class="input-field" placeholder="Contoh: Guru Kelas A"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" class="input-field" placeholder="Contoh: Guru Kelas A"></div>
+                            <div><label class="input-label">Foto Pengajar</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5"></div>
+                        </div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" rows="2" class="input-field" placeholder="Prov, Kab, Kec, Kel..."></textarea></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Registrasikan</button></div>
@@ -115,7 +124,7 @@
         <!-- EDIT MODAL -->
         <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
-                <form :action="`/admin/pengajar/${editData.id}`" method="POST">
+                <form :action="`/admin/pengajar/${editData.id}`" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Pengajar</h3></div>
                     <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
@@ -153,7 +162,10 @@
                             </div>
                             <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" x-model="editData.jenis_kelamin" class="input-field"><option value="">Pilih...</option><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
                         </div>
-                        <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" x-model="editData.jabatan" class="input-field"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Jabatan / Posisi</label><input type="text" name="jabatan" x-model="editData.jabatan" class="input-field"></div>
+                            <div><label class="input-label">Ganti Foto</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5"></div>
+                        </div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" x-model="editData.alamat" rows="2" class="input-field"></textarea></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>

@@ -35,7 +35,10 @@
                             <td><span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span></td>
                             <td>{{ $a->parent_name ?? $a->user->name }}</td>
                             <td class="text-sm" style="color:#9E9790;">{{ $a->user->email }}</td>
-                            <td>{{ $a->dob ? \Carbon\Carbon::parse($a->dob)->format('d M Y') : '-' }}</td>
+                            <td>
+                                {{ $a->dob ? \Carbon\Carbon::parse($a->dob)->format('d M Y') : '-' }}
+                                @if($a->dob)<span class="text-[10px] block text-[#1A6B6B] font-bold">{{ $a->age }}</span>@endif
+                            </td>
                             <td class="max-w-xs text-sm italic" style="color:#9E9790;">{{ $a->catatan_ortu ?? '-' }}</td>
                             <td class="text-right">
                                 <div class="flex items-center justify-end gap-2">

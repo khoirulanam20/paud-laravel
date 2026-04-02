@@ -96,8 +96,12 @@
                             <tr>
                                 <td>
                                     <div class="flex items-center gap-3">
+                                    @if($anak->photo)
+                                        <img src="{{ Storage::url($anak->photo) }}" class="h-8 w-8 rounded-xl object-cover shrink-0">
+                                    @else
                                         <div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background: #1A6B6B;">{{ substr($anak->name, 0, 1) }}</div>
-                                        <span class="font-semibold" style="color: #2C2C2C;">{{ $anak->name }}</span>
+                                    @endif
+                                    <span class="font-semibold" style="color: #2C2C2C;">{{ $anak->name }}</span>
                                     </div>
                                 </td>
                                 <td>
@@ -108,7 +112,12 @@
                                     <span class="font-bold text-sm tabular-nums" style="color:#1A6B6B;">{{ (int) ($hadirPeriode[$anak->id] ?? 0) }}</span>
                                     <span class="text-xs block" style="color:#9E9790;">hari</span>
                                 </td>
-                                <td>{{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->format('d M Y') : '-' }}</td>
+                                <td>
+                                    {{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->format('d M Y') : '-' }}
+                                    @if($anak->dob)
+                                        <span class="text-[10px] block font-bold text-[#1A6B6B]">{{ $anak->age }}</span>
+                                    @endif
+                                </td>
                                 <td>{{ $anak->parent_name }}</td>
                                 <td>
                                     @if($anak->user)
@@ -149,7 +158,7 @@
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal = false">
-                <form action="{{ route('admin.anak.store') }}" method="POST">
+                <form action="{{ route('admin.anak.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header">
                         <h3 class="section-title">Registrasi Siswa & Orang Tua</h3>
@@ -188,6 +197,10 @@
                             <label class="input-label">Tanggal Lahir</label>
                             <input type="date" name="dob" class="input-field @error('dob') border-red-500 @enderror" value="{{ old('dob') }}">
                             @error('dob')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Foto Siswa</label>
+                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5">
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Alamat Lengkap</label>
@@ -238,7 +251,7 @@
         <!-- EDIT MODAL -->
         <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal = false">
-                <form :action="`/admin/anak/${editData.id}`" method="POST">
+                <form :action="`/admin/anak/${editData.id}`" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header">
                         <h3 class="section-title">Edit Data Anak</h3>
@@ -271,6 +284,10 @@
                             <label class="input-label">Tanggal Lahir</label>
                             <input type="date" name="dob" x-model="editData.dob" class="input-field @error('dob') border-red-500 @enderror">
                             @error('dob')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Ganti Foto</label>
+                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5">
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Alamat Lengkap</label>

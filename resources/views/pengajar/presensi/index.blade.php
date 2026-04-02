@@ -87,7 +87,10 @@
                                             <input type="checkbox" name="hadir[]" value="{{ $anak->id }}" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                                 @checked($checked)>
                                         </td>
-                                        <td><span class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</span></td>
+                                        <td>
+                                            <span class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</span>
+                                            @if($anak->dob)<span class="ml-1 text-[10px] font-bold text-[#1A6B6B]">({{ $anak->age }})</span>@endif
+                                        </td>
                                         <td style="color:#6B6560;">{{ $anak->user->name ?? '—' }}</td>
                                     </tr>
                                 @endforeach

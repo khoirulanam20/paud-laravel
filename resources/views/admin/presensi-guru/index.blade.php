@@ -95,5 +95,59 @@
                 </div>
             @endif
         </form>
+
+        <div class="mt-12">
+            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-bold text-amber-900 leading-tight">Rekap Absensi</h3>
+                    <p class="text-xs text-amber-800/60 font-medium">Akumulasi kehadiran pengajar periode {{ Carbon\Carbon::create($rekapYear, $rekapMonth, 1)->translatedFormat('F Y') }}</p>
+                </div>
+                
+                <form action="{{ route('admin.presensi-guru.index') }}" method="GET" class="flex items-center gap-2">
+                    <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                    <select name="rekap_month" class="input-field py-1.5 text-xs border-amber-100 bg-white min-w-[8rem]" onchange="this.form.submit()">
+                        @for($m=1; $m<=12; $m++)
+                            <option value="{{ $m }}" {{ $rekapMonth == $m ? 'selected' : '' }}>
+                                {{ Carbon\Carbon::create(2024, $m, 1)->translatedFormat('F') }}
+                            </option>
+                        @endfor
+                    </select>
+                    <select name="rekap_year" class="input-field py-1.5 text-xs border-amber-100 bg-white min-w-[5rem]" onchange="this.form.submit()">
+                        @php $currentYear = date('Y'); @endphp
+                        @for($y=$currentYear-2; $y<=$currentYear; $y++)
+                            <option value="{{ $y }}" {{ $rekapYear == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </form>
+            </div>
+            
+            <div class="card overflow-hidden border-none shadow-sm shadow-amber-900/5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-amber-50/50">
+                                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40">Nama Pengajar</th>
+                                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-green-700 text-center">Hadir</th>
+                                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-600 text-center">Sakit</th>
+                                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-600 text-center">Izin</th>
+                                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-red-600 text-center">Alpa</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-amber-50">
+                            @foreach($pengajars as $pengajar)
+                                @php $rekap = $rekapBulanan->get($pengajar->id) ?? ['hadir'=>0,'sakit'=>0,'izin'=>0,'alpa'=>0]; @endphp
+                                <tr class="hover:bg-amber-50/30 transition">
+                                    <td class="px-6 py-4 font-bold text-gray-900 text-sm">{{ $pengajar->name }}</td>
+                                    <td class="px-6 py-4 text-center font-bold text-green-600 text-sm">{{ $rekap['hadir'] }}</td>
+                                    <td class="px-6 py-4 text-center font-medium text-amber-700 text-sm">{{ $rekap['sakit'] }}</td>
+                                    <td class="px-6 py-4 text-center font-medium text-amber-700 text-sm">{{ $rekap['izin'] }}</td>
+                                    <td class="px-6 py-4 text-center font-bold text-red-600 text-sm">{{ $rekap['alpa'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </x-app-layout>

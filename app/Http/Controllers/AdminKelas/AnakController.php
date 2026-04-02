@@ -12,10 +12,11 @@ class AnakController extends Controller
     {
         $user = auth()->user();
         $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelas = $pengajar->kelas;
+        $kelasIds = $kelas->pluck('id')->toArray();
 
         $anaks = Anak::whereIn('kelas_id', $kelasIds)->with('kelas')->orderBy('name')->paginate(20);
-        return view('adminkelas.anak.index', compact('anaks'));
+        return view('adminkelas.anak.index', compact('anaks', 'kelas'));
     }
 
     public function show(Anak $anak)
@@ -33,5 +34,118 @@ class AnakController extends Controller
         ]);
 
         return view('adminkelas.anak.show', compact('anak'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'kelas_id' => 'required|exists:kelas,id',
+            'dob' => 'nullable|date',
+            'nik' => 'nullable|string|max:20',
+            'parent_name' => 'nullable|string|max:255',
+        ]);
+
+        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $sekolah_id = $pengajar->sekolah_id;
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        abort_unless(in_array($request->kelas_id, $kelasIds), 403);
+
+        $user = \App\Models\User::create([
+            'name' => $request->parent_name ?: $request->name . ' Parent',
+            'email' => $request->email,
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'sekolah_id' => $sekolah_id,
+        ]);
+        $user->assignRole('Orang Tua');
+
+        $data = [
+            'user_id' => $user->id,
+            'sekolah_id' => $sekolah_id,
+            'kelas_id' => $request->kelas_id,
+            'name' => $request->name,
+            'dob' => $request->dob,
+            'nik' => $request->nik,
+            'alamat' => $request->alamat,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'nik_bapak' => $request->nik_bapak,
+            'nama_bapak' => $request->nama_bapak,
+            'nik_ibu' => $request->nik_ibu,
+            'nama_ibu' => $request->nama_ibu,
+            'parent_name' => $user->name,
+            'status' => 'approved',
+        ];
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('anak', 'public');
+        }
+
+        Anak::create($data);
+
+        return redirect()->route('adminkelas.anak.index')->with('success', 'Data Siswa berhasil ditambahkan.');
+    }
+
+    public function update(Request $request, Anak $anak)
+    {
+        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'kelas_id' => 'required|exists:kelas,id',
+            'dob' => 'nullable|date',
+            'nik' => 'nullable|string|max:20',
+        ]);
+
+        abort_unless(in_array($request->kelas_id, $kelasIds), 403);
+
+        $dataArr = [
+            'name' => $request->name,
+            'dob' => $request->dob,
+            'kelas_id' => $request->kelas_id,
+            'nik' => $request->nik,
+            'alamat' => $request->alamat,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'nik_bapak' => $request->nik_bapak,
+            'nama_bapak' => $request->nama_bapak,
+            'nik_ibu' => $request->nik_ibu,
+            'nama_ibu' => $request->nama_ibu,
+            'parent_name' => $request->parent_name,
+        ];
+
+        if ($request->hasFile('photo')) {
+            if ($anak->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+            }
+            $dataArr['photo'] = $request->file('photo')->store('anak', 'public');
+        }
+
+        $anak->update($dataArr);
+
+        if ($anak->user) {
+            $anak->user->update(['name' => $request->parent_name]);
+        }
+
+        return redirect()->route('adminkelas.anak.index')->with('success', 'Data Siswa diperbarui.');
+    }
+
+    public function destroy(Anak $anak)
+    {
+        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
+
+        $user = $anak->user;
+        if ($anak->photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+        }
+        $anak->delete();
+        if ($user && $user->hasRole('Orang Tua')) {
+            $user->delete();
+        }
+
+        return redirect()->route('adminkelas.anak.index')->with('success', 'Data Siswa dihapus.');
     }
 }

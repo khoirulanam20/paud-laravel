@@ -90,6 +90,33 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-orangtua-updated');
     }
 
+    public function updateAnak(Request $request, Anak $anak): RedirectResponse
+    {
+        abort_if($anak->user_id !== $request->user()->id, 403);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'dob' => 'required|date',
+            'nik' => 'nullable|string|max:50',
+            'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
+            'alamat' => 'nullable|string',
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->only('name', 'dob', 'nik', 'jenis_kelamin', 'alamat');
+
+        if ($request->hasFile('photo')) {
+            if ($anak->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('anak', 'public');
+        }
+
+        $anak->update($data);
+
+        return Redirect::route('profile.edit')->with('status', 'profile-anak-updated');
+    }
+
     /**
      * Update the user's profile information.
      */

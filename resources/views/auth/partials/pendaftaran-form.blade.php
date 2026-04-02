@@ -10,7 +10,7 @@
     Pendaftaran akan ditinjau oleh Admin Sekolah. Anda bisa masuk setelah akun disetujui.
 </div>
 
-<form method="POST" action="{{ $action }}" class="space-y-5">
+<form method="POST" action="{{ $action }}" class="space-y-5" enctype="multipart/form-data">
     @csrf
 
     <div>
@@ -48,8 +48,56 @@
             </div>
             <div>
                 <x-input-label for="anak_dob" :value="__('Tanggal lahir anak')" />
-                <x-text-input id="anak_dob" type="date" name="anak_dob" :value="old('anak_dob')" required max="{{ now()->subDay()->format('Y-m-d') }}" />
+                <x-text-input id="anak_dob" type="date" name="anak_dob" :value="old('anak_dob')" required max="{{ now()->subDay()->format('Y-m-d') }}" onchange="updateAgePreview(this.value)" />
+                <p id="age-preview" class="text-[10px] font-bold text-[#1A6B6B] mt-1" style="display: none;"></p>
                 <x-input-error :messages="$errors->get('anak_dob')" class="mt-1" />
+            </div>
+
+            <script>
+                function updateAgePreview(dobString) {
+                    const preview = document.getElementById('age-preview');
+                    if (!dobString) {
+                        preview.style.display = 'none';
+                        return;
+                    }
+                    
+                    const birthDate = new Date(dobString);
+                    const today = new Date();
+                    
+                    let years = today.getFullYear() - birthDate.getFullYear();
+                    let months = today.getMonth() - birthDate.getMonth();
+                    
+                    if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+                        years--;
+                        months += 12;
+                    }
+                    
+                    if (today.getDate() < birthDate.getDate()) {
+                        months--;
+                    }
+                    
+                    if (months < 0) {
+                        months += 12;
+                    }
+
+                    let text = '';
+                    if (years > 0) text += years + ' thn ';
+                    if (months > 0) text += months + ' bln';
+                    if (text === '') text = '0 bln';
+                    
+                    preview.textContent = 'Umur saat ini: ' + text.trim();
+                    preview.style.display = 'block';
+                }
+                // Run on load if value exists
+                window.addEventListener('DOMContentLoaded', () => {
+                    const dob = document.getElementById('anak_dob').value;
+                    if(dob) updateAgePreview(dob);
+                });
+            </script>
+            <div>
+                <x-input-label for="photo" :value="__('Foto anak')" />
+                <input id="photo" type="file" name="photo" class="input-field py-2" accept="image/*" />
+                <x-input-error :messages="$errors->get('photo')" class="mt-1" />
             </div>
             <div>
                 <x-input-label for="catatan_ortu" :value="__('Catatan (opsional)')" />
