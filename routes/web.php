@@ -75,11 +75,10 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('anak', AnakController::class)->except(['create', 'edit']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
-    Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
 });
 
 Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('menu-makanan', [MenuMakananController::class, 'index'])->name('menu-makanan.index');
+    Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
     Route::get('kegiatan', [KegiatanController::class, 'index'])->name('kegiatan.index');
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
@@ -103,7 +102,10 @@ use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiCont
 
 Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
     Route::get('anak', [AdminKelasAnakController::class, 'index'])->name('anak.index');
+    Route::post('anak', [AdminKelasAnakController::class, 'store'])->name('anak.store');
     Route::get('anak/{anak}', [AdminKelasAnakController::class, 'show'])->name('anak.show');
+    Route::put('anak/{anak}', [AdminKelasAnakController::class, 'update'])->name('anak.update');
+    Route::delete('anak/{anak}', [AdminKelasAnakController::class, 'destroy'])->name('anak.destroy');
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store']);

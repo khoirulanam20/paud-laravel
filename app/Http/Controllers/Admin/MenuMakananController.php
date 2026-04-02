@@ -9,9 +9,24 @@ use Illuminate\Support\Facades\Storage;
 
 class MenuMakananController extends Controller
 {
+    protected function currentSekolahId(): int
+    {
+        $user = auth()->user();
+        if ($user->sekolah_id) {
+            return (int) $user->sekolah_id;
+        }
+        $pengajar = $user->relationLoaded('pengajar')
+            ? $user->pengajar
+            : $user->pengajar()->first();
+        if ($pengajar?->sekolah_id) {
+            return (int) $pengajar->sekolah_id;
+        }
+        abort(403, 'Akun tidak terhubung ke sekolah.');
+    }
+
     public function index()
     {
-        $sekolah_id = auth()->user()->sekolah_id;
+        $sekolah_id = $this->currentSekolahId();
         $menus = MenuMakanan::where('sekolah_id', $sekolah_id)
             ->withCount(['votes as likes_count' => fn($q) => $q->where('vote_type', 'like')])
             ->withCount(['votes as dislikes_count' => fn($q) => $q->where('vote_type', 'dislike')])
@@ -31,7 +46,7 @@ class MenuMakananController extends Controller
         ]);
 
         $data = [
-            'sekolah_id' => auth()->user()->sekolah_id,
+            'sekolah_id' => $this->currentSekolahId(),
             'date' => $request->date,
             'menu' => $request->menu,
             'nutrition_info' => $request->nutrition_info,
@@ -52,7 +67,7 @@ class MenuMakananController extends Controller
 
     public function update(Request $request, MenuMakanan $menu_makanan)
     {
-        abort_if($menu_makanan->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($menu_makanan->sekolah_id !== $this->currentSekolahId(), 403);
 
         $request->validate([
             'date' => 'required|date',
@@ -90,7 +105,7 @@ class MenuMakananController extends Controller
 
     public function destroy(MenuMakanan $menu_makanan)
     {
-        abort_if($menu_makanan->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($menu_makanan->sekolah_id !== $this->currentSekolahId(), 403);
         
         if ($menu_makanan->photo) {
             Storage::disk('public')->delete($menu_makanan->photo);
