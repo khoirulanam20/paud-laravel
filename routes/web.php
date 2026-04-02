@@ -75,10 +75,10 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('anak', AnakController::class)->except(['create', 'edit']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
+    Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
 });
 
 Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
     Route::get('kegiatan', [KegiatanController::class, 'index'])->name('kegiatan.index');
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
