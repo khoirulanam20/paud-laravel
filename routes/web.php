@@ -21,6 +21,16 @@ use App\Http\Controllers\Lembaga\CmsController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
 use App\Http\Controllers\Lembaga\SekolahController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
+use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
+use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
+use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
+use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
+use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
+use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
+use App\Http\Controllers\Pengajar\MatrikulasiController;
+use App\Http\Controllers\Pengajar\PencapaianController;
+use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
@@ -97,15 +107,8 @@ Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->
 // ─────────────────────────────────────────────
 // ADMIN KELAS
 // ─────────────────────────────────────────────
-use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
-use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
-
 Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
-    Route::get('anak', [AdminKelasAnakController::class, 'index'])->name('anak.index');
-    Route::post('anak', [AdminKelasAnakController::class, 'store'])->name('anak.store');
-    Route::get('anak/{anak}', [AdminKelasAnakController::class, 'show'])->name('anak.show');
-    Route::put('anak/{anak}', [AdminKelasAnakController::class, 'update'])->name('anak.update');
-    Route::delete('anak/{anak}', [AdminKelasAnakController::class, 'destroy'])->name('anak.destroy');
+    Route::resource('anak', AdminKelasAnakController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store']);
@@ -114,11 +117,6 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
 // ─────────────────────────────────────────────
 // PENGAJAR
 // ─────────────────────────────────────────────
-use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
-use App\Http\Controllers\Pengajar\MatrikulasiController;
-use App\Http\Controllers\Pengajar\PencapaianController;
-use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
-
 Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar.')->group(function () {
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
@@ -134,11 +132,6 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
 // ─────────────────────────────────────────────
 // ORANG TUA
 // ─────────────────────────────────────────────
-use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
-use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
-use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
-use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
-
 Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtua.')->group(function () {
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');
     Route::get('pencapaian', [OrangTuaPencapaianController::class, 'index'])->name('pencapaian.index');
