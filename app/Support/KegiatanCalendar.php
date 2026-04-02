@@ -52,7 +52,7 @@ class KegiatanCalendar
      */
     public static function toPengajarEvent(Kegiatan $k): array
     {
-        $k->loadMissing(['pencapaians.anak', 'pencapaians.matrikulasi', 'matrikulasis', 'kelas']);
+        $k->loadMissing(['pengajar', 'pencapaians.anak', 'pencapaians.matrikulasi', 'matrikulasis', 'kelas']);
 
         $detail = [
             'id' => $k->id,
@@ -60,6 +60,8 @@ class KegiatanCalendar
             'date' => self::formatDate($k),
             'description' => $k->description,
             'kelas_name' => $k->kelas->name ?? '-',
+            'pengajar_name' => $k->pengajar->name ?? '-',
+            'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
             'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
             'pencapaians' => $k->pencapaians->map(function ($p) {
                 return [
@@ -70,7 +72,10 @@ class KegiatanCalendar
                     'feedback' => $p->feedback,
                     'aspek' => $p->matrikulasi->aspek ?? null,
                     'indicator' => $p->matrikulasi->indicator ?? null,
-                    'anak' => ['name' => $p->anak->name ?? '-'],
+                    'anak' => [
+                        'name' => $p->anak->name ?? '-',
+                        'photo_url' => filled($p->anak?->photo) ? Storage::url($p->anak->photo) : null,
+                    ],
                 ];
             })->values()->all(),
             'photo_urls_raw' => $k->photos ?? [],
@@ -127,6 +132,7 @@ class KegiatanCalendar
             'description' => $k->description,
             'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
             'pengajar_name' => $k->pengajar->name ?? '-',
+            'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
             'kelas_name' => $k->kelas->name ?? '-',
             'pencapaians' => $pencapaians->map(function ($p) {
                 return [
@@ -138,6 +144,7 @@ class KegiatanCalendar
                     'aspek' => $p->matrikulasi->aspek ?? null,
                     'indicator' => $p->matrikulasi->indicator ?? null,
                     'anak_name' => $p->anak->name ?? '-',
+                    'anak_photo_url' => filled($p->anak?->photo) ? Storage::url($p->anak->photo) : null,
                 ];
             })->values()->all(),
         ];

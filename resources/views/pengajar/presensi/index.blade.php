@@ -88,8 +88,11 @@
                                                 @checked($checked)>
                                         </td>
                                         <td>
-                                            <span class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</span>
-                                            @if($anak->dob)<span class="ml-1 text-[10px] font-bold text-[#1A6B6B]">({{ $anak->age }})</span>@endif
+                                            <div class="flex items-center gap-2">
+                                                <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
+                                                <span class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</span>
+                                                @if($anak->dob)<span class="text-[10px] font-bold text-[#1A6B6B]">({{ $anak->age }})</span>@endif
+                                            </div>
                                         </td>
                                         <td style="color:#6B6560;">{{ $anak->user->name ?? '—' }}</td>
                                     </tr>

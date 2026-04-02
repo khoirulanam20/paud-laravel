@@ -45,9 +45,7 @@
                                 <tr class="hover:bg-amber-50/30 transition">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center font-bold text-amber-700 border border-amber-200">
-                                                {{ substr($pengajar->name, 0, 1) }}
-                                            </div>
+                                            <x-foto-profil :path="$pengajar->photo" :name="$pengajar->name" size="md" rounded="full" class="border border-amber-200/80" />
                                             <div>
                                                 <p class="font-bold text-gray-900">{{ $pengajar->name }}</p>
                                                 <p class="text-[10px] font-bold text-amber-600 uppercase tracking-tight">{{ $pengajar->nip ?: 'NIP Belum Diatur' }}</p>
@@ -137,7 +135,12 @@
                             @foreach($pengajars as $pengajar)
                                 @php $rekap = $rekapBulanan->get($pengajar->id) ?? ['hadir'=>0,'sakit'=>0,'izin'=>0,'alpa'=>0]; @endphp
                                 <tr class="hover:bg-amber-50/30 transition">
-                                    <td class="px-6 py-4 font-bold text-gray-900 text-sm">{{ $pengajar->name }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <x-foto-profil :path="$pengajar->photo" :name="$pengajar->name" size="sm" rounded="full" class="border border-amber-100" />
+                                            <span class="font-bold text-gray-900 text-sm">{{ $pengajar->name }}</span>
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-4 text-center font-bold text-green-600 text-sm">{{ $rekap['hadir'] }}</td>
                                     <td class="px-6 py-4 text-center font-medium text-amber-700 text-sm">{{ $rekap['sakit'] }}</td>
                                     <td class="px-6 py-4 text-center font-medium text-amber-700 text-sm">{{ $rekap['izin'] }}</td>

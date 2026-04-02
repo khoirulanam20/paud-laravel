@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -23,6 +24,7 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
+        $user->loadMissing(['pengajar:id,user_id,photo,name', 'anaks:id,user_id,photo,name']);
         $sekolah = null;
         $lembaga = null;
         $pengajar = null;
@@ -38,7 +40,11 @@ class ProfileController extends Controller
             $pengajar = Pengajar::where('user_id', $user->id)->first();
         }
         if ($user->hasRole('Orang Tua')) {
-            $anaks = Anak::where('user_id', $user->id)->get();
+            $anaks = Anak::query()
+                ->where('user_id', $user->id)
+                ->with(['sekolah:id,name', 'kelas:id,name'])
+                ->orderBy('name')
+                ->get();
         }
 
         return view('profile.edit', compact('user', 'sekolah', 'lembaga', 'pengajar', 'anaks'));
@@ -71,8 +77,16 @@ class ProfileController extends Controller
             'phone' => 'nullable|string',
             'pendidikan' => ['nullable', Rule::in($pendidikanPilihan)],
             'jenis_kelamin' => 'nullable|string',
+            'photo' => 'nullable|image|max:2048',
         ]);
-        $pengajar->update($request->only('nik', 'alamat', 'phone', 'pendidikan', 'jenis_kelamin'));
+        $data = $request->only('nik', 'alamat', 'phone', 'pendidikan', 'jenis_kelamin');
+        if ($request->hasFile('photo')) {
+            if ($pengajar->photo) {
+                Storage::disk('public')->delete($pengajar->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('pengajar', 'public');
+        }
+        $pengajar->update($data);
 
         return Redirect::route('profile.edit')->with('status', 'profile-pengajar-updated');
     }
@@ -80,12 +94,13 @@ class ProfileController extends Controller
     public function updateOrangTua(Request $request): RedirectResponse
     {
         $request->validate([
-            'nama_bapak' => 'nullable|string',
-            'nik_bapak' => 'nullable|string',
-            'nama_ibu' => 'nullable|string',
-            'nik_ibu' => 'nullable|string',
+            'parent_name' => 'nullable|string|max:255',
+            'nama_bapak' => 'nullable|string|max:255',
+            'nik_bapak' => 'nullable|string|max:50',
+            'nama_ibu' => 'nullable|string|max:255',
+            'nik_ibu' => 'nullable|string|max:50',
         ]);
-        Anak::where('user_id', $request->user()->id)->update($request->only('nama_bapak', 'nik_bapak', 'nama_ibu', 'nik_ibu'));
+        Anak::where('user_id', $request->user()->id)->update($request->only('parent_name', 'nama_bapak', 'nik_bapak', 'nama_ibu', 'nik_ibu'));
 
         return Redirect::route('profile.edit')->with('status', 'profile-orangtua-updated');
     }

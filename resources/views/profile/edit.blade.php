@@ -18,9 +18,17 @@
 
         {{-- SECTION: Akun Login --}}
         <div class="card">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">Informasi Akun Login</h3>
-                <p class="section-subtitle">Nama tampilan dan email untuk masuk ke sistem.</p>
+            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
+                <div>
+                    <h3 class="section-title">Informasi Akun Login</h3>
+                    <p class="section-subtitle">Nama tampilan dan email untuk masuk ke sistem.</p>
+                </div>
+                @php
+                    $akunFotoPath = filled(optional($user->pengajar)->photo)
+                        ? $user->pengajar->photo
+                        : ($user->anaks->first(fn ($a) => filled($a->photo))?->photo);
+                @endphp
+                <x-foto-profil :path="$akunFotoPath" :name="$user->name" size="lg" rounded="full" />
             </div>
             <form method="post" action="{{ route('profile.update') }}" class="px-6 py-5 space-y-4">
                 @csrf @method('patch')
@@ -56,11 +64,14 @@
         {{-- SECTION: Profil Pengajar / Admin Kelas --}}
         @if(($user->hasRole('Pengajar') || $user->hasRole('Admin Kelas')) && $pengajar)
         <div class="card">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">Profil Pendidik</h3>
-                <p class="section-subtitle">Data personal Anda sebagai tenaga pengajar.</p>
+            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
+                <div>
+                    <h3 class="section-title">Profil Pendidik</h3>
+                    <p class="section-subtitle">Data personal Anda sebagai tenaga pengajar.</p>
+                </div>
+                <x-foto-profil :path="$pengajar->photo" :name="$pengajar->name" size="xl" rounded="full" />
             </div>
-            <form method="post" action="{{ route('profile.pengajar.update') }}" class="px-6 py-5 space-y-4">
+            <form method="post" action="{{ route('profile.pengajar.update') }}" enctype="multipart/form-data" class="px-6 py-5 space-y-4">
                 @csrf @method('patch')
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="input-label">NIK (KTP)</label><input type="text" name="nik" value="{{ $pengajar->nik }}" class="input-field"></div>
@@ -77,6 +88,7 @@
                         </select>
                     </div>
                     <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="3">{{ $pengajar->alamat }}</textarea></div>
+                    <div class="col-span-2"><label class="input-label">Foto profil</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs"></div>
                 </div>
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Profil Pendidik</button></div>
             </form>
@@ -85,18 +97,22 @@
 
         {{-- SECTION: Profil Wali Murid --}}
         @if($user->hasRole('Orang Tua') && $anaks && $anaks->count() > 0)
+        @php
+            $waliRef = $anaks->sortByDesc('updated_at')->first();
+        @endphp
         <div class="card">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Profil Wali Murid</h3>
-                <p class="section-subtitle">Data orang tua / wali yang tercatat di sistem.</p>
+                <p class="section-subtitle">Data orang tua / wali tersimpan di database (sama untuk semua anak pada akun ini).</p>
             </div>
             <form method="post" action="{{ route('profile.orangtua.update') }}" class="px-6 py-5 space-y-4">
                 @csrf @method('patch')
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="input-label">Nama Bapak</label><input type="text" name="nama_bapak" value="{{ $anaks->first()->nama_bapak }}" class="input-field"></div>
-                    <div><label class="input-label">NIK Bapak</label><input type="text" name="nik_bapak" value="{{ $anaks->first()->nik_bapak }}" class="input-field"></div>
-                    <div><label class="input-label">Nama Ibu</label><input type="text" name="nama_ibu" value="{{ $anaks->first()->nama_ibu }}" class="input-field"></div>
-                    <div><label class="input-label">NIK Ibu</label><input type="text" name="nik_ibu" value="{{ $anaks->first()->nik_ibu }}" class="input-field"></div>
+                    <div class="col-span-2"><label class="input-label">Nama wali (pendaftaran)</label><input type="text" name="parent_name" value="{{ old('parent_name', $waliRef->parent_name) }}" class="input-field" placeholder="Nama orang tua / wali"></div>
+                    <div><label class="input-label">Nama Bapak</label><input type="text" name="nama_bapak" value="{{ old('nama_bapak', $waliRef->nama_bapak) }}" class="input-field"></div>
+                    <div><label class="input-label">NIK Bapak</label><input type="text" name="nik_bapak" value="{{ old('nik_bapak', $waliRef->nik_bapak) }}" class="input-field"></div>
+                    <div><label class="input-label">Nama Ibu</label><input type="text" name="nama_ibu" value="{{ old('nama_ibu', $waliRef->nama_ibu) }}" class="input-field"></div>
+                    <div><label class="input-label">NIK Ibu</label><input type="text" name="nik_ibu" value="{{ old('nik_ibu', $waliRef->nik_ibu) }}" class="input-field"></div>
                 </div>
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data Wali</button></div>
             </form>
@@ -104,31 +120,50 @@
 
         {{-- SECTION: Data Anak --}}
         @foreach($anaks as $anak)
+        @php
+            $statusLabel = match ($anak->status ?? '') {
+                'approved' => 'Disetujui',
+                'pending' => 'Menunggu persetujuan',
+                'rejected' => 'Ditolak',
+                default => $anak->status ? ucfirst((string) $anak->status) : '—',
+            };
+            $jkAnak = old('jenis_kelamin', $anak->jenis_kelamin);
+        @endphp
         <div class="card">
-            <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color:rgba(0,0,0,0.06);">
+            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Data Anak: {{ $anak->name }}</h3>
-                    <p class="section-subtitle">Informasi detail mengenai anak Anda.</p>
+                    <p class="section-subtitle">Informasi tersimpan di database untuk siswa ini.</p>
                 </div>
-                @if($anak->photo)
-                    <img src="{{ Storage::url($anak->photo) }}" class="h-12 w-12 rounded-full object-cover border-2 border-teal-600/20">
-                @endif
+                <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" rounded="full" class="ring-2 ring-[#1A6B6B]/15" />
+            </div>
+            <div class="px-6 py-4 bg-gray-50/80 border-b text-sm space-y-2" style="border-color:rgba(0,0,0,0.06);">
+                <p class="font-semibold text-[#2C2C2C] text-xs uppercase tracking-wider" style="color:#9E9790;">Ringkasan dari database</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#2C2C2C]">
+                    <div><span class="text-gray-500">Sekolah:</span> <span class="font-medium">{{ $anak->sekolah->name ?? '—' }}</span></div>
+                    <div><span class="text-gray-500">Kelas:</span> <span class="font-medium">{{ $anak->kelas->name ?? 'Tanpa kelas' }}</span></div>
+                    <div><span class="text-gray-500">Status pendaftaran:</span> <span class="font-medium">{{ $statusLabel }}</span></div>
+                    <div><span class="text-gray-500">Usia:</span> <span class="font-medium">{{ $anak->dob ? $anak->age : '—' }}</span></div>
+                    @if(filled($anak->parent_name))
+                        <div class="sm:col-span-2"><span class="text-gray-500">Nama wali (di data anak):</span> <span class="font-medium">{{ $anak->parent_name }}</span></div>
+                    @endif
+                </div>
             </div>
             <form method="post" action="{{ route('profile.anak.update', $anak) }}" enctype="multipart/form-data" class="px-6 py-5 space-y-4">
                 @csrf @method('patch')
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2"><label class="input-label">Nama Lengkap Anak</label><input type="text" name="name" value="{{ $anak->name }}" required class="input-field"></div>
-                    <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" value="{{ $anak->dob }}" required class="input-field"></div>
-                    <div><label class="input-label">NIK Anak (opsional)</label><input type="text" name="nik" value="{{ $anak->nik }}" class="input-field"></div>
+                    <div class="col-span-2"><label class="input-label">Nama Lengkap Anak</label><input type="text" name="name" value="{{ old('name', $anak->name) }}" required class="input-field"></div>
+                    <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" value="{{ old('dob', $anak->dob?->format('Y-m-d')) }}" required class="input-field"></div>
+                    <div><label class="input-label">NIK Anak (opsional)</label><input type="text" name="nik" value="{{ old('nik', $anak->nik) }}" class="input-field"></div>
                     <div><label class="input-label">Jenis Kelamin</label>
                         <select name="jenis_kelamin" class="input-field">
                             <option value="">Pilih...</option>
-                            <option value="Laki-laki" {{ $anak->jenis_kelamin == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                            <option value="Perempuan" {{ $anak->jenis_kelamin == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                            <option value="Laki-laki" @selected($jkAnak === 'Laki-laki')>Laki-laki</option>
+                            <option value="Perempuan" @selected($jkAnak === 'Perempuan')>Perempuan</option>
                         </select>
                     </div>
                     <div><label class="input-label">Foto Anak</label><input type="file" name="photo" accept="image/*" class="input-field py-1 text-xs"></div>
-                    <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="2">{{ $anak->alamat }}</textarea></div>
+                    <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="2">{{ old('alamat', $anak->alamat) }}</textarea></div>
                 </div>
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data {{ $anak->name }}</button></div>
             </form>

@@ -13,7 +13,7 @@
             <div class="card overflow-hidden">
                 <div class="px-6 py-4 bg-[#F8F5F1] border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
                     <div class="flex items-center gap-4">
-                        <div class="h-12 w-12 rounded-2xl flex items-center justify-center font-bold text-xl text-white shrink-0" style="background: #1A6B6B;">{{ substr($anak->name, 0, 1) }}</div>
+                        <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" rounded="xl" />
                         <div>
                             <h3 class="font-bold text-lg text-[#2C2C2C]">{{ $anak->name }}</h3>
                             <p class="text-sm text-gray-500">

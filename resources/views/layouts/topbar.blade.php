@@ -19,8 +19,8 @@
         </div>
         <x-dropdown align="right" width="48">
             <x-slot name="trigger">
-                <button class="h-9 w-9 rounded-xl flex items-center justify-center font-bold text-white text-sm transition-all hover:opacity-90 bg-[#1A6B6B] shadow-[2px_3px_8px_rgba(26,107,107,0.30)] focus:outline-none focus:ring-2 focus:ring-[#1A6B6B] focus:ring-offset-2">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                <button type="button" class="rounded-xl overflow-hidden shrink-0 transition-all hover:opacity-90 shadow-[2px_3px_8px_rgba(26,107,107,0.30)] focus:outline-none focus:ring-2 focus:ring-[#1A6B6B] focus:ring-offset-2 ring-offset-[#FAF6F0]" aria-label="Menu profil">
+                    <x-foto-profil :path="$topbarProfilePhotoPath ?? null" :name="Auth::user()->name" size="nav" rounded="xl" class="pointer-events-none" />
                 </button>
             </x-slot>
             <x-slot name="content">

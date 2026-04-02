@@ -140,6 +140,12 @@
                 <div class="modal-body max-h-[75vh] overflow-y-auto space-y-5">
                     <div class="bg-gray-50 rounded-xl p-4 border" style="border-color:rgba(0,0,0,0.06);">
                         <p class="text-sm" style="color:#5A5A5A;"><strong class="text-gray-800">Tanggal:</strong> <span x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span></p>
+                        <div class="flex items-center gap-2 mt-2 text-sm" style="color:#5A5A5A;">
+                            <strong class="text-gray-800 shrink-0">Pengajar:</strong>
+                            <img x-show="detailData.pengajar_photo_url" :src="detailData.pengajar_photo_url" alt="" class="h-8 w-8 rounded-xl object-cover shrink-0 border border-black/5">
+                            <div x-show="!detailData.pengajar_photo_url" class="h-8 w-8 rounded-xl shrink-0 flex items-center justify-center text-xs font-bold text-white bg-[#1A6B6B]" x-text="(detailData.pengajar_name || '?').charAt(0).toUpperCase()"></div>
+                            <span x-text="detailData.pengajar_name || '-'"></span>
+                        </div>
                         <p class="text-sm mt-2" style="color:#5A5A5A;"><strong class="text-gray-800">Kelas:</strong> <span x-text="detailData.kelas_name || '-'"></span></p>
                         <p class="text-sm mt-2" style="color:#5A5A5A;" x-show="detailData.description"><strong class="text-gray-800">Deskripsi:</strong> <br><span x-text="detailData.description"></span></p>
                     </div>
@@ -175,7 +181,13 @@
                                 <tbody>
                                     <template x-for="pc in (detailData.pencapaians || [])" :key="pc.id">
                                         <tr class="border-t" style="border-color:rgba(0,0,0,0.04);">
-                                            <td class="px-4 py-3 font-medium text-sm" style="color:#2C2C2C;" x-text="pc.anak?.name || '-'"></td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-2">
+                                                    <img x-show="pc.anak && pc.anak.photo_url" :src="pc.anak.photo_url" alt="" class="h-8 w-8 rounded-xl object-cover shrink-0 border border-black/5">
+                                                    <div x-show="!(pc.anak && pc.anak.photo_url)" class="h-8 w-8 rounded-xl shrink-0 flex items-center justify-center text-xs font-bold text-white bg-[#1A6B6B]" x-text="((pc.anak && pc.anak.name) || '?').charAt(0).toUpperCase()"></div>
+                                                    <span class="font-medium text-sm" style="color:#2C2C2C;" x-text="pc.anak?.name || '-'"></span>
+                                                </div>
+                                            </td>
                                             <td class="px-4 py-3 text-xs" style="color:#5A5A5A;">
                                                 <span class="font-semibold text-[#1A6B6B]" x-text="pc.aspek || '—'"></span>
                                                 <span x-show="pc.indicator" class="block mt-0.5" x-text="pc.indicator"></span>

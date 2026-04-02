@@ -88,7 +88,7 @@
                             <tr>
                                 <td>
                                     <div class="flex items-center gap-3">
-                                        <div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background: #1A6B6B;">{{ substr($anak->name, 0, 1) }}</div>
+                                        <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
                                         <div>
                                             <span class="font-semibold block text-[#2C2C2C]">{{ $anak->name }}</span>
                                             <div class="flex items-center gap-1.5 mt-0.5">

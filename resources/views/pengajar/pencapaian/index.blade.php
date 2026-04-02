@@ -226,7 +226,7 @@
 
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Foto</th><th>Anak</th><th>Kegiatan</th><th>Aspek &amp; nilai</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Bukti</th><th>Anak</th><th>Kegiatan</th><th>Aspek &amp; nilai</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($groupedPencapaian as $bundleKey => $rows)
                             @php $first = $rows->first(); @endphp
@@ -239,10 +239,15 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="font-semibold block" style="color:#2C2C2C;">{{ $first->anak->name ?? '-' }}</span>
-                                @if($first->anak && $first->anak->dob)
-                                    <span class="text-[10px] font-bold text-[#1A6B6B]">{{ $first->anak->age }}</span>
-                                @endif
+                                <div class="flex items-center gap-2">
+                                    <x-foto-profil :path="$first->anak->photo ?? null" :name="$first->anak->name ?? '?'" size="sm" />
+                                    <div>
+                                        <span class="font-semibold block" style="color:#2C2C2C;">{{ $first->anak->name ?? '-' }}</span>
+                                        @if($first->anak && $first->anak->dob)
+                                            <span class="text-[10px] font-bold text-[#1A6B6B]">{{ $first->anak->age }}</span>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 @if($first->kegiatan)

@@ -20,11 +20,7 @@
                         @forelse($pengajars as $p)
                         <tr>
                             <td><div class="flex items-center gap-3">
-                                @if($p->photo)
-                                    <img src="{{ Storage::url($p->photo) }}" class="h-8 w-8 rounded-xl object-cover shrink-0">
-                                @else
-                                    <div class="h-8 w-8 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0" style="background:#1A6B6B;">{{ substr($p->name, 0, 1) }}</div>
-                                @endif
+                                <x-foto-profil :path="$p->photo" :name="$p->name" size="sm" />
                                 <span class="font-semibold" style="color:#2C2C2C;">{{ $p->name }}</span></div></td>
                             <td><span class="badge badge-teal">{{ $p->user->email ?? '-' }}</span></td>
                             <td>{{ $p->jabatan ?? '-' }}</td>

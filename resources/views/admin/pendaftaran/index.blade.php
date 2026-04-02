@@ -32,7 +32,12 @@
                     <tbody>
                         @forelse($pending as $a)
                         <tr>
-                            <td><span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span></td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <x-foto-profil :path="$a->photo" :name="$a->name" size="sm" />
+                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span>
+                                </div>
+                            </td>
                             <td>{{ $a->parent_name ?? $a->user->name }}</td>
                             <td class="text-sm" style="color:#9E9790;">{{ $a->user->email }}</td>
                             <td>
@@ -70,7 +75,12 @@
                     <tbody>
                         @forelse($approved as $a)
                         <tr>
-                            <td><span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span></td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <x-foto-profil :path="$a->photo" :name="$a->name" size="sm" />
+                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span>
+                                </div>
+                            </td>
                             <td>{{ $a->parent_name ?? $a->user->name }}</td>
                             <td class="text-sm" style="color:#9E9790;">{{ $a->user->email }}</td>
                             <td>{{ $a->dob ? \Carbon\Carbon::parse($a->dob)->format('d M Y') : '-' }}</td>
@@ -97,7 +107,12 @@
                     <tbody>
                         @forelse($rejected as $a)
                         <tr>
-                            <td><span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span></td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <x-foto-profil :path="$a->photo" :name="$a->name" size="sm" />
+                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $a->name }}</span>
+                                </div>
+                            </td>
                             <td>{{ $a->parent_name ?? $a->user->name }}</td>
                             <td class="text-sm italic" style="color:#9E9790;">{{ $a->catatan_admin ?? '-' }}</td>
                         </tr>

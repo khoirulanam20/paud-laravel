@@ -30,7 +30,12 @@
                 <div class="modal-header"><h3 class="section-title" x-text="detailData.title"></h3></div>
                 <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
                     <p class="text-sm" style="color:#5A5A5A;"><strong>Tanggal:</strong> <span x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span></p>
-                    <p class="text-sm" style="color:#5A5A5A;"><strong>Pengajar:</strong> <span x-text="detailData.pengajar_name || '-'"></span></p>
+                    <div class="flex items-center gap-2 text-sm" style="color:#5A5A5A;">
+                        <strong class="shrink-0">Pengajar:</strong>
+                        <img x-show="detailData.pengajar_photo_url" :src="detailData.pengajar_photo_url" alt="" class="h-8 w-8 rounded-xl object-cover shrink-0 border border-black/5">
+                        <div x-show="!detailData.pengajar_photo_url" class="h-8 w-8 rounded-xl shrink-0 flex items-center justify-center text-xs font-bold text-white bg-[#1A6B6B]" x-text="(detailData.pengajar_name || '?').charAt(0).toUpperCase()"></div>
+                        <span x-text="detailData.pengajar_name || '-'"></span>
+                    </div>
                     <p class="text-sm" style="color:#5A5A5A;"><strong>Kelas:</strong> <span x-text="detailData.kelas_name || '-'"></span></p>
                     <div x-show="detailData.photo_urls && detailData.photo_urls.length > 0" class="grid grid-cols-2 gap-2">
                         <template x-for="url in detailData.photo_urls" :key="url">
@@ -45,6 +50,11 @@
                         <ul class="text-sm space-y-2" style="color:#5A5A5A;">
                             <template x-for="pc in (detailData.pencapaians || [])" :key="pc.id">
                                 <li class="rounded-lg px-3 py-2" style="background:#FAF6F0;">
+                                    <div x-show="pc.anak_name" class="flex items-center gap-2 mb-1">
+                                        <img x-show="pc.anak_photo_url" :src="pc.anak_photo_url" alt="" class="h-7 w-7 rounded-lg object-cover shrink-0 border border-black/5">
+                                        <div x-show="!pc.anak_photo_url" class="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white bg-[#1A6B6B]" x-text="(pc.anak_name || '?').charAt(0).toUpperCase()"></div>
+                                        <span class="text-xs font-semibold" style="color:#2C2C2C;" x-text="pc.anak_name"></span>
+                                    </div>
                                     <span class="block text-xs font-semibold mt-1" style="color:#1A6B6B;" x-text="pc.aspek ? (pc.aspek + (pc.indicator ? ': ' + pc.indicator : '')) : (pc.indicator || 'Aspek')"></span>
                                     <span class="text-xs font-bold mt-0.5 inline-block px-1.5 py-0.5 rounded max-w-[12rem] leading-snug" x-bind:style="'background:' + (pc.score_color || '#eee')" x-text="pc.score_label || pc.score"></span>
                                     <span x-show="pc.feedback" class="block text-xs mt-1" x-text="pc.feedback"></span>

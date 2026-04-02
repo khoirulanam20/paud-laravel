@@ -25,7 +25,7 @@
                             <td>
                                 @if($k->waliKelas)
                                     <div class="flex items-center gap-2">
-                                        <div class="h-6 w-6 rounded-lg flex items-center justify-center font-bold text-[10px] text-white shrink-0" style="background:#1A6B6B;">{{ substr($k->waliKelas->name, 0, 1) }}</div>
+                                        <x-foto-profil :path="$k->waliKelas->photo" :name="$k->waliKelas->name" size="xs" />
                                         <span class="text-sm font-medium" style="color:#2C2C2C;">{{ $k->waliKelas->name }}</span>
                                     </div>
                                 @else

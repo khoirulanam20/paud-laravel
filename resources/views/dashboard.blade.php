@@ -224,7 +224,7 @@
                                 @php $summary = $presensiSummaryPerAnak[$anak->id] ?? ['hadir' => 0, 'tidak_hadir' => 0, 'efektif' => 0]; @endphp
                                 <div class="rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 mb-3 last:mb-0">
                                     <div class="flex items-center gap-3">
-                                        <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center font-bold text-lg shrink-0 border border-white/10">{{ substr($anak->name, 0, 1) }}</div>
+                                        <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" class="border border-white/25 shadow-sm shrink-0" />
                                         <div class="min-w-0 flex-1">
                                             <p class="font-bold text-[15px] leading-tight">{{ $anak->name }}</p>
                                             <div class="flex items-center gap-3 mt-1.5">
@@ -320,9 +320,7 @@
                                         ];
                                     @endphp
                                     <div class="px-5 sm:px-6 py-5 flex gap-4 cursor-pointer hover:bg-gray-50 transition border-l-4 border-l-[#1A6B6B]" @click="openActivity(@js($activityData))">
-                                        <div class="h-10 w-10 rounded-full bg-[#1A6B6B]/10 flex items-center justify-center shrink-0 border border-[#1A6B6B]/20">
-                                            <svg class="h-5 w-5 text-[#1A6B6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                                        </div>
+                                        <x-foto-profil :path="$keg->pengajar?->photo" :name="$keg->pengajar?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-[#1A6B6B]/15" />
                                         <div class="flex-1 min-w-0">
                                             <div class="flex justify-between items-start mb-1">
                                                 <span class="text-[10px] font-bold uppercase tracking-widest text-[#1A6B6B]">Kegiatan • {{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}</span>
@@ -334,9 +332,7 @@
                                 @else
                                     @php $p = $item['data']; @endphp
                                     <div class="px-5 sm:px-6 py-5 flex gap-4 border-l-4 border-l-amber-500">
-                                        <div class="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0 border border-amber-100">
-                                            <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        </div>
+                                        <x-foto-profil :path="$p->anak?->photo" :name="$p->anak?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-amber-100" />
                                         <div class="flex-1 min-w-0">
                                             <div class="flex justify-between items-start mb-1">
                                                 <span class="text-[10px] font-bold uppercase tracking-widest text-amber-600">Pencapaian • {{ \Carbon\Carbon::parse($p->created_at)->translatedFormat('d M Y') }}</span>

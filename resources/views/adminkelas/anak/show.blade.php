@@ -15,9 +15,7 @@
         <div class="card overflow-hidden">
             <div class="p-6 md:p-8">
                 <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
-                    <div class="h-24 w-24 rounded-3xl flex items-center justify-center font-bold text-4xl text-white shrink-0 shadow-lg" style="background: linear-gradient(135deg, #1A6B6B 0%, #2A8B8B 100%);">
-                        {{ substr($anak->name, 0, 1) }}
-                    </div>
+                    <x-foto-profil :path="$anak->photo" :name="$anak->name" size="hero" rounded="xl" class="shadow-lg ring-2 ring-white" />
                     <div class="flex-1">
                         <h1 class="text-2xl md:text-3xl font-bold text-[#2C2C2C] mb-2">{{ $anak->name }}</h1>
                         <div class="flex flex-wrap gap-3 items-center">

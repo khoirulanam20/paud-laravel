@@ -101,6 +101,7 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <x-foto-profil :path="$first->anak->photo ?? null" :name="$first->anak->name ?? '?'" size="md" />
                                     <span class="font-bold" style="color:#2C2C2C;">{{ $first->anak->name ?? '-' }}</span>
                                     @if($first->anak && $first->anak->dob)
                                         <span class="text-[10px] font-bold text-[#1A6B6B]">({{ $first->anak->age }})</span>
@@ -109,7 +110,13 @@
                                 </div>
                                 @if($first->kegiatan)
                                     <div class="font-semibold text-sm mb-0.5" style="color:#1A6B6B;">{{ $first->kegiatan->title }}</div>
-                                    <div class="text-xs mb-3" style="color:#9E9790;">Kegiatan {{ \Carbon\Carbon::parse($first->kegiatan->date)->format('d M Y') }} · {{ $first->pengajar->name ?? 'Guru' }}</div>
+                                    <div class="text-xs mb-3 flex flex-wrap items-center gap-2" style="color:#9E9790;">
+                                        <span>Kegiatan {{ \Carbon\Carbon::parse($first->kegiatan->date)->format('d M Y') }} ·</span>
+                                        <span class="inline-flex items-center gap-1.5">
+                                            <x-foto-profil :path="$first->pengajar->photo ?? null" :name="$first->pengajar->name ?? 'Guru'" size="xs" />
+                                            <span>{{ $first->pengajar->name ?? 'Guru' }}</span>
+                                        </span>
+                                    </div>
                                 @endif
                                 <div class="rounded-xl border overflow-hidden" style="border-color:rgba(0,0,0,0.08);">
                                     <table class="w-full text-sm">
