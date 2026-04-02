@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{{ $metaDesc ?? 'PAUD & Daycare terpercaya untuk tumbuh kembang buah hati Anda.' }}">
-    <title>{{ $title ?? 'PAUD Manager' }} — Sekolah Ceria</title>
+    <title>Bintang Kecil Daycare</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
