@@ -8,14 +8,18 @@ use Illuminate\Http\Request;
 
 class AnakController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
         $kelas = $pengajar->kelas;
         $kelasIds = $kelas->pluck('id')->toArray();
 
-        $anaks = Anak::whereIn('kelas_id', $kelasIds)->with('kelas')->orderBy('name')->paginate(20);
+        $query = Anak::whereIn('kelas_id', $kelasIds)->with('kelas')->orderBy('name');
+        if ($request->filled('kelas_id') && in_array($request->kelas_id, $kelasIds)) {
+            $query->where('kelas_id', $request->kelas_id);
+        }
+        $anaks = $query->paginate(20);
         return view('adminkelas.anak.index', compact('anaks', 'kelas'));
     }
 

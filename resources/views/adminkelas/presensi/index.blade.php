@@ -55,6 +55,7 @@
                 <span>Total siswa: <strong style="color:#2C2C2C;">{{ $anaks->count() }}</strong></span>
                 <span>Hadir: <strong style="color:#1A6B6B;">{{ $hadirCount }}</strong></span>
                 <span>Tidak hadir: <strong style="color:#C0392B;">{{ $anaks->count() - $hadirCount }}</strong></span>
+                <span>Rekap: <strong style="color:#6B6560;">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('F Y') }}</strong></span>
             </div>
         </div>
 
@@ -82,7 +83,7 @@
                                             onclick="const m=this; this.closest('form').querySelectorAll('tbody input[type=checkbox][name=\'hadir[]\']').forEach(function(c){ c.checked = m.checked; });">
                                     </th>
                                     <th>Nama siswa</th>
-                                    <th>Nama orang tua</th>
+                                    <th>Rekap Bulan Ini</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,7 +104,10 @@
                                                 @if($anak->dob)<span class="text-[10px] font-bold text-[#1A6B6B]">({{ $anak->age }})</span>@endif
                                             </div>
                                         </td>
-                                        <td style="color:#6B6560;">{{ $anak->user->name ?? '—' }}</td>
+                                        <td>
+                                            <span class="font-bold text-sm tabular-nums" style="color:#1A6B6B;">{{ (int)($hadirBulanan[$anak->id] ?? 0) }}</span>
+                                            <span class="text-xs" style="color:#9E9790;"> hari</span>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

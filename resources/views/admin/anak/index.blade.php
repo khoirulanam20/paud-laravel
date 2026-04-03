@@ -33,48 +33,29 @@
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex flex-col gap-4 border-b" style="border-color: rgba(0,0,0,0.06);">
-                <form method="get" class="flex flex-wrap items-end gap-3">
-                    <div>
-                        <label class="input-label">Periode kehadiran</label>
-                        <select name="periode" class="input-field min-w-[9rem]" onchange="this.form.submit()">
-                            <option value="bulan" @selected(($presensiFilter['periode'] ?? 'bulan') === 'bulan')>Bulanan</option>
-                            <option value="minggu" @selected(($presensiFilter['periode'] ?? '') === 'minggu')>Mingguan</option>
-                        </select>
-                    </div>
-                    @if(($presensiFilter['periode'] ?? 'bulan') === 'bulan')
-                        <div>
-                            <label class="input-label">Bulan</label>
-                            <select name="month" class="input-field" onchange="this.form.submit()">
-                                @foreach(range(1, 12) as $m)
-                                    <option value="{{ $m }}" @selected((int) ($presensiFilter['bulan'] ?? now()->month) === $m)>{{ \Carbon\Carbon::createFromDate((int) ($presensiFilter['tahun'] ?? now()->year), $m, 1)->translatedFormat('F') }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="input-label">Tahun</label>
-                            <select name="year" class="input-field" onchange="this.form.submit()">
-                                @foreach(range(now()->year - 2, now()->year + 1) as $y)
-                                    <option value="{{ $y }}" @selected((int) ($presensiFilter['tahun'] ?? now()->year) === $y)>{{ $y }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @else
-                        <div>
-                            <label class="input-label">Minggu (ISO)</label>
-                            <input type="week" name="week" value="{{ $presensiFilter['minggu'] ?? '' }}" class="input-field min-w-[11rem]" onchange="this.form.submit()">
-                        </div>
-                    @endif
-                </form>
-                <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="px-6 py-4 flex items-center justify-between gap-4 flex-wrap border-b" style="border-color: rgba(0,0,0,0.06);">
                 <div>
-                    <h3 class="section-title">Daftar Siswa & Orang Tua</h3>
-                    <p class="section-subtitle">Kolom kehadiran = hari tercatat <strong>hadir</strong> pada <strong>{{ $presensiFilter['label'] ?? '' }}</strong>.</p>
+                    <h3 class="section-title">Daftar Siswa &amp; Orang Tua</h3>
                 </div>
-                <button type="button" @click="showCreateModal = true" class="btn-primary">
-                    <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    Registrasi Siswa
-                </button>
+                <div class="flex items-end gap-3 flex-wrap">
+                    <form method="get" class="flex items-end gap-2">
+                        <div>
+                            <label class="input-label">Filter Kelas</label>
+                            <select name="kelas_id" class="input-field min-w-[10rem]" onchange="this.form.submit()">
+                                <option value="">-- Semua Kelas --</option>
+                                @foreach($kelas as $k)
+                                    <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if(request('kelas_id'))
+                            <a href="{{ route('admin.anak.index') }}" class="btn-secondary text-xs">Reset</a>
+                        @endif
+                    </form>
+                    <button type="button" @click="showCreateModal = true" class="btn-primary">
+                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        Registrasi Siswa
+                    </button>
                 </div>
             </div>
 
@@ -84,7 +65,8 @@
                         <tr>
                             <th>Nama Anak</th>
                             <th>Kelas</th>
-                            <th>Hadir</th>
+                            <th>NIK</th>
+                            <th>Jenis Kelamin</th>
                             <th>Tgl. Lahir</th>
                             <th>Nama Orang Tua</th>
                             <th>Email Login Ortu</th>
@@ -104,10 +86,8 @@
                                     @if($anak->kelas)<span class="badge badge-teal font-medium">{{ $anak->kelas->name }}</span>
                                     @else<span class="text-xs italic" style="color:#9E9790;">Belum Ditugaskan</span>@endif
                                 </td>
-                                <td>
-                                    <span class="font-bold text-sm tabular-nums" style="color:#1A6B6B;">{{ (int) ($hadirPeriode[$anak->id] ?? 0) }}</span>
-                                    <span class="text-xs block" style="color:#9E9790;">hari</span>
-                                </td>
+                                <td>{{ $anak->nik ?? '-' }}</td>
+                                <td>{{ $anak->jenis_kelamin ?? '-' }}</td>
                                 <td>
                                     {{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->format('d M Y') : '-' }}
                                     @if($anak->dob)
@@ -132,7 +112,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-6 md:py-12 text-center" style="color: #9E9790;">
+                                <td colspan="8" class="py-6 md:py-12 text-center" style="color: #9E9790;">
                                     <div class="flex flex-col items-center gap-2">
                                         <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                                         Belum ada data siswa terdaftar.
@@ -146,7 +126,7 @@
 
             @if($anaks->hasPages())
                 <div class="px-6 py-4 border-t" style="border-color: rgba(0,0,0,0.06);">
-                    {{ $anaks->appends(request()->only(['periode', 'year', 'month', 'week']))->links() }}
+                    {{ $anaks->appends(request()->only(['kelas_id']))->links() }}
                 </div>
             @endif
         </div>

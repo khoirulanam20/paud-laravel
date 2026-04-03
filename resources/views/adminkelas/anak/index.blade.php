@@ -10,18 +10,35 @@
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Daftar Siswa</h3>
-                    <p class="section-subtitle">Siswa yang terdaftar di kelas Anda</p>
+            <div class="px-6 py-4 flex flex-col gap-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                        <h3 class="section-title">Daftar Siswa</h3>
+                        <p class="section-subtitle">Siswa yang terdaftar di kelas Anda</p>
+                    </div>
+                    <form method="get" class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label class="input-label">Filter Kelas</label>
+                        <select name="kelas_id" class="input-field min-w-[10rem]" onchange="this.form.submit()">
+                            <option value="">-- Semua Kelas --</option>
+                            @foreach($kelas as $k)
+                                <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if(request('kelas_id'))
+                        <a href="{{ route('adminkelas.anak.index') }}" class="btn-secondary text-xs">Reset</a>
+                    @endif
+                </form>
+                    <button @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Registrasi Siswa</button>
                 </div>
-                <button @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Registrasi Siswa</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Nama Siswa</th>
+                            <th>Kelas</th>
                             <th>NIK</th>
                             <th>Jenis Kelamin</th>
                             <th>Tanggal Lahir / Umur</th>
@@ -37,6 +54,10 @@
                                     <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
                                     <span class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</span>
                                 </div>
+                            </td>
+                            <td>
+                                @if($anak->kelas)<span class="badge badge-teal font-medium">{{ $anak->kelas->name }}</span>
+                                @else<span class="text-xs italic" style="color:#9E9790;">Belum Ditugaskan</span>@endif
                             </td>
                             <td>{{ $anak->nik ?? '-' }}</td>
                             <td>{{ $anak->jenis_kelamin ?? '-' }}</td>
@@ -55,7 +76,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="py-12 text-center" style="color:#9E9790;">
+                            <td colspan="7" class="py-12 text-center" style="color:#9E9790;">
                                 <div class="flex flex-col items-center gap-2">
                                     <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                                     Belum ada siswa di kelas ini.
@@ -66,7 +87,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($anaks->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $anaks->links() }}</div>@endif
+            @if($anaks->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $anaks->appends(request()->only(['kelas_id']))->links() }}</div>@endif
         </div>
 
         <!-- CREATE MODAL -->

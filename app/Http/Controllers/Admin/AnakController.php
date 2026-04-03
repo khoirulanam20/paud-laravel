@@ -5,9 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kelas;
-use App\Models\Presensi;
 use App\Models\User;
-use App\Support\PresensiPeriodeFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,25 +14,20 @@ class AnakController extends Controller
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $presensiFilter = PresensiPeriodeFilter::resolve($request);
 
-        $anaks = Anak::where('sekolah_id', $sekolah_id)
+        $query = Anak::where('sekolah_id', $sekolah_id)
             ->where('status', 'approved')
             ->with(['user', 'kelas'])
-            ->latest()
-            ->paginate(10);
+            ->latest();
 
-        $hadirPeriode = Presensi::query()
-            ->where('sekolah_id', $sekolah_id)
-            ->whereBetween('tanggal', [$presensiFilter['from'], $presensiFilter['to']])
-            ->where('hadir', true)
-            ->selectRaw('anak_id, count(*) as total')
-            ->groupBy('anak_id')
-            ->pluck('total', 'anak_id');
+        if ($request->filled('kelas_id')) {
+            $query->where('kelas_id', $request->kelas_id);
+        }
 
+        $anaks = $query->paginate(10);
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
-        return view('admin.anak.index', compact('anaks', 'kelas', 'hadirPeriode', 'presensiFilter'));
+        return view('admin.anak.index', compact('anaks', 'kelas'));
     }
 
     public function show(Anak $anak)

@@ -44,7 +44,18 @@ class PresensiController extends Controller
 
         $hadirCount = $presensiByAnak->where('hadir', true)->count();
 
-        return view('adminkelas.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'kelas', 'filterKelasId'));
+        // Rekap bulanan: hadir count for the month of the selected date
+        $startOfMonth = Carbon::parse($tanggal)->startOfMonth()->toDateString();
+        $endOfMonth = Carbon::parse($tanggal)->endOfMonth()->toDateString();
+        $hadirBulanan = Presensi::where('sekolah_id', $sekolah_id)
+            ->whereIn('anak_id', $anaks->pluck('id'))
+            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+            ->where('hadir', true)
+            ->selectRaw('anak_id, count(*) as total')
+            ->groupBy('anak_id')
+            ->pluck('total', 'anak_id');
+
+        return view('adminkelas.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'kelas', 'filterKelasId', 'hadirBulanan'));
     }
 
     public function store(Request $request)
