@@ -5,7 +5,34 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Kelas & Ruang Lingkup</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+        showCreateModal:false,
+        showEditModal:false,
+        showDeleteModal:false,
+        showDetailModal:false,
+        detailTitle:'',
+        detailHtml:'',
+        detailLoading:false,
+        detailError:'',
+        editData:{},
+        deleteRoute:'',
+        openEdit(d){this.editData=d;this.showEditModal=true},
+        openDelete(r){this.deleteRoute=r;this.showDeleteModal=true},
+        async openDetail(url,title){
+            this.detailTitle=title;
+            this.showDetailModal=true;
+            this.detailLoading=true;
+            this.detailError='';
+            this.detailHtml='';
+            try{
+                const r=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html'},credentials:'same-origin'});
+                if(!r.ok) throw new Error(r.status===403?'Tidak memiliki akses.':(r.status===404?'Kelas tidak ditemukan.':'Gagal memuat data.'));
+                this.detailHtml=await r.text();
+            }catch(e){this.detailError=e.message||'Gagal memuat data.';}
+            finally{this.detailLoading=false;}
+        },
+        closeDetail(){this.showDetailModal=false;this.detailHtml='';this.detailError='';this.detailTitle='';}
+    }">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
@@ -33,8 +60,8 @@
                                 @endif
                             </td>
                             <td><span class="text-sm" style="color:#5A5A5A;">{{ $k->description ?: '-' }}</span></td>
-                            <td><span class="badge badge-teal">{{ $k->anaks_count ?? 0 }} Siswa</span></td>
-                            <td class="text-right"><div class="flex items-center justify-end gap-2">
+                            <td><span class="badge badge-teal">{{ $k->anaks_count }} Siswa</span></td>
+                            <td class="text-right"><div class="flex items-center justify-end gap-2 flex-wrap">
                                 @php
                                     $kelasEditPayload = [
                                         'id' => $k->id,
@@ -44,12 +71,13 @@
                                         'pengajar_ids' => $k->pengajars->pluck('id')->toArray(),
                                     ];
                                 @endphp
+                                <button type="button" @click="openDetail(@js(route('admin.kelas.siswa-modal', $k)), @js($k->name))" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color:#1A6B6B;background:#E8F5F5;">Detail</button>
                                 <button type="button" @click="openEdit(@js($kelasEditPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @click="openDelete('{{ route('admin.kelas.destroy', $k->id) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
+                        <tr><td colspan="5" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -128,6 +156,32 @@
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>
+            </div>
+        </div>
+
+        <!-- DETAIL SISWA (MODAL) -->
+        <div x-show="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+            <div x-show="showDetailModal" x-transition class="modal-box max-w-4xl w-full max-h-[90vh] flex flex-col" @click.away="closeDetail()">
+                <div class="modal-header shrink-0 flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="section-title">Detail kelas</h3>
+                        <p class="text-sm font-semibold mt-0.5" style="color:#1A6B6B;" x-text="detailTitle"></p>
+                    </div>
+                    <button type="button" @click="closeDetail()" class="shrink-0 p-1.5 rounded-lg hover:bg-black/5 transition" aria-label="Tutup">
+                        <svg class="h-5 w-5" style="color:#5A5A5A;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div class="modal-body overflow-y-auto flex-1 min-h-0 pt-2">
+                    <div x-show="detailLoading" class="flex flex-col items-center justify-center py-16 gap-3" style="display:none; color:#5A5A5A;">
+                        <svg class="h-8 w-8 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span class="text-sm">Memuat daftar siswa…</span>
+                    </div>
+                    <div x-show="!detailLoading && detailError" class="rounded-xl p-4 text-sm text-center" style="display:none; background:#FAD7D2;color:#C0392B;" x-text="detailError"></div>
+                    <div x-show="!detailLoading && !detailError && detailHtml" x-html="detailHtml" style="display:none;"></div>
+                </div>
+                <div class="modal-footer shrink-0">
+                    <button type="button" @click="closeDetail()" class="btn-secondary">Tutup</button>
+                </div>
             </div>
         </div>
 

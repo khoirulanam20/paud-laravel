@@ -22,13 +22,37 @@ class KelasController extends Controller
         // User dengan kelas_id = kelas ini seharusnya wali/admin kelas (Sudah dihapus fiturnya)
         $kelasList = Kelas::query()
             ->where('sekolah_id', $sekolah_id)
-            ->with(['anaks', 'waliKelas', 'pengajars'])
+            ->with(['waliKelas', 'pengajars'])
+            ->withCount('anaks')
             ->latest()
             ->paginate(10);
 
         $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
         return view('admin.kelas.index', compact('kelasList', 'pengajars'));
+    }
+
+    public function show(Kelas $kelas)
+    {
+        $this->authorizeViewKelas($kelas);
+
+        $kelas->load([
+            'anaks' => fn ($q) => $q->orderBy('name')->with('user'),
+        ]);
+
+        return view('admin.kelas.show', compact('kelas'));
+    }
+
+    /** Fragmen HTML untuk modal daftar siswa (AJAX). */
+    public function siswaModal(Kelas $kelas)
+    {
+        $this->authorizeViewKelas($kelas);
+
+        $kelas->load([
+            'anaks' => fn ($q) => $q->orderBy('name')->with('user'),
+        ]);
+
+        return view('admin.kelas.partials.kelas-siswa-panels', compact('kelas'));
     }
 
     public function store(Request $request)
@@ -97,6 +121,9 @@ class KelasController extends Controller
         $sekolah_id = auth()->user()->sekolah_id;
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah. Hubungi lembaga.');
 
+        $kelas = Kelas::findOrFail($id);
+        abort_if((int) $kelas->sekolah_id !== (int) $sekolah_id, 403);
+
         $oldWaliId = $kelas->wali_kelas_id;
         $kelas->delete();
 
@@ -105,6 +132,26 @@ class KelasController extends Controller
         }
 
         return redirect()->route('admin.kelas.index')->with('success', 'Data Kelas berhasil dihapus.');
+    }
+
+    private function authorizeViewKelas(Kelas $kelas): void
+    {
+        $user = auth()->user();
+
+        if ($user->hasRole('Admin Sekolah')) {
+            $sekolah_id = $user->sekolah_id;
+            abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah. Hubungi lembaga.');
+            abort_if((int) $kelas->sekolah_id !== (int) $sekolah_id, 403, 'Kelas ini bukan bagian dari sekolah Anda.');
+        } elseif ($user->hasRole('Admin Kelas')) {
+            $pengajar = Pengajar::where('user_id', $user->id)->first();
+            abort_if(! $pengajar, 403, 'Profil pengajar tidak ditemukan.');
+            abort_if((int) $kelas->sekolah_id !== (int) $pengajar->sekolah_id, 403, 'Kelas ini bukan bagian dari sekolah Anda.');
+            $mengampu = $pengajar->kelas()->where('kelas.id', $kelas->id)->exists();
+            $isWali = (int) $kelas->wali_kelas_id === (int) $pengajar->id;
+            abort_unless($mengampu || $isWali, 403, 'Anda tidak memiliki akses ke kelas ini.');
+        } else {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
     }
 
     private function ensureAdminKelasRoleExists(): void

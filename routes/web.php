@@ -89,6 +89,8 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
 });
 
 Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
+    Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
     Route::get('kegiatan', [KegiatanController::class, 'index'])->name('kegiatan.index');
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
