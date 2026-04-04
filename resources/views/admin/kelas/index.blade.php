@@ -29,7 +29,12 @@
                 if(!r.ok) throw new Error(r.status===403?'Tidak memiliki akses.':(r.status===404?'Kelas tidak ditemukan.':'Gagal memuat data.'));
                 this.detailHtml=await r.text();
             }catch(e){this.detailError=e.message||'Gagal memuat data.';}
-            finally{this.detailLoading=false;}
+            finally{
+                this.detailLoading=false;
+                requestAnimationFrame(()=>requestAnimationFrame(()=>{
+                    if(this.$refs.detailScroll) this.$refs.detailScroll.scrollTop=0;
+                }));
+            }
         },
         closeDetail(){this.showDetailModal=false;this.detailHtml='';this.detailError='';this.detailTitle='';}
     }">
@@ -161,7 +166,7 @@
 
         <!-- DETAIL SISWA (MODAL) -->
         <div x-show="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
-            <div x-show="showDetailModal" x-transition class="modal-box max-w-4xl w-full max-h-[90vh] flex flex-col" @click.away="closeDetail()">
+            <div x-show="showDetailModal" x-transition class="modal-box max-w-4xl w-full max-h-[min(90vh,920px)] flex flex-col min-h-0 overflow-hidden" @click.away="closeDetail()">
                 <div class="modal-header shrink-0 flex items-start justify-between gap-3">
                     <div>
                         <h3 class="section-title">Detail kelas</h3>
@@ -171,7 +176,7 @@
                         <svg class="h-5 w-5" style="color:#5A5A5A;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <div class="modal-body overflow-y-auto flex-1 min-h-0 pt-2">
+                <div x-ref="detailScroll" class="modal-detail-scrollbar modal-body flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-y-contain scroll-smooth pt-2 max-h-[min(65vh,calc(100dvh-12rem))] [scrollbar-gutter:stable]">
                     <div x-show="detailLoading" class="flex flex-col items-center justify-center py-16 gap-3" style="display:none; color:#5A5A5A;">
                         <svg class="h-8 w-8 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         <span class="text-sm">Memuat daftar siswa…</span>
