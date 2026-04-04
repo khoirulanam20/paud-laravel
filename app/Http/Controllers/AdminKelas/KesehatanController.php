@@ -14,7 +14,7 @@ class KesehatanController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
         $query = Anak::whereIn('kelas_id', $kelasIds)->with(['kelas', 'kesehatans' => function($q) {
             $q->latest('tanggal_pemeriksaan')->limit(1);
