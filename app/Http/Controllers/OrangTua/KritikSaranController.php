@@ -32,15 +32,66 @@ class KritikSaranController extends Controller
     {
         $request->validate([
             'message' => 'required|string|min:10',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
-        KritikSaran::create([
+        $data = [
             'sekolah_id' => auth()->user()->sekolah_id,
             'user_id' => auth()->id(),
             'message' => $request->message,
             'status' => 'Terkirim',
-        ]);
+        ];
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('kritik-saran', 'public');
+        }
+
+        KritikSaran::create($data);
 
         return redirect()->route('orangtua.kritik-saran.index')->with('success', 'Kritik atau saran Anda berhasil dikirimkan ke pihak sekolah/yayasan.');
+    }
+
+    public function update(Request $request, KritikSaran $kritik_saran)
+    {
+        abort_if((int) $kritik_saran->user_id !== (int) auth()->id(), 403);
+        if ($kritik_saran->status !== 'Terkirim') {
+            return back()->with('error', 'Pesan yang sudah diproses atau ditanggapi tidak dapat diubah.');
+        }
+
+        $request->validate([
+            'message' => 'required|string|min:10',
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
+        $data = [
+            'message' => $request->message,
+        ];
+
+        if ($request->hasFile('photo')) {
+            if ($kritik_saran->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($kritik_saran->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('kritik-saran', 'public');
+        }
+
+        $kritik_saran->update($data);
+
+        return redirect()->route('orangtua.kritik-saran.index')->with('success', 'Pesan Anda berhasil diperbarui.');
+    }
+
+    public function destroy(KritikSaran $kritik_saran)
+    {
+        abort_if((int) $kritik_saran->user_id !== (int) auth()->id(), 403);
+        if ($kritik_saran->status !== 'Terkirim') {
+            return back()->with('error', 'Pesan yang sudah diproses atau ditanggapi tidak dapat dihapus.');
+        }
+
+        if ($kritik_saran->photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($kritik_saran->photo);
+        }
+
+        $kritik_saran->delete();
+
+        return redirect()->route('orangtua.kritik-saran.index')->with('success', 'Pesan Anda berhasil dihapus.');
     }
 }

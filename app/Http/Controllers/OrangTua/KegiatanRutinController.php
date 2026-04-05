@@ -24,6 +24,12 @@ class KegiatanRutinController extends Controller
             ->where('sekolah_id', $sekolahId)
             ->with(['anak', 'masterKegiatanRutin', 'pengajar']);
 
+        $masters = KegiatanRutin::whereIn('anak_id', $anakIds)
+            ->where('sekolah_id', $sekolahId)
+            ->select('master_kegiatan_rutin_id', 'kegiatan')
+            ->groupBy('master_kegiatan_rutin_id', 'kegiatan')
+            ->get();
+
         $mulai = $request->query('mulai', date('Y-m-01'));
         $sampai = $request->query('sampai', date('Y-m-t'));
 
@@ -31,10 +37,14 @@ class KegiatanRutinController extends Controller
             $query->where('anak_id', $request->query('anak_id'));
         }
 
+        if ($request->filled('master_id')) {
+            $query->where('master_kegiatan_rutin_id', $request->query('master_id'));
+        }
+
         $query->whereBetween('tanggal', [$mulai, $sampai]);
 
         $kegiatans = $query->latest('tanggal')->get();
 
-        return view('orangtua.kegiatan-rutin.index', compact('kegiatans', 'anaks', 'mulai', 'sampai'));
+        return view('orangtua.kegiatan-rutin.index', compact('kegiatans', 'anaks', 'mulai', 'sampai', 'masters'));
     }
 }

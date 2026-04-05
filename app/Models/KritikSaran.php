@@ -11,6 +11,7 @@ class KritikSaran extends Model
         'sekolah_id',
         'user_id',
         'message',
+        'photo',
         'status',
         'nik_bapak',
         'nama_bapak',

@@ -145,6 +145,7 @@ class MasterKegiatanRutinController extends Controller
             'anak_id' => 'required|exists:anaks,id',
             'status_pencapaian' => 'required|string',
             'keterangan' => 'nullable|string',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
         $user = auth()->user();
@@ -154,24 +155,42 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
-        \App\Models\KegiatanRutin::updateOrCreate(
-            [
+        $rutin = \App\Models\KegiatanRutin::where([
+            'sekolah_id' => $pengajar->sekolah_id,
+            'kelas_id' => $request->kelas_id,
+            'anak_id' => $request->anak_id,
+            'master_kegiatan_rutin_id' => $masterKegiatanRutin->id,
+            'tanggal' => $request->tanggal,
+        ])->first();
+
+        $data = [
+            'pengajar_id' => $pengajar->id,
+            'aspek' => $masterKegiatanRutin->aspek,
+            'kegiatan' => $masterKegiatanRutin->nama_kegiatan,
+            'status_pencapaian' => $request->status_pencapaian,
+            'keterangan' => $request->keterangan,
+        ];
+
+        if ($request->hasFile('photo')) {
+            if ($rutin && $rutin->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($rutin->photo);
+            }
+            $data['photo'] = $request->file('photo')->store('kegiatan-rutin', 'public');
+        }
+
+        if ($rutin) {
+            $rutin->update($data);
+        } else {
+            \App\Models\KegiatanRutin::create(array_merge($data, [
                 'sekolah_id' => $pengajar->sekolah_id,
                 'kelas_id' => $request->kelas_id,
                 'anak_id' => $request->anak_id,
                 'master_kegiatan_rutin_id' => $masterKegiatanRutin->id,
                 'tanggal' => $request->tanggal,
-            ],
-            [
-                'pengajar_id' => $pengajar->id,
-                'aspek' => $masterKegiatanRutin->aspek,
-                'kegiatan' => $masterKegiatanRutin->nama_kegiatan,
-                'status_pencapaian' => $request->status_pencapaian,
-                'keterangan' => $request->keterangan,
-            ]
-        );
+            ]));
+        }
 
-        return back()->with('success', 'Status pencapaian berhasil disimpan.');
+        return back()->with('success', 'Data pencapaian berhasil disimpan.');
     }
 
     public function detail(Request $request, MasterKegiatanRutin $masterKegiatanRutin, \App\Models\Anak $anak)
@@ -195,6 +214,7 @@ class MasterKegiatanRutinController extends Controller
                     'tanggal' => $q->tanggal->format('Y-m-d'),
                     'status_pencapaian' => $q->status_pencapaian,
                     'keterangan' => $q->keterangan,
+                    'photo_url' => $q->photo ? \Illuminate\Support\Facades\Storage::url($q->photo) : null,
                 ];
             });
 
@@ -210,8 +230,32 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        foreach($masterKegiatanRutin->kegiatanRutins as $qr) {
+            if ($qr->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($qr->photo);
+            }
+        }
+
         $masterKegiatanRutin->delete();
 
         return redirect()->route('pengajar.master-kegiatan-rutin.index')->with('success', 'Master Kegiatan Rutin berhasil dihapus.');
+    }
+
+    public function destroyRutinRecord(\App\Models\KegiatanRutin $kegiatanRutin)
+    {
+        $user = auth()->user();
+        $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
+
+        if ($kegiatanRutin->pengajar_id !== $pengajar->id) {
+            abort(403);
+        }
+
+        if ($kegiatanRutin->photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($kegiatanRutin->photo);
+        }
+
+        $kegiatanRutin->delete();
+
+        return back()->with('success', 'Catatan pencapaian berhasil dihapus.');
     }
 }

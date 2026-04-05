@@ -9,7 +9,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Laporan Pencapaian Anak</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showImageModal: false, activeImage: '' }">
         <div class="card overflow-hidden mb-5">
             <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="border-color:rgba(0,0,0,0.06);">
                 <div class="space-y-1">
@@ -110,7 +110,7 @@
                                 @if($first->photo)
                                     <img src="{{ Storage::url($first->photo) }}"
                                         class="h-16 w-16 object-cover rounded-xl shadow-sm cursor-pointer"
-                                        onclick="window.open(this.src)">
+                                        @click="activeImage = '{{ Storage::url($first->photo) }}'; showImageModal = true">
                                 @else
                                     <div
                                         class="h-16 w-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300">
@@ -251,6 +251,21 @@
             @if($groupedPencapaian->hasPages())
                 <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $groupedPencapaian->links() }}
             </div>@endif
+        </div>
+
+        {{-- Modal Preview Gambar --}}
+        <div x-show="showImageModal" 
+             class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+             style="display: none;"
+             x-transition
+             @keydown.escape.window="showImageModal = false">
+            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
+                <button class="absolute -top-12 right-0 text-white hover:text-gray-300 transition flex items-center gap-2" @click="showImageModal = false">
+                    <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
+            </div>
         </div>
     </div>
 </x-app-layout>

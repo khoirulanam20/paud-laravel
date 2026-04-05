@@ -133,6 +133,7 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
     Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);
     Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
     Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
+    Route::delete('master-kegiatan-rutin/rutin/{kegiatan_rutin}', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'destroyRutinRecord'])->name('master-kegiatan-rutin.destroy-rutin');
     Route::resource('master-kegiatan-rutin', \App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class);
     Route::get('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::post('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
@@ -151,6 +152,8 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kritik-saran', [OrangTuaKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'show'])->name('kritik-saran.show');
     Route::post('kritik-saran', [OrangTuaKritikSaranController::class, 'store'])->name('kritik-saran.store');
+    Route::patch('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'update'])->name('kritik-saran.update');
+    Route::delete('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'destroy'])->name('kritik-saran.destroy');
     Route::get('kesehatan', [\App\Http\Controllers\OrangTua\KesehatanController::class, 'index'])->name('kesehatan.index');
     Route::get('presensi', [\App\Http\Controllers\OrangTua\PresensiController::class, 'index'])->name('presensi.index');
     Route::post('menu-makanan/vote', [\App\Http\Controllers\OrangTua\MenuMakananVoteController::class, 'vote'])->name('menu-makanan.vote');

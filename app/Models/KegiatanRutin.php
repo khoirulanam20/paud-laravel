@@ -18,6 +18,7 @@ class KegiatanRutin extends Model
         'kegiatan',
         'status_pencapaian',
         'keterangan',
+        'photo',
     ];
 
     protected $casts = [

@@ -103,7 +103,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="text-xs text-gray-500 line-clamp-2 max-w-xs">{{ $r?->keterangan ?? '-' }}</span>
+                                    <div class="flex items-start gap-3">
+                                        @if($r?->photo)
+                                            <div class="h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="window.open('{{ Storage::url($r->photo) }}')">
+                                                <img src="{{ Storage::url($r->photo) }}" class="h-full w-full object-cover">
+                                            </div>
+                                        @endif
+                                        <span class="text-xs text-gray-500 line-clamp-2 max-w-xs">{{ $r?->keterangan ?? '-' }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
@@ -141,7 +148,7 @@
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <form action="{{ route('pengajar.master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" class="p-6 space-y-4">
+                <form action="{{ route('pengajar.master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="kelas_id" value="{{ $kelasId }}">
@@ -162,9 +169,14 @@
                             </select>
                         </div>
                         
-                        <div>
+                        <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Keterangan (Opsional)</label>
                             <textarea name="keterangan" x-model="keteranganValue" class="input-field w-full" rows="3" placeholder="Tambahkan catatan jika perlu..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Foto Dokumentasi (Opsional)</label>
+                            <input type="file" name="photo" class="input-field w-full text-xs" accept="image/*">
                         </div>
                     </div>
 
@@ -213,14 +225,31 @@
                             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-3">
                                 <div class="flex items-center justify-between gap-4">
                                     <div class="font-bold text-gray-900" x-text="item.tanggal_formatted"></div>
-                                    <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" x-text="item.status_pencapaian"></span>
-                                </div>
-                                <template x-if="item.keterangan">
-                                    <div class="rounded-lg px-3 py-2.5 border border-gray-100 bg-gray-50">
-                                        <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Keterangan</span>
-                                        <p class="text-sm text-gray-700 leading-relaxed" x-text="item.keterangan"></p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" x-text="item.status_pencapaian"></span>
+                                        <form :action="'/pengajar/master-kegiatan-rutin/rutin/' + item.id" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-400 hover:text-red-600 transition p-1">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </form>
                                     </div>
-                                </template>
+                                </div>
+                                
+                                <div class="flex flex-col sm:flex-row gap-4">
+                                    <template x-if="item.photo_url">
+                                        <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="window.open(item.photo_url)">
+                                            <img :src="item.photo_url" class="w-full h-full object-cover">
+                                        </div>
+                                    </template>
+                                    <template x-if="item.keterangan">
+                                        <div class="flex-1 rounded-lg px-3 py-2.5 border border-gray-100 bg-gray-50 overflow-hidden">
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Keterangan</span>
+                                            <p class="text-sm text-gray-700 leading-relaxed break-words" x-text="item.keterangan"></p>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </template>
                     </div>
