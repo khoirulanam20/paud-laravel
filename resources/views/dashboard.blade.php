@@ -196,7 +196,7 @@
             }
         }">
             <header class="space-y-1">
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: #2C2C2C;">Halo, Bunda / Ayah</h1>
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: #2C2C2C;">Assalamu'alaikum, Bunda / Ayah</h1>
                 <p class="text-sm max-w-xl" style="color: #9E9790;">Ringkasan kehadiran anak, menu hari ini, serta jurnal dan laporan perkembangan terbaru.</p>
             </header>
 

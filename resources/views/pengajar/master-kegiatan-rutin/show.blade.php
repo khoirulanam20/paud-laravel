@@ -82,6 +82,7 @@
                         <tr class="bg-gray-50/50">
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Nama Siswa</th>
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Status Pencapaian</th>
+                            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Keterangan</th>
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -101,6 +102,9 @@
                                         <span class="text-xs text-gray-300 italic">Belum Diisi</span>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-xs text-gray-500 line-clamp-2 max-w-xs">{{ $r?->keterangan ?? '-' }}</span>
+                                </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <button type="button" 
@@ -118,7 +122,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-6 py-12 text-center text-gray-400 italic text-sm">
+                                <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">
                                     Pilih kelas untuk melihat daftar siswa.
                                 </td>
                             </tr>

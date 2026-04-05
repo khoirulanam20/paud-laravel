@@ -22,5 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->respond(function ($response, $e) {
+            if ($response->getStatusCode() === 419) {
+                return redirect()->route('login')->with('warning', 'Sesi Anda telah berakhir, silakan login kembali.');
+            }
+            return $response;
+        });
     })->create();
