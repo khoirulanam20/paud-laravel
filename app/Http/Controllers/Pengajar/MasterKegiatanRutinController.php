@@ -144,6 +144,7 @@ class MasterKegiatanRutinController extends Controller
             'kelas_id' => 'required|exists:kelas,id',
             'anak_id' => 'required|exists:anaks,id',
             'status_pencapaian' => 'required|string',
+            'keterangan' => 'nullable|string',
         ]);
 
         $user = auth()->user();
@@ -166,6 +167,7 @@ class MasterKegiatanRutinController extends Controller
                 'aspek' => $masterKegiatanRutin->aspek,
                 'kegiatan' => $masterKegiatanRutin->nama_kegiatan,
                 'status_pencapaian' => $request->status_pencapaian,
+                'keterangan' => $request->keterangan,
             ]
         );
 
@@ -192,6 +194,7 @@ class MasterKegiatanRutinController extends Controller
                     'tanggal_formatted' => $q->tanggal->format('d M Y'),
                     'tanggal' => $q->tanggal->format('Y-m-d'),
                     'status_pencapaian' => $q->status_pencapaian,
+                    'keterangan' => $q->keterangan,
                 ];
             });
 

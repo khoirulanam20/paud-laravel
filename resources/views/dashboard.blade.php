@@ -329,6 +329,24 @@
                                             <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">{{ $keg->description }}</p>
                                         </div>
                                     </div>
+                                @elseif($item['type'] === 'kegiatan_rutin')
+                                    @php $kr = $item['data']; @endphp
+                                    <div class="px-5 sm:px-6 py-5 flex gap-4 border-l-4 border-l-blue-500">
+                                        <x-foto-profil :path="$kr->anak?->photo" :name="$kr->anak?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-blue-100" />
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600">Kegiatan Rutin • {{ \Carbon\Carbon::parse($kr->tanggal)->translatedFormat('d M Y') }}</span>
+                                            </div>
+                                            <p class="text-xs font-semibold text-gray-500 mb-1">{{ $kr->anak->name ?? '' }}</p>
+                                            <h4 class="font-bold text-[15px] text-gray-900 leading-tight mb-2">{{ $kr->kegiatan }}</h4>
+                                            <div class="flex items-center gap-2">
+                                                <span class="inline-block px-2 py-1 rounded bg-gray-100 text-gray-600 text-[10px] font-bold" style="border: none;">Aspek: {{ $kr->aspek }}</span>
+                                                @if($kr->status_pencapaian)
+                                                    <span class="inline-block px-2 py-1 rounded bg-[#E8F5E9] text-[#2E7D32] text-[10px] font-bold">{{ $kr->status_pencapaian }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
                                 @else
                                     @php $p = $item['data']; @endphp
                                     <div class="px-5 sm:px-6 py-5 flex gap-4 border-l-4 border-l-amber-500">

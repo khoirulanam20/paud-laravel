@@ -18,6 +18,10 @@ class Kesehatan extends Model
         'tanggal_pemeriksaan',
     ];
 
+    protected $casts = [
+        'tanggal_pemeriksaan' => 'date',
+    ];
+
     public function anak()
     {
         return $this->belongsTo(Anak::class);

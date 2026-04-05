@@ -114,7 +114,8 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
     Route::resource('anak', AdminKelasAnakController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
-    Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store']);
+    Route::get('kesehatan/history/{anak}', [\App\Http\Controllers\AdminKelas\KesehatanController::class, 'history'])->name('kesehatan.history');
+    Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store', 'destroy']);
 });
 
 // ─────────────────────────────────────────────
@@ -141,6 +142,7 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtua.')->group(function () {
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');
+    Route::get('kegiatan-rutin', [\App\Http\Controllers\OrangTua\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::get('pencapaian', [OrangTuaPencapaianController::class, 'index'])->name('pencapaian.index');
     Route::get('menu-makanan', [OrangTuaMenuMakananController::class, 'index'])->name('menu-makanan.index');
     Route::redirect('kritik-saran/riwayat', '/orangtua/kritik-saran');

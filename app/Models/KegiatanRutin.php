@@ -17,6 +17,7 @@ class KegiatanRutin extends Model
         'aspek',
         'kegiatan',
         'status_pencapaian',
+        'keterangan',
     ];
 
     protected $casts = [

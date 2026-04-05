@@ -4,13 +4,15 @@
         openDetailModal: false,
         selectedAnak: null, 
         statusValue: '',
+        keteranganValue: '',
         detailData: [],
         filterMulai: '{{ date('Y-m-01') }}',
         filterSampai: '{{ date('Y-m-t') }}',
         isLoadingDetail: false,
-        initAnak(id, name, status) {
+        initAnak(id, name, status, keterangan) {
             this.selectedAnak = { id, name };
             this.statusValue = status || '';
+            this.keteranganValue = keterangan || '';
             this.openModal = true;
         },
         async loadDetail(id, name) {
@@ -80,6 +82,7 @@
                         <tr class="bg-gray-50/50">
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Nama Siswa</th>
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Status Pencapaian</th>
+                            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Keterangan</th>
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -92,17 +95,22 @@
                                 <td class="px-6 py-4 font-bold text-gray-900">{{ $anak->name }}</td>
                                 <td class="px-6 py-4">
                                     @if($r && $r->status_pencapaian)
-                                        <span class="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                        <span class="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 w-fit">
                                             {{ $r->status_pencapaian }}
                                         </span>
                                     @else
                                         <span class="text-xs text-gray-300 italic">Belum Diisi</span>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-xs text-gray-500 @if(!($r?->keterangan)) italic @endif">
+                                        {{ $r?->keterangan ?? '-' }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <button type="button" 
-                                            @click="initAnak('{{ $anak->id }}', '{{ addslashes($anak->name) }}', '{{ $r?->status_pencapaian }}')"
+                                            @click="initAnak('{{ $anak->id }}', '{{ addslashes($anak->name) }}', '{{ $r?->status_pencapaian }}', '{{ addslashes($r?->keterangan ?? '') }}')"
                                             class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-[#1A6B6B] hover:text-white transition group border border-gray-100 shadow-sm text-[#1A6B6B]" title="Isi Capaian">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                         </button>
@@ -145,14 +153,21 @@
                         <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1">{{ $masterKegiatanRutin->aspek }}</div>
                         <div class="font-bold text-gray-900 mb-4">{{ $masterKegiatanRutin->nama_kegiatan }}</div>
                         
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Status Pencapaian</label>
-                        <select name="status_pencapaian" x-model="statusValue" class="input-field w-full" required>
-                            <option value="">- Pilih Status -</option>
-                            <option value="Belum Mulai">Belum Mulai</option>
-                            <option value="Sedang Berlangsung">Sedang Berlangsung</option>
-                            <option value="Lancar">Lancar</option>
-                            <option value="Sangat Lancar">Sangat Lancar</option>
-                        </select>
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Status Pencapaian</label>
+                            <select name="status_pencapaian" x-model="statusValue" class="input-field w-full" required>
+                                <option value="">- Pilih Status -</option>
+                                <option value="Belum Mulai">Belum Mulai</option>
+                                <option value="Sedang Berlangsung">Sedang Berlangsung</option>
+                                <option value="Lancar">Lancar</option>
+                                <option value="Sangat Lancar">Sangat Lancar</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Keterangan (Opsional)</label>
+                            <textarea name="keterangan" x-model="keteranganValue" class="input-field w-full" rows="3" placeholder="Tambahkan catatan jika perlu..."></textarea>
+                        </div>
                     </div>
 
                     <div class="pt-4">

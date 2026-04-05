@@ -138,6 +138,21 @@ class DashboardController extends Controller
                         'data' => $p
                     ]);
                 }
+
+                $kegiatansRutin = \App\Models\KegiatanRutin::query()
+                    ->whereIn('anak_id', $data['anakIds'])
+                    ->whereDate('tanggal', Carbon::today())
+                    ->with('anak')
+                    ->latest('id')
+                    ->get();
+
+                foreach ($kegiatansRutin as $kr) {
+                    $feeds->push([
+                        'type' => 'kegiatan_rutin',
+                        'time' => $kr->created_at,
+                        'data' => $kr
+                    ]);
+                }
             }
 
             $data['dashboardFeed'] = $feeds->sortByDesc('time');
