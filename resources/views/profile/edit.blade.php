@@ -88,7 +88,7 @@
                         </select>
                     </div>
                     <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="3">{{ $pengajar->alamat }}</textarea></div>
-                    <div class="col-span-2"><label class="input-label">Foto profil</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs"></div>
+                    <div class="col-span-2"><label class="input-label">Foto profil</label><input type="file" id="photo-pengajar" name="photo" accept="image/*" class="input-field py-1.5 text-xs"></div>
                 </div>
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Profil Pendidik</button></div>
             </form>
@@ -162,7 +162,7 @@
                             <option value="Perempuan" @selected($jkAnak === 'Perempuan')>Perempuan</option>
                         </select>
                     </div>
-                    <div><label class="input-label">Foto Anak</label><input type="file" name="photo" accept="image/*" class="input-field py-1 text-xs"></div>
+                    <div><label class="input-label">Foto Anak</label><input type="file" id="photo-anak-{{ $anak->id }}" name="photo" accept="image/*" class="input-field py-1 text-xs"></div>
                     <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="2">{{ old('alamat', $anak->alamat) }}</textarea></div>
                 </div>
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data {{ $anak->name }}</button></div>
@@ -189,4 +189,38 @@
         </div>
 
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const handleCompress = async (input) => {
+                if (input.files && input.files[0]) {
+                    const file = input.files[0];
+                    if (file.size > 500 * 1024) { // Only compress if > 500KB
+                        try {
+                            const compressedFile = await window.compressImage(file);
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(compressedFile);
+                            input.files = dataTransfer.files;
+                        } catch (e) {
+                            console.error('Compression failed:', e);
+                        }
+                    }
+                }
+            };
+
+            const photoPengajar = document.getElementById('photo-pengajar');
+            if (photoPengajar) {
+                photoPengajar.addEventListener('change', function() { handleCompress(this); });
+            }
+
+            @if($user->hasRole('Orang Tua') && $anaks)
+                @foreach($anaks as $anak)
+                    const photoAnak{{ $anak->id }} = document.getElementById('photo-anak-{{ $anak->id }}');
+                    if (photoAnak{{ $anak->id }}) {
+                        photoAnak{{ $anak->id }}.addEventListener('change', function() { handleCompress(this); });
+                    }
+                @endforeach
+            @endif
+        });
+    </script>
 </x-app-layout>
