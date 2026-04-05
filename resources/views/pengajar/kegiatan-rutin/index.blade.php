@@ -255,15 +255,23 @@
 
                     <div x-show="!isLoadingDetail && detailData.length > 0" class="space-y-4">
                         <template x-for="item in detailData" :key="item.id">
-                            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between gap-4">
-                                <div>
-                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1" x-text="item.tanggal_formatted"></div>
-                                    <div class="font-bold text-gray-900" x-text="item.kegiatan || '-'"></div>
-                                    <div class="text-sm text-gray-600" x-text="'Aspek: ' + (item.aspek || '-')"></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                                <div class="flex flex-col sm:flex-row justify-between gap-3">
+                                    <div>
+                                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1" x-text="item.tanggal_formatted"></div>
+                                        <div class="font-bold text-gray-900" x-text="item.kegiatan || '-'"></div>
+                                        <div class="text-sm text-gray-500 mt-0.5" x-text="item.aspek || '-'"></div>
+                                    </div>
+                                    <div class="flex items-start sm:items-center shrink-0">
+                                        <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" x-text="item.status_pencapaian || '-'"></span>
+                                    </div>
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" x-text="item.status_pencapaian"></span>
-                                </div>
+                                <template x-if="item.keterangan">
+                                    <div class="rounded-lg px-3 py-2.5 border border-gray-100 bg-gray-50">
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Keterangan</span>
+                                        <p class="text-sm text-gray-700 leading-relaxed" x-text="item.keterangan"></p>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>

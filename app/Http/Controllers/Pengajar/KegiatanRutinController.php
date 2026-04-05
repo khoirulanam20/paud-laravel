@@ -95,6 +95,7 @@ class KegiatanRutinController extends Controller
                     'aspek' => $q->aspek,
                     'kegiatan' => $q->kegiatan,
                     'status_pencapaian' => $q->status_pencapaian,
+                    'keterangan' => $q->keterangan,
                 ];
             });
 

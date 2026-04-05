@@ -52,4 +52,45 @@ class KesehatanController extends Controller
 
         return back()->with('success', 'Data kesehatan berhasil diperbarui.');
     }
+
+    public function history(Request $request, Anak $anak)
+    {
+        $user = auth()->user();
+        if ($anak->sekolah_id !== $user->sekolah_id) {
+            abort(403);
+        }
+
+        $histories = Kesehatan::where('anak_id', $anak->id)
+            ->orderBy('tanggal_pemeriksaan', 'desc')
+            ->get()
+            ->map(function($q) {
+                $tanggal = \Carbon\Carbon::parse($q->tanggal_pemeriksaan);
+                return [
+                    'id' => $q->id,
+                    'tanggal_pemeriksaan' => $tanggal->format('Y-m-d'),
+                    'tanggal_formatted' => $tanggal->format('d M Y'),
+                    'berat_badan' => $q->berat_badan,
+                    'tinggi_badan' => $q->tinggi_badan,
+                    'lingkar_kepala' => $q->lingkar_kepala,
+                    'gigi' => $q->gigi,
+                    'telinga' => $q->telinga,
+                    'kuku' => $q->kuku,
+                    'alergi' => $q->alergi,
+                ];
+            });
+
+        return response()->json($histories);
+    }
+
+    public function destroy(Kesehatan $kesehatan)
+    {
+        $user = auth()->user();
+        if ($kesehatan->anak->sekolah_id !== $user->sekolah_id) {
+            abort(403);
+        }
+
+        $kesehatan->delete();
+
+        return back()->with('success', 'Riwayat kesehatan berhasil dihapus.');
+    }
 }

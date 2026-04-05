@@ -185,6 +185,12 @@
             openActivity(k) {
                 this.selectedActivity = k;
                 this.showActivityModal = true;
+            },
+            selectedRutin: null,
+            showRutinModal: false,
+            openRutin(k) {
+                this.selectedRutin = k;
+                this.showRutinModal = true;
             }
         }">
             <header class="space-y-1">
@@ -258,6 +264,11 @@
                         </div>
                         <div class="px-5 py-5">
                             @if(!empty($menuHariIni))
+                                @if($menuHariIni->photo)
+                                    <div class="mb-3 -mx-5 -mt-5">
+                                        <img src="{{ Storage::url($menuHariIni->photo) }}" alt="Foto Menu" class="w-full h-36 object-cover rounded-t-xl">
+                                    </div>
+                                @endif
                                 <p class="font-bold text-base mb-2 whitespace-pre-line leading-snug" style="color: #2C2C2C;">{{ $menuHariIni->menu }}</p>
                                 @if($menuHariIni->nutrition_info)
                                     <p class="text-sm leading-relaxed mb-4" style="color: #9E9790;">{{ $menuHariIni->nutrition_info }}</p>
@@ -330,21 +341,33 @@
                                         </div>
                                     </div>
                                 @elseif($item['type'] === 'kegiatan_rutin')
-                                    @php $kr = $item['data']; @endphp
-                                    <div class="px-5 sm:px-6 py-5 flex gap-4 border-l-4 border-l-blue-500">
+                                    @php $kr = $item['data'];
+                                    $rutinData = [
+                                        'kegiatan' => $kr->kegiatan,
+                                        'tanggal'  => \Carbon\Carbon::parse($kr->tanggal)->translatedFormat('d M Y'),
+                                        'anak'     => $kr->anak->name ?? '-',
+                                        'aspek'    => $kr->aspek,
+                                        'status'   => $kr->status_pencapaian ?? null,
+                                        'keterangan' => $kr->keterangan ?? null,
+                                    ];
+                                    @endphp
+                                    <div class="px-5 sm:px-6 py-5 flex gap-4 border-l-4 border-l-blue-500 cursor-pointer hover:bg-blue-50/40 transition" @click="openRutin(@js($rutinData))">
                                         <x-foto-profil :path="$kr->anak?->photo" :name="$kr->anak?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-blue-100" />
                                         <div class="flex-1 min-w-0">
                                             <div class="flex justify-between items-start mb-1">
                                                 <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600">Kegiatan Rutin • {{ \Carbon\Carbon::parse($kr->tanggal)->translatedFormat('d M Y') }}</span>
                                             </div>
                                             <p class="text-xs font-semibold text-gray-500 mb-1">{{ $kr->anak->name ?? '' }}</p>
-                                            <h4 class="font-bold text-[15px] text-gray-900 leading-tight mb-2">{{ $kr->kegiatan }}</h4>
-                                            <div class="flex items-center gap-2">
-                                                <span class="inline-block px-2 py-1 rounded bg-gray-100 text-gray-600 text-[10px] font-bold" style="border: none;">Aspek: {{ $kr->aspek }}</span>
+                                            <h4 class="font-bold text-[15px] text-gray-900 leading-tight mb-1">{{ $kr->kegiatan }}</h4>
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="inline-block px-2 py-1 rounded bg-blue-50 text-blue-700 text-[10px] font-bold" style="border: none;">{{ $kr->aspek }}</span>
                                                 @if($kr->status_pencapaian)
                                                     <span class="inline-block px-2 py-1 rounded bg-[#E8F5E9] text-[#2E7D32] text-[10px] font-bold">{{ $kr->status_pencapaian }}</span>
                                                 @endif
                                             </div>
+                                            @if($kr->keterangan)
+                                                <p class="text-xs text-gray-500 mt-1.5 leading-relaxed line-clamp-1">{{ $kr->keterangan }}</p>
+                                            @endif
                                         </div>
                                     </div>
                                 @else
@@ -415,6 +438,63 @@
                                 </template>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Modal Kegiatan Rutin --}}
+            <div x-show="showRutinModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+                <div x-show="showRutinModal" x-transition class="modal-box max-w-lg w-full" @click.away="showRutinModal=false">
+                    <div class="modal-header flex justify-between items-center" style="border-bottom: 2px solid #3B82F6;">
+                        <div class="flex items-center gap-2">
+                            <div class="h-7 w-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <svg class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                            </div>
+                            <h3 class="section-title mb-0 text-blue-800">Detail Kegiatan Rutin</h3>
+                        </div>
+                        <button @click="showRutinModal=false" class="text-gray-400 hover:text-gray-600">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                        {{-- Info Anak & Tanggal --}}
+                        <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold" style="color: #9E9790;">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                <span x-text="selectedRutin?.anak"></span>
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                <span x-text="selectedRutin?.tanggal"></span>
+                            </span>
+                        </div>
+
+                        {{-- Kegiatan --}}
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Kegiatan</p>
+                            <p class="text-base font-bold text-gray-900" x-text="selectedRutin?.kegiatan"></p>
+                        </div>
+
+                        {{-- Aspek & Status --}}
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <template x-if="selectedRutin?.aspek">
+                                <span class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold" x-text="selectedRutin.aspek"></span>
+                            </template>
+                            <template x-if="selectedRutin?.status">
+                                <span class="px-3 py-1.5 rounded-lg bg-[#E8F5E9] text-[#2E7D32] text-xs font-bold" x-text="selectedRutin.status"></span>
+                            </template>
+                        </div>
+
+                        {{-- Keterangan --}}
+                        <template x-if="selectedRutin?.keterangan">
+                            <div class="rounded-xl p-4 border" style="background:#EFF6FF; border-color:rgba(59,130,246,0.15);">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-2">Keterangan</p>
+                                <p class="text-sm leading-relaxed text-gray-700" x-text="selectedRutin.keterangan"></p>
+                            </div>
+                        </template>
+                        <template x-if="!selectedRutin?.keterangan">
+                            <p class="text-xs text-gray-400 italic">Tidak ada keterangan tambahan.</p>
+                        </template>
                     </div>
                 </div>
             </div>

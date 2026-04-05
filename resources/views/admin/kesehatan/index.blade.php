@@ -11,7 +11,10 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
             showInputModal: false,
+            showHistoryModal: false,
+            isLoadingHistory: false,
             selectedAnak: null,
+            historyData: [],
             form: {
                 berat_badan: '',
                 tinggi_badan: '',
@@ -43,6 +46,19 @@
                     this.form.alergi = '';
                 }
                 this.showInputModal = true;
+            },
+            async openHistory(anak) {
+                this.selectedAnak = anak;
+                this.showHistoryModal = true;
+                this.isLoadingHistory = true;
+                try {
+                    let res = await fetch(`/admin/kesehatan/history/${anak.id}`);
+                    this.historyData = await res.json();
+                } catch(e) {
+                    console.error(e);
+                    this.historyData = [];
+                }
+                this.isLoadingHistory = false;
             }
          }">
 
@@ -158,8 +174,8 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('admin.anak.show', $anak) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Riwayat</a>
-                                        <button @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
+                                        <button type="button" @click="openHistory({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Riwayat</button>
+                                        <button type="button" @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
                                     </div>
                                 </td>
                             </tr>
@@ -249,6 +265,74 @@
                 </div>
             </div>
         </template>
+
+        <!-- HISTORY MODAL -->
+        <div x-show="showHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" style="display:none;" x-transition>
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden transform flex flex-col max-h-[90vh]" @click.away="showHistoryModal = false">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center shrink-0">
+                    <div>
+                        <h3 class="font-bold text-gray-900">Riwayat Kesehatan: <span x-text="selectedAnak?.name || ''" class="text-[#1A6B6B]"></span></h3>
+                        <p class="text-xs text-gray-500 mt-1">Daftar riwayat pemeriksaan kesehatan dan kebersihan</p>
+                    </div>
+                    <button type="button" @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-600 transition">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div class="p-6 overflow-y-auto flex-1 bg-gray-50/30">
+                    <div x-show="isLoadingHistory" class="flex justify-center items-center py-12">
+                        <svg class="animate-spin h-8 w-8 text-[#1A6B6B]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </div>
+                    
+                    <div x-show="!isLoadingHistory && historyData.length === 0" class="text-center py-12 text-gray-400 italic">
+                        Belum ada riwayat kesehatan untuk siswa ini.
+                    </div>
+
+                    <div x-show="!isLoadingHistory && historyData.length > 0" class="overflow-x-auto">
+                        <table class="w-full text-left bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100">
+                                    <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Tanggal</th>
+                                    <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Dimensi</th>
+                                    <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Kebersihan</th>
+                                    <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">Alergi</th>
+                                    <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                <template x-for="item in historyData" :key="item.id">
+                                    <tr class="hover:bg-gray-50/50 transition">
+                                        <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900 text-sm" x-text="item.tanggal_formatted"></td>
+                                        <td class="px-4 py-3">
+                                            <div class="text-sm">
+                                                <span class="font-bold text-[#1A6B6B]" x-text="item.berat_badan || '-'"></span> kg / 
+                                                <span class="font-bold text-[#1A6B6B]" x-text="item.tinggi_badan || '-'"></span> cm
+                                            </div>
+                                            <div class="text-[10px] text-gray-500" x-text="'LK: ' + (item.lingkar_kepala || '-') + ' cm'"></div>
+                                        </td>
+                                        <td class="px-4 py-3 text-xs">
+                                            <div class="font-semibold text-gray-600">Gigi: <span x-text="item.gigi || 'Bersih'"></span></div>
+                                            <div class="font-semibold text-gray-600">Tel: <span x-text="item.telinga || 'Bersih'"></span></div>
+                                            <div class="font-semibold text-gray-600">Kuku: <span x-text="item.kuku || 'Bersih'"></span></div>
+                                        </td>
+                                        <td class="px-4 py-3 text-xs text-red-600 font-semibold" x-text="item.alergi || '-'"></td>
+                                        <td class="px-4 py-3 text-center">
+                                            <form :action="`/admin/kesehatan/${item.id}`" method="POST" onsubmit="return confirm('Yakin ingin menghapus data riwayat ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center hover:bg-red-500 hover:text-white transition text-red-600 mx-auto" title="Hapus Riwayat">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 </x-app-layout>

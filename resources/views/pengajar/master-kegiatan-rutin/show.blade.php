@@ -82,7 +82,6 @@
                         <tr class="bg-gray-50/50">
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Nama Siswa</th>
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Status Pencapaian</th>
-                            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Keterangan</th>
                             <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -101,11 +100,6 @@
                                     @else
                                         <span class="text-xs text-gray-300 italic">Belum Diisi</span>
                                     @endif
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-xs text-gray-500 @if(!($r?->keterangan)) italic @endif">
-                                        {{ $r?->keterangan ?? '-' }}
-                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
@@ -212,11 +206,17 @@
 
                     <div x-show="!isLoadingDetail && detailData.length > 0" class="space-y-3">
                         <template x-for="item in detailData" :key="item.id">
-                            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
-                                <div class="font-bold text-gray-900" x-text="item.tanggal_formatted"></div>
-                                <div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div class="font-bold text-gray-900" x-text="item.tanggal_formatted"></div>
                                     <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" x-text="item.status_pencapaian"></span>
                                 </div>
+                                <template x-if="item.keterangan">
+                                    <div class="rounded-lg px-3 py-2.5 border border-gray-100 bg-gray-50">
+                                        <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">Keterangan</span>
+                                        <p class="text-sm text-gray-700 leading-relaxed" x-text="item.keterangan"></p>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
