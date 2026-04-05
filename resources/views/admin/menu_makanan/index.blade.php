@@ -199,8 +199,32 @@
                         </div>
                         <div><label class="input-label">Informasi Gizi</label><textarea name="nutrition_info" x-model="editData.nutrition_info" rows="2" class="input-field"></textarea></div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Ganti Foto Makanan</label><input type="file" name="photo" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo')"></div>
-                            <div><label class="input-label">Ganti Foto Kegiatan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo_kegiatan')"></div>
+                            <div>
+                                <label class="input-label">Foto Makanan Saat Ini</label>
+                                <div class="mb-2 h-24 w-full rounded-lg border-2 border-dashed border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                                    <template x-if="editData.photo">
+                                        <img :src="'/storage/' + editData.photo" class="h-full w-full object-cover">
+                                    </template>
+                                    <template x-if="!editData.photo">
+                                        <span class="text-[10px] text-gray-400">Tidak ada foto</span>
+                                    </template>
+                                </div>
+                                <label class="input-label mt-2">Ganti Foto Makanan</label>
+                                <input type="file" name="photo" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo')">
+                            </div>
+                            <div>
+                                <label class="input-label">Foto Kegiatan Saat Ini</label>
+                                <div class="mb-2 h-24 w-full rounded-lg border-2 border-dashed border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                                    <template x-if="editData.photo_kegiatan">
+                                        <img :src="'/storage/' + editData.photo_kegiatan" class="h-full w-full object-cover">
+                                    </template>
+                                    <template x-if="!editData.photo_kegiatan">
+                                        <span class="text-[10px] text-gray-400">Tidak ada foto</span>
+                                    </template>
+                                </div>
+                                <label class="input-label mt-2">Ganti Foto Kegiatan</label>
+                                <input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo_kegiatan')">
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(editMenuLines) || isCompressing">Simpan Perubahan</button></div>

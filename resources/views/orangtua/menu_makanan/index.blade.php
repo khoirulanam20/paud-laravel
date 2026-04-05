@@ -5,7 +5,8 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Jadwal Menu Makanan</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" 
+         x-data="{ showImageModal: false, activeImage: null }">
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">🍱 Jadwal Menu Mingguan</h3>
@@ -14,9 +15,20 @@
             <div class="divide-y" style="divide-color:rgba(0,0,0,0.05);">
                 @forelse($menus as $m)
                 <div class="px-6 py-5 flex gap-5">
-                    @if($m->photo)
-                    <div class="h-20 w-20 rounded-xl overflow-hidden shrink-0"><img src="{{ Storage::url($m->photo) }}" class="w-full h-full object-cover"></div>
-                    @endif
+                    <div class="flex gap-2 shrink-0">
+                        @if($m->photo)
+                            <div class="h-20 w-20 rounded-xl overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition" 
+                                 @click="activeImage = '{{ Storage::url($m->photo) }}'; showImageModal = true">
+                                <img src="{{ Storage::url($m->photo) }}" class="w-full h-full object-cover">
+                            </div>
+                        @endif
+                        @if($m->photo_kegiatan)
+                            <div class="h-20 w-20 rounded-xl overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition"
+                                 @click="activeImage = '{{ Storage::url($m->photo_kegiatan) }}'; showImageModal = true">
+                                <img src="{{ Storage::url($m->photo_kegiatan) }}" class="w-full h-full object-cover">
+                            </div>
+                        @endif
+                    </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
                             <p class="text-sm font-bold" style="color:#1A6B6B;">{{ \Carbon\Carbon::parse($m->date)->format('l, d M Y') }}</p>
@@ -56,6 +68,20 @@
                 @endforelse
             </div>
             @if($menus->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $menus->links() }}</div>@endif
+        </div>
+
+        {{-- Modal Preview Gambar --}}
+        <div x-show="showImageModal" 
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+             style="display: none;"
+             x-transition
+             @keydown.escape.window="showImageModal = false">
+            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
+                <button class="absolute -top-10 right-0 text-white hover:text-gray-300 transition" @click="showImageModal = false">
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white">
+            </div>
         </div>
     </div>
 </x-app-layout>

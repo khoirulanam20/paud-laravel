@@ -105,11 +105,13 @@ class DashboardController extends Controller
             $feeds = collect();
 
             if ($data['anakIds']->isNotEmpty()) {
+                $childKelasIds = $data['anaks']->pluck('kelas_id')->filter()->unique();
                 $kegiatans = Kegiatan::query()
                     ->where('sekolah_id', $sekolahId)
-                    ->whereDate('date', Carbon::today())
-                    ->whereHas('pencapaians', fn ($q) => $q->whereIn('anak_id', $data['anakIds']))
+                    ->whereIn('kelas_id', $childKelasIds)
+                    ->where('date', '>=', Carbon::today()->subDays(7))
                     ->with(['pengajar', 'pencapaians' => fn($q) => $q->whereIn('anak_id', $data['anakIds'])->with('matrikulasi')])
+                    ->latest('date')
                     ->latest('id')
                     ->get();
 
@@ -155,7 +157,17 @@ class DashboardController extends Controller
                 }
             }
 
-            $data['dashboardFeed'] = $feeds->sortByDesc('time');
+            $data['dashboardFeed'] = $feeds->sort(function($a, $b) {
+                // Primary sort: type weight (rutin = 0, kegiatan = 1, pencapaian = 2)
+                $weights = ['kegiatan_rutin' => 0, 'kegiatan' => 1, 'pencapaian' => 2];
+                $wa = $weights[$a['type']] ?? 99;
+                $wb = $weights[$b['type']] ?? 99;
+                
+                if ($wa !== $wb) return $wa <=> $wb;
+                
+                // Secondary sort: time (latest first)
+                return $b['time'] <=> $a['time'];
+            });
 
             $data['presensiFilter'] = PresensiPeriodeFilter::resolve($request);
             if ($data['anakIds']->isEmpty()) {

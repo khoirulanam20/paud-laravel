@@ -117,6 +117,7 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
     Route::get('kesehatan/history/{anak}', [\App\Http\Controllers\AdminKelas\KesehatanController::class, 'history'])->name('kesehatan.history');
     Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store', 'destroy']);
+    Route::get('matrikulasi', [MatrikulasiController::class, 'index'])->name('matrikulasi.index');
 });
 
 // ─────────────────────────────────────────────
@@ -126,7 +127,7 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);
-    Route::resource('matrikulasi', MatrikulasiController::class)->except(['create', 'edit', 'show']);
+    Route::resource('matrikulasi', MatrikulasiController::class)->only(['index']);
     Route::post('pencapaian/sync', [PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
     Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);

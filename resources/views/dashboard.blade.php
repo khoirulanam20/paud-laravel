@@ -182,6 +182,8 @@
         <div class="space-y-6" x-data="{
             selectedActivity: null,
             showActivityModal: false,
+            showImageModal: false,
+            activeImage: null,
             openActivity(k) {
                 this.selectedActivity = k;
                 this.showActivityModal = true;
@@ -264,9 +266,38 @@
                         </div>
                         <div class="px-5 py-5">
                             @if(!empty($menuHariIni))
-                                @if($menuHariIni->photo)
-                                    <div class="mb-3 -mx-5 -mt-5">
-                                        <img src="{{ Storage::url($menuHariIni->photo) }}" alt="Foto Menu" class="w-full h-36 object-cover rounded-t-xl">
+                                @php
+                                    $photos = [];
+                                    if($menuHariIni->photo) $photos[] = Storage::url($menuHariIni->photo);
+                                    if($menuHariIni->photo_kegiatan) $photos[] = Storage::url($menuHariIni->photo_kegiatan);
+                                @endphp
+
+                                @if(count($photos) > 0)
+                                    <div class="mb-3 -mx-5 -mt-5 relative overflow-hidden" x-data="{ 
+                                        active: 0, 
+                                        photos: {{ json_encode($photos) }},
+                                        next() { this.active = (this.active + 1) % this.photos.length },
+                                        init() { if(this.photos.length > 1) setInterval(() => this.next(), 4000) }
+                                    }">
+                                        <div class="h-48 w-full relative">
+                                            <template x-for="(photo, index) in photos" :key="index">
+                                                <img x-show="active === index" 
+                                                     x-transition:enter="transition ease-out duration-500"
+                                                     x-transition:enter-start="opacity-0 transform scale-105"
+                                                     x-transition:enter-end="opacity-100 transform scale-100"
+                                                     :src="photo" 
+                                                     class="absolute inset-0 w-full h-full object-cover">
+                                            </template>
+                                        </div>
+                                        
+                                        @if(count($photos) > 1)
+                                            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                                                <template x-for="(photo, index) in photos" :key="index">
+                                                    <div class="h-1.5 rounded-full transition-all duration-300" 
+                                                         :class="active === index ? 'w-4 bg-white' : 'w-1.5 bg-white/40'"></div>
+                                                </template>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endif
                                 <p class="font-bold text-base mb-2 whitespace-pre-line leading-snug" style="color: #2C2C2C;">{{ $menuHariIni->menu }}</p>
@@ -301,7 +332,8 @@
                     </div>
                 </div>
 
-                                <div class="card overflow-hidden">
+                <div class="lg:col-span-2 flex flex-col gap-5">
+                    <div class="card overflow-hidden">
                         <div class="px-5 sm:px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
                             <h3 class="section-title mb-0 text-amber-900">Laporan Perkembangan & Kegiatan</h3>
                             <div class="flex gap-2">
@@ -330,14 +362,33 @@
                                             ])->values()->all()
                                         ];
                                     @endphp
-                                    <div class="px-5 sm:px-6 py-5 flex gap-4 cursor-pointer hover:bg-gray-50 transition border-l-4 border-l-[#1A6B6B]" @click="openActivity(@js($activityData))">
-                                        <x-foto-profil :path="$keg->pengajar?->photo" :name="$keg->pengajar?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-[#1A6B6B]/15" />
+                                    <div class="px-5 sm:px-6 py-5 flex gap-4 cursor-pointer hover:bg-gray-50 transition border-l-4 border-l-indigo-500" @click="openActivity(@js($activityData))">
+                                        <x-foto-profil :path="$keg->pengajar?->photo" :name="$keg->pengajar?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-indigo-100" />
                                         <div class="flex-1 min-w-0">
                                             <div class="flex justify-between items-start mb-1">
-                                                <span class="text-[10px] font-bold uppercase tracking-widest text-[#1A6B6B]">Kegiatan • {{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}</span>
+                                                <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Jurnal Kegiatan • {{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}</span>
                                             </div>
-                                            <h4 class="font-bold text-[15px] text-gray-900 leading-tight mb-1">{{ $keg->title }}</h4>
-                                            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">{{ $keg->description }}</p>
+                                            <div class="flex flex-col gap-3">
+                                                <div class="min-w-0">
+                                                    <h4 class="font-bold text-[16px] text-gray-900 leading-tight mb-1">{{ $keg->title }}</h4>
+                                                    <p class="text-sm text-gray-500 leading-relaxed">{{ $keg->description }}</p>
+                                                </div>
+                                                @if(!empty($keg->photos))
+                                                    <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                                        @foreach(collect($keg->photos)->take(4) as $photo)
+                                                            <div class="h-32 w-32 rounded-xl border border-gray-100 overflow-hidden shadow-sm shrink-0 cursor-pointer hover:opacity-90 transition"
+                                                                 @click.stop="activeImage = '{{ Storage::url($photo) }}'; showImageModal = true">
+                                                                <img src="{{ Storage::url($photo) }}" class="h-full w-full object-cover">
+                                                            </div>
+                                                        @endforeach
+                                                        @if(count($keg->photos) > 4)
+                                                            <div class="h-32 w-32 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center text-gray-500 text-sm font-bold shadow-sm shrink-0">
+                                                                +{{ count($keg->photos) - 4 }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 @elseif($item['type'] === 'kegiatan_rutin')
@@ -385,6 +436,8 @@
                                     </div>
                                 @endif
                             @empty
+                                <div class="px-6 py-12 text-center">
+                                    <p class="text-sm" style="color: #9E9790;">Belum ada aktivitas terbaru hari ini.</p>
                                 </div>
                             @endforelse
                         </div>
@@ -414,8 +467,8 @@
                                 <h4 class="text-xs font-bold uppercase tracking-widest" style="color: #9E9790;">Dokumentasi Foto</h4>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     <template x-for="(url, index) in selectedActivity.photos" :key="index">
-                                        <div class="aspect-square rounded-xl overflow-hidden ring-1 ring-black/5">
-                                            <img :src="url" class="w-full h-full object-cover cursor-pointer" @click="window.open(url, '_blank')">
+                                        <div class="aspect-square rounded-xl overflow-hidden ring-1 ring-black/5 cursor-pointer hover:opacity-90 transition">
+                                            <img :src="url" class="w-full h-full object-cover" @click="activeImage = url; showImageModal = true">
                                         </div>
                                     </template>
                                 </div>
@@ -496,6 +549,21 @@
                             <p class="text-xs text-gray-400 italic">Tidak ada keterangan tambahan.</p>
                         </template>
                     </div>
+                </div>
+            </div>
+
+            {{-- Modal Preview Gambar --}}
+            <div x-show="showImageModal" 
+                 class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                 style="display: none;"
+                 x-transition
+                 @keydown.escape.window="showImageModal = false">
+                <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
+                    <button class="absolute -top-12 right-0 text-white hover:text-gray-300 transition flex items-center gap-2" @click="showImageModal = false">
+                        <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
+                        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
                 </div>
             </div>
         </div>
