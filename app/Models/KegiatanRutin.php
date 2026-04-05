@@ -12,6 +12,7 @@ class KegiatanRutin extends Model
         'kelas_id',
         'anak_id',
         'pengajar_id',
+        'master_kegiatan_rutin_id',
         'tanggal',
         'aspek',
         'kegiatan',
@@ -40,5 +41,10 @@ class KegiatanRutin extends Model
     public function pengajar(): BelongsTo
     {
         return $this->belongsTo(Pengajar::class);
+    }
+
+    public function masterKegiatanRutin(): BelongsTo
+    {
+        return $this->belongsTo(MasterKegiatanRutin::class);
     }
 }

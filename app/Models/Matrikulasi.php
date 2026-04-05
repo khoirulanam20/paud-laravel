@@ -26,4 +26,9 @@ class Matrikulasi extends Model
     {
         return $this->belongsToMany(Kegiatan::class, 'kegiatan_matrikulasi');
     }
+
+    public function masterKegiatanRutins()
+    {
+        return $this->hasMany(MasterKegiatanRutin::class);
+    }
 }

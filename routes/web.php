@@ -128,8 +128,12 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
     Route::post('pencapaian/sync', [PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
     Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);
+    Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
+    Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
+    Route::resource('master-kegiatan-rutin', \App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class);
     Route::get('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::post('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
+    Route::get('kegiatan-rutin/detail/{anak}', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
 });
 
 // ─────────────────────────────────────────────

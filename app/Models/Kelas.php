@@ -32,4 +32,9 @@ class Kelas extends Model
     {
         return $this->belongsToMany(Pengajar::class, 'kelas_pengajar');
     }
+
+    public function masterKegiatanRutins()
+    {
+        return $this->belongsToMany(MasterKegiatanRutin::class, 'kelas_master_kegiatan_rutin');
+    }
 }
