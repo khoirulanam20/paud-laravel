@@ -20,7 +20,7 @@
         <x-dropdown align="right" width="48">
             <x-slot name="trigger">
                 <button type="button" class="rounded-xl overflow-hidden shrink-0 transition-all hover:opacity-90 shadow-[2px_3px_8px_rgba(26,107,107,0.30)] focus:outline-none focus:ring-2 focus:ring-[#1A6B6B] focus:ring-offset-2 ring-offset-[#FAF6F0]" aria-label="Menu profil">
-                    <x-foto-profil :path="$topbarProfilePhotoPath ?? null" :name="Auth::user()->name" size="nav" rounded="xl" class="pointer-events-none" />
+                    <x-foto-profil :path="Auth::user()->hasRole('Orang Tua') ? null : ($topbarProfilePhotoPath ?? null)" :name="Auth::user()->name" size="nav" rounded="xl" class="pointer-events-none" />
                 </button>
             </x-slot>
             <x-slot name="content">

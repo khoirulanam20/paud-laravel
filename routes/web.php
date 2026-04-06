@@ -91,9 +91,13 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
 Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
     Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
-    Route::get('kegiatan', [KegiatanController::class, 'index'])->name('kegiatan.index');
+    Route::resource('kegiatan', KegiatanController::class)->except(['create', 'edit', 'show']);
+    Route::post('pencapaian/sync', [\App\Http\Controllers\Admin\PencapaianController::class, 'sync'])->name('pencapaian.sync');
+    Route::delete('pencapaian/bundle', [\App\Http\Controllers\Admin\PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
+    Route::resource('pencapaian', \App\Http\Controllers\Admin\PencapaianController::class)->only(['index', 'destroy']);
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
+    Route::post('presensi', [PresensiController::class, 'store'])->name('presensi.store');
     Route::get('presensi/rekap', [PresensiController::class, 'rekap'])->name('presensi.rekap');
     Route::get('kritik-saran', [AdminKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'show'])->name('kritik-saran.show');

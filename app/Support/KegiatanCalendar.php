@@ -162,4 +162,64 @@ class KegiatanCalendar
             ],
         ];
     }
+
+    public static function toAdminEvent(Kegiatan $k): array
+    {
+        $k->loadMissing(['pengajar', 'pencapaians.anak', 'pencapaians.matrikulasi', 'matrikulasis', 'kelas']);
+
+        $detail = [
+            'id' => $k->id,
+            'title' => $k->title,
+            'date' => self::formatDate($k),
+            'description' => $k->description,
+            'kelas_name' => $k->kelas->name ?? '-',
+            'pengajar_name' => $k->pengajar->name ?? '-',
+            'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
+            'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
+            'pencapaians' => $k->pencapaians->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'score' => $p->score,
+                    'score_label' => LabelSkorPencapaian::label($p->score),
+                    'score_color' => LabelSkorPencapaian::color($p->score),
+                    'feedback' => $p->feedback,
+                    'aspek' => $p->matrikulasi->aspek ?? null,
+                    'indicator' => $p->matrikulasi->indicator ?? null,
+                    'anak' => [
+                        'name' => $p->anak->name ?? '-',
+                        'photo_url' => filled($p->anak?->photo) ? Storage::url($p->anak->photo) : null,
+                    ],
+                ];
+            })->values()->all(),
+            'photo_urls_raw' => $k->photos ?? [],
+        ];
+
+        return [
+            'id' => (string) $k->id,
+            'title' => $k->title,
+            'start' => self::formatDate($k),
+            'allDay' => true,
+            'backgroundColor' => !empty($k->photos) ? '#10B981' : null,
+            'borderColor' => !empty($k->photos) ? '#059669' : null,
+            'extendedProps' => [
+                'mode' => 'admin',
+                'delete_url' => route('admin.kegiatan.destroy', $k),
+                'detail' => $detail,
+                'edit' => [
+                    'id' => $k->id,
+                    'date' => self::formatDate($k),
+                    'title' => $k->title,
+                    'description' => $k->description,
+                    'kelas_id' => $k->kelas_id,
+                    'pengajar_id' => $k->pengajar_id,
+                    'matrikulasi_ids' => collect($k->matrikulasis->pluck('id'))
+                        ->merge($k->pencapaians->pluck('matrikulasi_id'))
+                        ->unique()
+                        ->filter()
+                        ->values()
+                        ->all(),
+                ],
+            ],
+        ];
+    }
 }

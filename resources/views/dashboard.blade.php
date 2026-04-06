@@ -312,7 +312,7 @@
 
                     <div class="card overflow-hidden">
                         <div class="px-5 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
-                            <h3 class="section-title mb-0">Menu hari ini</h3>
+                            <h3 class="section-title mb-0">Menu Makanan hari ini</h3>
                             <a href="{{ route('orangtua.menu-makanan.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Jadwal lengkap</a>
                         </div>
                         <div class="px-5 py-5">

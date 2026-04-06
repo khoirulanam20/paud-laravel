@@ -6,13 +6,26 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
             </div>
-            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Rekap Presensi</h2>
+            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Presensi Harian</h2>
         </div>
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
-        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
+        @if(session('success'))
+            <div class="alert-success mb-5">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {{ session('success') }}
+            </div>
+        @endif
+        @if($errors->any())
+            <div class="alert-danger mb-5">
+                <ul class="list-disc pl-5 text-sm">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         {{-- TABS --}}
         <div class="flex gap-1 mb-4 border-b" style="border-color: rgba(0,0,0,0.08);">
@@ -29,27 +42,30 @@
         </div>
 
         <div class="card overflow-hidden mb-6">
-            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4" style="border-color: rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Filter Kehadiran Harian</h3>
-                    <p class="section-subtitle">Hanya tampilan rekap; pengisian presensi dilakukan oleh pengajar atau wali kelas.</p>
+            <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Kehadiran</h3>
+                        <p class="text-sm font-medium" style="color:#9E9790;">Pilih kelas dan tanggal untuk mengelola checklist siswa</p>
+                    </div>
+                    
+                    <form method="get" action="{{ route('admin.presensi.index') }}" class="grid grid-cols-2 gap-4 w-full md:w-auto">
+                        <div class="col-span-2 sm:col-span-1 lg:w-48">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Pilih Kelas</label>
+                            <select name="filter_kelas_id" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500" onchange="this.form.submit()" style="background:white;">
+                                <option value="">Semua Siswa Terdaftar</option>
+                                @foreach($kelas as $k)
+                                    <option value="{{ $k->id }}" @selected($filterKelasId == $k->id)>{{ $k->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1 lg:w-44">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Pilih Tanggal</label>
+                            <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500 @error('tanggal') border-red-500 @enderror" required onchange="this.form.submit()" style="background:white;">
+                            @error('tanggal')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    </form>
                 </div>
-                <form method="get" action="{{ route('admin.presensi.index') }}" class="flex flex-wrap items-end gap-3">
-                    <div>
-                        <label class="input-label">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field" required>
-                    </div>
-                    <div>
-                        <label class="input-label">Kelas</label>
-                        <select name="kelas_id" class="input-field min-w-[10rem]">
-                            <option value="">-- Semua Kelas --</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-primary">Tampilkan</button>
-                </form>
             </div>
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">
                 <span><strong style="color:#2C2C2C;">{{ $tanggal }}</strong></span>
@@ -61,58 +77,72 @@
         </div>
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 border-b" style="border-color: rgba(0,0,0,0.06);">
-                <h3 class="section-title">Daftar kehadiran</h3>
-                <p class="section-subtitle">Status sesuai data yang diinput pengajar atau wali kelas.</p>
+            <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
+                <div>
+                    <h3 class="section-title">Checklist kehadiran</h3>
+                    <p class="section-subtitle">Gunakan fitur ini untuk membantu pengajar atau wali kelas mencatat kehadiran siswa.</p>
+                </div>
             </div>
 
             @if($anaks->isEmpty())
-                <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada data siswa. Tambahkan siswa di menu Siswa &amp; Ortu.</div>
+                <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada data siswa. Tambahkan siswa di menu Siswa Sekolah.</div>
             @else
-                <div class="overflow-x-auto">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th class="w-36">Status</th>
-                                <th>Nama siswa</th>
-                                <th>Kelas</th>
-                                <th>Rekap Bulan Ini</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($anaks as $anak)
-                                @php
-                                    $row = $presensiByAnak->get($anak->id);
-                                    $hadir = $row ? (bool) $row->hadir : false;
-                                @endphp
+                <form method="post" action="{{ route('admin.presensi.store') }}">
+                    @csrf
+                    <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                    <input type="hidden" name="filter_kelas_id" value="{{ $filterKelasId }}">
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        @if($hadir)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold" style="background:#D0E8E8;color:#1A6B6B;">Hadir</span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold" style="background:#FAD7D2;color:#C0392B;">Tidak hadir</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="flex items-center gap-2">
-                                            <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
-                                            <span class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</span>
-                                            @if($anak->dob)<span class="text-[10px] font-bold text-[#1A6B6B]">({{ $anak->age }})</span>@endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if($anak->kelas)<span class="badge badge-teal">{{ $anak->kelas->name }}</span>
-                                        @else<span class="text-xs italic" style="color:#9E9790;">—</span>@endif
-                                    </td>
-                                    <td>
-                                        <span class="font-bold text-sm tabular-nums" style="color:#1A6B6B;">{{ (int)($hadirBulanan[$anak->id] ?? 0) }}</span>
-                                        <span class="text-xs" style="color:#9E9790;"> hari</span>
-                                    </td>
+                                    <th class="w-14 text-center">
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" title="Pilih semua"
+                                            onclick="const m=this; this.closest('form').querySelectorAll('tbody input[type=checkbox][name=\'hadir[]\']').forEach(function(c){ c.checked = m.checked; });">
+                                    </th>
+                                    <th>Nama siswa</th>
+                                    <th>Kelas</th>
+                                    <th>Rekap Bulan Ini</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach($anaks as $anak)
+                                    @php
+                                        $row = $presensiByAnak->get($anak->id);
+                                        $checked = $row ? $row->hadir : false;
+                                    @endphp
+                                    <tr class="hover:bg-teal-50/30 transition-colors">
+                                        <td class="text-center py-4">
+                                            <input type="checkbox" name="hadir[]" value="{{ $anak->id }}" class="h-6 w-6 rounded-lg border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                                                @checked($checked)>
+                                        </td>
+                                        <td class="py-4">
+                                            <div class="flex items-center gap-3">
+                                                <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
+                                                <div class="min-w-0">
+                                                    <span class="font-bold block text-sm sm:text-base" style="color:#2C2C2C;">{{ $anak->name }}</span>
+                                                    @if($anak->dob)<span class="text-[10px] font-bold text-teal-600 uppercase tracking-tight">Umur: {{ $anak->age }}</span>@endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4">
+                                            @if($anak->kelas)<span class="badge badge-teal">{{ $anak->kelas->name }}</span>
+                                            @else<span class="text-xs italic" style="color:#9E9790;">—</span>@endif
+                                        </td>
+                                        <td class="py-4">
+                                            <div class="flex flex-col">
+                                                <span class="font-black text-base sm:text-lg tabular-nums leading-none" style="color:#1A6B6B;">{{ (int)($hadirBulanan[$anak->id] ?? 0) }}</span>
+                                                <span class="text-[10px] font-bold uppercase text-gray-400 tracking-widest mt-1">Hari Hadir</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="px-6 py-4 border-t flex justify-end" style="border-color: rgba(0,0,0,0.06);">
+                        <button type="submit" class="btn-primary">Simpan presensi</button>
+                    </div>
+                </form>
             @endif
         </div>
     </div>

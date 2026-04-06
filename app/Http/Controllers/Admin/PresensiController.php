@@ -23,9 +23,10 @@ class PresensiController extends Controller
             $tanggal = now()->format('Y-m-d');
         }
 
+        $filterKelasId = $request->query('filter_kelas_id');
         $anaksQuery = Anak::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->orderBy('name');
-        if ($request->filled('kelas_id')) {
-            $anaksQuery->where('kelas_id', $request->kelas_id);
+        if ($filterKelasId) {
+            $anaksQuery->where('kelas_id', $filterKelasId);
         }
         $anaks = $anaksQuery->get();
 
@@ -48,7 +49,49 @@ class PresensiController extends Controller
             ->groupBy('anak_id')
             ->pluck('total', 'anak_id');
 
-        return view('admin.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'kelas', 'hadirBulanan'));
+        return view('admin.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'kelas', 'hadirBulanan', 'filterKelasId'));
+    }
+
+    public function store(Request $request)
+    {
+        $user = auth()->user();
+        $sekolah_id = $user->sekolah_id;
+
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'hadir' => ['nullable', 'array'],
+            'hadir.*' => ['integer', 'exists:anaks,id'],
+            'filter_kelas_id' => ['nullable', 'integer'],
+        ]);
+
+        $queryAnak = Anak::where('sekolah_id', $sekolah_id);
+        if ($request->filled('filter_kelas_id')) {
+            $queryAnak->where('kelas_id', $request->filter_kelas_id);
+        }
+        $anakIds = $queryAnak->pluck('id')->all();
+
+        $hadirIds = array_values(array_unique(array_map('intval', $validated['hadir'] ?? [])));
+        $hadirIds = array_values(array_intersect($hadirIds, $anakIds));
+
+        foreach ($anakIds as $anakId) {
+            $anak = Anak::find($anakId);
+            Presensi::updateOrCreate(
+                [
+                    'sekolah_id' => $sekolah_id,
+                    'anak_id' => $anakId,
+                    'tanggal' => $validated['tanggal'],
+                ],
+                [
+                    'kelas_id' => $anak->kelas_id,
+                    'hadir' => in_array((int) $anakId, $hadirIds, true),
+                    'status' => in_array((int) $anakId, $hadirIds, true) ? 'hadir' : 'alpha',
+                ]
+            );
+        }
+
+        return redirect()
+            ->route('admin.presensi.index', array_filter(['tanggal' => $validated['tanggal'], 'filter_kelas_id' => $request->filter_kelas_id]))
+            ->with('success', 'Presensi tanggal '.Carbon::parse($validated['tanggal'])->translatedFormat('d M Y').' berhasil disimpan.');
     }
 
     public function rekap(Request $request)

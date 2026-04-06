@@ -80,7 +80,6 @@
                             <thead>
                                 <tr class="bg-gray-50/50">
                                     <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Tanggal</th>
-                                    <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Anak</th>
                                     <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Status</th>
                                     <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Keterangan</th>
                                 </tr>
@@ -91,12 +90,6 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <p class="text-sm font-bold text-gray-900">{{ \Carbon\Carbon::parse($p->tanggal)->translatedFormat('d M Y') }}</p>
                                             <p class="text-[10px] text-gray-400 font-medium">{{ \Carbon\Carbon::parse($p->tanggal)->translatedFormat('l') }}</p>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-2">
-                                                <x-foto-profil :path="$p->anak->photo" :name="$p->anak->name" size="sm" />
-                                                <p class="text-sm font-medium text-gray-700">{{ $p->anak->name }}</p>
-                                            </div>
                                         </td>
                                         <td class="px-6 py-4">
                                             @if($p->hadir)

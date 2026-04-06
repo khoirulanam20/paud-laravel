@@ -7,10 +7,52 @@
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" 
          x-data="{ showImageModal: false, activeImage: null }">
+
+        <div class="card overflow-hidden mb-6">
+            <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
+                <div class="space-y-6">
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Menu Makanan</h3>
+                        <p class="text-sm font-medium" style="color:#9E9790;">Pilih rentang tanggal untuk melihat jadwal menu mingguan</p>
+                    </div>
+                    
+                    <form method="get" action="{{ route('orangtua.menu-makanan.index') }}" class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end">
+                        <div class="col-span-1 lg:col-span-4 min-w-0">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Tanggal Dari</label>
+                            <input type="date" name="start_date" value="{{ $startDate }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                        </div>
+                        <div class="col-span-1 lg:col-span-4 min-w-0">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Sampai Dengan</label>
+                            <input type="date" name="end_date" value="{{ $endDate }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                        </div>
+                        <div class="col-span-2 lg:col-span-4">
+                            <button type="submit" class="btn-primary w-full h-11 font-bold shadow-lg shadow-teal-900/10 flex items-center justify-center gap-2">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                <span>Tampilkan Menu</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="px-5 sm:px-6 py-3 border-t text-sm flex flex-wrap items-center gap-x-2 gap-y-1" style="background:#FAF6F0; border-color:rgba(0,0,0,0.04); color:#6B6560;">
+                <span class="inline-flex items-center gap-1.5 shrink-0">
+                    <svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Rentang Jadwal:</span>
+                </span>
+                <span style="color:#2C2C2C;">
+                    {{ \Carbon\Carbon::parse($startDate)->translatedFormat('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->translatedFormat('d M Y') }}
+                </span>
+            </div>
+        </div>
+
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">🍱 Jadwal Menu Mingguan</h3>
-                <p class="section-subtitle">Menu harian yang disiapkan sekolah untuk putra/putri Anda</p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="section-title">🍱 Jadwal Menu Makanan</h3>
+                        <p class="section-subtitle">Menu gizi seimbang untuk tumbuh kembang ananda</p>
+                    </div>
+                </div>
             </div>
             <div class="divide-y" style="divide-color:rgba(0,0,0,0.05);">
                 @forelse($menus as $m)
@@ -76,7 +118,7 @@
                 </div>
                 @endforelse
             </div>
-            @if($menus->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $menus->links() }}</div>@endif
+            @if(method_exists($menus, 'hasPages') && $menus->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $menus->links() }}</div>@endif
         </div>
 
         {{-- Modal Preview Gambar --}}
