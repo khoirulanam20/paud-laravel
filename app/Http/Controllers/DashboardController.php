@@ -15,6 +15,7 @@ use App\Models\MenuMakananVote;
 use App\Models\Sarana;
 use App\Models\Sekolah;
 use App\Models\User;
+use App\Support\HariLiburIndonesia;
 use App\Support\PresensiPeriodeFilter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -176,15 +177,8 @@ class DashboardController extends Controller
                 $from = Carbon::parse($data['presensiFilter']['from']);
                 $to = Carbon::parse($data['presensiFilter']['to']);
                 
-                // Calculate effective days (weekdays between from and to)
-                $effectiveDays = 0;
-                $tempDate = clone $from;
-                while ($tempDate <= $to) {
-                    if (!$tempDate->isWeekend()) {
-                        $effectiveDays++;
-                    }
-                    $tempDate->addDay();
-                }
+                // Hitung hari efektif: tidak termasuk Sabtu, Minggu, dan hari libur nasional Indonesia
+                $effectiveDays = HariLiburIndonesia::hitungHariEfektif($from, $to);
                 $data['effectiveDaysCount'] = $effectiveDays;
 
                 $data['presensiSummaryPerAnak'] = $data['anaks']->mapWithKeys(function($anak) use ($from, $to, $effectiveDays) {
