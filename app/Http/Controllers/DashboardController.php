@@ -110,7 +110,7 @@ class DashboardController extends Controller
                 $kegiatans = Kegiatan::query()
                     ->where('sekolah_id', $sekolahId)
                     ->whereIn('kelas_id', $childKelasIds)
-                    ->where('date', '>=', Carbon::today()->subDays(7))
+                    ->whereDate('date', Carbon::today())
                     ->with(['pengajar', 'pencapaians' => fn($q) => $q->whereIn('anak_id', $data['anakIds'])->with('matrikulasi')])
                     ->latest('date')
                     ->latest('id')
@@ -125,9 +125,9 @@ class DashboardController extends Controller
                 }
 
                 $pencapaians = Pencapaian::whereIn('anak_id', $data['anakIds'])
+                    ->whereDate('created_at', Carbon::today())
                     ->with(['matrikulasi', 'kegiatan', 'anak'])
                     ->latest()
-                    ->take(5)
                     ->get();
 
                 foreach ($pencapaians as $p) {

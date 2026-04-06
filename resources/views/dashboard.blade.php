@@ -1,15 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <!-- <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
-                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-            </div>
-            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Dashboard</h2> -->
-        </div>
-    </x-slot>
-
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
 
         <!-- ═══ LEMBAGA DASHBOARD ═══ -->
@@ -195,74 +184,99 @@
                 this.showRutinModal = true;
             }
         }">
-            <header class="space-y-1">
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: #2C2C2C;">Assalamu'alaikum, Bunda / Ayah</h1>
-                <p class="text-sm max-w-xl" style="color: #9E9790;">Ringkasan kehadiran anak, menu hari ini, serta jurnal dan laporan perkembangan terbaru.</p>
-            </header>
+            {{-- ═══ Welcome & Attendance Summary Card ═══ --}}
+            <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-6"
+                 style="background: linear-gradient(135deg, #1A6B6B 0%, #155959 50%, #0f4040 100%);
+                        box-shadow: 0 8px 32px rgba(26,107,107,0.30);">
+
+                {{-- Decorative background blobs --}}
+                <div class="absolute -right-10 -top-10 pointer-events-none opacity-[0.08]">
+                    <svg class="h-52 w-52" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                    </svg>
+                </div>
+                <div class="absolute -left-6 -bottom-6 pointer-events-none opacity-[0.05]">
+                    <svg class="h-40 w-40" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+
+                {{-- 1. Welcome Section --}}
+                <div class="relative px-5 py-5 sm:px-7 sm:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-widest text-white/60 mb-0.5">Selamat Datang</p>
+                            <h1 class="text-xl sm:text-2xl font-bold leading-tight text-white">Assalamu'alaikum, Bunda / Ayah</h1>
+                            <p class="text-sm text-white/70 mt-0.5 leading-relaxed">Pantau tumbuh kembang si kecil hari ini.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 2. Attendance Overview Title & Filter --}}
+                <div class="relative px-5 pt-5 pb-4 border-t border-b border-white/10">
+                    <div class="flex items-center justify-between mb-0">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0 border border-white/20">
+                                <svg class="h-5 w-5 text-white/95" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1 pt-0.5">
+                                <p class="text-[11px] font-semibold uppercase tracking-widest text-white/75 leading-tight">Ringkasan Kehadiran</p>
+                                <p class="text-sm font-medium text-white/95 mt-0.5">{{ \Carbon\Carbon::now()->locale('id')->translatedFormat('l, d F Y') }}</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('orangtua.presensi.index') }}" class="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition border border-white/10" title="Filter & Detail">
+                            <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- 3. Children Attendance Stats List --}}
+                <div class="relative px-5 py-5 md:px-6 md:py-6">
+                    @forelse($anaks ?? [] as $anak)
+                        @php $summary = $presensiSummaryPerAnak[$anak->id] ?? ['hadir' => 0, 'tidak_hadir' => 0, 'efektif' => 0]; @endphp
+                        <div class="rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 mb-3 last:mb-0">
+                            <div class="flex items-center gap-3">
+                                <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" class="border border-white/25 shadow-sm shrink-0" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-bold text-[15px] leading-tight">{{ $anak->name }}</p>
+                                    <div class="flex items-center gap-3 mt-1.5">
+                                        <div class="flex flex-col">
+                                            <span class="text-[8px] text-white/60 uppercase font-bold tracking-wider">Hadir</span>
+                                            <span class="text-sm font-bold">{{ $summary['hadir'] }} hari</span>
+                                        </div>
+                                        <div class="h-6 w-px bg-white/10"></div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[8px] text-white/60 uppercase font-bold tracking-wider">Izin/Sakit/Alpa</span>
+                                            <span class="text-sm font-bold text-amber-200">{{ $summary['tidak_hadir'] }} hari</span>
+                                        </div>
+                                        <div class="h-6 w-px bg-white/10"></div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[8px] text-white/60 uppercase font-bold tracking-wider">Hari Efektif</span>
+                                            <span class="text-sm font-bold tabular-nums leading-none text-white">{{ $summary['efektif'] }} hari</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-white/75 py-2">Belum ada anak tertaut pada akun ini.</p>
+                    @endforelse              
+                </div>
+            </div>
+
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 <div class="lg:col-span-1 flex flex-col gap-5">
-                    <div class="rounded-2xl text-white overflow-hidden relative shadow-lg" style="background: linear-gradient(145deg, #1A6B6B 0%, #237a7a 45%, #2D8585 100%); box-shadow: 4px 8px 28px rgba(26,107,107,0.35);">
-                        <div class="absolute -right-8 -top-8 pointer-events-none opacity-[0.07]">
-                            <svg class="h-40 w-40" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
-                        </div>
-
-                        <div class="relative px-5 pt-5 pb-4 border-b border-white/15">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="h-10 w-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0 border border-white/20">
-                                        <svg class="h-5 w-5 text-white/95" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="min-w-0 flex-1 pt-0.5">
-                                        <p class="text-[11px] font-semibold uppercase tracking-widest text-white/75">Ringkasan Kehadiran</p>
-                                        <p class="text-sm font-medium text-white/95 mt-0.5">{{ $presensiFilter['label'] ?? '' }}</p>
-                                    </div>
-                                </div>
-                                <a href="{{ route('orangtua.presensi.index') }}" class="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition border border-white/10" title="Filter & Detail">
-                                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="relative px-5 py-5 md:px-6 md:py-6">
-                            <p class="text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-3">Siswa & Presensi</p>
-                            @forelse($anaks ?? [] as $anak)
-                                @php $summary = $presensiSummaryPerAnak[$anak->id] ?? ['hadir' => 0, 'tidak_hadir' => 0, 'efektif' => 0]; @endphp
-                                <div class="rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 mb-3 last:mb-0">
-                                    <div class="flex items-center gap-3">
-                                        <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" class="border border-white/25 shadow-sm shrink-0" />
-                                        <div class="min-w-0 flex-1">
-                                            <p class="font-bold text-[15px] leading-tight">{{ $anak->name }}</p>
-                                            <div class="flex items-center gap-3 mt-1.5">
-                                                <div class="flex flex-col">
-                                                    <span class="text-[10px] text-white/60 uppercase font-bold tracking-wider">Hadir</span>
-                                                    <span class="text-sm font-bold">{{ $summary['hadir'] }} hari</span>
-                                                </div>
-                                                <div class="h-6 w-px bg-white/10"></div>
-                                                <div class="flex flex-col">
-                                                    <span class="text-[10px] text-white/60 uppercase font-bold tracking-wider">Izin/Sakit/Alpa</span>
-                                                    <span class="text-sm font-bold text-amber-200">{{ $summary['tidak_hadir'] }} hari</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-right shrink-0 pl-2">
-                                            <p class="text-xl font-bold tabular-nums leading-none text-white">{{ $summary['efektif'] }}</p>
-                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-white/60 mt-1.5">Hari Efektif</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <p class="text-sm text-white/75 py-2">Belum ada anak tertaut pada akun ini.</p>
-                            @endforelse
-                        </div>
-                    </div>
+                    
 
                     <div class="card overflow-hidden">
                         <div class="px-5 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
                             <h3 class="section-title mb-0">Menu hari ini</h3>
-                            <a href="{{ route('orangtua.menu-makanan.index') }}" class="text-xs font-semibold shrink-0" style="color: #1A6B6B;">Jadwal lengkap</a>
+                            <a href="{{ route('orangtua.menu-makanan.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Jadwal lengkap</a>
                         </div>
                         <div class="px-5 py-5">
                             @if(!empty($menuHariIni))
@@ -335,10 +349,10 @@
                 <div class="lg:col-span-2 flex flex-col gap-5">
                     <div class="card overflow-hidden">
                         <div class="px-5 sm:px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
-                            <h3 class="section-title mb-0 text-amber-900">Laporan Perkembangan & Kegiatan</h3>
+                            <h3 class="section-title mb-0 text-amber-900">Agenda & Kegiatan</h3>
                             <div class="flex gap-2">
-                                <a href="{{ route('orangtua.kegiatan.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Jurnal</a>
-                                <a href="{{ route('orangtua.pencapaian.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Laporan</a>
+                                <a href="{{ route('orangtua.kegiatan.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Agenda</a>
+                                <a href="{{ route('orangtua.kegiatan-rutin.index') }}" class="text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Kegiatan</a>
                             </div>
                         </div>
                         <div class="divide-y divide-gray-50">
