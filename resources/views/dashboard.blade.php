@@ -49,13 +49,15 @@
             </div>
             <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
                 @forelse ($recentFeedback ?? [] as $f)
+                    @if($f)
                     <div class="px-6 py-4 flex items-start justify-between gap-4">
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm leading-relaxed line-clamp-2" style="color: #6B6560;">"{{ $f->message }}"</p>
-                            <p class="text-xs mt-1" style="color: #9E9790;">{{ \Carbon\Carbon::parse($f->created_at)->format('d M Y') }}</p>
+                            <p class="text-sm leading-relaxed line-clamp-2" style="color: #6B6560;">"{{ data_get($f, 'message', '-') }}"</p>
+                            <p class="text-xs mt-1" style="color: #9E9790;">{{ data_get($f, 'created_at') ? \Carbon\Carbon::parse(data_get($f, 'created_at'))->format('d M Y') : '-' }}</p>
                         </div>
-                        <span class="badge badge-amber shrink-0">{{ $f->status ?? 'Terkirim' }}</span>
+                        <span class="badge badge-amber shrink-0">{{ data_get($f, 'status', 'Terkirim') }}</span>
                     </div>
+                    @endif
                 @empty
                     <div class="px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada masukan terbaru.</div>
                 @endforelse
@@ -119,19 +121,34 @@
 
         <!-- ═══ ADMIN KELAS / WALI KELAS ═══ -->
         @hasrole('Admin Kelas')
-        <div class="card overflow-hidden mb-2">
-            <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);">
-                <div class="text-white">
-                    <p class="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">Wali kelas</p>
-                    <h3 class="text-xl font-bold">Terdaftar di {{ $kelasWaliCount ?? 0 }} Kelas</h3>
-                    <p class="text-sm opacity-90 mt-1">Total siswa di seluruh kelasmu: <strong>{{ $kelasAnakCount ?? 0 }}</strong></p>
+        <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-2"
+             style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);
+                    box-shadow: 0 8px 32px rgba(26,107,107,0.25);">
+            
+            {{-- Decorative element --}}
+            <div class="absolute right-0 top-0 -mr-8 -mt-8 opacity-10 pointer-events-none">
+                <svg class="h-40 w-40" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+
+            <div class="relative px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-widest opacity-80 mb-1">Wali Kelas</p>
+                        <h3 class="text-xl font-bold">Terdaftar di {{ $kelasWaliCount ?? 0 }} Kelas</h3>
+                        <p class="text-sm opacity-90 mt-1">Total siswa kelolaan: <strong>{{ $kelasAnakCount ?? 0 }}</strong> anak</p>
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('adminkelas.anak.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Siswa Kelasku</a>
-                    <a href="{{ route('adminkelas.presensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white text-[#1A6B6B] hover:bg-opacity-95">Presensi Kelasku</a>
-                    @hasrole('Pengajar')
-                    <a href="{{ route('pengajar.kegiatan.index') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/30">Jurnal Kegiatan</a>
-                    @endhasrole
+                
+                <div class="flex flex-wrap gap-2 sm:gap-3">
+                    <a href="{{ route('adminkelas.anak.index') }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all">Siswa Kelasku</a>
+                    <a href="{{ route('adminkelas.presensi.index') }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold bg-white text-[#1A6B6B] hover:shadow-lg transition-all">Presensi Kelasku</a>
                 </div>
             </div>
         </div>
@@ -139,29 +156,49 @@
 
         <!-- ═══ PENGAJAR DASHBOARD ═══ -->
         @hasrole('Pengajar')
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 mb-6">
             <div class="stat-card">
-                <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg></div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #9E9790;">{{ $dashboardAnakLabel ?? 'Siswa di sekolah' }}</p><p class="text-3xl font-bold" style="color: #2C2C2C;">{{ $totalAnakSekolah ?? 0 }}</p></div>
+                <div class="stat-icon"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg></div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1 truncate" style="color: #9E9790;">{{ $dashboardAnakLabel ?? 'Siswa' }}</p>
+                    <p class="text-2xl sm:text-3xl font-bold" style="color: #2C2C2C;">{{ $totalAnakSekolah ?? 0 }}</p>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg></div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #9E9790;">Total Jurnal Saya</p><p class="text-3xl font-bold" style="color: #2C2C2C;">{{ $totalKegiatanSaya ?? 0 }}</p></div>
+                <div class="stat-icon"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg></div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1 truncate" style="color: #9E9790;">Jurnal Saya</p>
+                    <p class="text-2xl sm:text-3xl font-bold" style="color: #2C2C2C;">{{ $totalKegiatanSaya ?? 0 }}</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #9E9790;">Evaluasi Pencapaian</p><p class="text-3xl font-bold" style="color: #2C2C2C;">{{ $totalEvaluasiSaya ?? 0 }}</p></div>
+            <div class="stat-card col-span-2 md:col-span-1">
+                <div class="stat-icon"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1 truncate" style="color: #9E9790;">Evaluasi Pencapaian</p>
+                    <p class="text-2xl sm:text-3xl font-bold" style="color: #2C2C2C;">{{ $totalEvaluasiSaya ?? 0 }}</p>
+                </div>
             </div>
         </div>
-        <div class="card p-10 text-center">
-            <div class="h-16 w-16 rounded-2xl mx-auto mb-5 flex items-center justify-center" style="background: #1A6B6B; box-shadow: 4px 4px 14px rgba(26,107,107,0.35);">
-                <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-            </div>
-            <h2 class="text-2xl font-bold mb-2" style="color: #2C2C2C;">Selamat Datang, Guru!</h2>
-            <p class="text-sm mb-6 max-w-md mx-auto" style="color: #9E9790;">Gunakan menu di atas untuk membuat jurnal harian, mencatat matrikulasi, atau melaporkan evaluasi perkembangan anak.</p>
-            <div class="flex gap-3 justify-center flex-wrap">
-                <a href="{{ route('pengajar.kegiatan.index') }}" class="btn-primary">Buat Jurnal Kegiatan</a>
-                <a href="{{ route('pengajar.pencapaian.index') }}" class="btn-secondary">Nilai Pencapaian</a>
+
+        <div class="relative rounded-3xl overflow-hidden bg-white shadow-xl shadow-gray-200/50 p-6 sm:p-10 text-center border border-gray-100 mb-8">
+            {{-- Background patterns --}}
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#1A6B6B] to-transparent"></div>
+            
+            <div class="relative z-10">
+                <div class="h-20 w-20 rounded-3xl mx-auto mb-6 flex items-center justify-center text-white shadow-2xl transition-transform hover:scale-105 duration-300" 
+                     style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);">
+                    <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                
+                <h2 class="text-3xl font-extrabold tracking-tight mb-3" style="color: #2C2C2C;">Selamat Datang, {{ auth()->user()->name }}</h2>
+                <p class="text-base text-gray-500 mb-8 max-w-lg mx-auto leading-relaxed font-medium">Mari terus cerahkan masa depan anak bangsa. Gunakan tombol di bawah untuk mulai mengelola jurnal dan perkembangan siswa hari ini.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                    <a href="{{ route('pengajar.kegiatan.index') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#1A6B6B] text-white font-bold shadow-lg hover:bg-[#155959] transform hover:-translate-y-0.5 transition-all">Buat Jurnal Kegiatan</a>
+                    <a href="{{ route('pengajar.pencapaian.index') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gray-100 text-[#1A6B6B] font-bold hover:bg-gray-200 transition-all">Nilai Pencapaian</a>
+                </div>
             </div>
         </div>
         @endhasrole

@@ -10,30 +10,93 @@
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex flex-col gap-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <div>
-                        <h3 class="section-title">Daftar Siswa</h3>
-                        <p class="section-subtitle">Siswa yang terdaftar di kelas Anda</p>
+            <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color:rgba(0,0,0,0.06);">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold" style="color:#2C2C2C;">Daftar Siswa</h3>
+                        <p class="text-sm font-medium" style="color:#9E9790;">Kelola dan lihat rincian siswa yang terdaftar di kelas Anda</p>
                     </div>
-                    <form method="get" class="flex flex-wrap items-end gap-3">
-                    <div>
-                        <label class="input-label">Filter Kelas</label>
-                        <select name="kelas_id" class="input-field min-w-[10rem]" onchange="this.form.submit()">
-                            <option value="">-- Semua Kelas --</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
-                            @endforeach
-                        </select>
+                    
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full md:w-auto">
+                        <form method="get" class="flex-1 grid grid-cols-2 sm:flex items-end gap-3">
+                            <div class="col-span-2 sm:w-48">
+                                <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Filter Kelas</label>
+                                <select name="kelas_id" class="input-field w-full text-xs font-bold h-11 sm:h-10 border-black/10 transition focus:border-teal-500" onchange="this.form.submit()" style="background:white;">
+                                    <option value="">— Semua Kelas —</option>
+                                    @foreach($kelas as $k)
+                                        <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @if(request('kelas_id'))
+                                <a href="{{ route('adminkelas.anak.index') }}" class="inline-flex items-center justify-center px-4 h-11 sm:h-10 rounded-xl bg-white text-gray-400 hover:text-red-500 transition border border-black/10 shadow-sm">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </a>
+                            @endif
+                        </form>
+                        
+                        <button @click="showCreateModal=true" class="btn-primary h-11 sm:h-10 px-6 font-bold flex items-center justify-center gap-2 whitespace-nowrap shadow-md shadow-teal-900/10">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                            Registrasi Siswa
+                        </button>
                     </div>
-                    @if(request('kelas_id'))
-                        <a href="{{ route('adminkelas.anak.index') }}" class="btn-secondary text-xs">Reset</a>
-                    @endif
-                </form>
-                    <button @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Registrasi Siswa</button>
                 </div>
             </div>
-            <div class="overflow-x-auto">
+            {{-- Mobile Card View (Hidden on Tablet/Desktop) --}}
+            <div class="block md:hidden pb-4">
+                <div class="grid grid-cols-1 gap-4 px-4 pt-4">
+                    @forelse($anaks as $anak)
+                    <div class="relative rounded-2xl bg-white border border-black/5 shadow-sm p-4 hover:shadow-md transition">
+                        <div class="flex items-center gap-3 mb-3 pb-3 border-b border-black/[0.03]">
+                            <x-foto-profil :path="$anak->photo" :name="$anak->name" size="md" class="shrink-0 ring-2 ring-teal-50" />
+                            <div class="min-w-0 flex-1">
+                                <h4 class="font-bold text-[#2C2C2C] truncate">{{ $anak->name }}</h4>
+                                <p class="text-[10px] font-semibold text-teal-600 uppercase tracking-wider">
+                                    {{ $anak->kelas->name ?? 'Belum Ada Kelas' }}
+                                </p>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="text-[9px] font-bold py-0.5 px-2 rounded-full {{ $anak->jenis_kelamin == 'Pria' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600' }}">
+                                    {{ $anak->jenis_kelamin }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-y-3 gap-x-4 mb-4">
+                            <div>
+                                <p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest leading-none mb-1">NIK</p>
+                                <p class="text-xs font-semibold text-gray-700 truncate leading-none">{{ $anak->nik ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest leading-none mb-1">Nama Ortu</p>
+                                <p class="text-xs font-semibold text-gray-700 truncate leading-none">{{ $anak->parent_name ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest leading-none mb-1">Tgl Lahir</p>
+                                <p class="text-xs font-semibold text-gray-700 leading-none">{{ $anak->dob ? \Carbon\Carbon::parse($anak->dob)->format('d M Y') : '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-gray-400 uppercase font-bold tracking-widest leading-none mb-1">Umur</p>
+                                <p class="text-xs font-bold text-teal-700 leading-none">{{ $anak->age }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 pt-1">
+                            <a href="{{ route('adminkelas.anak.show', $anak) }}" class="flex-1 py-2.5 rounded-xl bg-teal-50 text-teal-700 text-xs font-bold text-center hover:bg-teal-100 transition">Detail</a>
+                            <button @click="openEdit({{ json_encode($anak) }})" class="flex-1 py-2.5 rounded-xl bg-gray-50 text-gray-700 text-xs font-bold text-center hover:bg-gray-100 transition border border-black/5">Edit</button>
+                            <button @click="openDelete('{{ route('adminkelas.anak.destroy', $anak) }}')" class="h-10 w-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition border border-rose-100">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="py-12 text-center text-gray-400">Belum ada siswa di kelas ini.</div>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Desktop Table View (Hidden on Mobile) --}}
+            <div class="hidden md:block overflow-x-auto">
                 <table class="data-table">
                     <thead>
                         <tr>

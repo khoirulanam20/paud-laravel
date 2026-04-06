@@ -81,7 +81,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary">Filter</button>
+                    <button type="submit" class="btn-primary">Cari</button>
                 </form>
             </div>
 

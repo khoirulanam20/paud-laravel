@@ -28,27 +28,30 @@
         @endif
 
         <div class="card overflow-hidden mb-6">
-            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4" style="border-color: rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Filter tanggal</h3>
-                    <p class="section-subtitle">Pilih hari untuk melihat dan mengisi checklist kehadiran siswa kelasku</p>
+            <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Kehadiran</h3>
+                        <p class="text-sm font-medium" style="color:#9E9790;">Pilih kelas dan tanggal untuk mengelola checklist siswa</p>
+                    </div>
+                    
+                    <form method="get" action="{{ route('adminkelas.presensi.index') }}" class="grid grid-cols-2 gap-4 w-full md:w-auto">
+                        <div class="col-span-2 sm:col-span-1 lg:w-48">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Pilih Kelas</label>
+                            <select name="filter_kelas_id" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500" onchange="this.form.submit()" style="background:white;">
+                                <option value="">Semua Siswa Terdaftar</option>
+                                @foreach($kelas as $k)
+                                    <option value="{{ $k->id }}" @selected($filterKelasId == $k->id)>{{ $k->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1 lg:w-44">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Pilih Tanggal</label>
+                            <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500 @error('tanggal') border-red-500 @enderror" required onchange="this.form.submit()" style="background:white;">
+                            @error('tanggal')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    </form>
                 </div>
-                <form method="get" action="{{ route('adminkelas.presensi.index') }}" class="flex flex-wrap items-end gap-3">
-                    <div>
-                        <label class="input-label">Kelola Kelas</label>
-                        <select name="filter_kelas_id" class="input-field" onchange="this.form.submit()">
-                            <option value="">Semua Siswa Terdaftar</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}" @selected($filterKelasId == $k->id)>{{ $k->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="input-label">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field @error('tanggal') border-red-500 @enderror" required onchange="this.form.submit()">
-                        @error('tanggal')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                    </div>
-                </form>
             </div>
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">
                 <span><strong style="color:#2C2C2C;">{{ $tanggal }}</strong></span>
@@ -92,21 +95,25 @@
                                         $row = $presensiByAnak->get($anak->id);
                                         $checked = $row ? $row->hadir : false;
                                     @endphp
-                                    <tr>
-                                        <td class="text-center">
-                                            <input type="checkbox" name="hadir[]" value="{{ $anak->id }}" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    <tr class="hover:bg-teal-50/30 transition-colors">
+                                        <td class="text-center py-4">
+                                            <input type="checkbox" name="hadir[]" value="{{ $anak->id }}" class="h-6 w-6 rounded-lg border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
                                                 @checked($checked)>
                                         </td>
-                                        <td>
-                                            <div class="flex items-center gap-2">
+                                        <td class="py-4">
+                                            <div class="flex items-center gap-3">
                                                 <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
-                                                <span class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</span>
-                                                @if($anak->dob)<span class="text-[10px] font-bold text-[#1A6B6B]">({{ $anak->age }})</span>@endif
+                                                <div class="min-w-0">
+                                                    <span class="font-bold block text-sm sm:text-base" style="color:#2C2C2C;">{{ $anak->name }}</span>
+                                                    @if($anak->dob)<span class="text-[10px] font-bold text-teal-600 uppercase tracking-tight">Umur: {{ $anak->age }}</span>@endif
+                                                </div>
                                             </div>
                                         </td>
-                                        <td>
-                                            <span class="font-bold text-sm tabular-nums" style="color:#1A6B6B;">{{ (int)($hadirBulanan[$anak->id] ?? 0) }}</span>
-                                            <span class="text-xs" style="color:#9E9790;"> hari</span>
+                                        <td class="py-4">
+                                            <div class="flex flex-col">
+                                                <span class="font-black text-base sm:text-lg tabular-nums leading-none" style="color:#1A6B6B;">{{ (int)($hadirBulanan[$anak->id] ?? 0) }}</span>
+                                                <span class="text-[10px] font-bold uppercase text-gray-400 tracking-widest mt-1">Hari Hadir</span>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach

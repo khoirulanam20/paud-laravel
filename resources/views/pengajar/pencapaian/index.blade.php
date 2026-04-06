@@ -7,6 +7,7 @@
     </x-slot>
 
     @php
+        $filterAspek = $filterAspek ?? null;
         $kegiatanData = [];
         foreach ($kegiatans as $kg) {
             $kegiatanData[$kg->id] = [
@@ -42,6 +43,8 @@
             deleteBundleKeg: '',
             payload: {},
             selectedAnakId: '',
+            selectedKegiatanId: '',
+            selectedKegiatanIdEdit: '',
             editBundleKey: null,
             editNilai: {},
             editCatatan: {},
@@ -141,55 +144,59 @@
                 </ul>
             </div>
         @endif
-
         <div class="card overflow-hidden mb-6">
-            <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="border-color: rgba(0,0,0,0.06);">
-                <div class="space-y-1">
-                    <h3 class="section-title mb-0">Filter evaluasi</h3>
-                    <p class="text-sm leading-relaxed m-0 max-w-3xl" style="color:#9E9790;">Sesuaikan rentang tanggal penyimpanan, anak, dan aspek. Tanggal bersifat inklusif.</p>
+            <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
+                <div class="space-y-6">
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Evaluasi</h3>
+                        <p class="text-sm font-medium" style="color:#9E9790;">Cari data berdasarkan rentang tanggal, kelas, dan indikator aspek</p>
+                    </div>
+                    
+                    <form method="get" action="{{ route('pengajar.pencapaian.index') }}" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 items-end">
+                        <div class="col-span-1 lg:col-span-2 min-w-0">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Dari</label>
+                            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                        </div>
+                        <div class="col-span-1 lg:col-span-2 min-w-0">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Sampai</label>
+                            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                        </div>
+                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Kelas</label>
+                            <select name="filter_kelas_id" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" style="background:white;">
+                                <option value="">Semua Kelas</option>
+                                @foreach($availableKelas as $k)
+                                    <option value="{{ $k->id }}" @selected($filterKelasId === (int) $k->id)>{{ $k->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Anak</label>
+                            <select name="filter_anak_id" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" style="background:white;">
+                                <option value="">Semua Anak</option>
+                                @foreach($anaks as $a)
+                                    <option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                            <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Aspek</label>
+                            <select name="aspek" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" style="background:white;">
+                                <option value="">Semua Aspek</option>
+                                <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}" @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum / Tanpa Aspek</option>
+                                @foreach($aspekPilihan as $asp)
+                                    <option value="{{ $asp }}" @selected($filterAspekRaw === $asp)>{{ $asp }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-span-2 lg:col-span-2">
+                            <button type="submit" class="btn-primary w-full h-11 font-bold shadow-lg shadow-teal-900/10 flex items-center justify-center gap-2">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                <span>Cari Data</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <form method="get" action="{{ route('pengajar.pencapaian.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
-                        <label class="input-label" for="penc-filter-dari">Dari</label>
-                        <input id="penc-filter-dari" type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full min-w-0" required>
-                    </div>
-                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
-                        <label class="input-label" for="penc-filter-sampai">Sampai</label>
-                        <input id="penc-filter-sampai" type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full min-w-0" required>
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-2 min-w-0">
-                        <label class="input-label" for="penc-filter-kelas">Kelas</label>
-                        <select id="penc-filter-kelas" name="filter_kelas_id" class="input-field w-full min-w-0">
-                            <option value="">Semua kelas</option>
-                            @foreach($availableKelas as $k)
-                                <option value="{{ $k->id }}" @selected($filterKelasId === (int) $k->id)>{{ $k->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-2 min-w-0">
-                        <label class="input-label" for="penc-filter-anak">Anak</label>
-                        <select id="penc-filter-anak" name="filter_anak_id" class="input-field w-full min-w-0">
-                            <option value="">Semua anak</option>
-                            @foreach($anaks as $a)
-                                <option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-2 min-w-0">
-                        <label class="input-label" for="penc-filter-aspek">Aspek</label>
-                        <select id="penc-filter-aspek" name="aspek" class="input-field w-full min-w-0">
-                            <option value="">Semua aspek</option>
-                            <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}" @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum / tanpa aspek</option>
-                            @foreach($aspekPilihan as $asp)
-                                <option value="{{ $asp }}" @selected($filterAspekRaw === $asp)>{{ $asp }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-2 flex flex-col gap-1.5 min-w-0">
-                        <span class="input-label opacity-0 text-[0.65rem] leading-none max-sm:hidden" aria-hidden="true">&nbsp;</span>
-                        <button type="submit" class="btn-primary w-full shrink-0">Tampilkan</button>
-                    </div>
-                </form>
             </div>
             <div class="px-5 sm:px-6 py-3 border-t text-sm flex flex-wrap items-center gap-x-2 gap-y-1" style="background:#FAF6F0; border-color:rgba(0,0,0,0.04); color:#6B6560;">
                 <span class="inline-flex items-center gap-1.5 shrink-0">
@@ -224,7 +231,62 @@
                 <button type="button" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>Buat Evaluasi</button>
             </div>
 
-            <div class="overflow-x-auto">
+            {{-- Mobile Card View (Hidden on Tablet/Desktop) --}}
+            <div class="block lg:hidden pb-4">
+                <div class="grid grid-cols-1 gap-4 px-4 pt-4">
+                    @forelse($groupedPencapaian as $bundleKey => $rows)
+                        @php $first = $rows->first(); @endphp
+                        <div class="relative rounded-2xl bg-white border border-black/5 shadow-sm p-4 hover:shadow-md transition">
+                            <div class="flex items-start gap-3 mb-4">
+                                @if($first->photo)
+                                    <img src="{{ Storage::url($first->photo) }}" class="h-16 w-16 object-cover rounded-xl shadow-sm shrink-0" onclick="window.open(this.src)">
+                                @else
+                                    <div class="h-16 w-16 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-black/5">
+                                        <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    </div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <x-foto-profil :path="$first->anak->photo ?? null" :name="$first->anak->name ?? '?'" size="xs" />
+                                        <h4 class="font-bold text-[#2C2C2C] truncate text-sm">{{ $first->anak->name ?? '-' }}</h4>
+                                    </div>
+                                    <p class="text-[11px] font-bold text-teal-600 mb-1 leading-tight">{{ $first->kegiatan->title ?? '-' }}</p>
+                                    <p class="text-[10px] text-gray-400 font-medium">{{ \Carbon\Carbon::parse($first->created_at)->translatedFormat('d M Y') }}</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 mb-4 bg-gray-50/50 rounded-xl p-3 border border-black/[0.03]">
+                                @foreach($rows->filter(fn ($p) => \App\Support\FilterAspekPencapaian::rowMatches($filterAspek, $p))->sortBy(fn ($p) => ($p->matrikulasi->aspek ?? '').($p->matrikulasi->indicator ?? '')) as $p)
+                                    <div class="pb-2 border-b border-black/[0.05] last:border-0 last:pb-0">
+                                        <div class="flex justify-between items-start gap-2 mb-1">
+                                            <span class="text-[10px] font-extrabold text-teal-800 uppercase tracking-tight">{{ $p->matrikulasi->aspek ?: 'Umum' }}</span>
+                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">
+                                                {{ \App\Support\LabelSkorPencapaian::label($p->score) }}
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] text-gray-600 leading-tight mb-1">{{ $p->matrikulasi->indicator ?? 'Data indikator lama' }}</p>
+                                        @if($p->feedback)
+                                            <p class="text-[10px] text-gray-400 italic bg-white/50 px-2 py-1 rounded border border-black/5 mt-1">{{ $p->feedback }}</p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="openEditBundle('{{ $bundleKey }}')" class="flex-1 py-2.5 rounded-xl bg-teal-50 text-teal-700 text-xs font-bold text-center hover:bg-teal-100 transition">Edit Evaluasi</button>
+                                <button type="button" @click="openDeleteBundle('{{ $bundleKey }}')" class="h-10 w-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition border border-rose-100/50">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-12 text-center text-gray-400 text-sm">Belum ada evaluasi pada rentang tanggal ini.</div>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Desktop Table View (Hidden on Mobile) --}}
+            <div class="hidden lg:block overflow-x-auto">
                 <table class="data-table">
                     <thead><tr><th>Bukti</th><th>Anak</th><th>Kegiatan</th><th>Aspek &amp; nilai</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
