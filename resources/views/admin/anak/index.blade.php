@@ -38,7 +38,11 @@
                     <h3 class="section-title">Daftar Siswa &amp; Orang Tua</h3>
                 </div>
                 <div class="flex items-end gap-3 flex-wrap">
-                    <form method="get" class="flex items-end gap-2">
+                    <form method="get" class="flex flex-wrap items-end gap-3">
+                        <div class="min-w-[12rem]">
+                            <label class="input-label">Cari Nama Siswa</label>
+                            <input type="text" name="search" value="{{ request('search') }}" class="input-field" placeholder="Ketik nama...">
+                        </div>
                         <div>
                             <label class="input-label">Filter Kelas</label>
                             <select name="kelas_id" class="input-field min-w-[10rem]" onchange="this.form.submit()">
@@ -48,8 +52,9 @@
                                 @endforeach
                             </select>
                         </div>
-                        @if(request('kelas_id'))
-                            <a href="{{ route('admin.anak.index') }}" class="btn-secondary text-xs">Reset</a>
+                        <button type="submit" class="btn-primary">Cari</button>
+                        @if(request('kelas_id') || request('search'))
+                            <a href="{{ route('admin.anak.index') }}" class="btn-secondary text-xs h-11 flex items-center">Reset</a>
                         @endif
                     </form>
                     <button type="button" @click="showCreateModal = true" class="btn-primary">
@@ -126,7 +131,7 @@
 
             @if($anaks->hasPages())
                 <div class="px-6 py-4 border-t" style="border-color: rgba(0,0,0,0.06);">
-                    {{ $anaks->appends(request()->only(['kelas_id']))->links() }}
+                    {{ $anaks->links() }}
                 </div>
             @endif
         </div>

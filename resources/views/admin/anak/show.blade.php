@@ -105,6 +105,33 @@
                     @endif
                 </div>
 
+                <!-- Parent Details -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-[#2C2C2C] mb-4">Informasi Orang Tua</h3>
+                    <div class="space-y-4 text-sm">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Nama Bapak</p>
+                                <p class="text-[#2C2C2C]">{{ $anak->nama_bapak ?: '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">NIK Bapak</p>
+                                <p class="text-[#2C2C2C]">{{ $anak->nik_bapak ?: '-' }}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">Nama Ibu</p>
+                                <p class="text-[#2C2C2C]">{{ $anak->nama_ibu ?: '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-wider">NIK Ibu</p>
+                                <p class="text-[#2C2C2C]">{{ $anak->nik_ibu ?: '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Alamat & Catatan -->
                 <div class="card p-6">
                     <h3 class="font-bold text-[#2C2C2C] mb-4">Informasi Tambahan</h3>
@@ -193,6 +220,64 @@
                                                         @endphp
                                                         <div class="h-1.5 w-1.5 rounded-full {{ $isGood ? 'bg-green-500' : 'bg-red-500' }}"></div>
                                                         <span class="text-[10px] font-medium text-gray-500">{{ $l }}: <span class="text-gray-700">{{ $val ?: '-' }}</span></span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- ACHIEVEMENT HISTORY -->
+                <div class="card overflow-hidden">
+                    <div class="px-6 py-4 border-b flex items-center justify-between bg-white" style="border-color: rgba(0,0,0,0.06);">
+                        <h3 class="font-bold text-lg text-[#2C2C2C]">Riwayat Pencapaian & Matrikulasi</h3>
+                    </div>
+                    <div class="p-6">
+                        @if($anak->pencapaians->isEmpty())
+                            <div class="text-center py-12 text-gray-400">
+                                <svg class="h-12 w-12 mx-auto mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Belum ada riwayat pencapaian.
+                            </div>
+                        @else
+                            <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+                                @foreach($anak->pencapaians->groupBy('kegiatan_id') as $kgId => $rows)
+                                    @php $first = $rows->first(); @endphp
+                                    <div class="relative flex items-start group">
+                                        <div class="absolute left-0 h-10 w-10 flex items-center justify-center rounded-full bg-white border-2 border-teal-600 shadow-sm shrink-0 z-10 font-bold text-teal-600 text-xs">
+                                            {{ $loop->iteration }}
+                                        </div>
+                                        <div class="ml-14 flex-1">
+                                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                                                <div>
+                                                    <div class="text-sm font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full w-fit mb-1">
+                                                        {{ \Carbon\Carbon::parse($first->created_at)->translatedFormat('d F Y') }}
+                                                    </div>
+                                                    <h4 class="font-bold text-gray-800 text-sm italic">{{ $first->kegiatan->title ?? '-' }}</h4>
+                                                </div>
+                                                @if($first->photo)
+                                                    <img src="{{ Storage::url($first->photo) }}" class="h-16 w-16 object-cover rounded-xl border border-black/5 shadow-sm cursor-pointer" onclick="window.open(this.src)">
+                                                @endif
+                                            </div>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                @foreach($rows as $p)
+                                                    <div class="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-1.5">
+                                                        <div class="flex items-center justify-between gap-2">
+                                                            <span class="text-[10px] font-black text-teal-800 uppercase">{{ $p->matrikulasi->aspek ?: 'Umum' }}</span>
+                                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">
+                                                                {{ \App\Support\LabelSkorPencapaian::label($p->score) }}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-xs font-medium text-gray-600 leading-tight">
+                                                            {{ $p->matrikulasi->indicator ?? '—' }}
+                                                        </p>
+                                                        @if($p->feedback)
+                                                            <p class="text-[11px] italic text-gray-400 mt-1">"{{ $p->feedback }}"</p>
+                                                        @endif
                                                     </div>
                                                 @endforeach
                                             </div>

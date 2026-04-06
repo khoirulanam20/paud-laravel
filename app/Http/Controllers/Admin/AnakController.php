@@ -24,7 +24,11 @@ class AnakController extends Controller
             $query->where('kelas_id', $request->kelas_id);
         }
 
-        $anaks = $query->paginate(10);
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $anaks = $query->paginate(15)->withQueryString();
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
         return view('admin.anak.index', compact('anaks', 'kelas'));
@@ -37,7 +41,8 @@ class AnakController extends Controller
         $anak->load([
             'user',
             'kelas',
-            'kesehatans' => fn($q) => $q->orderBy('tanggal_pemeriksaan', 'desc')
+            'kesehatans' => fn($q) => $q->orderBy('tanggal_pemeriksaan', 'desc'),
+            'pencapaians' => fn($q) => $q->with(['kegiatan', 'matrikulasi'])->latest()
         ]);
 
         return view('admin.anak.show', compact('anak'));

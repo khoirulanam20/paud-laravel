@@ -61,4 +61,9 @@ class Anak extends Model
     {
         return $this->hasMany(Kesehatan::class);
     }
+
+    public function pencapaians(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Pencapaian::class);
+    }
 }
