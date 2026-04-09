@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\CmsContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Traits\CanUploadImage;
 
 class CmsController extends Controller
 {
+    use CanUploadImage;
     private array $textKeys = [
         'hero_title', 'hero_subtitle',
         'about_title', 'about_text',
@@ -48,7 +50,7 @@ class CmsController extends Controller
                 $request->validate([$key => 'image|max:3072']);
                 $old = CmsContent::get($key, '');
                 if ($old) Storage::disk('public')->delete($old);
-                $path = $request->file($key)->store('cms', 'public');
+                $path = $this->uploadImage($request->file($key), 'cms');
                 CmsContent::set($key, $path, null);
             }
         }

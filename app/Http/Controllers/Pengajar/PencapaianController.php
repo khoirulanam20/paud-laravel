@@ -15,9 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Http\Traits\CanUploadImage;
 
 class PencapaianController extends Controller
 {
+    use CanUploadImage;
     private const SCORES = LabelSkorPencapaian::CODES;
 
     private function getPengajar()
@@ -211,7 +213,7 @@ class PencapaianController extends Controller
             if ($existing?->photo) {
                 Storage::disk('public')->delete($existing->photo);
             }
-            $photoPath = $request->file('photo')->store('pencapaian', 'public');
+            $photoPath = $this->uploadImage($request->file('photo'), 'pencapaian');
         } else {
             $photoPath = Pencapaian::query()
                 ->where('anak_id', $anak->id)

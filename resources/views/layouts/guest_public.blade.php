@@ -2,7 +2,7 @@
 <html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="{{ $metaDesc ?? 'PAUD & Daycare terpercaya untuk tumbuh kembang buah hati Anda.' }}">
     <title>Bintang Kecil Daycare</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">

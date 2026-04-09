@@ -7,9 +7,11 @@ use App\Models\Kegiatan;
 use App\Models\Pengajar;
 use App\Support\KegiatanCalendar;
 use Illuminate\Http\Request;
+use App\Http\Traits\CanUploadImage;
 
 class KegiatanController extends Controller
 {
+    use CanUploadImage;
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -69,7 +71,7 @@ class KegiatanController extends Controller
         if ($request->hasFile('photos')) {
             $photos = [];
             foreach ($request->file('photos') as $file) {
-                $photos[] = $file->store('kegiatan', 'public');
+                $photos[] = $this->uploadImage($file, 'kegiatan');
             }
             $data['photos'] = $photos;
         }
@@ -115,7 +117,7 @@ class KegiatanController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $file) {
-                $currentPhotos[] = $file->store('kegiatan', 'public');
+                $currentPhotos[] = $this->uploadImage($file, 'kegiatan');
             }
         }
         $data['photos'] = $currentPhotos;

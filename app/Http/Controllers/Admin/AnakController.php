@@ -8,9 +8,11 @@ use App\Models\Kelas;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Traits\CanUploadImage;
 
 class AnakController extends Controller
 {
+    use CanUploadImage;
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -98,7 +100,7 @@ class AnakController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('anak', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'anak');
         }
 
         Anak::create($data);
@@ -157,7 +159,7 @@ class AnakController extends Controller
             if ($anak->photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
             }
-            $dataArr['photo'] = $request->file('photo')->store('anak', 'public');
+            $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'anak');
         }
 
         $anak->update($dataArr);

@@ -10,9 +10,11 @@ use App\Models\Pengajar;
 use App\Support\KegiatanCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Traits\CanUploadImage;
 
 class KegiatanController extends Controller
 {
+    use CanUploadImage;
     private function getPengajar()
     {
         return Pengajar::where('user_id', auth()->id())->firstOrFail();
@@ -87,7 +89,7 @@ class KegiatanController extends Controller
         if ($request->hasFile('photos')) {
             $photos = [];
             foreach ($request->file('photos') as $file) {
-                $photos[] = $file->store('kegiatan', 'public');
+                $photos[] = $this->uploadImage($file, 'kegiatan');
             }
             $data['photos'] = $photos;
         }
@@ -140,7 +142,7 @@ class KegiatanController extends Controller
         // Handle new uploads
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $file) {
-                $currentPhotos[] = $file->store('kegiatan', 'public');
+                $currentPhotos[] = $this->uploadImage($file, 'kegiatan');
             }
         }
 

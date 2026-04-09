@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\MasterKegiatanRutin;
 use App\Models\Pengajar;
 use App\Models\Matrikulasi;
+use App\Http\Traits\CanUploadImage;
 
 class MasterKegiatanRutinController extends Controller
 {
+    use CanUploadImage;
     public function index()
     {
         $user = auth()->user();
@@ -175,7 +177,7 @@ class MasterKegiatanRutinController extends Controller
             if ($rutin && $rutin->photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($rutin->photo);
             }
-            $data['photo'] = $request->file('photo')->store('kegiatan-rutin', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'kegiatan-rutin');
         }
 
         if ($rutin) {

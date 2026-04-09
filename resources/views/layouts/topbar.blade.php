@@ -1,4 +1,4 @@
-<header class="bg-[#FAF6F0] border-b border-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] sticky top-0 z-30 h-16 shrink-0 flex items-center justify-between px-3 md:px-4 sm:px-6 lg:px-8">
+<header class="bg-[#FAF6F0] border-b border-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] sticky top-0 z-30 min-h-[4rem] h-auto pt-safe md:pt-0 shrink-0 flex items-center justify-between px-3 md:px-4 sm:px-6 lg:px-8 py-2.5 md:py-0">
     <div class="flex items-center">
         <!-- Logo for mobile (so it doesn't look empty on the left) -->
         <a href="{{ route('dashboard') }}" class="lg:hidden flex items-center gap-2.5">

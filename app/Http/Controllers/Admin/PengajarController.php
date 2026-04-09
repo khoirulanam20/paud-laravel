@@ -9,10 +9,12 @@ use App\Models\User;
 use App\Support\PendidikanTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Traits\CanUploadImage;
 use Illuminate\Validation\Rule;
 
 class PengajarController extends Controller
 {
+    use CanUploadImage;
     public function index()
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -67,7 +69,7 @@ class PengajarController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('pengajar', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'pengajar');
         }
 
         $pengajar = Pengajar::create($data);
@@ -114,7 +116,7 @@ class PengajarController extends Controller
             if ($pengajar->photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajar->photo);
             }
-            $dataArr['photo'] = $request->file('photo')->store('pengajar', 'public');
+            $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'pengajar');
         }
 
         $pengajar->update($dataArr);

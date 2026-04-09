@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Sarana;
 use Illuminate\Http\Request;
+use App\Http\Traits\CanUploadImage;
 
 class SaranaController extends Controller
 {
+    use CanUploadImage;
     public function index()
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -35,7 +37,7 @@ class SaranaController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('sarana', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'sarana');
         }
 
         Sarana::create($data);
@@ -67,7 +69,7 @@ class SaranaController extends Controller
             if ($sarana->photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($sarana->photo);
             }
-            $dataArr['photo'] = $request->file('photo')->store('sarana', 'public');
+            $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'sarana');
         }
 
         $sarana->update($dataArr);

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\MenuMakanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Traits\CanUploadImage;
 
 class MenuMakananController extends Controller
 {
+    use CanUploadImage;
     public function index()
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -38,11 +40,10 @@ class MenuMakananController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('menu_makanan', 'public');
-            $data['photo'] = $path;
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'menu_makanan');
         }
         if ($request->hasFile('photo_kegiatan')) {
-            $data['photo_kegiatan'] = $request->file('photo_kegiatan')->store('menu_kegiatan', 'public');
+            $data['photo_kegiatan'] = $this->uploadImage($request->file('photo_kegiatan'), 'menu_kegiatan');
         }
 
         MenuMakanan::create($data);
@@ -73,14 +74,13 @@ class MenuMakananController extends Controller
             if ($menu_makanan->photo) {
                 Storage::disk('public')->delete($menu_makanan->photo);
             }
-            $path = $request->file('photo')->store('menu_makanan', 'public');
-            $data['photo'] = $path;
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'menu_makanan');
         }
         if ($request->hasFile('photo_kegiatan')) {
             if ($menu_makanan->photo_kegiatan) {
                 Storage::disk('public')->delete($menu_makanan->photo_kegiatan);
             }
-            $data['photo_kegiatan'] = $request->file('photo_kegiatan')->store('menu_kegiatan', 'public');
+            $data['photo_kegiatan'] = $this->uploadImage($request->file('photo_kegiatan'), 'menu_kegiatan');
         }
 
         $menu_makanan->update($data);

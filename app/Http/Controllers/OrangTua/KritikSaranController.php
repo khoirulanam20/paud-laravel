@@ -5,9 +5,11 @@ namespace App\Http\Controllers\OrangTua;
 use App\Http\Controllers\Controller;
 use App\Models\KritikSaran;
 use Illuminate\Http\Request;
+use App\Http\Traits\CanUploadImage;
 
 class KritikSaranController extends Controller
 {
+    use CanUploadImage;
     public function index()
     {
         $feedbacks = KritikSaran::query()
@@ -43,7 +45,7 @@ class KritikSaranController extends Controller
         ];
 
         if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('kritik-saran', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'kritik-saran');
         }
 
         KritikSaran::create($data);
@@ -71,7 +73,7 @@ class KritikSaranController extends Controller
             if ($kritik_saran->photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($kritik_saran->photo);
             }
-            $data['photo'] = $request->file('photo')->store('kritik-saran', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'kritik-saran');
         }
 
         $kritik_saran->update($data);

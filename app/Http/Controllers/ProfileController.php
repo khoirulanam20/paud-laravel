@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Http\Traits\CanUploadImage;
 
 class ProfileController extends Controller
 {
+    use CanUploadImage;
     /**
      * Display the user's profile form.
      */
@@ -84,7 +86,7 @@ class ProfileController extends Controller
             if ($pengajar->photo) {
                 Storage::disk('public')->delete($pengajar->photo);
             }
-            $data['photo'] = $request->file('photo')->store('pengajar', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'pengajar');
         }
         $pengajar->update($data);
 
@@ -124,7 +126,7 @@ class ProfileController extends Controller
             if ($anak->photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
             }
-            $data['photo'] = $request->file('photo')->store('anak', 'public');
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'anak');
         }
 
         $anak->update($data);
