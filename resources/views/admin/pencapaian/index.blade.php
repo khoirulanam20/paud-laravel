@@ -74,9 +74,9 @@
                 const resolvedScore = score || nilaiMap[String(optId)] || '';
                 if (!resolvedScore) { alert('Pilih skala capaian terlebih dahulu sebelum meminta saran AI.'); return; }
                 const key = mode + '_' + optId;
-                // Use object spread to ensure Alpine detects the reactive change
+                // Tutup semua saran aspek lain — hanya tampilkan untuk aspek yang diklik
+                this.aiSuggestions = {};
                 this.aiLoading = { ...this.aiLoading, [key]: true };
-                this.aiSuggestions = { ...this.aiSuggestions, [key]: [] };
                 try {
                     const res = await fetch('/admin/ai/feedback-suggestions', {
                         method: 'POST',
@@ -86,7 +86,8 @@
                     });
                     const data = await res.json();
                     if (!res.ok) { alert(data.error || 'Gagal mendapatkan saran AI.'); return; }
-                    this.aiSuggestions = { ...this.aiSuggestions, [key]: data.suggestions || [] };
+                    // Hanya set saran untuk aspek ini (aspek lain sudah dikosongkan di atas)
+                    this.aiSuggestions = { [key]: data.suggestions || [] };
                 } catch(e) {
                     alert('Terjadi kesalahan: ' + e.message);
                 } finally {
