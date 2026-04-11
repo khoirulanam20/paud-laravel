@@ -93,11 +93,15 @@ class PencapaianController extends Controller
             $first = $rows->first();
             $nilai = [];
             $catatan = [];
+            $photoUrl = null;
             foreach ($rows as $r) {
                 if ($r->matrikulasi_id) {
                     $key = (string) $r->matrikulasi_id;
                     $nilai[$key] = $r->score;
                     $catatan[$key] = $r->feedback ?? '';
+                }
+                if (filled($r->photo) && !$photoUrl) {
+                    $photoUrl = asset('storage/' . $r->photo);
                 }
             }
             $editBundles[$k] = [
@@ -106,7 +110,8 @@ class PencapaianController extends Controller
                 'kegiatan_id' => $first->kegiatan_id,
                 'nilai' => $nilai,
                 'catatan' => $catatan,
-                'has_photo' => $rows->contains(fn ($r) => filled($r->photo)),
+                'has_photo' => !!$photoUrl,
+                'photo_url' => $photoUrl,
             ];
         }
 

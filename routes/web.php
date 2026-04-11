@@ -17,6 +17,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Lembaga\AdminSekolahController;
+use App\Http\Controllers\Lembaga\AiSettingController;
 use App\Http\Controllers\Lembaga\CmsController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
 use App\Http\Controllers\Lembaga\SekolahController;
@@ -74,6 +75,9 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
     Route::get('kritik-saran', [LembagaKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('cms', [CmsController::class, 'index'])->name('cms.index');
     Route::post('cms', [CmsController::class, 'update'])->name('cms.update');
+    Route::get('ai-setting', [AiSettingController::class, 'index'])->name('ai-setting.index');
+    Route::post('ai-setting', [AiSettingController::class, 'update'])->name('ai-setting.update');
+    Route::post('ai-setting/test', [AiSettingController::class, 'testConnection'])->name('ai-setting.test');
 });
 
 // ─────────────────────────────────────────────
@@ -110,6 +114,8 @@ Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->
     Route::resource('kesehatan', \App\Http\Controllers\Admin\KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('presensi-guru', [\App\Http\Controllers\Admin\PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
     Route::post('presensi-guru', [\App\Http\Controllers\Admin\PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
+    // AI Feedback Suggestions (web route, uses web session auth)
+    Route::post('ai/feedback-suggestions', [\App\Http\Controllers\Api\AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
 });
 
 // ─────────────────────────────────────────────
@@ -142,6 +148,8 @@ Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::post('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
     Route::get('kegiatan-rutin/detail/{anak}', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
+    // AI Feedback Suggestions (web route, uses web session auth)
+    Route::post('ai/feedback-suggestions', [\App\Http\Controllers\Api\AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
 });
 
 // ─────────────────────────────────────────────

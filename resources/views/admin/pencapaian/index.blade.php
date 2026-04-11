@@ -44,6 +44,7 @@
             selectedKelasIdCreate: '', selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
             editBundleKey: null, editNilai: {}, editCatatan: {}, createNilai: {}, createCatatan: {},
             isCompressing: false, compressedFile: null,
+            aiLoading: {}, aiSuggestions: {},
             init() {
                 const el = document.getElementById('pencapaian-payload-json');
                 if (el) { try { this.payload = JSON.parse(el.textContent); } catch (e) { this.payload = { kegiatanData: {}, anakMap: {}, editBundles: {} }; } }
@@ -54,11 +55,53 @@
                 try { this.compressedFile = await window.compressImage(file); } finally { this.isCompressing = false; }
             },
             submitWithCompression(formRef) {
+                const form = this.$refs[formRef];
+                // Safety net: manually sync Alpine catatan data → DOM textarea values
+                // (needed because native form.submit() reads DOM, not Alpine data)
+                const catatanMap = formRef === 'editForm' ? this.editCatatan : this.createCatatan;
+                Object.entries(catatanMap).forEach(([matId, text]) => {
+                    const ta = form.querySelector(`textarea[name='catatan[${matId}]']`);
+                    if (ta && ta.value !== text) ta.value = text;
+                });
                 if (this.compressedFile) {
                     const dt = new DataTransfer(); dt.items.add(this.compressedFile);
-                    this.$refs[formRef].querySelector('input[type=file]').files = dt.files;
+                    form.querySelector('input[type=file]').files = dt.files;
                 }
-                this.$refs[formRef].submit();
+                form.submit();
+            },
+            async fetchAiSuggestions(mode, optId, anakId, kegiatanId, score) {
+                const nilaiMap  = mode === 'create' ? this.createNilai  : this.editNilai;
+                const resolvedScore = score || nilaiMap[String(optId)] || '';
+                if (!resolvedScore) { alert('Pilih skala capaian terlebih dahulu sebelum meminta saran AI.'); return; }
+                const key = mode + '_' + optId;
+                // Use object spread to ensure Alpine detects the reactive change
+                this.aiLoading = { ...this.aiLoading, [key]: true };
+                this.aiSuggestions = { ...this.aiSuggestions, [key]: [] };
+                try {
+                    const res = await fetch('/admin/ai/feedback-suggestions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
+                        body: JSON.stringify({ anak_id: anakId, kegiatan_id: kegiatanId, matrikulasi_id: optId, score: resolvedScore }),
+                        credentials: 'same-origin'
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { alert(data.error || 'Gagal mendapatkan saran AI.'); return; }
+                    this.aiSuggestions = { ...this.aiSuggestions, [key]: data.suggestions || [] };
+                } catch(e) {
+                    alert('Terjadi kesalahan: ' + e.message);
+                } finally {
+                    this.aiLoading = { ...this.aiLoading, [key]: false };
+                }
+            },
+            applySuggestion(mode, optId, text) {
+                const id = String(optId);
+                if (mode === 'create') {
+                    this.createCatatan = { ...this.createCatatan, [id]: text };
+                } else {
+                    this.editCatatan = { ...this.editCatatan, [id]: text };
+                }
+                // Use spread so Alpine re-evaluates x-if chip template
+                this.aiSuggestions = { ...this.aiSuggestions, [mode + '_' + optId]: [] };
             },
             get kegiatanData() { return this.payload.kegiatanData || {}; },
             get anakMap() { return this.payload.anakMap || {}; },
@@ -75,7 +118,7 @@
             get matrikulasiOptions() { return (this.kegiatanData[this.selectedKegiatanId] || {}).matrikulasis || []; },
             get matrikulasiOptionsEdit() { return (this.kegiatanData[this.selectedKegiatanIdEdit] || {}).matrikulasis || []; },
             resetCreateMatrices() {
-                this.createNilai = {}; this.createCatatan = {};
+                this.createNilai = {}; this.createCatatan = {}; this.aiSuggestions = {};
                 (this.matrikulasiOptions || []).forEach(o => { this.createNilai[String(o.id)] = ''; this.createCatatan[String(o.id)] = ''; });
             },
             openCreateModal() { 
@@ -84,20 +127,37 @@
                 this.selectedKegiatanId = ''; 
                 this.createNilai = {}; 
                 this.createCatatan = {}; 
+                this.aiSuggestions = {};
                 this.showCreateModal = true; 
             },
             openEditBundle(key) {
                 const b = this.editBundles[key]; if (!b) return;
-                this.editBundleKey = key; this.selectedKegiatanIdEdit = String(b.kegiatan_id);
-                this.editNilai = {}; this.editCatatan = {};
-                const opts = (this.kegiatanData[this.selectedKegiatanIdEdit] || {}).matrikulasis || [];
-                opts.forEach(opt => {
-                    const id = String(opt.id);
-                    this.editNilai[id] = b.nilai[id] ?? b.nilai[opt.id] ?? '';
-                    this.editCatatan[id] = b.catatan[id] ?? b.catatan[opt.id] ?? '';
-                });
+                this.editBundleKey = key; 
+                this.selectedKegiatanIdEdit = String(b.kegiatan_id);
+                
+                // Clear state first
+                this.editNilai = {}; 
+                this.editCatatan = {}; 
+                this.aiSuggestions = {};
                 this.showEditModal = true;
+
+                this.$nextTick(() => {
+                    const tempNilai = {}; 
+                    const tempCatatan = {};
+                    const opts = (this.kegiatanData[this.selectedKegiatanIdEdit] || {}).matrikulasis || [];
+                    
+                    opts.forEach(opt => {
+                        const id = String(opt.id);
+                        tempNilai[id] = b.nilai[id] ?? b.nilai[opt.id] ?? '';
+                        tempCatatan[id] = b.catatan[id] ?? b.catatan[opt.id] ?? '';
+                    });
+                    
+                    // Assign all at once for reactivity
+                    this.editNilai = tempNilai;
+                    this.editCatatan = tempCatatan;
+                });
             },
+
             openDeleteBundle(key) {
                 const b = this.editBundles[key]; if (!b) return;
                 this.deleteBundleAnak = b.anak_id; this.deleteBundleKeg = b.kegiatan_id;
@@ -227,15 +287,22 @@
                             @php $first = $rows->first(); @endphp
                             <tr>
                                 <td>
-                                    @if($first->photo)<img src="{{ Storage::url($first->photo) }}"
-                                        class="h-10 w-10 object-cover rounded shadow-sm cursor-pointer"
-                                        onclick="window.open(this.src)">
+                                    @if($first->photo)
+                                        <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" 
+                                             onclick="window.open('{{ asset('storage/' . $first->photo) }}')">
+                                            <img src="{{ asset('storage/' . $first->photo) }}"
+                                                class="h-full w-full object-cover">
+                                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            </div>
+                                        </div>
                                     @else<div
                                         class="h-10 w-10 bg-gray-100 rounded flex items-center justify-center opacity-30">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg></div>@endif
+                                        </svg>
+                                    </div>@endif
                                 </td>
                                 <td>
                                     <div class="flex items-center gap-2">
@@ -260,7 +327,7 @@
                                                     <span class="font-bold px-1.5 py-0.5 rounded"
                                                         style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
                                                     @if($p->feedback)<span
-                                                    class="italic text-gray-400 truncate max-w-[150px]">{{ $p->feedback }}</span>@endif
+                                                    class="italic text-[#6B6560] truncate max-w-[180px]" title="{{ $p->feedback }}">"{{ $p->feedback }}"</span>@endif
                                                 </div>
                                             </div>
                                         @endforeach
@@ -347,8 +414,50 @@
                                     <option value="BSH">BSH (Berkembang Sesuai Harapan)</option>
                                     <option value="BSB">BSB (Berkembang Sangat Baik)</option>
                                 </select>
-                                <input type="text" class="input-field bg-white text-xs" :name="'catatan[' + opt.id + ']"
-                                    x-model="createCatatan[String(opt.id)]" placeholder="Berikan umpan balik positif…">
+                                <div class="space-y-1.5">
+                                    <textarea class="input-field bg-white text-xs" rows="3" :name="'catatan[' + opt.id + ']'"
+                                        x-model="createCatatan[String(opt.id)]"
+                                        placeholder="Berikan umpan balik positif…"></textarea>
+                                    {{-- AI Suggestion Button --}}
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <button type="button"
+                                            @click="fetchAiSuggestions('create', opt.id, selectedAnakId, selectedKegiatanId, createNilai[String(opt.id)])"
+                                            :disabled="aiLoading['create_' + opt.id] || !createNilai[String(opt.id)]"
+                                            class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all"
+                                            style="color:#1A6B6B; background:#D0E8E8; border-color:#1A6B6B33;"
+                                            :class="{ 'opacity-40 cursor-not-allowed': !createNilai[String(opt.id)] }">
+                                            <span x-show="!aiLoading['create_' + opt.id]">💡 Saran AI</span>
+                                            <span x-show="aiLoading['create_' + opt.id]"
+                                                class="flex items-center gap-1">
+                                                <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                    </path>
+                                                </svg>
+                                                Memuat...
+                                            </span>
+                                        </button>
+                                        <span x-show="!createNilai[String(opt.id)]" class="text-[10px] italic"
+                                            style="color:#9E9790;">Pilih capaian dulu</span>
+                                    </div>
+                                    {{-- AI Suggestion Chips --}}
+                                    <template x-if="(aiSuggestions['create_' + opt.id] || []).length > 0">
+                                        <div class="space-y-1.5 pt-1">
+                                            <div class="text-[10px] font-semibold" style="color:#6B6560;">Pilih salah
+                                                satu saran:</div>
+                                            <template x-for="(saran, idx) in aiSuggestions['create_' + opt.id]"
+                                                :key="idx">
+                                                <button type="button" @click="applySuggestion('create', opt.id, saran)"
+                                                    class="block w-full text-left text-[11px] px-3 py-2 rounded-lg border hover:border-teal-400 hover:bg-teal-50 transition-all"
+                                                    style="background:#FAF6F0; border-color:rgba(0,0,0,0.08); color:#2C2C2C;"
+                                                    x-text="(idx + 1) + '. ' + saran">
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </template>
                         <div>
@@ -384,23 +493,105 @@
                     <div class="modal-header">
                         <h3 class="section-title">Ubah Hasil Evaluasi</h3>
                     </div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    {{-- Context: student name & activity --}}
+                    <div class="px-5 pt-4 pb-1">
+                        <div class="rounded-xl border p-3 flex items-start gap-3" style="background:#F0F9F9; border-color:#1A6B6B22;">
+                            <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background:#1A6B6B;">
+                                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="font-bold text-sm" style="color:#1A6B6B;"
+                                    x-text="anakMap[editBundles[editBundleKey]?.anak_id]?.name || 'Siswa'"></div>
+                                <div class="text-xs mt-0.5 truncate" style="color:#6B6560;"
+                                    x-text="(kegiatanData[selectedKegiatanIdEdit]?.date_label || '') + (kegiatanData[selectedKegiatanIdEdit]?.title ? ' · ' + kegiatanData[selectedKegiatanIdEdit]?.title : '')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body space-y-3 max-h-[60vh] overflow-y-auto">
+                        <template x-if="matrikulasiOptionsEdit.length === 0">
+                            <div class="text-center py-8 text-sm" style="color:#9E9790;">Memuat data matrikulasi...</div>
+                        </template>
                         <template x-for="opt in matrikulasiOptionsEdit" :key="opt.id">
                             <div class="p-3 bg-gray-50 rounded-xl border border-black/5 space-y-2">
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'"
                                     x-model="editNilai[String(opt.id)]">
-                                    <option value="BB">BB</option>
-                                    <option value="MB">MB</option>
-                                    <option value="BSH">BSH</option>
-                                    <option value="BSB">BSB</option>
+                                    <option value="" disabled>— Pilih Capaian —</option>
+                                    <option value="BB">BB — Belum Berkembang</option>
+                                    <option value="MB">MB — Mulai Berkembang</option>
+                                    <option value="BSH">BSH — Berkembang Sesuai Harapan</option>
+                                    <option value="BSB">BSB — Berkembang Sangat Baik</option>
                                 </select>
-                                <textarea class="input-field bg-white text-xs" rows="2"
-                                    :name="'catatan[' + opt.id + ']'" x-model="editCatatan[String(opt.id)]"></textarea>
+                                <div class="space-y-1.5">
+                                    <textarea class="input-field bg-white text-xs" rows="3"
+                                        :name="'catatan[' + opt.id + ']'"
+                                        x-model="editCatatan[String(opt.id)]"
+                                        placeholder="Berikan umpan balik atau evaluasi untuk aspek ini..."></textarea>
+                                    {{-- AI Suggestion Button --}}
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <button type="button"
+                                            @click="fetchAiSuggestions('edit', opt.id, editBundles[editBundleKey]?.anak_id, editBundles[editBundleKey]?.kegiatan_id, editNilai[String(opt.id)])"
+                                            :disabled="aiLoading['edit_' + opt.id] || !editNilai[String(opt.id)]"
+                                            class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all"
+                                            style="color:#1A6B6B; background:#D0E8E8; border-color:#1A6B6B33;"
+                                            :class="{ 'opacity-40 cursor-not-allowed': !editNilai[String(opt.id)] }">
+                                            <span x-show="!aiLoading['edit_' + opt.id]">💡 Saran AI</span>
+                                            <span x-show="aiLoading['edit_' + opt.id]" class="flex items-center gap-1">
+                                                <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                    </path>
+                                                </svg>
+                                                Memuat...
+                                            </span>
+                                        </button>
+                                        <span x-show="!editNilai[String(opt.id)]" class="text-[10px] italic"
+                                            style="color:#9E9790;">Pilih capaian dulu</span>
+                                    </div>
+                                    {{-- AI Suggestion Chips --}}
+                                    <template x-if="(aiSuggestions['edit_' + opt.id] || []).length > 0">
+                                        <div class="space-y-1.5 pt-1">
+                                            <div class="text-[10px] font-semibold" style="color:#6B6560;">Pilih salah
+                                                satu saran:</div>
+                                            <template x-for="(saran, idx) in aiSuggestions['edit_' + opt.id]"
+                                                :key="idx">
+                                                <button type="button" @click="applySuggestion('edit', opt.id, saran)"
+                                                    class="block w-full text-left text-[11px] px-3 py-2 rounded-lg border hover:border-teal-400 hover:bg-teal-50 transition-all"
+                                                    style="background:#FAF6F0; border-color:rgba(0,0,0,0.08); color:#2C2C2C;"
+                                                    x-text="(idx + 1) + '. ' + saran">
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </template>
-                        <div>
-                            <label class="input-label">Perbarui Dokumentasi</label>
+                        <div class="pt-2">
+                            <label class="input-label">Dokumentasi (Evidence)</label>
+                            <template x-if="editBundles[editBundleKey]?.has_photo">
+                                <div class="mb-4">
+                                    <div class="text-[11px] mb-2 flex items-center gap-1.5" style="color:#1A6B6B;">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span class="font-bold">Foto Hasil Sebelumnya:</span>
+                                    </div>
+                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group" style="border-color:#1A6B6B22;">
+                                         <img :src="editBundles[editBundleKey].photo_url" class="w-full h-full object-cover">
+                                         <a :href="editBundles[editBundleKey].photo_url" target="_blank" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                             <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                             </svg>
+                                         </a>
+                                    </div>
+                                    <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Pilih file baru di bawah ini jika ingin mengganti foto.</p>
+                                </div>
+                            </template>
                             <input type="file" name="photo" accept="image/*" class="input-field"
                                 @change="handleFile($event)">
                         </div>
@@ -427,7 +618,8 @@
                             <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg></div>
+                            </svg>
+                        </div>
                         <h3 class="text-lg font-bold">Hapus Evaluasi Ini?</h3>
                     </div>
                     <div class="modal-footer">
