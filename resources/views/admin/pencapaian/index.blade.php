@@ -12,6 +12,15 @@
 
     @php
         $filterAspek = $filterAspek ?? null;
+        // Kumpulkan anak_id yang sudah punya pencapaian per kegiatan
+        $pencapaianAnak = \App\Models\Pencapaian::query()
+            ->whereIn('kegiatan_id', $kegiatans->pluck('id'))
+            ->select('kegiatan_id', 'anak_id')
+            ->distinct()
+            ->get()
+            ->groupBy('kegiatan_id')
+            ->map(fn ($rows) => $rows->pluck('anak_id')->values()->all());
+
         $kegiatanData = [];
         foreach ($kegiatans as $kg) {
             $kegiatanData[$kg->id] = [
@@ -19,6 +28,8 @@
                 'kelas_id' => $kg->kelas_id,
                 'title' => $kg->title,
                 'date_label' => \Carbon\Carbon::parse($kg->date)->format('d M Y'),
+                'is_executed' => !empty($kg->photos),
+                'pencapaian_anak_ids' => $pencapaianAnak[$kg->id] ?? [],
                 'matrikulasis' => $kg->matrikulasis->map(fn($m) => [
                     'id' => $m->id,
                     'aspek' => $m->aspek,
@@ -114,7 +125,12 @@
             get filteredKegiatans() {
                 if (!this.selectedAnakId) return [];
                 const anakKelas = this.anakMap[this.selectedAnakId]?.kelas_id;
-                return Object.values(this.kegiatanData).filter(k => k.kelas_id == anakKelas);
+                const anakId = parseInt(this.selectedAnakId);
+                return Object.values(this.kegiatanData).filter(k => 
+                    k.kelas_id == anakKelas && 
+                    k.is_executed && 
+                    !(k.pencapaian_anak_ids || []).includes(anakId)
+                );
             },
             get matrikulasiOptions() { return (this.kegiatanData[this.selectedKegiatanId] || {}).matrikulasis || []; },
             get matrikulasiOptionsEdit() { return (this.kegiatanData[this.selectedKegiatanIdEdit] || {}).matrikulasis || []; },
@@ -403,6 +419,10 @@
                                     <option :value="k.id" x-text="k.date_label + ' : ' + k.title"></option>
                                 </template>
                             </select>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Hanya menampilkan kegiatan yang sudah memiliki dokumentasi foto (sudah dilaksanakan) dan belum ada pencapaiannya.</p>
+                            <template x-if="selectedAnakId && filteredKegiatans.length === 0">
+                                <p class="text-xs mt-1 font-semibold" style="color:#C0392B;">Tidak ada kegiatan tersedia. Pastikan kegiatan sudah diupload foto dokumentasinya dan belum diisi pencapaiannya.</p>
+                            </template>
                         </div>
                         <template x-for="opt in matrikulasiOptions" :key="opt.id">
                             <div class="p-3 bg-gray-50 rounded-xl border border-black/5 space-y-2">
@@ -489,6 +509,7 @@
                 <form action="{{ route('admin.pencapaian.sync') }}" method="POST" enctype="multipart/form-data"
                     x-ref="editForm" @submit.prevent="submitWithCompression('editForm')">
                     @csrf
+                    <input type="hidden" name="_is_edit" value="1">
                     <input type="hidden" name="anak_id" :value="editBundles[editBundleKey]?.anak_id">
                     <input type="hidden" name="kegiatan_id" :value="editBundles[editBundleKey]?.kegiatan_id">
                     <div class="modal-header">

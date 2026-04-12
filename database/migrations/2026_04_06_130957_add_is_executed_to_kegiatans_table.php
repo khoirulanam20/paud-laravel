@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('kegiatans', function (Blueprint $table) {
-            //
-        });
+        // Tidak diperlukan kolom tambahan.
+        // Kegiatan yang "sudah dilaksanakan" ditentukan dari keberadaan foto dokumentasi (photos).
     }
 
     /**
@@ -21,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('kegiatans', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };

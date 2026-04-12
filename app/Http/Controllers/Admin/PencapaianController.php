@@ -169,6 +169,13 @@ class PencapaianController extends Controller
             ->with('matrikulasis')
             ->firstOrFail();
 
+        // Kegiatan harus sudah dilaksanakan (ditandai dengan adanya foto dokumentasi)
+        if (empty($kegiatan->photos)) {
+            return back()
+                ->withInput()
+                ->withErrors(['kegiatan_id' => 'Pencapaian hanya dapat diisi untuk kegiatan yang sudah dilaksanakan (sudah ada foto dokumentasinya).']);
+        }
+
         $matIds = $kegiatan->matrikulasis->pluck('id')->all();
         if ($matIds === []) {
             return back()
@@ -182,6 +189,18 @@ class PencapaianController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['kegiatan_id' => 'Data Siswa dan Jurnal Kegiatan harus berada di kelas yang sama.']);
+        }
+
+        // Pencapaian hanya bisa diinput 1 kali per kegiatan per anak (blokir jika belum pernah ada & ini bukan edit)
+        $existingCount = Pencapaian::query()
+            ->where('anak_id', $anak->id)
+            ->where('kegiatan_id', $kegiatan->id)
+            ->count();
+        $isEdit = $request->boolean('_is_edit');
+        if (! $isEdit && $existingCount > 0) {
+            return back()
+                ->withInput()
+                ->withErrors(['kegiatan_id' => 'Pencapaian untuk anak dan kegiatan ini sudah pernah diisi. Gunakan tombol Edit untuk mengubahnya.']);
         }
 
         $nilaiInput = $request->input('nilai', []);

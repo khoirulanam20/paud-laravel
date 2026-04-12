@@ -105,20 +105,25 @@ class PencapaianController extends Controller
             $first = $rows->first();
             $nilai = [];
             $catatan = [];
+            $photoUrl = null;
             foreach ($rows as $r) {
                 if ($r->matrikulasi_id) {
                     $key = (string) $r->matrikulasi_id;
                     $nilai[$key] = $r->score;
                     $catatan[$key] = $r->feedback ?? '';
                 }
+                if (filled($r->photo) && !$photoUrl) {
+                    $photoUrl = asset('storage/' . $r->photo);
+                }
             }
             $editBundles[$k] = [
                 'bundle_key' => $k,
-                'anak_id' => $first->anak_id,
-                'kegiatan_id' => $first->kegiatan_id,
-                'nilai' => $nilai,
-                'catatan' => $catatan,
-                'has_photo' => $rows->contains(fn ($r) => filled($r->photo)),
+                'anak_id'    => $first->anak_id,
+                'kegiatan_id'=> $first->kegiatan_id,
+                'nilai'      => $nilai,
+                'catatan'    => $catatan,
+                'has_photo'  => !!$photoUrl,
+                'photo_url'  => $photoUrl,
             ];
         }
 
@@ -177,6 +182,13 @@ class PencapaianController extends Controller
             ->with('matrikulasis')
             ->firstOrFail();
 
+        // Kegiatan harus sudah dilaksanakan (ditandai dengan adanya foto dokumentasi)
+        if (empty($kegiatan->photos)) {
+            return back()
+                ->withInput()
+                ->withErrors(['kegiatan_id' => 'Pencapaian hanya dapat diisi untuk kegiatan yang sudah dilaksanakan (sudah ada foto dokumentasinya).']);
+        }
+
         $matIds = $kegiatan->matrikulasis->pluck('id')->all();
         if ($matIds === []) {
             return back()
@@ -191,6 +203,18 @@ class PencapaianController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['kegiatan_id' => 'Data Siswa dan Jurnal Kegiatan harus berada di kelas yang sama.']);
+        }
+
+        // Pencapaian hanya bisa diinput 1 kali per kegiatan per anak (blokir jika belum pernah ada & ini bukan edit)
+        $existingCount = Pencapaian::query()
+            ->where('anak_id', $anak->id)
+            ->where('kegiatan_id', $kegiatan->id)
+            ->count();
+        $isEdit = $request->boolean('_is_edit');
+        if (! $isEdit && $existingCount > 0) {
+            return back()
+                ->withInput()
+                ->withErrors(['kegiatan_id' => 'Pencapaian untuk anak dan kegiatan ini sudah pernah diisi. Gunakan tombol Edit untuk mengubahnya.']);
         }
 
         $nilaiInput = $request->input('nilai', []);
