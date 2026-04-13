@@ -26,7 +26,7 @@ function initKegiatanCalendar() {
     mount.dataset.fcInitialized = '1';
 
     const url = new URL(window.location.href);
-    const viewFromUrl = url.searchParams.get('view') || 'dayGridMonth';
+    const viewFromUrl = url.searchParams.get('view') || 'listMonth';
 
     const events = loadEventsFromPage();
     const yearFromData = parseInt(mount.dataset.year || '', 10);
@@ -56,7 +56,7 @@ function initKegiatanCalendar() {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,listMonth',
+            right: 'listMonth,dayGridMonth',
         },
         height: 'auto',
         events,
@@ -86,7 +86,7 @@ function initKegiatanCalendar() {
             const curUrl = new URL(window.location.href);
             const curY = parseInt(curUrl.searchParams.get('year') || '0', 10);
             const curM = parseInt(curUrl.searchParams.get('month') || '0', 10);
-            const curV = curUrl.searchParams.get('view') || 'dayGridMonth';
+            const curV = curUrl.searchParams.get('view') || 'listMonth';
 
             // Refresh if year/month changed or if view changed from default without reflecting in URL
             if (curY === y && curM === m && curV === currentView) {

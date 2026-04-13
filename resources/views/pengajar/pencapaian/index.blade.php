@@ -174,11 +174,11 @@
                     <form method="get" action="{{ route('pengajar.pencapaian.index') }}" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 items-end">
                         <div class="col-span-1 lg:col-span-2 min-w-0">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Dari</label>
-                            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-11 text-xs font-bold border-black/10" required style="background:white;">
+                            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
                         </div>
                         <div class="col-span-1 lg:col-span-2 min-w-0">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Sampai</label>
-                            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-11 text-xs font-bold border-black/10" required style="background:white;">
+                            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
                         </div>
                         <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Kelas</label>
@@ -213,8 +213,13 @@
             <div class="px-5 sm:px-6 py-3 border-t text-sm flex flex-wrap items-center gap-x-2 gap-y-1" style="background:#FAF6F0; border-color:rgba(0,0,0,0.04); color:#6B6560;">
                 <span class="inline-flex items-center gap-1.5 shrink-0"><svg class="h-4 w-4 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Ringkasan:</span></span>
                 <span style="color:#2C2C2C;">
-                    @if($tanggalDari === $tanggalSampai){{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }}
-                    @else{{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }} – {{ \Carbon\Carbon::parse($tanggalSampai)->translatedFormat('d M Y') }}@endif
+                    @if(!$tanggalDari && !$tanggalSampai)
+                        Seluruh Periode
+                    @elseif($tanggalDari === $tanggalSampai)
+                        {{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }}
+                    @else
+                        {{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }} – {{ \Carbon\Carbon::parse($tanggalSampai)->translatedFormat('d M Y') }}
+                    @endif
                 </span>
                 @if($filterKelasId)<span class="text-black/25 hidden sm:inline">·</span><span>Kelas: {{ $availableKelas->firstWhere('id', $filterKelasId)?->name ?? 'Terpilih' }}</span>@endif
                 @if($filterAnakId)<span class="text-black/25 hidden sm:inline">·</span><span>Anak: {{ $anaks->firstWhere('id', $filterAnakId)?->name ?? 'Terpilih' }}</span>@endif

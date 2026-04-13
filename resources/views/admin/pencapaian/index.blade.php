@@ -206,12 +206,12 @@
                         <div class="col-span-1 lg:col-span-2 min-w-0">
                             <label class="input-label">Dari</label>
                             <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}"
-                                class="input-field w-full h-11 text-xs font-bold border-black/10" required>
+                                class="input-field w-full h-11 text-xs font-bold border-black/10">
                         </div>
                         <div class="col-span-1 lg:col-span-2 min-w-0">
                             <label class="input-label">Sampai</label>
                             <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}"
-                                class="input-field w-full h-11 text-xs font-bold border-black/10" required>
+                                class="input-field w-full h-11 text-xs font-bold border-black/10">
                         </div>
                         <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
                             <label class="input-label">Kelas</label>

@@ -21,7 +21,9 @@
             this.isLoadingDetail = true;
             
             try {
-                let res = await fetch(`/pengajar/master-kegiatan-rutin/detail/{{ $masterKegiatanRutin->id }}/${id}?mulai=${this.filterMulai}&sampai=${this.filterSampai}`);
+                const is_admin = {{ auth()->user()->hasRole('Admin Sekolah') ? 'true' : 'false' }};
+                const prefix = is_admin ? '/admin' : '/pengajar';
+                let res = await fetch(`${prefix}/master-kegiatan-rutin/detail/{{ $masterKegiatanRutin->id }}/${id}?mulai=${this.filterMulai}&sampai=${this.filterSampai}`);
                 let json = await res.json();
                 this.detailData = json;
             } catch (e) {
@@ -37,7 +39,7 @@
         }
     }">
         <div class="mb-6 flex items-center gap-4">
-            <a href="{{ route('pengajar.master-kegiatan-rutin.index') }}" class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm">
+            <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.index') }}" class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </a>
             <div>
@@ -51,7 +53,7 @@
                 <h3 class="text-lg font-bold text-gray-800">Daftar Siswa</h3>
                 <p class="text-xs text-gray-500">Isi status pencapaian untuk tanggal di bawah ini.</p>
             </div>
-            <form method="GET" action="{{ route('pengajar.master-kegiatan-rutin.show', $masterKegiatanRutin) }}" class="flex flex-wrap gap-3 items-end">
+            <form method="GET" action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.show', $masterKegiatanRutin) }}" class="flex flex-wrap gap-3 items-end">
                 <div class="w-full sm:w-auto">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 ml-1">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field py-2 text-sm" onchange="this.form.submit()">
@@ -148,7 +150,7 @@
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <form action="{{ route('pengajar.master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                <form action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="kelas_id" value="{{ $kelasId }}">
@@ -163,7 +165,7 @@
                             <select name="status_pencapaian" x-model="statusValue" class="input-field w-full" required>
                                 <option value="">- Pilih Status -</option>
                                 <option value="Belum Mulai">Belum Mulai</option>
-                                <option value="Sedang Berlangsung">Sedang Berlangsung</option>
+                                <option value="Belum Lancar">Belum Lancar</option>
                                 <option value="Lancar">Lancar</option>
                                 <option value="Sangat Lancar">Sangat Lancar</option>
                             </select>
@@ -227,7 +229,7 @@
                                     <div class="font-bold text-gray-900" x-text="item.tanggal_formatted"></div>
                                     <div class="flex items-center gap-2">
                                         <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" x-text="item.status_pencapaian"></span>
-                                        <form :action="'/pengajar/master-kegiatan-rutin/rutin/' + item.id" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan ini?')">
+                                        <form :action="( {{ auth()->user()->hasRole('Admin Sekolah') ? 'true' : 'false' }} ? '/admin' : '/pengajar' ) + '/master-kegiatan-rutin/rutin/' + item.id" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-400 hover:text-red-600 transition p-1">

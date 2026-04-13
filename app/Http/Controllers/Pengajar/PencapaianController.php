@@ -41,8 +41,9 @@ class PencapaianController extends Controller
         $pengajar = $this->getPengajar();
         $sekolah_id = $pengajar->sekolah_id;
 
-        $range = TanggalRentang::dariSampaiQuery($request, 'today') ?? [date('Y-m-d'), date('Y-m-d')];
-        [$tanggalDari, $tanggalSampai] = $range;
+        $range = TanggalRentang::dariSampaiQuery($request, null);
+        $tanggalDari = $range ? $range[0] : null;
+        $tanggalSampai = $range ? $range[1] : null;
 
         $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
         $kelasIds = $pengajar->kelas->pluck('id')->toArray();
@@ -55,10 +56,15 @@ class PencapaianController extends Controller
         $filterAspek = $filterAspekRaw === '' ? null : $filterAspekRaw;
 
         $hariQuery = Pencapaian::query()
-            ->whereDate('created_at', '>=', $tanggalDari)
-            ->whereDate('created_at', '<=', $tanggalSampai)
             ->with(['anak', 'kegiatan.matrikulasis', 'matrikulasi'])
             ->orderByDesc('updated_at');
+
+        if ($tanggalDari) {
+            $hariQuery->whereDate('created_at', '>=', $tanggalDari);
+        }
+        if ($tanggalSampai) {
+            $hariQuery->whereDate('created_at', '<=', $tanggalSampai);
+        }
 
         if (!empty($kelasIds)) {
             $hariQuery->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
@@ -350,8 +356,8 @@ class PencapaianController extends Controller
     /** @return array<string, string> */
     private function pencapaianFilterQuery(Request $request): array
     {
-        $range = TanggalRentang::dariSampaiQuery($request, 'today') ?? [date('Y-m-d'), date('Y-m-d')];
-        $q = TanggalRentang::toQueryParams($range[0], $range[1]);
+        $range = TanggalRentang::dariSampaiQuery($request, null);
+        $q = $range ? TanggalRentang::toQueryParams($range[0], $range[1]) : [];
         if ($request->filled('filter_anak_id')) {
             $q['filter_anak_id'] = (string) (int) $request->input('filter_anak_id');
         }

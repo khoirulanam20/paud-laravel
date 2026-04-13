@@ -24,7 +24,7 @@ class SaranaController extends Controller
             'condition' => 'nullable|string|max:255',
             'quantity' => 'required|integer|min:1',
             'lokasi' => 'nullable|in:Outdoor,Indoor',
-            'jenis' => 'nullable|in:Edukasi,Permainan',
+            'jenis' => 'nullable|in:Edukasi,Permainan,Sarpras,ATK',
         ]);
 
         $data = [
@@ -54,7 +54,7 @@ class SaranaController extends Controller
             'condition' => 'nullable|string|max:255',
             'quantity' => 'required|integer|min:1',
             'lokasi' => 'nullable|in:Outdoor,Indoor',
-            'jenis' => 'nullable|in:Edukasi,Permainan',
+            'jenis' => 'nullable|in:Edukasi,Permainan,Sarpras,ATK',
         ]);
 
         $dataArr = [

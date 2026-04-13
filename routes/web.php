@@ -103,6 +103,13 @@ Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PresensiController::class, 'store'])->name('presensi.store');
     Route::get('presensi/rekap', [PresensiController::class, 'rekap'])->name('presensi.rekap');
+    Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [\App\Http\Controllers\Admin\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
+    Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [\App\Http\Controllers\Admin\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
+    Route::delete('master-kegiatan-rutin/rutin/{kegiatan_rutin}', [\App\Http\Controllers\Admin\MasterKegiatanRutinController::class, 'destroyRutinRecord'])->name('master-kegiatan-rutin.destroy-rutin');
+    Route::resource('master-kegiatan-rutin', \App\Http\Controllers\Admin\MasterKegiatanRutinController::class);
+    Route::get('kegiatan-rutin', [\App\Http\Controllers\Admin\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
+    Route::post('kegiatan-rutin', [\App\Http\Controllers\Admin\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
+    Route::get('kegiatan-rutin/detail/{anak}', [\App\Http\Controllers\Admin\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
     Route::get('kritik-saran', [AdminKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'show'])->name('kritik-saran.show');
     Route::patch('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'update'])->name('kritik-saran.update');
@@ -133,7 +140,7 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
 // ─────────────────────────────────────────────
 // PENGAJAR
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Pengajar'])->prefix('pengajar')->name('pengajar.')->group(function () {
+Route::middleware(['auth', 'role:Pengajar|Admin Kelas'])->prefix('pengajar')->name('pengajar.')->group(function () {
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);

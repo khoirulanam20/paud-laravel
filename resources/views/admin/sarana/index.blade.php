@@ -60,7 +60,7 @@
                         <div><label class="input-label">Nama Sarana / Alat / Ruangan</label><input type="text" name="name" required class="input-field" placeholder="Contoh: Kursi Belajar"></div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Lokasi Penempatan</label><select name="lokasi" class="input-field"><option value="">Pilih...</option><option value="Indoor">Indoor (Dalam Ruangan)</option><option value="Outdoor">Outdoor (Luar Ruangan)</option></select></div>
-                            <div><label class="input-label">Jenis Sarana</label><select name="jenis" class="input-field"><option value="">Pilih...</option><option value="Edukasi">Edukasi / Pembelajaran</option><option value="Permainan">Permainan Bebas</option></select></div>
+                            <div><label class="input-label">Jenis Sarana</label><select name="jenis" class="input-field"><option value="">Pilih...</option><option value="Edukasi">Edukasi / Pembelajaran</option><option value="Permainan">Permainan Bebas</option><option value="Sarpras">Sarpras</option><option value="ATK">ATK</option></select></div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Jumlah</label><input type="number" name="quantity" min="1" value="1" required class="input-field"></div>
@@ -82,7 +82,7 @@
                         <div><label class="input-label">Nama Sarana</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Lokasi Penempatan</label><select name="lokasi" x-model="editData.lokasi" class="input-field"><option value="">Pilih...</option><option value="Indoor">Indoor (Dalam Ruangan)</option><option value="Outdoor">Outdoor (Luar Ruangan)</option></select></div>
-                            <div><label class="input-label">Jenis Sarana</label><select name="jenis" x-model="editData.jenis" class="input-field"><option value="">Pilih...</option><option value="Edukasi">Edukasi / Pembelajaran</option><option value="Permainan">Permainan Bebas</option></select></div>
+                            <div><label class="input-label">Jenis Sarana</label><select name="jenis" x-model="editData.jenis" class="input-field"><option value="">Pilih...</option><option value="Edukasi">Edukasi / Pembelajaran</option><option value="Permainan">Permainan Bebas</option><option value="Sarpras">Sarpras</option><option value="ATK">ATK</option></select></div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Jumlah</label><input type="number" name="quantity" x-model="editData.quantity" min="1" required class="input-field"></div>

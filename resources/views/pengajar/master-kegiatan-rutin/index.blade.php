@@ -6,8 +6,12 @@
                 <p class="text-sm text-gray-500 mt-1">Kelola data kegiatan rutin untuk kelas Anda.</p>
             </div>
             
-            <div>
-                <a href="{{ route('pengajar.master-kegiatan-rutin.create') }}" class="btn-primary py-2 px-4 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20 inline-flex items-center gap-2">
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'kegiatan-rutin.index') }}" class="btn-secondary py-2 px-4 rounded-xl font-bold shadow-sm inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3" /></svg>
+                    Input Rutin Harian
+                </a>
+                <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.create') }}" class="btn-primary py-2 px-4 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20 inline-flex items-center gap-2">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                     Tambah Kegiatan
                 </a>
@@ -48,13 +52,13 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('pengajar.master-kegiatan-rutin.show', $master) }}" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-blue-500 hover:text-white transition group border border-gray-100 shadow-sm text-blue-600" title="Detail Capaian Siswa">
+                                        <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.show', $master) }}" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-blue-500 hover:text-white transition group border border-gray-100 shadow-sm text-blue-600" title="Detail Capaian Siswa">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                         </a>
-                                        <a href="{{ route('pengajar.master-kegiatan-rutin.edit', $master) }}" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-yellow-500 hover:text-white transition group border border-gray-100 shadow-sm text-yellow-600" title="Edit Kegiatan">
+                                        <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.edit', $master) }}" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-yellow-500 hover:text-white transition group border border-gray-100 shadow-sm text-yellow-600" title="Edit Kegiatan">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                         </a>
-                                        <form action="{{ route('pengajar.master-kegiatan-rutin.destroy', $master) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="inline-block">
+                                        <form action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.destroy', $master) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="inline-block">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-red-500 hover:text-white transition group border border-gray-100 shadow-sm text-red-600" title="Hapus Kegiatan">

@@ -22,7 +22,9 @@
             // Since we need to add a quick detail feature, we might need a small endpoint or just pass the data if small.
             // But doing a fetch is cleaner. We will add an endpoint in web.php.
             try {
-                let res = await fetch(`/pengajar/kegiatan-rutin/detail/${id}?mulai=${this.filterMulai}&sampai=${this.filterSampai}`);
+                const is_admin = {{ auth()->user()->hasRole('Admin Sekolah') ? 'true' : 'false' }};
+                const prefix = is_admin ? '/admin' : '/pengajar';
+                let res = await fetch(`${prefix}/kegiatan-rutin/detail/${id}?mulai=${this.filterMulai}&sampai=${this.filterSampai}`);
                 let json = await res.json();
                 this.detailData = json;
             } catch (e) {
@@ -43,7 +45,7 @@
                 <p class="text-sm text-gray-500 mt-1">Pantau perkembangan aspek harian siswa.</p>
             </div>
             
-            <form method="GET" action="{{ route('pengajar.kegiatan-rutin.index') }}" class="flex flex-wrap gap-3 items-end">
+            <form method="GET" action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'kegiatan-rutin.index') }}" class="flex flex-wrap gap-3 items-end">
                 <div class="w-full sm:w-auto">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 ml-1">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field py-2 text-sm" onchange="this.form.submit()">
@@ -170,7 +172,7 @@
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <form action="{{ route('pengajar.kegiatan-rutin.store') }}" method="POST" class="p-6 space-y-6 overflow-y-auto flex-1">
+                <form action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'kegiatan-rutin.store') }}" method="POST" class="p-6 space-y-6 overflow-y-auto flex-1">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="kelas_id" value="{{ $kelasId }}">
@@ -205,7 +207,7 @@
                                 <select x-model="data.status" :name="'rutin[' + selectedAnak?.id + '][' + key + '][status_pencapaian]'" class="input-field w-full">
                                     <option value="">- Pilih Status -</option>
                                     <option value="Belum Mulai">Belum Mulai</option>
-                                    <option value="Sedang Berlangsung">Sedang Berlangsung</option>
+                                    <option value="Belum Lancar">Belum Lancar</option>
                                     <option value="Lancar">Lancar</option>
                                     <option value="Sangat Lancar">Sangat Lancar</option>
                                 </select>
