@@ -58,12 +58,45 @@ class KegiatanController extends Controller
 
         $kegiatans = $query->orderBy('date')->orderBy('id')->get();
 
+        // Fetch attendance records for the selected date range (present only)
+        $presents = \App\Models\Presensi::whereIn('anak_id', $anakIds)
+            ->whereBetween('tanggal', [$from, $to])
+            ->where('hadir', true)
+            ->get()
+            ->groupBy(function($p) {
+                return \Carbon\Carbon::parse($p->tanggal)->toDateString();
+            })
+            ->map(fn($rows) => $rows->pluck('anak_id')->values()->all());
+
         $limitAnakIds = null;
         if ($semuaSekolah) {
             $limitAnakIds = $anakIds !== [] ? $anakIds : [-1];
         }
 
-        $calendarEvents = $kegiatans->map(function (Kegiatan $k) use ($anakId, $limitAnakIds, $semuaSekolah, $anakIds) {
+        $calendarEvents = $kegiatans->filter(function(Kegiatan $k) use ($anakId, $anaks, $presents) {
+            $date = \Carbon\Carbon::parse($k->date);
+            $dateStr = $date->toDateString();
+            $presentOnDate = $presents[$dateStr] ?? [];
+
+            // If it's a future date (not today), show as plan
+            if ($date->isFuture() && !$date->isToday()) {
+                return true;
+            }
+
+            if ($anakId) {
+                // If specific child selected, only show if marked present
+                return in_array($anakId, $presentOnDate);
+            } else {
+                // If multiple children, show if at least one child in that class was present on that day
+                $childrenInClass = $anaks->where('kelas_id', $k->kelas_id);
+                foreach ($childrenInClass as $child) {
+                    if (in_array($child->id, $presentOnDate)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        })->map(function (Kegiatan $k) use ($anakId, $limitAnakIds, $semuaSekolah, $anakIds) {
             $subset = null;
             $limitForEvent = null;
 

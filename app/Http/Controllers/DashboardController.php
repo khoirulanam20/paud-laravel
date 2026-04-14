@@ -107,21 +107,41 @@ class DashboardController extends Controller
 
             if ($data['anakIds']->isNotEmpty()) {
                 $childKelasIds = $data['anaks']->pluck('kelas_id')->filter()->unique();
-                $kegiatans = Kegiatan::query()
+                $kegiatansQuery = Kegiatan::query()
                     ->where('sekolah_id', $sekolahId)
                     ->whereIn('kelas_id', $childKelasIds)
                     ->whereDate('date', Carbon::today())
                     ->with(['pengajar', 'pencapaians' => fn($q) => $q->whereIn('anak_id', $data['anakIds'])->with('matrikulasi')])
                     ->latest('date')
-                    ->latest('id')
-                    ->get();
+                    ->latest('id');
+
+                $kegiatans = $kegiatansQuery->get();
+
+                // Get attendance for these children today
+                $presentAnakIdsToday = Presensi::whereIn('anak_id', $data['anakIds'])
+                    ->whereDate('tanggal', Carbon::today())
+                    ->where('hadir', true)
+                    ->pluck('anak_id')
+                    ->toArray();
 
                 foreach ($kegiatans as $keg) {
-                    $feeds->push([
-                        'type' => 'kegiatan',
-                        'time' => $keg->created_at,
-                        'data' => $keg
-                    ]);
+                    // Check if at least one child of this parent in this class is present today
+                    $childrenInClass = $data['anaks']->where('kelas_id', $keg->kelas_id);
+                    $anyPresent = false;
+                    foreach ($childrenInClass as $child) {
+                        if (in_array($child->id, $presentAnakIdsToday)) {
+                            $anyPresent = true;
+                            break;
+                        }
+                    }
+
+                    if ($anyPresent) {
+                        $feeds->push([
+                            'type' => 'kegiatan',
+                            'time' => $keg->created_at,
+                            'data' => $keg
+                        ]);
+                    }
                 }
 
                 $pencapaians = Pencapaian::whereIn('anak_id', $data['anakIds'])

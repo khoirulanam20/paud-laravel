@@ -168,6 +168,7 @@
                                 <option value="Belum Lancar">Belum Lancar</option>
                                 <option value="Lancar">Lancar</option>
                                 <option value="Sangat Lancar">Sangat Lancar</option>
+                                <option value="Tidak Hadir">Tidak Hadir</option>
                             </select>
                         </div>
                         
