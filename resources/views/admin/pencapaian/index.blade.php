@@ -19,7 +19,7 @@
             ->distinct()
             ->get()
             ->groupBy('kegiatan_id')
-            ->map(fn ($rows) => $rows->pluck('anak_id')->values()->all());
+            ->map(fn($rows) => $rows->pluck('anak_id')->values()->all());
 
         $kegiatanData = [];
         foreach ($kegiatans as $kg) {
@@ -305,12 +305,19 @@
                             <tr>
                                 <td>
                                     @if($first->photo)
-                                        <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" 
-                                             onclick="window.open('{{ asset('storage/' . $first->photo) }}')">
+                                        <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer"
+                                            onclick="window.open('{{ asset('storage/' . $first->photo) }}')">
                                             <img src="{{ asset('storage/' . $first->photo) }}"
                                                 class="h-full w-full object-cover">
-                                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            <div
+                                                class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
                                             </div>
                                         </div>
                                     @else<div
@@ -343,8 +350,8 @@
                                                 <div class="mt-1 flex items-center gap-2">
                                                     <span class="font-bold px-1.5 py-0.5 rounded"
                                                         style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
-                                                    @if($p->feedback)<span
-                                                    class="italic text-[#6B6560] truncate max-w-[180px]" title="{{ $p->feedback }}">"{{ $p->feedback }}"</span>@endif
+                                                    @if($p->feedback)<span class="italic text-[#6B6560] truncate max-w-[180px]"
+                                                    title="{{ $p->feedback }}">"{{ $p->feedback }}"</span>@endif
                                                 </div>
                                             </div>
                                         @endforeach
@@ -419,9 +426,12 @@
                                     <option :value="k.id" x-text="k.date_label + ' : ' + k.title"></option>
                                 </template>
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">Hanya menampilkan kegiatan yang sudah memiliki dokumentasi foto (sudah dilaksanakan) dan belum ada pencapaiannya.</p>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Hanya menampilkan kegiatan yang sudah
+                                memiliki dokumentasi foto (sudah dilaksanakan) dan belum ada pencapaiannya.</p>
                             <template x-if="selectedAnakId && filteredKegiatans.length === 0">
-                                <p class="text-xs mt-1 font-semibold" style="color:#C0392B;">Tidak ada kegiatan tersedia. Pastikan kegiatan sudah diupload foto dokumentasinya dan belum diisi pencapaiannya.</p>
+                                <p class="text-xs mt-1 font-semibold" style="color:#C0392B;">Tidak ada kegiatan
+                                    tersedia. Pastikan kegiatan sudah diupload foto dokumentasinya dan belum diisi
+                                    pencapaiannya.</p>
                             </template>
                         </div>
                         <template x-for="opt in matrikulasiOptions" :key="opt.id">
@@ -436,8 +446,8 @@
                                     <option value="BSB">BSB (Berkembang Sangat Baik)</option>
                                 </select>
                                 <div class="space-y-1.5">
-                                    <textarea class="input-field bg-white text-xs" rows="3" :name="'catatan[' + opt.id + ']'"
-                                        x-model="createCatatan[String(opt.id)]"
+                                    <textarea class="input-field bg-white text-xs" rows="3"
+                                        :name="'catatan[' + opt.id + ']'" x-model="createCatatan[String(opt.id)]"
                                         placeholder="Berikan umpan balik positif…"></textarea>
                                     {{-- AI Suggestion Button --}}
                                     <div class="flex items-center gap-2 flex-wrap">
@@ -517,23 +527,29 @@
                     </div>
                     {{-- Context: student name & activity --}}
                     <div class="px-5 pt-4 pb-1">
-                        <div class="rounded-xl border p-3 flex items-start gap-3" style="background:#F0F9F9; border-color:#1A6B6B22;">
-                            <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background:#1A6B6B;">
-                                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        <div class="rounded-xl border p-3 flex items-start gap-3"
+                            style="background:#F0F9F9; border-color:#1A6B6B22;">
+                            <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                                style="background:#1A6B6B;">
+                                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                             </div>
                             <div class="min-w-0">
                                 <div class="font-bold text-sm" style="color:#1A6B6B;"
                                     x-text="anakMap[editBundles[editBundleKey]?.anak_id]?.name || 'Siswa'"></div>
                                 <div class="text-xs mt-0.5 truncate" style="color:#6B6560;"
-                                    x-text="(kegiatanData[selectedKegiatanIdEdit]?.date_label || '') + (kegiatanData[selectedKegiatanIdEdit]?.title ? ' · ' + kegiatanData[selectedKegiatanIdEdit]?.title : '')"></div>
+                                    x-text="(kegiatanData[selectedKegiatanIdEdit]?.date_label || '') + (kegiatanData[selectedKegiatanIdEdit]?.title ? ' · ' + kegiatanData[selectedKegiatanIdEdit]?.title : '')">
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-body space-y-3 max-h-[60vh] overflow-y-auto">
                         <template x-if="matrikulasiOptionsEdit.length === 0">
-                            <div class="text-center py-8 text-sm" style="color:#9E9790;">Memuat data matrikulasi...</div>
+                            <div class="text-center py-8 text-sm" style="color:#9E9790;">Memuat data matrikulasi...
+                            </div>
                         </template>
                         <template x-for="opt in matrikulasiOptionsEdit" :key="opt.id">
                             <div class="p-3 bg-gray-50 rounded-xl border border-black/5 space-y-2">
@@ -548,8 +564,7 @@
                                 </select>
                                 <div class="space-y-1.5">
                                     <textarea class="input-field bg-white text-xs" rows="3"
-                                        :name="'catatan[' + opt.id + ']'"
-                                        x-model="editCatatan[String(opt.id)]"
+                                        :name="'catatan[' + opt.id + ']'" x-model="editCatatan[String(opt.id)]"
                                         placeholder="Berikan umpan balik atau evaluasi untuk aspek ini..."></textarea>
                                     {{-- AI Suggestion Button --}}
                                     <div class="flex items-center gap-2 flex-wrap">
@@ -597,21 +612,30 @@
                             <template x-if="editBundles[editBundleKey]?.has_photo">
                                 <div class="mb-4">
                                     <div class="text-[11px] mb-2 flex items-center gap-1.5" style="color:#1A6B6B;">
-                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         <span class="font-bold">Foto Hasil Sebelumnya:</span>
                                     </div>
-                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group" style="border-color:#1A6B6B22;">
-                                         <img :src="editBundles[editBundleKey].photo_url" class="w-full h-full object-cover">
-                                         <a :href="editBundles[editBundleKey].photo_url" target="_blank" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                             <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                             </svg>
-                                         </a>
+                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group"
+                                        style="border-color:#1A6B6B22;">
+                                        <img :src="editBundles[editBundleKey].photo_url"
+                                            class="w-full h-full object-cover">
+                                        <a :href="editBundles[editBundleKey].photo_url" target="_blank"
+                                            class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </a>
                                     </div>
-                                    <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Pilih file baru di bawah ini jika ingin mengganti foto.</p>
+                                    <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Pilih file baru di bawah
+                                        ini jika ingin mengganti foto.</p>
                                 </div>
                             </template>
                             <input type="file" name="photo" accept="image/*" class="input-field"

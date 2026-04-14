@@ -52,19 +52,19 @@ class PencapaianController extends Controller
             $hariQuery->whereDate('created_at', '<=', $tanggalSampai);
         }
 
-        $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
-        
+        $hariQuery->whereHas('anak', fn($q) => $q->where('sekolah_id', $sekolah_id));
+
         if ($request->filled('filter_anak_id')) {
             $aid = (int) $request->input('filter_anak_id');
             $hariQuery->where('anak_id', $aid);
         }
         if ($request->filled('filter_kelas_id')) {
             $kid = (int) $request->input('filter_kelas_id');
-            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', $kid));
+            $hariQuery->whereHas('anak', fn($q) => $q->where('kelas_id', $kid));
         }
 
         $hariAll = $hariQuery->get();
-        $groupsAll = $hariAll->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
+        $groupsAll = $hariAll->groupBy(fn($p) => $p->anak_id . '_' . $p->kegiatan_id);
 
         $keysFiltered = $groupsAll->keys()->values()->filter(function ($k) use ($groupsAll, $filterAspek) {
             return FilterAspekPencapaian::groupHasMatch($filterAspek, $groupsAll[$k]);
@@ -74,7 +74,7 @@ class PencapaianController extends Controller
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $total = $keysFiltered->count();
         $sliceKeys = $keysFiltered->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $pageItems = $sliceKeys->mapWithKeys(fn ($k) => [$k => $groupsAll[$k]]);
+        $pageItems = $sliceKeys->mapWithKeys(fn($k) => [$k => $groupsAll[$k]]);
 
         $groupedPencapaian = new LengthAwarePaginator(
             $pageItems,
@@ -117,7 +117,7 @@ class PencapaianController extends Controller
 
         $kegiatanQuery = Kegiatan::where('sekolah_id', $sekolah_id)->with('matrikulasis')->orderBy('date', 'desc');
         if ($request->filled('filter_kelas_id')) {
-             $kegiatanQuery->where('kelas_id', $request->filter_kelas_id);
+            $kegiatanQuery->where('kelas_id', $request->filter_kelas_id);
         }
         $kegiatans = $kegiatanQuery->get();
 
@@ -197,7 +197,7 @@ class PencapaianController extends Controller
             ->where('kegiatan_id', $kegiatan->id)
             ->count();
         $isEdit = $request->boolean('_is_edit');
-        if (! $isEdit && $existingCount > 0) {
+        if (!$isEdit && $existingCount > 0) {
             return back()
                 ->withInput()
                 ->withErrors(['kegiatan_id' => 'Pencapaian untuk anak dan kegiatan ini sudah pernah diisi. Gunakan tombol Edit untuk mengubahnya.']);
@@ -206,7 +206,7 @@ class PencapaianController extends Controller
         $nilaiInput = $request->input('nilai', []);
         foreach ($matIds as $mid) {
             $sk = (string) $mid;
-            if (! array_key_exists($sk, $nilaiInput) && ! array_key_exists($mid, $nilaiInput)) {
+            if (!array_key_exists($sk, $nilaiInput) && !array_key_exists($mid, $nilaiInput)) {
                 return back()
                     ->withInput()
                     ->withErrors(['nilai' => 'Setiap aspek matrikulasi wajib diberi nilai.']);
@@ -277,7 +277,7 @@ class PencapaianController extends Controller
                 ->where('id', '!=', $pencapaian->id)
                 ->where('photo', $pencapaian->photo)
                 ->exists();
-            if (! $stillUsed) {
+            if (!$stillUsed) {
                 Storage::disk('public')->delete($pencapaian->photo);
             }
         }
@@ -311,7 +311,7 @@ class PencapaianController extends Controller
                     ->where('photo', $pencapaian->photo)
                     ->where('id', '!=', $pencapaian->id)
                     ->exists();
-                if (! $stillUsed) {
+                if (!$stillUsed) {
                     Storage::disk('public')->delete($pencapaian->photo);
                 }
             }
