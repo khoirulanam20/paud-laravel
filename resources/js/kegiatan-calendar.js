@@ -60,38 +60,39 @@ function initKegiatanCalendar() {
         },
         height: 'auto',
         events,
-        eventContent: function (arg) {
-            if (arg.view.type === 'listMonth') {
-                const detail = arg.event.extendedProps.detail || {};
-                const title = arg.event.title;
-                const kelas = detail.kelas_name || '';
-                const desc = detail.description || '';
+        views: {
+            listMonth: {
+                eventContent: function (arg) {
+                    const detail = arg.event.extendedProps.detail || {};
+                    const title = arg.event.title;
+                    const kelas = detail.kelas_name || '';
+                    const desc = detail.description || '';
 
-                const container = document.createElement('div');
-                container.className = 'fc-list-event-title-details py-1';
+                    const container = document.createElement('div');
+                    container.className = 'py-1';
 
-                const titleEl = document.createElement('div');
-                titleEl.className = 'font-bold text-gray-800';
-                titleEl.textContent = title;
-                container.appendChild(titleEl);
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'font-bold text-gray-800';
+                    titleEl.textContent = title;
+                    container.appendChild(titleEl);
 
-                if (kelas) {
-                    const kelasEl = document.createElement('div');
-                    kelasEl.className = 'text-[10px] mt-0.5 font-bold text-teal-700';
-                    kelasEl.textContent = 'Kelas: ' + kelas;
-                    container.appendChild(kelasEl);
+                    if (kelas && kelas !== '-') {
+                        const kelasEl = document.createElement('div');
+                        kelasEl.className = 'text-[10px] mt-0.5 font-bold text-teal-700';
+                        kelasEl.textContent = 'Kelas: ' + kelas;
+                        container.appendChild(kelasEl);
+                    }
+
+                    if (desc) {
+                        const descEl = document.createElement('div');
+                        descEl.className = 'text-[10px] mt-1 text-gray-500 italic line-clamp-2';
+                        descEl.textContent = '"' + desc + '"';
+                        container.appendChild(descEl);
+                    }
+
+                    return { domNodes: [container] };
                 }
-
-                if (desc) {
-                    const descEl = document.createElement('div');
-                    descEl.className = 'text-[10px] mt-1 text-gray-500 italic line-clamp-2';
-                    descEl.textContent = '"' + desc + '"';
-                    container.appendChild(descEl);
-                }
-
-                return { domNodes: [container] };
             }
-            return null; // default
         },
         eventClick(info) {
             info.jsEvent.preventDefault();

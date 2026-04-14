@@ -33,4 +33,9 @@ class MasterKegiatanRutin extends Model
     {
         return $this->belongsToMany(Kelas::class, 'kelas_master_kegiatan_rutin');
     }
+
+    public function kegiatanRutins()
+    {
+        return $this->hasMany(KegiatanRutin::class, 'master_kegiatan_rutin_id');
+    }
 }
