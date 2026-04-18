@@ -7,6 +7,7 @@
 @php
     $year = $year ?? (int) now()->year;
     $month = $month ?? (int) now()->month;
+    $monthValue = sprintf('%04d-%02d', $year, $month);
 @endphp
 
 @vite(['resources/js/kegiatan-calendar.js'])
@@ -19,12 +20,40 @@
         $eventsJson = '[]';
     }
 @endphp
-<div
-    id="kegiatan-calendar-mount"
-    class="jurnal-fc rounded-xl border overflow-hidden bg-white"
-    style="border-color:rgba(0,0,0,0.08);"
-    data-year="{{ $year }}"
-    data-month="{{ $month }}"
->
-    <script type="application/json" id="kegiatan-calendar-json">{!! $eventsJson !!}</script>
+
+{{-- Date picker + Calendar wrapper --}}
+<div class="rounded-xl border overflow-hidden bg-white" style="border-color:rgba(0,0,0,0.08);">
+    {{-- Month picker --}}
+    <div class="flex items-center gap-2 px-3 py-2 border-b" style="border-color:rgba(0,0,0,0.06); background:#FAFAF9;">
+        <svg class="w-4 h-4 shrink-0" style="color:#1A6B6B;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <label for="kalender-month-picker" class="text-xs font-semibold shrink-0" style="color:#5A5A5A;">Pilih Bulan:</label>
+        <input
+            id="kalender-month-picker"
+            type="month"
+            value="{{ $monthValue }}"
+            min="2020-01"
+            max="2030-12"
+            class="text-sm rounded-lg px-2 py-1 border focus:outline-none"
+            style="border-color:rgba(26,107,107,0.4); color:#2C2C2C; background:#fff; accent-color:#1A6B6B;"
+            onchange="(function(val){
+                const [y, m] = val.split('-');
+                const url = new URL(window.location.href);
+                url.searchParams.set('year', y);
+                url.searchParams.set('month', String(parseInt(m,10)));
+                url.searchParams.set('view', url.searchParams.get('view') || 'listMonth');
+                window.location.href = url.toString();
+            })(this.value)"
+        >
+    </div>
+
+    <div
+        id="kegiatan-calendar-mount"
+        class="jurnal-fc"
+        data-year="{{ $year }}"
+        data-month="{{ $month }}"
+    >
+        <script type="application/json" id="kegiatan-calendar-json">{!! $eventsJson !!}</script>
+    </div>
 </div>

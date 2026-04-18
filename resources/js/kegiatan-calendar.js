@@ -58,6 +58,12 @@ function initKegiatanCalendar() {
             center: 'title',
             right: 'listMonth,dayGridMonth',
         },
+        eventOrder: function (a, b) {
+            // Newest first in list view
+            const aDate = a.start ? a.start.valueOf() : 0;
+            const bDate = b.start ? b.start.valueOf() : 0;
+            return bDate - aDate;
+        },
         height: 'auto',
         events,
         views: {

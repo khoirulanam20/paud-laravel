@@ -204,22 +204,11 @@
                                     <div class="sm:hidden divide-y divide-gray-50">
                                         @foreach($rows->filter(fn($p) => \App\Support\FilterAspekPencapaian::rowMatches($filterAspek, $p))->sortBy(fn($p) => ($p->matrikulasi->aspek ?? '') . ($p->matrikulasi->indicator ?? '')) as $p)
                                             <div class="p-4 bg-white space-y-3">
-                                                <div class="flex justify-between items-start gap-3">
-                                                    <div class="min-w-0">
-                                                        <span class="text-[10px] font-bold text-[#1A6B6B] uppercase tracking-wider block mb-0.5">{{ $p->matrikulasi->aspek ?: 'Aspek' }}</span>
-                                                        <h4 class="text-sm font-bold text-gray-800 leading-snug">{{ $p->matrikulasi->indicator }}</h4>
-                                                    </div>
-                                                    <span class="shrink-0 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter text-center" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">
-                                                        {{ \App\Support\LabelSkorPencapaian::label($p->score) }}
-                                                    </span>
+                                                {{-- Aspek & Indikator --}}
+                                                <div class="min-w-0">
+                                                    <span class="text-[10px] font-bold text-[#1A6B6B] uppercase tracking-wider block mb-0.5">{{ $p->matrikulasi->aspek ?: 'Aspek' }}</span>
+                                                    <h4 class="text-sm font-bold text-gray-800 leading-snug">{{ $p->matrikulasi->indicator }}</h4>
                                                 </div>
-
-                                                @if($p->feedback)
-                                                    <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Catatan Guru</span>
-                                                        <p class="text-xs text-gray-600 leading-relaxed italic">&quot;{{ $p->feedback }}&quot;</p>
-                                                    </div>
-                                                @endif
 
                                                 @if($p->matrikulasi)
                                                     <div class="space-y-2">
@@ -237,8 +226,25 @@
                                                         @endif
                                                     </div>
                                                 @endif
+
+                                                {{-- Skala Pencapaian --}}
+                                                <div>
+                                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Skala Pencapaian</span>
+                                                    <span class="text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter inline-block leading-snug" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">
+                                                        {{ \App\Support\LabelSkorPencapaian::label($p->score) }}
+                                                    </span>
+                                                </div>
+
+                                                {{-- Catatan Guru --}}
+                                                @if($p->feedback)
+                                                    <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Catatan Guru</span>
+                                                        <p class="text-xs text-gray-600 leading-relaxed italic">&quot;{{ $p->feedback }}&quot;</p>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
+
                                     </div>
                                 </div>
                             </div>
