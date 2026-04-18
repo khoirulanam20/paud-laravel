@@ -19,7 +19,9 @@ class MasterKegiatanRutinController extends Controller
         
         $masters = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
             ->where('sekolah_id', $pengajar->sekolah_id)
-            ->where('pengajar_id', $pengajar->id)
+            ->whereHas('kelas', function($q) use ($pengajar) {
+                $q->whereIn('kelas.id', $pengajar->kelas->pluck('id'));
+            })
             ->latest()
             ->get();
 
@@ -110,21 +112,25 @@ class MasterKegiatanRutinController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
+        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
 
-        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id) {
+        // Check if this master activity is linked to any of the teacher's classes
+        $linkedToTeacher = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->exists();
+
+        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id && !$linkedToTeacher) {
             abort(403);
         }
 
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $kelasId = $request->input('kelas_id');
-        $kelasIds = $masterKegiatanRutin->kelas->pluck('id')->toArray();
+        $availableKelasIds = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->pluck('kelas.id')->toArray();
 
-        if (!$kelasId && !empty($kelasIds)) {
-            $kelasId = $kelasIds[0];
+        if (!$kelasId && !empty($availableKelasIds)) {
+            $kelasId = $availableKelasIds[0];
         }
 
-        if ($kelasId && !in_array($kelasId, $kelasIds)) {
-            abort(403, 'Kelas tidak ditautkan ke kegiatan ini.');
+        if ($kelasId && !in_array($kelasId, $availableKelasIds)) {
+            abort(403, 'Kelas tidak ditautkan ke kegiatan ini atau Anda tidak mengampu kelas ini.');
         }
 
         $anaks = $kelasId ? \App\Models\Anak::where('kelas_id', $kelasId)->get() : collect();
@@ -134,7 +140,7 @@ class MasterKegiatanRutinController extends Controller
             ->get()
             ->keyBy('anak_id') : collect();
 
-        $classList = $masterKegiatanRutin->kelas;
+        $classList = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->get();
 
         return view('pengajar.master-kegiatan-rutin.show', compact('masterKegiatanRutin', 'classList', 'anaks', 'rutins', 'tanggal', 'kelasId'));
     }
@@ -152,9 +158,17 @@ class MasterKegiatanRutinController extends Controller
 
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
+        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
 
-        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id) {
+        // Check if this master activity is linked to any of the teacher's classes
+        $linkedToTeacher = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->exists();
+
+        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id && !$linkedToTeacher) {
             abort(403);
+        }
+
+        if (!in_array($request->kelas_id, $teacherKelasIds)) {
+            abort(403, 'Anda tidak mengampu kelas ini.');
         }
 
         $rutin = \App\Models\KegiatanRutin::where([
@@ -199,6 +213,12 @@ class MasterKegiatanRutinController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
+        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
+
+        // Check if student belongs to teacher's classes
+        if (!in_array($anak->kelas_id, $teacherKelasIds)) {
+            abort(403);
+        }
 
         $mulai = $request->query('mulai', date('Y-m-01'));
         $sampai = $request->query('sampai', date('Y-m-t'));

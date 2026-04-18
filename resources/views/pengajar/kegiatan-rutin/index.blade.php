@@ -41,8 +41,8 @@
     }">
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 leading-tight">Kegiatan Rutin Harian</h2>
-                <p class="text-sm text-gray-500 mt-1">Pantau perkembangan aspek harian siswa.</p>
+                <h2 class="text-2xl font-bold text-gray-900 leading-tight">Update Pencapaian Rutin</h2>
+                <p class="text-sm text-gray-500 mt-1">Input pencapaian perkembangan harian siswa di kelas Anda.</p>
             </div>
             
             <form method="GET" action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'kegiatan-rutin.index') }}" class="flex flex-wrap gap-3 items-end">
@@ -87,32 +87,17 @@
                                 $displayItems = [];
                                 $formItems = [];
 
-                                if ($masters->count() > 0) {
-                                    foreach ($masters as $master) {
-                                        $r = $anakRutins->where('master_kegiatan_rutin_id', $master->id)->first();
-                                        $displayItems[] = [
-                                            'aspek' => $master->aspek,
-                                            'kegiatan' => $master->nama_kegiatan,
-                                            'status' => $r ? $r->status_pencapaian : null
-                                        ];
-                                        $formItems[$master->id] = [
-                                            'aspek' => $master->aspek,
-                                            'kegiatan' => $master->nama_kegiatan,
-                                            'status' => $r ? $r->status_pencapaian : ''
-                                        ];
-                                    }
-                                } else {
-                                    // Custom or old routine format
-                                    $r = $anakRutins->first();
+                                foreach ($masters as $master) {
+                                    $r = $anakRutins->where('master_kegiatan_rutin_id', $master->id)->first();
                                     $displayItems[] = [
-                                        'aspek' => $r?->aspek ?: '-',
-                                        'kegiatan' => $r?->kegiatan ?: '-',
-                                        'status' => $r?->status_pencapaian
+                                        'aspek' => $master->aspek,
+                                        'kegiatan' => $master->nama_kegiatan,
+                                        'status' => $r ? $r->status_pencapaian : null
                                     ];
-                                    $formItems['custom'] = [
-                                        'aspek' => $r?->aspek ?: '',
-                                        'kegiatan' => $r?->kegiatan ?: '',
-                                        'status' => $r?->status_pencapaian ?: ''
+                                    $formItems[$master->id] = [
+                                        'aspek' => $master->aspek,
+                                        'kegiatan' => $master->nama_kegiatan,
+                                        'status' => $r ? $r->status_pencapaian : ''
                                     ];
                                 }
                             @endphp
@@ -183,24 +168,10 @@
                             <input type="hidden" :name="'rutin[' + selectedAnak?.id + '][' + key + '][aspek]'" :value="data.aspek">
                             <input type="hidden" :name="'rutin[' + selectedAnak?.id + '][' + key + '][kegiatan]'" :value="data.kegiatan">
                             
-                            <template x-if="key === 'custom'">
-                                <div class="space-y-3 mb-3">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Aspek Perkembangan</label>
-                                        <input type="text" x-model="data.aspek" :name="'rutin[' + selectedAnak?.id + '][' + key + '][aspek]'" class="input-field w-full text-sm" placeholder="Contoh: Agama">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Nama Kegiatan</label>
-                                        <input type="text" x-model="data.kegiatan" :name="'rutin[' + selectedAnak?.id + '][' + key + '][kegiatan]'" class="input-field w-full text-sm" placeholder="Contoh: Mengaji">
-                                    </div>
-                                </div>
-                            </template>
-                            <template x-if="key !== 'custom'">
-                                <div class="mb-3">
-                                    <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1" x-text="data.aspek"></div>
-                                    <div class="font-bold text-gray-900" x-text="data.kegiatan"></div>
-                                </div>
-                            </template>
+                            <div class="mb-3">
+                                <div class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1" x-text="data.aspek"></div>
+                                <div class="font-bold text-gray-900" x-text="data.kegiatan"></div>
+                            </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Status Pencapaian</label>
