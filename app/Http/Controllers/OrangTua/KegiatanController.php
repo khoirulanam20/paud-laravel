@@ -56,7 +56,12 @@ class KegiatanController extends Controller
             }
         }
 
-        $kegiatans = $query->orderBy('date')->orderBy('id')->get();
+        if ($request->filled('day')) {
+            $day = $request->integer('day');
+            $query->whereDay('date', $day);
+        }
+
+        $kegiatans = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
 
         // Fetch attendance records for the selected date range (present only)
         $presents = \App\Models\Presensi::whereIn('anak_id', $anakIds)

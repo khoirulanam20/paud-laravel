@@ -52,7 +52,12 @@ class KegiatanController extends Controller
             }
         }
 
-        $kegiatans = $query->orderBy('date')->orderBy('id')->get();
+        if ($request->filled('day')) {
+            $day = $request->integer('day');
+            $query->whereDay('date', $day);
+        }
+
+        $kegiatans = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
         $calendarEvents = $kegiatans->map(fn (Kegiatan $k) => KegiatanCalendar::toPengajarEvent($k))->values()->all();
 
         $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();

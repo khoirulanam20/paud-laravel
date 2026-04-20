@@ -25,15 +25,16 @@ function initKegiatanCalendar() {
     }
     mount.dataset.fcInitialized = '1';
 
-    const url = new URL(window.location.href);
+    const url = new window.URL(window.location.href);
     const viewFromUrl = url.searchParams.get('view') || 'listMonth';
 
     const events = loadEventsFromPage();
     const yearFromData = parseInt(mount.dataset.year || '', 10);
     const monthFromData = parseInt(mount.dataset.month || '', 10);
+    const dayFromData = parseInt(mount.dataset.day || '1', 10);
     const initialDate =
         yearFromData > 0 && monthFromData >= 1 && monthFromData <= 12
-            ? `${yearFromData}-${String(monthFromData).padStart(2, '0')}-01`
+            ? `${yearFromData}-${String(monthFromData).padStart(2, '0')}-${String(dayFromData).padStart(2, '0')}`
             : undefined;
 
     const calendarEl = document.createElement('div');
@@ -114,6 +115,28 @@ function initKegiatanCalendar() {
             );
         },
         datesSet(dateInfo) {
+            if (dateInfo.view.type === 'listMonth') {
+                const tbody = mount.querySelector('.fc-list-table tbody');
+                if (tbody && !tbody.dataset.reversed) {
+                    const rows = Array.from(tbody.rows);
+                    const groups = [];
+                    let currentGroup = null;
+                    rows.forEach(row => {
+                        if (row.classList.contains('fc-list-day')) {
+                            if (currentGroup) groups.push(currentGroup);
+                            currentGroup = [row];
+                        } else if (currentGroup) {
+                            currentGroup.push(row);
+                        }
+                    });
+                    if (currentGroup) groups.push(currentGroup);
+                    groups.reverse();
+                    tbody.innerHTML = '';
+                    groups.forEach(group => group.forEach(row => tbody.appendChild(row)));
+                    tbody.dataset.reversed = '1';
+                }
+            }
+
             if (isInternalNavigation) {
                 return;
             }
@@ -123,12 +146,12 @@ function initKegiatanCalendar() {
             const m = d.getMonth() + 1;
             const currentView = dateInfo.view.type;
 
-            const curUrl = new URL(window.location.href);
+            const curUrl = new window.URL(window.location.href);
             const curY = parseInt(curUrl.searchParams.get('year') || '0', 10);
             const curM = parseInt(curUrl.searchParams.get('month') || '0', 10);
             const curV = curUrl.searchParams.get('view') || 'listMonth';
 
-            // Refresh if year/month changed or if view changed from default without reflecting in URL
+            // Refresh if year/month changed or if view changed
             if (curY === y && curM === m && curV === currentView) {
                 return;
             }
