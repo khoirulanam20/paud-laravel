@@ -27,7 +27,11 @@ class AnakController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $term = $request->search;
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%' . $term . '%')
+                    ->orWhere('nickname', 'like', '%' . $term . '%');
+            });
         }
 
         $anaks = $query->paginate(15)->withQueryString();
@@ -54,6 +58,7 @@ class AnakController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:50',
             'dob' => 'nullable|date',
             'kelas_id' => 'nullable|exists:kelas,id',
             'nik' => 'nullable|string|max:50',
@@ -87,6 +92,9 @@ class AnakController extends Controller
             'sekolah_id' => $sekolah_id,
             'kelas_id' => $request->kelas_id,
             'name' => $request->name,
+            'nickname' => filled(trim($request->input('nickname', '')))
+                ? trim($request->input('nickname'))
+                : null,
             'dob' => $request->dob,
             'nik' => $request->nik,
             'alamat' => $request->alamat,
@@ -114,6 +122,7 @@ class AnakController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:50',
             'dob' => 'nullable|date',
             'nik' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
@@ -143,6 +152,9 @@ class AnakController extends Controller
 
         $dataArr = [
             'name' => $request->name,
+            'nickname' => filled(trim($request->input('nickname', '')))
+                ? trim($request->input('nickname'))
+                : null,
             'dob' => $request->dob,
             'kelas_id' => $request->kelas_id,
             'nik' => $request->nik,

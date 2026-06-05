@@ -54,7 +54,7 @@
                         <div class="min-w-[12rem]">
                             <label class="input-label">Cari Nama Siswa</label>
                             <input type="text" name="search" value="{{ request('search') }}" class="input-field"
-                                placeholder="Ketik nama...">
+                                placeholder="Ketik nama atau panggilan...">
                         </div>
                         <div>
                             <label class="input-label">Filter Kelas</label>
@@ -87,13 +87,12 @@
                     <thead>
                         <tr>
                             <th>Nama Anak</th>
+                            <th>Panggilan</th>
                             <th>Kelas</th>
-                            <th>NIK</th>
-                            <th>Jenis Kelamin</th>
+                            <th>J/K</th>
                             <th>Umur</th>
                             <th>Nama Orang Tua</th>
-                            <th>Email Login Ortu</th>
-                            <th class="text-right">Aksi</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,15 +101,20 @@
                                 <td>
                                     <div class="flex items-center gap-3">
                                         <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
-                                        <span class="font-semibold" style="color: #2C2C2C;">{{ $anak->name }}</span>
+                                        <div>
+                                            <span class="font-semibold block" style="color: #2C2C2C;">{{ $anak->name }}</span>
+                                            @if(filled($anak->nickname))
+                                                <span class="text-[10px] block mt-0.5" style="color:#6B6560;">Nama panggilan: {{ $anak->nickname }}</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
+                                <td>{{ $anak->nickname ?? '-' }}</td>
                                 <td>
                                     @if($anak->kelas)<span
                                         class="badge badge-teal font-medium">{{ $anak->kelas->name }}</span>
                                     @else<span class="text-xs italic" style="color:#9E9790;">Belum Ditugaskan</span>@endif
                                 </td>
-                                <td>{{ $anak->nik ?? '-' }}</td>
                                 <td>{{ $anak->jenis_kelamin ?? '-' }}</td>
                                 <td>
                                     @if($anak->dob)
@@ -118,13 +122,6 @@
                                     @endif
                                 </td>
                                 <td>{{ $anak->parent_name }}</td>
-                                <td>
-                                    @if($anak->user)
-                                        <span class="badge badge-teal">{{ $anak->user->email }}</span>
-                                    @else
-                                        <span class="badge" style="background: #EDE8DF; color: #9E9790;">Tanpa Akun</span>
-                                    @endif
-                                </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('admin.anak.show', $anak) }}"
@@ -183,6 +180,14 @@
                                 class="input-field @error('name') border-red-500 @enderror"
                                 placeholder="Contoh: Budi Santoso" value="{{ old('name') }}">
                             @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Panggilan</label>
+                            <input type="text" name="nickname" maxlength="50"
+                                class="input-field @error('nickname') border-red-500 @enderror"
+                                placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian"
+                                value="{{ old('nickname') }}">
+                            @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Penempatan Kelas</label>
@@ -290,6 +295,13 @@
                             <input type="text" name="name" x-model="editData.name" required
                                 class="input-field @error('name') border-red-500 @enderror">
                             @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="col-span-1">
+                            <label class="input-label">Nama Panggilan</label>
+                            <input type="text" name="nickname" maxlength="50" x-model="editData.nickname"
+                                class="input-field @error('nickname') border-red-500 @enderror"
+                                placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian">
+                            @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">Pindah Kelas</label>

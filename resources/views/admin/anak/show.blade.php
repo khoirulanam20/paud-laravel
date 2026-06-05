@@ -30,7 +30,11 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-gray-100">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mt-8 pt-8 border-t border-gray-100">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Nama Panggilan</p>
+                        <p class="font-bold text-[#2C2C2C]">{{ $anak->nickname ?: '-' }}</p>
+                    </div>
                     <div>
                         <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Tanggal Lahir</p>
                         <p class="font-bold text-[#2C2C2C]">
