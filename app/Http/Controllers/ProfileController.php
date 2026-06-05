@@ -113,6 +113,7 @@ class ProfileController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:50',
             'dob' => 'required|date',
             'nik' => 'nullable|string|max:50',
             'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
@@ -121,6 +122,9 @@ class ProfileController extends Controller
         ]);
 
         $data = $request->only('name', 'dob', 'nik', 'jenis_kelamin', 'alamat');
+        $data['nickname'] = filled(trim($request->input('nickname', '')))
+            ? trim($request->input('nickname'))
+            : null;
 
         if ($request->hasFile('photo')) {
             if ($anak->photo) {

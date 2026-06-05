@@ -138,7 +138,6 @@
                 <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" rounded="full" class="ring-2 ring-[#1A6B6B]/15" />
             </div>
             <div class="px-6 py-4 bg-gray-50/80 border-b text-sm space-y-2" style="border-color:rgba(0,0,0,0.06);">
-                <p class="font-semibold text-[#2C2C2C] text-xs uppercase tracking-wider" style="color:#9E9790;">Ringkasan dari database</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#2C2C2C]">
                     <div><span class="text-gray-500">Sekolah:</span> <span class="font-medium">{{ $anak->sekolah->name ?? '—' }}</span></div>
                     <div><span class="text-gray-500">Kelas:</span> <span class="font-medium">{{ $anak->kelas->name ?? 'Tanpa kelas' }}</span></div>
@@ -153,6 +152,11 @@
                 @csrf @method('patch')
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2"><label class="input-label">Nama Lengkap Anak</label><input type="text" name="name" value="{{ old('name', $anak->name) }}" required class="input-field"></div>
+                    <div class="col-span-2">
+                        <label class="input-label">Nama Panggilan</label>
+                        <input type="text" name="nickname" maxlength="50" value="{{ old('nickname', $anak->nickname) }}" class="input-field @error('nickname') border-red-500 @enderror" placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian">
+                        @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                    </div>
                     <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" value="{{ old('dob', $anak->dob?->format('Y-m-d')) }}" required class="input-field"></div>
                     <div><label class="input-label">NIK Anak (opsional)</label><input type="text" name="nik" value="{{ old('nik', $anak->nik) }}" class="input-field"></div>
                     <div><label class="input-label">Jenis Kelamin</label>
@@ -165,7 +169,7 @@
                     <div><label class="input-label">Foto Anak</label><input type="file" id="photo-anak-{{ $anak->id }}" name="photo" accept="image/*" class="input-field py-1 text-xs"></div>
                     <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="2">{{ old('alamat', $anak->alamat) }}</textarea></div>
                 </div>
-                <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data {{ $anak->name }}</button></div>
+                <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data Anak</button></div>
             </form>
         </div>
         @endforeach
@@ -175,7 +179,7 @@
         <div class="card">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Ganti Password</h3>
-                <p class="section-subtitle">Pastikan akun Anda menggunakan password yang kuat.</p>
+                <p class="section-subtitle">Password default adalah "password123" silahkan ganti password setelah login pertama kali.</p>
             </div>
             <form method="post" action="{{ route('password.update') }}" class="px-6 py-5 space-y-4">
                 @csrf @method('put')

@@ -7,6 +7,8 @@
     </x-slot>
 
     @php
+        $sekolahId = (int) ($skalas->first()?->sekolah_id ?? auth()->user()->sekolah_id ?? 0);
+        $skalaOptions = $skalas->map(fn ($s) => ['code' => $s->code, 'label' => $s->label])->values()->all();
         $filterAspek = $filterAspek ?? null;
         // Kumpulkan anak_id yang sudah punya pencapaian per kegiatan
         $pencapaianAnak = \App\Models\Pencapaian::query()
@@ -46,8 +48,14 @@
             ];
         }
         $anakMap = [];
-        foreach($anaks as $a) {
-            $anakMap[$a->id] = ['id' => $a->id, 'name' => $a->name, 'kelas_id' => $a->kelas_id];
+        foreach ($anaks as $a) {
+            $anakMap[$a->id] = [
+                'id' => $a->id,
+                'name' => $a->name,
+                'nickname' => $a->nickname,
+                'kelas_id' => $a->kelas_id,
+                'display_label' => $a->nickname ? $a->name . ' (' . $a->nickname . ')' : $a->name,
+            ];
         }
         $flags = JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
         $payloadJson = json_encode(['kegiatanData' => $kegiatanData, 'anakMap' => $anakMap, 'editBundles' => $editBundles], $flags);
@@ -56,6 +64,7 @@
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
+            skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
             selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
@@ -272,7 +281,7 @@
                                     <div class="pb-2 border-b border-black/[0.05] last:border-0 last:pb-0">
                                         <div class="flex justify-between items-start gap-2 mb-1">
                                             <span class="text-[10px] font-extrabold text-teal-800 uppercase tracking-tight">{{ $p->matrikulasi->aspek ?: 'Umum' }}</span>
-                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
+                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $sekolahId) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $sekolahId) }}</span>
                                         </div>
                                         <p class="text-[11px] text-gray-600 leading-tight mb-1">{{ $p->matrikulasi->indicator ?? 'Data indikator lama' }}</p>
                                         @if($p->feedback)<p class="text-[10px] text-gray-400 italic bg-white/50 px-2 py-1 rounded border border-black/5 mt-1">"{{ $p->feedback }}"</p>@endif
@@ -330,7 +339,7 @@
                                                     <div class="text-[11px] mt-0.5" style="color:#5A5A5A;">{{ $p->matrikulasi->indicator }}</div>
                                                 @else<div class="font-semibold" style="color:#9E9790;">Data lama (tanpa aspek)</div>@endif
                                                 <div class="mt-1 flex flex-wrap items-center gap-2">
-                                                    <span class="text-xs font-bold px-2 py-0.5 rounded leading-snug" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
+                                                    <span class="text-xs font-bold px-2 py-0.5 rounded leading-snug" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $sekolahId) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $sekolahId) }}</span>
                                                     @if($p->feedback)<span class="text-[11px] italic truncate max-w-[200px]" style="color:#6B6560;" title="{{ $p->feedback }}">"{{ Str::limit($p->feedback, 40) }}"</span>@endif
                                                 </div>
                                             </div>
@@ -355,8 +364,8 @@
         </div>
 
         {{-- CREATE MODAL --}}
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;background:rgba(0,0,0,0.45);">
-            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative overflow-hidden" @click.away="!isCompressing && (showCreateModal=false)">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
+            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative" @click.away="!isCompressing && (showCreateModal=false)">
                 <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
                     <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
@@ -368,13 +377,20 @@
                     @if($filterAnakId)<input type="hidden" name="filter_anak_id" value="{{ $filterAnakId }}">@endif
                     @if($filterAspekRaw !== '')<input type="hidden" name="aspek" value="{{ $filterAspekRaw }}">@endif
                     <div class="modal-header"><h3 class="section-title">Rekam Pencapaian</h3></div>
-                    <div class="modal-body space-y-4 max-h-[75vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div>
-                            <label class="input-label">Anak <span class="text-red-500">*</span></label>
+                            <label class="input-label">Target Siswa <span class="text-red-500">*</span></label>
                             <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''">
-                                <option value="">— Pilih —</option>
-                                @foreach($anaks as $a)<option value="{{ $a->id }}">{{ $a->name }}</option>@endforeach
+                                <option value="">— Pilih Siswa —</option>
+                                @foreach($anaks as $a)
+                                    <option value="{{ $a->id }}">{{ $a->name }}@if($a->nickname) ({{ $a->nickname }})@endif</option>
+                                @endforeach
                             </select>
+                            <p class="text-xs mt-1.5" style="color:#6B6560;" x-show="selectedAnakId && anakMap[selectedAnakId]?.nickname">
+                                <span class="font-semibold">Nama panggilan:</span>
+                                <span x-text="anakMap[selectedAnakId]?.nickname"></span>
+                                <span class="text-[10px] italic" style="color:#9E9790;"> — dipakai saran AI</span>
+                            </p>
                         </div>
                         <div x-show="selectedAnakId">
                             <label class="input-label">Jurnal Kegiatan <span class="text-red-500">*</span></label>
@@ -395,10 +411,9 @@
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="createNilai[String(opt.id)]">
                                     <option value="">— Skala Capaian —</option>
-                                    <option value="BB">BB — Belum Berkembang</option>
-                                    <option value="MB">MB — Mulai Berkembang</option>
-                                    <option value="BSH">BSH — Berkembang Sesuai Harapan</option>
-                                    <option value="BSB">BSB — Berkembang Sangat Baik</option>
+                                    <template x-for="sk in skalaOptions" :key="sk.code">
+                                        <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                    </template>
                                 </select>
                                 <div class="space-y-1.5">
                                     <textarea class="input-field bg-white text-xs" rows="3" :name="'catatan[' + opt.id + ']'"
@@ -447,8 +462,8 @@
         </div>
 
         {{-- EDIT MODAL --}}
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;background:rgba(0,0,0,0.45);">
-            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative overflow-hidden" @click.away="!isCompressing && (showEditModal=false)">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
+            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative" @click.away="!isCompressing && (showEditModal=false)">
                 <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
                     <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
@@ -463,19 +478,20 @@
                     <input type="hidden" name="anak_id" :value="editBundles[editBundleKey]?.anak_id">
                     <input type="hidden" name="kegiatan_id" :value="editBundles[editBundleKey]?.kegiatan_id">
                     <div class="modal-header"><h3 class="section-title">Ubah Hasil Evaluasi</h3></div>
-                    {{-- Context card --}}
-                    <div class="px-5 pt-4 pb-1">
+                    <div class="modal-body space-y-3">
                         <div class="rounded-xl border p-3 flex items-start gap-3" style="background:#F0F9F9; border-color:#1A6B6B22;">
                             <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background:#1A6B6B;">
                                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             </div>
                             <div class="min-w-0">
                                 <div class="font-bold text-sm" style="color:#1A6B6B;" x-text="anakMap[editBundles[editBundleKey]?.anak_id]?.name || 'Siswa'"></div>
+                                <div class="text-xs mt-0.5" style="color:#1A6B6B;"
+                                    x-show="anakMap[editBundles[editBundleKey]?.anak_id]?.nickname">
+                                    Panggilan: <span x-text="anakMap[editBundles[editBundleKey]?.anak_id]?.nickname"></span>
+                                </div>
                                 <div class="text-xs mt-0.5 truncate" style="color:#6B6560;" x-text="(kegiatanData[selectedKegiatanIdEdit]?.date_label || '') + (kegiatanData[selectedKegiatanIdEdit]?.title ? ' · ' + kegiatanData[selectedKegiatanIdEdit]?.title : '')"></div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-body space-y-3 max-h-[60vh] overflow-y-auto">
                         <template x-if="matrikulasiOptionsEdit.length === 0">
                             <div class="text-center py-8 text-sm" style="color:#9E9790;">Memuat data matrikulasi...</div>
                         </template>
@@ -484,10 +500,9 @@
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="editNilai[String(opt.id)]">
                                     <option value="" disabled>— Pilih Capaian —</option>
-                                    <option value="BB">BB — Belum Berkembang</option>
-                                    <option value="MB">MB — Mulai Berkembang</option>
-                                    <option value="BSH">BSH — Berkembang Sesuai Harapan</option>
-                                    <option value="BSB">BSB — Berkembang Sangat Baik</option>
+                                    <template x-for="sk in skalaOptions" :key="'edit-' + sk.code">
+                                        <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                    </template>
                                 </select>
                                 <div class="space-y-1.5">
                                     <textarea class="input-field bg-white text-xs" rows="3"
@@ -551,7 +566,7 @@
         </div>
 
         {{-- DELETE BUNDLE --}}
-        <div x-show="showDeleteBundleModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteBundleModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteBundleModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteBundleModal=false">
                 <form method="POST" action="{{ route('pengajar.pencapaian.destroy-bundle') }}">
                     @csrf @method('DELETE')

@@ -7,6 +7,7 @@ use App\Models\Anak;
 use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Support\FilterAspekPencapaian;
+use App\Support\LabelSkorPencapaian;
 use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -84,7 +85,14 @@ class PencapaianController extends Controller
 
         $filterAktif = $filterTanggalAktif || $filterAnakId !== null || $filterAspek !== null;
 
+        $skalaLegenda = collect();
+        foreach ($sekolahIds as $sid) {
+            $skalaLegenda = $skalaLegenda->merge(LabelSkorPencapaian::optionsForSekolah((int) $sid));
+        }
+        $skalaLegenda = $skalaLegenda->unique('code')->sortBy('sort_order')->values();
+
         return view('orangtua.pencapaian.index', compact(
+            'skalaLegenda',
             'groupedPencapaian',
             'tanggalDari',
             'tanggalSampai',

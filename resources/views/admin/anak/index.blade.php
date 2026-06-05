@@ -165,8 +165,7 @@
         </div>
 
         <!-- CREATE MODAL -->
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal = false">
                 <form action="{{ route('admin.anak.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -175,7 +174,7 @@
                         <p class="section-subtitle">Akun login orang tua akan dibuat otomatis (pass:
                             <code>password123</code>)</p>
                     </div>
-                    <div class="modal-body max-h-[75vh] overflow-y-auto grid grid-cols-2 gap-4">
+                    <div class="modal-body grid grid-cols-2 gap-4">
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak
                             (Siswa)</div>
                         <div class="col-span-1">
@@ -276,15 +275,14 @@
         </div>
 
         <!-- EDIT MODAL -->
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal = false">
                 <form :action="`/admin/anak/${editData.id}`" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header">
                         <h3 class="section-title">Edit Data Anak</h3>
                     </div>
-                    <div class="modal-body max-h-[75vh] overflow-y-auto grid grid-cols-2 gap-4">
+                    <div class="modal-body grid grid-cols-2 gap-4">
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak
                             (Siswa)</div>
                         <div class="col-span-1">
@@ -393,8 +391,7 @@
         </div>
 
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal = false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

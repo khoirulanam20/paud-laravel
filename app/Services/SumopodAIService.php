@@ -22,23 +22,15 @@ class SumopodAIService
      * @param  string  $anakName         Student's name
      * @param  string  $kegiatanTitle    Activity title
      * @param  string  $matrikulasiLabel Matriculation indicator label (aspek: indicator)
-     * @param  string  $score            Achievement scale (BB / MB / BSH / BSB)
+     * @param  string  $scoreLabel       Human-readable scale label (e.g. "Mulai Berkembang (MB)")
      * @return array<string>             Exactly 3 suggestion strings
      */
     public function generateFeedbackSuggestions(
         string $anakName,
         string $kegiatanTitle,
         string $matrikulasiLabel,
-        string $score
+        string $scoreLabel
     ): array {
-        $scoreLabel = match ($score) {
-            'BB'  => 'Belum Berkembang (BB)',
-            'MB'  => 'Mulai Berkembang (MB)',
-            'BSH' => 'Berkembang Sesuai Harapan (BSH)',
-            'BSB' => 'Berkembang Sangat Baik (BSB)',
-            default => $score,
-        };
-
         $prompt = <<<PROMPT
 Kamu adalah guru PAUD / TK yang profesional dan penuh kasih sayang.
 Berikan TEPAT 3 saran umpan balik positif dan konstruktif dalam Bahasa Indonesia untuk dicatat dalam laporan perkembangan siswa.

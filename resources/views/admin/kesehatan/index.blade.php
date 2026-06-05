@@ -196,7 +196,7 @@
 
         <!-- INPUT MODAL -->
         <template x-if="selectedAnak">
-            <div x-show="showInputModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+            <div x-show="showInputModal" class="modal-overlay" style="display:none;">
                 <div class="modal-box max-w-lg" @click.away="showInputModal = false">
                     <form action="{{ route('admin.kesehatan.store') }}" method="POST">
                         @csrf
@@ -267,8 +267,8 @@
         </template>
 
         <!-- HISTORY MODAL -->
-        <div x-show="showHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" style="display:none;" x-transition>
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden transform flex flex-col max-h-[90vh]" @click.away="showHistoryModal = false">
+        <div x-show="showHistoryModal" class="modal-overlay modal-overlay--blur" style="display:none;" x-transition>
+            <div class="modal-box max-w-4xl w-full" @click.away="showHistoryModal = false">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center shrink-0">
                     <div>
                         <h3 class="font-bold text-gray-900">Riwayat Kesehatan: <span x-text="selectedAnak?.name || ''" class="text-[#1A6B6B]"></span></h3>

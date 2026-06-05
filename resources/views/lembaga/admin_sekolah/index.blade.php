@@ -49,7 +49,7 @@
             @if($admins->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $admins->links() }}</div>@endif
         </div>
         <!-- CREATE MODAL -->
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('lembaga.admin-sekolah.store') }}" method="POST">
                     @csrf
@@ -79,7 +79,7 @@
             </div>
         </div>
         <!-- EDIT MODAL -->
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
                 <form :action="editRoute" method="POST">
                     @csrf
@@ -115,7 +115,7 @@
             </div>
         </div>
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

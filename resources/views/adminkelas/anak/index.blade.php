@@ -154,12 +154,12 @@
         </div>
 
         <!-- CREATE MODAL -->
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('adminkelas.anak.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Siswa Baru</h3><p class="section-subtitle">Password login ortu awal: <code>password123</code></p></div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Nama Lengkap Siswa</label><input type="text" name="name" required class="input-field" placeholder="Nama lengkap siswa"></div>
                             <div><label class="input-label">Email Orang Tua (Login)</label><input type="email" name="email" required class="input-field" placeholder="email@ortu.com"></div>
@@ -184,12 +184,12 @@
         </div>
 
         <!-- EDIT MODAL -->
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
                 <form :action="`/adminkelas/anak/${editData.id}`" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Siswa</h3></div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Nama Lengkap Siswa</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
                             <div><label class="input-label">Penempatan Kelas</label><select name="kelas_id" x-model="editData.kelas_id" required class="input-field">@foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach</select></div>
@@ -210,7 +210,7 @@
         </div>
 
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

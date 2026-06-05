@@ -125,7 +125,7 @@
             @if($menus->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $menus->links() }}</div>@endif
         </div>
         <!-- CREATE MODAL -->
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box relative overflow-hidden" @click.away="!isCompressing && (showCreateModal=false)">
                 {{-- Compressing Overlay --}}
                 <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center text-center p-6">
@@ -167,7 +167,7 @@
             </div>
         </div>
         <!-- EDIT MODAL -->
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box relative overflow-hidden" @click.away="!isCompressing && (showEditModal=false)">
                 {{-- Compressing Overlay --}}
                 <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center text-center p-6">
@@ -232,7 +232,7 @@
             </div>
         </div>
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

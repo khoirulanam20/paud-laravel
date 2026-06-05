@@ -161,13 +161,12 @@
         </div>
 
         {{-- DETAIL MODAL --}}
-        <div x-show="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
             <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
                 <div class="modal-header">
                     <h3 class="section-title">Detail Kegiatan: <span x-text="detailData.title"></span></h3>
                 </div>
-                <div class="modal-body max-h-[75vh] overflow-y-auto space-y-5">
+                <div class="modal-body space-y-5">
                     <div class="bg-gray-50 rounded-xl p-4 border" style="border-color:rgba(0,0,0,0.06);">
                         <p class="text-sm" style="color:#5A5A5A;"><strong class="text-gray-800">Tanggal:</strong> <span
                                 x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span>
@@ -291,15 +290,14 @@
         </div>
 
         {{-- CREATE MODAL --}}
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('pengajar.kegiatan.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header">
                         <h3 class="section-title">Buat Entri Jurnal Baru</h3>
                     </div>
-                    <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
+                    <div class="modal-body space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="input-label">Tanggal <span class="text-red-500">*</span></label>
@@ -366,15 +364,14 @@
         </div>
 
         {{-- EDIT MODAL --}}
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
                 <form :action="`/pengajar/kegiatan/${editData.id}`" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header">
                         <h3 class="section-title">Edit Jurnal Kegiatan</h3>
                     </div>
-                    <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
+                    <div class="modal-body space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="input-label">Tanggal <span class="text-red-500">*</span></label>
@@ -439,8 +436,7 @@
         </div>
 
         {{-- DELETE MODAL --}}
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')
@@ -462,8 +458,7 @@
         </div>
 
         {{-- DELETE PHOTO MODAL (Uniform Alert) --}}
-        <div x-show="showPhotoDeleteModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.6);">
+        <div x-show="showPhotoDeleteModal" class="modal-overlay modal-overlay--front" style="display:none;">
             <div x-show="showPhotoDeleteModal" x-transition class="modal-box max-w-sm border-0 shadow-2xl"
                 @click.away="showPhotoDeleteModal=false">
                 <div class="modal-body text-center py-6 pt-8">
@@ -488,8 +483,7 @@
         </div>
 
         {{-- DOCUMENTATION MODAL --}}
-        <div x-show="showDocModal || isUploading" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDocModal || isUploading" class="modal-overlay" style="display:none;">
             <div x-show="showDocModal || isUploading" x-transition class="modal-box relative overflow-hidden max-w-2xl"
                 @click.away="!isUploading && (showDocModal=false)">
                 {{-- Loading Overlay --}}
@@ -539,7 +533,7 @@
                     <div class="modal-header">
                         <h3 class="section-title">Kelola Dokumentasi: <span x-text="editData.title"></span></h3>
                     </div>
-                    <div class="modal-body max-h-[70vh] overflow-y-auto space-y-6 pt-2">
+                    <div class="modal-body space-y-6 pt-2">
                         <div
                             class="p-6 rounded-2xl border-2 border-dashed bg-teal-50/30 flex flex-col items-center justify-center border-teal-200/50">
                             <label

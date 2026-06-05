@@ -140,13 +140,12 @@
         </div>
 
         {{-- DETAIL MODAL --}}
-        <div x-show="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
             <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
                 <div class="modal-header">
                     <h3 class="section-title">Detail: <span x-text="detailData.title"></span></h3>
                 </div>
-                <div class="modal-body max-h-[75vh] overflow-y-auto space-y-5">
+                <div class="modal-body space-y-5">
                     <div class="bg-gray-50 rounded-xl p-4 border" style="border-color:rgba(0,0,0,0.06);">
                         <p class="text-sm" style="color:#5A5A5A;"><strong class="text-gray-800">Tanggal:</strong> <span
                                 x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span>
@@ -235,7 +234,7 @@
         </div>
 
         {{-- CREATE MODAL --}}
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('admin.kegiatan.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -291,7 +290,7 @@
         </div>
 
         {{-- EDIT MODAL --}}
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
                 <form :action="`/admin/kegiatan/${editData.id}`" method="POST">
                     @csrf @method('PUT')
@@ -345,7 +344,7 @@
         </div>
 
         {{-- DELETE MODAL --}}
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')
@@ -361,7 +360,7 @@
         </div>
 
         {{-- DOC MODAL (Documentation) --}}
-        <div x-show="showDocModal || isUploading" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDocModal || isUploading" class="modal-overlay" style="display:none;">
             <div x-show="showDocModal || isUploading" x-transition class="modal-box max-w-2xl" @click.away="!isUploading && (showDocModal=false)">
                 <div x-show="isUploading || isCompressing" class="absolute inset-0 z-[60] bg-white/80 flex flex-col items-center justify-center">
                     <div class="h-10 w-10 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
@@ -415,7 +414,7 @@
         </div>
 
         {{-- PHOTO DELETE CONFIRM MODAL (Simple) --}}
-        <div x-show="showPhotoDeleteModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.6);">
+        <div x-show="showPhotoDeleteModal" class="modal-overlay modal-overlay--front" style="display:none;">
              <div class="modal-box max-w-sm text-center py-8">
                  <div class="h-16 w-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                      <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>

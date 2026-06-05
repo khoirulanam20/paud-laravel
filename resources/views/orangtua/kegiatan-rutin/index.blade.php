@@ -121,7 +121,7 @@
 
         {{-- Modal Detail --}}
         <div x-show="showDetailModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            class="modal-overlay modal-overlay--blur"
             style="display:none;" x-transition>
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform"
                 @click.away="showDetailModal = false">
@@ -181,7 +181,7 @@
 
         {{-- Modal Preview Gambar --}}
         <div x-show="showImageModal"
-            class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            class="modal-overlay modal-overlay--elevated modal-overlay--dark"
             style="display: none;" x-transition @keydown.escape.window="showImageModal = false">
             <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
                 <button

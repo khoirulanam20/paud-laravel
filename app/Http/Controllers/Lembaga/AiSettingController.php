@@ -22,10 +22,12 @@ class AiSettingController extends Controller
         $lembaga_id = auth()->user()->lembaga_id;
         $aiSetting  = AiSetting::where('lembaga_id', $lembaga_id)->first();
 
-        if (! $aiSetting || ! $aiSetting->ai_api_key) {
+        if (! $aiSetting || ! $aiSetting->hasValidApiKey()) {
             return response()->json([
                 'ok'    => false,
-                'error' => 'API Key belum dikonfigurasi. Simpan pengaturan lebih dulu.',
+                'error' => $aiSetting?->apiKeyNeedsReentry()
+                    ? 'API Key perlu disimpan ulang (enkripsi tidak valid).'
+                    : 'API Key belum dikonfigurasi. Simpan pengaturan lebih dulu.',
             ], 422);
         }
 
@@ -35,7 +37,7 @@ class AiSettingController extends Controller
                 'Anisa',
                 'Mengenal Warna',
                 'Kognitif: Mampu menyebutkan minimal 3 warna',
-                'BSH'
+                'Berkembang Sesuai Harapan (BSH)'
             );
             return response()->json([
                 'ok'          => true,

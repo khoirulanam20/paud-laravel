@@ -49,12 +49,12 @@
             @if($pengajars->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $pengajars->links() }}</div>@endif
         </div>
         <!-- CREATE MODAL -->
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('admin.pengajar.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Pengajar Baru</h3><p class="section-subtitle">Password login awal: <code>password123</code></p></div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div>
                             <label class="input-label">Nama Lengkap</label>
                             <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Nama lengkap pengajar" value="{{ old('name') }}">
@@ -118,12 +118,12 @@
             </div>
         </div>
         <!-- EDIT MODAL -->
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
                 <form :action="`/admin/pengajar/${editData.id}`" method="POST" enctype="multipart/form-data">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Pengajar</h3></div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div>
                             <label class="input-label">Nama Lengkap</label>
                             <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
@@ -169,7 +169,7 @@
             </div>
         </div>
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

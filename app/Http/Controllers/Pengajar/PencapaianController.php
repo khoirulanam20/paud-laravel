@@ -20,7 +20,6 @@ use App\Http\Traits\CanUploadImage;
 class PencapaianController extends Controller
 {
     use CanUploadImage;
-    private const SCORES = LabelSkorPencapaian::CODES;
 
     private function getPengajar()
     {
@@ -40,6 +39,7 @@ class PencapaianController extends Controller
     {
         $pengajar = $this->getPengajar();
         $sekolah_id = $pengajar->sekolah_id;
+        $skalas = LabelSkorPencapaian::optionsForSekolah((int) $sekolah_id);
 
         $range = TanggalRentang::dariSampaiQuery($request, null);
         $tanggalDari = $range ? $range[0] : null;
@@ -151,6 +151,7 @@ class PencapaianController extends Controller
         $availableKelas = $pengajar->kelas()->orderBy('name')->get();
 
         return view('pengajar.pencapaian.index', compact(
+            'skalas',
             'groupedPencapaian',
             'editBundles',
             'anaks',
@@ -169,12 +170,13 @@ class PencapaianController extends Controller
     public function sync(Request $request)
     {
         $pengajar = $this->getPengajar();
+        $scoreCodes = LabelSkorPencapaian::codesForSekolah((int) $pengajar->sekolah_id);
 
         $request->validate([
             'anak_id' => 'required|exists:anaks,id',
             'kegiatan_id' => 'required|exists:kegiatans,id',
             'nilai' => 'required|array',
-            'nilai.*' => ['required', 'string', Rule::in(self::SCORES)],
+            'nilai.*' => ['required', 'string', Rule::in($scoreCodes)],
             'catatan' => 'nullable|array',
             'catatan.*' => 'nullable|string|max:2000',
             'photo' => 'nullable|image|max:2048',

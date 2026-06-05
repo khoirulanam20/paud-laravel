@@ -149,8 +149,8 @@
         </div>
 
         {{-- Modal Update --}}
-        <div x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" style="display:none;" x-transition>
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform flex flex-col max-h-[90vh]" @click.away="openModal = false">
+        <div x-show="openModal" class="modal-overlay modal-overlay--blur" style="display:none;" x-transition>
+            <div class="modal-box max-w-lg w-full" @click.away="openModal = false">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center shrink-0">
                     <h3 class="font-bold text-gray-900" x-text="'Update Kegiatan: ' + (selectedAnak?.name || '')"></h3>
                     <button @click="openModal = false" class="text-gray-400 hover:text-gray-600 transition">
@@ -197,8 +197,8 @@
         </div>
 
         {{-- Modal Detail --}}
-        <div x-show="openDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" style="display:none;" x-transition>
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden transform flex flex-col max-h-[90vh]" @click.away="openDetailModal = false">
+        <div x-show="openDetailModal" class="modal-overlay modal-overlay--blur" style="display:none;" x-transition>
+            <div class="modal-box max-w-4xl w-full" @click.away="openDetailModal = false">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center shrink-0">
                     <div>
                         <h3 class="font-bold text-gray-900" x-text="'Riwayat Kegiatan: ' + (selectedAnak?.name || '')"></h3>

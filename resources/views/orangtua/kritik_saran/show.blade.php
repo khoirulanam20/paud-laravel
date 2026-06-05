@@ -60,7 +60,7 @@
 
         {{-- Modal Preview Gambar --}}
         <div x-show="showImageModal" 
-             class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+             class="modal-overlay modal-overlay--elevated modal-overlay--dark"
              style="display: none;"
              x-transition
              @keydown.escape.window="showImageModal = false">

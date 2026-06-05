@@ -108,7 +108,7 @@
         @endif
 
         <!-- Modal kirim/edit masukan -->
-        <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none; background: rgba(0,0,0,0.45);">
+        <div x-show="showModal" class="modal-overlay" style="display:none;">
             <div x-show="showModal" x-transition class="modal-box max-w-lg w-full" @click.away="showModal = false">
                 <form method="POST" :action="isEdit ? '/orangtua/kritik-saran/' + editId : '{{ route('orangtua.kritik-saran.store') }}'" enctype="multipart/form-data">
                     @csrf

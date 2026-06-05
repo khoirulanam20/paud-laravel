@@ -406,8 +406,8 @@
                                             'pencapaians' => $keg->pencapaians->map(fn($p) => [
                                                 'aspek' => $p->matrikulasi->aspek ?? '',
                                                 'indicator' => $p->matrikulasi->indicator ?? '',
-                                                'score_label' => \App\Support\LabelSkorPencapaian::label($p->score),
-                                                'score_color' => \App\Support\LabelSkorPencapaian::color($p->score),
+                                                'score_label' => \App\Support\LabelSkorPencapaian::label($p->score, $p->anak?->sekolah_id),
+                                                'score_color' => \App\Support\LabelSkorPencapaian::color($p->score, $p->anak?->sekolah_id),
                                                 'feedback' => $p->feedback,
                                                 'anak_name' => $p->anak->name ?? '-'
                                             ])->values()->all()
@@ -482,7 +482,7 @@
                                             </div>
                                             <p class="text-xs font-semibold text-gray-500 mb-1">{{ $p->anak->name ?? '' }}</p>
                                             <h4 class="font-bold text-[15px] text-gray-900 leading-tight mb-2">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
-                                            <span class="inline-block badge shrink-0 text-center text-[10px] font-bold py-1 px-2.5 rounded-full" style="background: {{ \App\Support\LabelSkorPencapaian::color($p->score) }}; color: white; border: none;">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
+                                            <span class="inline-block badge shrink-0 text-center text-[10px] font-bold py-1 px-2.5 rounded-full" style="background: {{ \App\Support\LabelSkorPencapaian::color($p->score, $p->anak?->sekolah_id) }}; color: white; border: none;">{{ \App\Support\LabelSkorPencapaian::label($p->score, $p->anak?->sekolah_id) }}</span>
                                         </div>
                                     </div>
                                 @endif
@@ -497,7 +497,7 @@
             </div>
 
             {{-- Detail Activity Modal --}}
-            <div x-show="showActivityModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+            <div x-show="showActivityModal" class="modal-overlay" style="display:none;">
                 <div x-show="showActivityModal" x-transition class="modal-box max-w-2xl w-full" @click.away="showActivityModal=false">
                     <div class="modal-header flex justify-between items-center">
                         <h3 class="section-title mb-0" x-text="selectedActivity?.title || 'Detail Kegiatan'"></h3>
@@ -505,7 +505,7 @@
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
-                    <div class="modal-body space-y-5 max-h-[75vh] overflow-y-auto">
+                    <div class="modal-body space-y-5">
                         <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold uppercase tracking-wider" style="color: #9E9790;">
                             <span class="flex items-center gap-1"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a12 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span x-text="selectedActivity?.date"></span></span>
                             <span class="flex items-center gap-1"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg><span x-text="selectedActivity?.pengajar"></span></span>
@@ -547,7 +547,7 @@
             </div>
 
             {{-- Modal Kegiatan Rutin --}}
-            <div x-show="showRutinModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+            <div x-show="showRutinModal" class="modal-overlay" style="display:none;">
                 <div x-show="showRutinModal" x-transition class="modal-box max-w-lg w-full" @click.away="showRutinModal=false">
                     <div class="modal-header flex justify-between items-center" style="border-bottom: 2px solid #3B82F6;">
                         <div class="flex items-center gap-2">
@@ -560,7 +560,7 @@
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         {{-- Info Anak & Tanggal --}}
                         <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold" style="color: #9E9790;">
                             <span class="flex items-center gap-1.5">
@@ -605,7 +605,7 @@
 
             {{-- Modal Preview Gambar --}}
             <div x-show="showImageModal" 
-                 class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                 class="modal-overlay modal-overlay--elevated modal-overlay--dark"
                  style="display: none;"
                  x-transition
                  @keydown.escape.window="showImageModal = false">

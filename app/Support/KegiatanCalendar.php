@@ -63,12 +63,14 @@ class KegiatanCalendar
             'pengajar_name' => $k->pengajar->name ?? '-',
             'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
             'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
-            'pencapaians' => $k->pencapaians->map(function ($p) {
+            'pencapaians' => $k->pencapaians->map(function ($p) use ($k) {
+                $sekolahId = (int) ($k->sekolah_id ?? $p->anak?->sekolah_id ?? 0);
+
                 return [
                     'id' => $p->id,
                     'score' => $p->score,
-                    'score_label' => LabelSkorPencapaian::label($p->score),
-                    'score_color' => LabelSkorPencapaian::color($p->score),
+                    'score_label' => LabelSkorPencapaian::label($p->score, $sekolahId ?: null),
+                    'score_color' => LabelSkorPencapaian::color($p->score, $sekolahId ?: null),
                     'feedback' => $p->feedback,
                     'aspek' => $p->matrikulasi->aspek ?? null,
                     'indicator' => $p->matrikulasi->indicator ?? null,
@@ -134,12 +136,14 @@ class KegiatanCalendar
             'pengajar_name' => $k->pengajar->name ?? '-',
             'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
             'kelas_name' => $k->kelas->name ?? '-',
-            'pencapaians' => $pencapaians->map(function ($p) {
+            'pencapaians' => $pencapaians->map(function ($p) use ($k) {
+                $sekolahId = (int) ($k->sekolah_id ?? $p->anak?->sekolah_id ?? 0);
+
                 return [
                     'id' => $p->id,
                     'score' => $p->score,
-                    'score_label' => LabelSkorPencapaian::label($p->score),
-                    'score_color' => LabelSkorPencapaian::color($p->score),
+                    'score_label' => LabelSkorPencapaian::label($p->score, $sekolahId ?: null),
+                    'score_color' => LabelSkorPencapaian::color($p->score, $sekolahId ?: null),
                     'feedback' => $p->feedback,
                     'aspek' => $p->matrikulasi->aspek ?? null,
                     'indicator' => $p->matrikulasi->indicator ?? null,
@@ -176,12 +180,14 @@ class KegiatanCalendar
             'pengajar_name' => $k->pengajar->name ?? '-',
             'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
             'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
-            'pencapaians' => $k->pencapaians->map(function ($p) {
+            'pencapaians' => $k->pencapaians->map(function ($p) use ($k) {
+                $sekolahId = (int) ($k->sekolah_id ?? $p->anak?->sekolah_id ?? 0);
+
                 return [
                     'id' => $p->id,
                     'score' => $p->score,
-                    'score_label' => LabelSkorPencapaian::label($p->score),
-                    'score_color' => LabelSkorPencapaian::color($p->score),
+                    'score_label' => LabelSkorPencapaian::label($p->score, $sekolahId ?: null),
+                    'score_color' => LabelSkorPencapaian::color($p->score, $sekolahId ?: null),
                     'feedback' => $p->feedback,
                     'aspek' => $p->matrikulasi->aspek ?? null,
                     'indicator' => $p->matrikulasi->indicator ?? null,

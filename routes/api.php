@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
 
         Route::middleware('role:Orang Tua')->prefix('orang-tua')->group(function () {
             Route::get('anak', [OrtuAnakController::class, 'index']);
+            Route::patch('anak/{anak}/nickname', [OrtuAnakController::class, 'updateNickname']);
             Route::get('kegiatan', [OrtuKegiatanController::class, 'index']);
             Route::get('menu-makanan', [OrtuMenuMakananController::class, 'index']);
             Route::get('pencapaian', [OrtuPencapaianController::class, 'index']);

@@ -79,18 +79,16 @@
                 <p class="pt-4">Nilai mengacu pada penilaian perkembangan anak usia dini (biasanya dicatat per indikator
                     matrikulasi).</p>
                 <ul class="space-y-2 pl-1">
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug"
-                            style="background:#FAD7D2;">Belum Berkembang</span> — Anak belum menunjukkan perilaku sesuai
-                        indikator yang diharapkan pada tahap ini.</li>
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug"
-                            style="background:#FDE9BC;">Mulai Berkembang</span> — Anak mulai menunjukkan kemampuan;
-                        masih perlu bimbingan dan pengulangan.</li>
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug"
-                            style="background:#D0E8E8;">Berkembang Sesuai Harapan</span> — Anak sudah konsisten
-                        menunjukkan perilaku sesuai indikator.</li>
-                    <li><span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug"
-                            style="background:#C5E8C5;">Berkembang Sangat Baik</span> — Anak menunjukkan kemampuan di
-                        atas harapan umur/tahap untuk indikator tersebut.</li>
+                    @forelse($skalaLegenda as $sk)
+                    <li>
+                        <span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug"
+                            style="background:{{ $sk->color }};">{{ $sk->label }}</span>
+                        <span class="text-gray-500">({{ $sk->code }})</span>
+                        — Penilaian capaian pada indikator matrikulasi.
+                    </li>
+                    @empty
+                    <li class="text-gray-500">Belum ada skala capaian yang dikonfigurasi sekolah.</li>
+                    @endforelse
                 </ul>
             </div>
         </details>
@@ -190,7 +188,7 @@
                                                         <td class="px-3 py-2 align-top">
                                                             <span
                                                                 class="text-xs font-bold px-2 py-1 rounded inline-block leading-snug max-w-[12rem]"
-                                                                style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
+                                                                style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $p->anak?->sekolah_id) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $p->anak?->sekolah_id) }}</span>
                                                         </td>
                                                         <td class="px-3 py-2 text-xs align-top" style="color:#6B6560;">
                                                             {{ $p->feedback ?: '—' }}</td>
@@ -230,8 +228,8 @@
                                                 {{-- Skala Pencapaian --}}
                                                 <div>
                                                     <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Skala Pencapaian</span>
-                                                    <span class="text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter inline-block leading-snug" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">
-                                                        {{ \App\Support\LabelSkorPencapaian::label($p->score) }}
+                                                    <span class="text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter inline-block leading-snug" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $p->anak?->sekolah_id) }};">
+                                                        {{ \App\Support\LabelSkorPencapaian::label($p->score, $p->anak?->sekolah_id) }}
                                                     </span>
                                                 </div>
 
@@ -261,7 +259,7 @@
 
         {{-- Modal Preview Gambar --}}
         <div x-show="showImageModal" 
-             class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+             class="modal-overlay modal-overlay--elevated modal-overlay--dark"
              style="display: none;"
              x-transition
              @keydown.escape.window="showImageModal = false">

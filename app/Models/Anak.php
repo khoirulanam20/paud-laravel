@@ -12,6 +12,7 @@ class Anak extends Model
         'sekolah_id',
         'kelas_id',
         'name',
+        'nickname',
         'dob',
         'parent_name',
         'photo',
@@ -65,5 +66,15 @@ class Anak extends Model
     public function pencapaians(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Pencapaian::class);
+    }
+
+    /**
+     * Nama panggilan untuk AI feedback: nickname jika ada, else nama lengkap.
+     */
+    public function displayName(): string
+    {
+        $nick = $this->nickname ? trim($this->nickname) : null;
+
+        return $nick ?: $this->name;
     }
 }

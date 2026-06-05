@@ -91,12 +91,12 @@
         </div>
 
         <!-- CREATE MODAL -->
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('admin.kelas.store') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Buat Kelas Baru</h3></div>
-                    <div class="modal-body max-h-[75vh] overflow-y-auto space-y-4">
+                    <div class="modal-body space-y-4">
                         <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Kelas</div>
                         <div>
                             <label class="input-label">Nama Kelas</label>
@@ -123,7 +123,7 @@
         </div>
 
         <!-- EDIT MODAL -->
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
                 <form :action="`/admin/kelas/${editData.id}`" method="POST">
                     @csrf @method('PUT')
@@ -165,8 +165,8 @@
         </div>
 
         <!-- DETAIL SISWA (MODAL) -->
-        <div x-show="showDetailModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
-            <div x-show="showDetailModal" x-transition class="modal-box max-w-4xl w-full max-h-[min(90vh,920px)] flex flex-col min-h-0 overflow-hidden" @click.away="closeDetail()">
+        <div x-show="showDetailModal" class="modal-overlay modal-overlay--elevated" style="display:none;">
+            <div x-show="showDetailModal" x-transition class="modal-box max-w-4xl w-full" @click.away="closeDetail()">
                 <div class="modal-header shrink-0 flex items-start justify-between gap-3">
                     <div>
                         <h3 class="section-title">Detail kelas</h3>
@@ -176,7 +176,7 @@
                         <svg class="h-5 w-5" style="color:#5A5A5A;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <div x-ref="detailScroll" class="modal-detail-scrollbar modal-body flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-y-contain scroll-smooth pt-2 max-h-[min(65vh,calc(100dvh-12rem))] [scrollbar-gutter:stable]">
+                <div x-ref="detailScroll" class="modal-body overflow-x-auto scroll-smooth pt-2 [scrollbar-gutter:stable]">
                     <div x-show="detailLoading" class="flex flex-col items-center justify-center py-16 gap-3" style="display:none; color:#5A5A5A;">
                         <svg class="h-8 w-8 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         <span class="text-sm">Memuat daftar siswa…</span>
@@ -191,7 +191,7 @@
         </div>
 
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

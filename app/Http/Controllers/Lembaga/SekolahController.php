@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Lembaga;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sekolah;
+use App\Models\SkalaPencapaian;
 use Illuminate\Http\Request;
 
 class SekolahController extends Controller
@@ -23,12 +24,14 @@ class SekolahController extends Controller
             'phone' => 'nullable|string|max:20',
         ]);
 
-        Sekolah::create([
+        $sekolah = Sekolah::create([
             'lembaga_id' => auth()->user()->lembaga_id,
             'name' => $request->name,
             'address' => $request->address,
             'phone' => $request->phone,
         ]);
+
+        SkalaPencapaian::seedDefaultsForSekolah($sekolah->id);
 
         return redirect()->route('lembaga.sekolah.index')->with('success', 'Sekolah berhasil ditambahkan.');
     }

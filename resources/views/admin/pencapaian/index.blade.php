@@ -11,6 +11,8 @@
     </x-slot>
 
     @php
+        $sekolahId = (int) auth()->user()->sekolah_id;
+        $skalaOptions = $skalas->map(fn ($s) => ['code' => $s->code, 'label' => $s->label])->values()->all();
         $filterAspek = $filterAspek ?? null;
         // Kumpulkan anak_id yang sudah punya pencapaian per kegiatan
         $pencapaianAnak = \App\Models\Pencapaian::query()
@@ -51,7 +53,13 @@
         }
         $anakMap = [];
         foreach ($anaks as $a) {
-            $anakMap[$a->id] = ['id' => $a->id, 'name' => $a->name, 'kelas_id' => $a->kelas_id];
+            $anakMap[$a->id] = [
+                'id' => $a->id,
+                'name' => $a->name,
+                'nickname' => $a->nickname,
+                'kelas_id' => $a->kelas_id,
+                'display_label' => $a->nickname ? $a->name . ' (' . $a->nickname . ')' : $a->name,
+            ];
         }
         $flags = JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
         $payloadJson = json_encode(['kegiatanData' => $kegiatanData, 'anakMap' => $anakMap, 'editBundles' => $editBundles], $flags);
@@ -61,6 +69,7 @@
     @endphp
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+            skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
             selectedKelasIdCreate: '', selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
@@ -361,7 +370,7 @@
                                                 {{ $p->matrikulasi->indicator ?? '—' }}
                                                 <div class="mt-1 flex items-center gap-2">
                                                     <span class="font-bold px-1.5 py-0.5 rounded"
-                                                        style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score) }}</span>
+                                                        style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $sekolahId) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $sekolahId) }}</span>
                                                     @if($p->feedback)<span class="italic text-[#6B6560] truncate max-w-[180px]"
                                                     title="{{ $p->feedback }}">"{{ $p->feedback }}"</span>@endif
                                                 </div>
@@ -392,8 +401,7 @@
         </div>
 
         {{-- CREATE MODAL --}}
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none;background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative"
                 @click.away="!isCompressing && (showCreateModal=false)">
                 <div x-show="isCompressing"
@@ -408,7 +416,7 @@
                     <div class="modal-header">
                         <h3 class="section-title">Rekam Pencapaian</h3>
                     </div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div>
                             <label class="input-label">Filter Kelas</label>
                             <select class="input-field" x-model="selectedKelasIdCreate"
@@ -425,9 +433,14 @@
                                 @change="selectedKegiatanId = ''">
                                 <option value="">— Pilih Siswa —</option>
                                 <template x-for="a in filteredAnaks" :key="a.id">
-                                    <option :value="a.id" x-text="a.name"></option>
+                                    <option :value="a.id" x-text="a.display_label"></option>
                                 </template>
                             </select>
+                            <p class="text-xs mt-1.5" style="color:#6B6560;" x-show="selectedAnakId && anakMap[selectedAnakId]?.nickname">
+                                <span class="font-semibold">Nama panggilan:</span>
+                                <span x-text="anakMap[selectedAnakId]?.nickname"></span>
+                                <span class="text-[10px] italic" style="color:#9E9790;"> — dipakai saran AI</span>
+                            </p>
                         </div>
                         <div x-show="selectedAnakId">
                             <label class="input-label">Jurnal Kegiatan</label>
@@ -452,10 +465,9 @@
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'"
                                     x-model="createNilai[String(opt.id)]">
                                     <option value="">— Skala Capaian —</option>
-                                    <option value="BB">BB (Belum Berkembang)</option>
-                                    <option value="MB">MB (Mulai Berkembang)</option>
-                                    <option value="BSH">BSH (Berkembang Sesuai Harapan)</option>
-                                    <option value="BSB">BSB (Berkembang Sangat Baik)</option>
+                                    <template x-for="sk in skalaOptions" :key="sk.code">
+                                        <option :value="sk.code" x-text="sk.code + ' (' + sk.label + ')'"></option>
+                                    </template>
                                 </select>
                                 <div class="space-y-1.5">
                                     <textarea class="input-field bg-white text-xs" rows="3"
@@ -518,8 +530,7 @@
         </div>
 
         {{-- EDIT MODAL --}}
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none;background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative"
                 @click.away="!isCompressing && (showEditModal=false)">
                 <div x-show="isCompressing"
@@ -537,8 +548,7 @@
                     <div class="modal-header">
                         <h3 class="section-title">Ubah Hasil Evaluasi</h3>
                     </div>
-                    {{-- Context: student name & activity --}}
-                    <div class="px-5 pt-4 pb-1">
+                    <div class="modal-body space-y-3">
                         <div class="rounded-xl border p-3 flex items-start gap-3"
                             style="background:#F0F9F9; border-color:#1A6B6B22;">
                             <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
@@ -552,13 +562,15 @@
                             <div class="min-w-0">
                                 <div class="font-bold text-sm" style="color:#1A6B6B;"
                                     x-text="anakMap[editBundles[editBundleKey]?.anak_id]?.name || 'Siswa'"></div>
+                                <div class="text-xs mt-0.5" style="color:#1A6B6B;"
+                                    x-show="anakMap[editBundles[editBundleKey]?.anak_id]?.nickname">
+                                    Panggilan: <span x-text="anakMap[editBundles[editBundleKey]?.anak_id]?.nickname"></span>
+                                </div>
                                 <div class="text-xs mt-0.5 truncate" style="color:#6B6560;"
                                     x-text="(kegiatanData[selectedKegiatanIdEdit]?.date_label || '') + (kegiatanData[selectedKegiatanIdEdit]?.title ? ' · ' + kegiatanData[selectedKegiatanIdEdit]?.title : '')">
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-body space-y-3 max-h-[60vh] overflow-y-auto">
                         <template x-if="matrikulasiOptionsEdit.length === 0">
                             <div class="text-center py-8 text-sm" style="color:#9E9790;">Memuat data matrikulasi...
                             </div>
@@ -569,10 +581,9 @@
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'"
                                     x-model="editNilai[String(opt.id)]">
                                     <option value="" disabled>— Pilih Capaian —</option>
-                                    <option value="BB">BB — Belum Berkembang</option>
-                                    <option value="MB">MB — Mulai Berkembang</option>
-                                    <option value="BSH">BSH — Berkembang Sesuai Harapan</option>
-                                    <option value="BSB">BSB — Berkembang Sangat Baik</option>
+                                    <template x-for="sk in skalaOptions" :key="'edit-' + sk.code">
+                                        <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                    </template>
                                 </select>
                                 <div class="space-y-1.5">
                                     <textarea class="input-field bg-white text-xs" rows="3"
@@ -662,8 +673,7 @@
         </div>
 
         {{-- DELETE MODAL --}}
-        <div x-show="showDeleteBundleModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none;background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteBundleModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteBundleModal" x-transition class="modal-box max-w-sm"
                 @click.away="showDeleteBundleModal=false">
                 <form method="POST" action="{{ route('admin.pencapaian.destroy-bundle') }}">

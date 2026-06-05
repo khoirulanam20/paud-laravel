@@ -268,8 +268,8 @@
                                                     <div class="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-1.5">
                                                         <div class="flex items-center justify-between gap-2">
                                                             <span class="text-[10px] font-black text-teal-800 uppercase">{{ $p->matrikulasi->aspek ?: 'Umum' }}</span>
-                                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score) }};">
-                                                                {{ \App\Support\LabelSkorPencapaian::label($p->score) }}
+                                                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $anak->sekolah_id) }};">
+                                                                {{ \App\Support\LabelSkorPencapaian::label($p->score, $anak->sekolah_id) }}
                                                             </span>
                                                         </div>
                                                         <p class="text-xs font-medium text-gray-600 leading-tight">

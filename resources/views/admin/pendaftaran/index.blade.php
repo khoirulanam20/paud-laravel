@@ -126,7 +126,7 @@
         </div>
 
         {{-- REJECT MODAL --}}
-        <div x-show="showRejectModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showRejectModal" class="modal-overlay" style="display:none;">
             <div x-show="showRejectModal" x-transition class="modal-box max-w-md" @click.away="showRejectModal=false">
                 <form :action="rejectRoute" method="POST">
                     @csrf

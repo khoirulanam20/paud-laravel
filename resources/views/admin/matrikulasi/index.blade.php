@@ -62,13 +62,13 @@
         </div>
 
         {{-- DETAIL MODAL --}}
-        <div x-show="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45" style="display:none;">
+        <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
             <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
                 <div class="modal-header flex items-center justify-between">
                     <h3 class="section-title">Detail Indikator Matrikulasi</h3>
                     <button @click="showDetailModal=false" class="text-gray-400 hover:text-gray-600"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
-                <div class="modal-body space-y-5 max-h-[75vh] overflow-y-auto">
+                <div class="modal-body space-y-5">
                     <div class="grid grid-cols-2 gap-4">
                         <div><p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Aspek / Bidang</p><p class="text-sm font-semibold text-gray-900" x-text="detailData.aspek || 'Umum'"></p></div>
                         <div><p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Indikator</p><p class="text-sm font-semibold text-gray-900" x-text="detailData.indicator"></p></div>
@@ -81,12 +81,12 @@
             </div>
         </div>
 
-        <div x-show="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
             <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
                 <form action="{{ route('admin.matrikulasi.store') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Tambah indikator</h3></div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div>
                             <label class="input-label">Aspek / faktor</label>
                             <input type="text" name="aspek" class="input-field @error('aspek') border-red-500 @enderror" placeholder="Contoh: Kognitif, Motorik halus…" value="{{ old('aspek') }}">
@@ -117,12 +117,12 @@
                 </form>
             </div>
         </div>
-        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
             <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
                 <form :action="`/admin/matrikulasi/${editData.id}`" method="POST">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit indikator</h3></div>
-                    <div class="modal-body space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="modal-body space-y-4">
                         <div>
                             <label class="input-label">Aspek / faktor</label>
                             <input type="text" name="aspek" x-model="editData.aspek" class="input-field @error('aspek') border-red-500 @enderror">
@@ -153,7 +153,7 @@
                 </form>
             </div>
         </div>
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

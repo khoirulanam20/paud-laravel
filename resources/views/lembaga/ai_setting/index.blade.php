@@ -51,13 +51,18 @@
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
             </div>
         @endif
+        @if($aiSetting?->apiKeyNeedsReentry())
+            <div class="alert-danger mb-5">
+                API Key tersimpan tidak dapat dibaca (biasanya karena <code>APP_KEY</code> berubah). Masukkan API Key Sumopod lagi lalu simpan.
+            </div>
+        @endif
 
         {{-- Status Banner --}}
         <div class="mb-6 rounded-2xl border p-5 flex items-start gap-4"
-            style="background:{{ $aiSetting && $aiSetting->ai_api_key ? '#D0E8E8' : '#FEF9EC' }}; border-color: {{ $aiSetting && $aiSetting->ai_api_key ? '#1A6B6B33' : '#F0B84233' }};">
+            style="background:{{ $aiSetting?->hasValidApiKey() ? '#D0E8E8' : '#FEF9EC' }}; border-color: {{ $aiSetting?->hasValidApiKey() ? '#1A6B6B33' : '#F0B84233' }};">
             <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
-                style="background:{{ $aiSetting && $aiSetting->ai_api_key ? '#1A6B6B' : '#F0B842' }};">
-                @if($aiSetting && $aiSetting->ai_api_key)
+                style="background:{{ $aiSetting?->hasValidApiKey() ? '#1A6B6B' : '#F0B842' }};">
+                @if($aiSetting?->hasValidApiKey())
                     <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -69,10 +74,10 @@
             </div>
             <div>
                 <div class="font-bold text-sm" style="color:#2C2C2C;">
-                    {{ $aiSetting && $aiSetting->ai_api_key ? 'AI Aktif — API Key sudah dikonfigurasi' : 'AI Belum Dikonfigurasi' }}
+                    {{ $aiSetting?->hasValidApiKey() ? 'AI Aktif — API Key sudah dikonfigurasi' : 'AI Belum Dikonfigurasi' }}
                 </div>
                 <div class="text-xs mt-1" style="color:#6B6560;">
-                    @if($aiSetting && $aiSetting->ai_api_key)
+                    @if($aiSetting?->hasValidApiKey())
                         Model: <strong>{{ $aiSetting->ai_model ?? '-' }}</strong> · Provider: Sumopod
                     @else
                         Masukkan API Key dan nama model dari Sumopod untuk mengaktifkan fitur saran umpan balik AI pada pencapaian siswa.
@@ -141,7 +146,7 @@
                         <label class="input-label" for="ai_api_key">API Key</label>
                         <input type="password" id="ai_api_key" name="ai_api_key"
                             class="input-field @error('ai_api_key') border-red-500 @enderror"
-                            placeholder="{{ $aiSetting && $aiSetting->ai_api_key ? '••••••••••••••••••• (terisi — kosongkan jika tidak ingin mengubah)' : 'Masukkan API Key dari ai.sumopod.com' }}"
+                            placeholder="{{ $aiSetting?->apiKeyNeedsReentry() ? 'Masukkan ulang API Key dari ai.sumopod.com' : ($aiSetting?->hasValidApiKey() ? '••••••••••••••••••• (terisi — kosongkan jika tidak ingin mengubah)' : 'Masukkan API Key dari ai.sumopod.com') }}"
                             autocomplete="new-password">
                         @error('ai_api_key')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         <p class="text-[11px] mt-1" style="color:#9E9790;">API Key disimpan terenkripsi. Kosongkan jika tidak ingin mengubah key yang sudah tersimpan.</p>

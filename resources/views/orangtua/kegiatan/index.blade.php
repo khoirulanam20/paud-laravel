@@ -29,13 +29,12 @@
         </div>
 
         {{-- DETAIL MODAL --}}
-        <div x-show="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="display:none; background:rgba(0,0,0,0.45);">
+        <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
             <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
                 <div class="modal-header">
                     <h3 class="section-title">Detail: <span x-text="detailData.title"></span></h3>
                 </div>
-                <div class="modal-body max-h-[75vh] overflow-y-auto space-y-5">
+                <div class="modal-body space-y-5">
                     <div class="bg-gray-50 rounded-xl p-4 border" style="border-color:rgba(0,0,0,0.06);">
                         <p class="text-sm" style="color:#5A5A5A;"><strong class="text-gray-800">Tanggal:</strong> <span
                                 x-text="detailData.date ? new Date(detailData.date + 'T12:00:00').toLocaleDateString('id-ID') : '-'"></span>

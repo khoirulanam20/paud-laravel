@@ -142,7 +142,7 @@
         </div>
 
         {{-- Modal Update --}}
-        <div x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" style="display:none;" x-transition>
+        <div x-show="openModal" class="modal-overlay modal-overlay--blur" style="display:none;" x-transition>
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform" @click.away="openModal = false">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                     <h3 class="font-bold text-gray-900" x-text="'Update Pencapaian: ' + (selectedAnak?.name || '')"></h3>
@@ -193,8 +193,8 @@
         </div>
 
         {{-- Modal Detail --}}
-        <div x-show="openDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" style="display:none;" x-transition>
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform flex flex-col max-h-[90vh]" @click.away="openDetailModal = false">
+        <div x-show="openDetailModal" class="modal-overlay modal-overlay--blur" style="display:none;" x-transition>
+            <div class="modal-box max-w-2xl w-full" @click.away="openDetailModal = false">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center shrink-0">
                     <div>
                         <h3 class="font-bold text-gray-900" x-text="'Riwayat Kegiatan: ' + (selectedAnak?.name || '')"></h3>

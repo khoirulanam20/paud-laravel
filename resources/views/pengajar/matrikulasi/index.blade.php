@@ -33,13 +33,13 @@
         </div>
 
         {{-- DETAIL MODAL --}}
-        <div x-show="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45" style="display:none;" x-transition>
+        <div x-show="showDetailModal" class="modal-overlay" style="display:none;" x-transition>
             <div class="modal-box max-w-2xl" @click.away="showDetailModal=false">
                 <div class="modal-header flex items-center justify-between">
                     <h3 class="section-title">Detail Indikator Matrikulasi</h3>
                     <button @click="showDetailModal=false" class="text-gray-400 hover:text-gray-600"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
-                <div class="modal-body space-y-5 max-h-[75vh] overflow-y-auto pt-2">
+                <div class="modal-body space-y-5 pt-2">
                     <div class="grid grid-cols-2 gap-4">
                         <div><p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Aspek / Bidang</p><p class="text-sm font-semibold text-gray-900" x-text="detailData.aspek || 'Umum'"></p></div>
                         <div><p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Indikator</p><p class="text-sm font-semibold text-gray-900" x-text="detailData.indicator"></p></div>

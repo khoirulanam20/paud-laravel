@@ -220,26 +220,82 @@
     }
 
     /* ─── Modal ─── */
+    .modal-overlay {
+        @apply fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto;
+        background: rgba(0, 0, 0, 0.45);
+    }
+
+    .modal-overlay--elevated {
+        @apply z-[60];
+    }
+
+    .modal-overlay--blur {
+        background: rgba(0, 0, 0, 0.4);
+        @apply backdrop-blur-sm;
+    }
+
+    .modal-overlay--dark {
+        background: rgba(0, 0, 0, 0.6);
+        @apply backdrop-blur-sm;
+    }
+
+    .modal-overlay--front {
+        @apply z-[100];
+    }
+
     .modal-box {
         background: var(--cream-raised);
-        @apply rounded-xl md:rounded-2xl text-left overflow-hidden;
+        @apply rounded-xl md:rounded-2xl text-left flex flex-col min-h-0 overflow-hidden;
         box-shadow: var(--shadow-modal);
         border: 1px solid rgba(255,255,255,0.7);
         max-width: 560px;
         width: 100%;
+        max-height: min(90dvh, calc(100dvh - 2rem));
+    }
+
+    .modal-box > form {
+        @apply flex flex-col min-h-0 flex-1 overflow-hidden;
     }
 
     .modal-header {
-        @apply px-4 pt-4 pb-3 md:px-6 md:pt-6 md:pb-4;
+        @apply shrink-0 px-4 pt-4 pb-3 md:px-6 md:pt-6 md:pb-4;
         border-bottom: 1px solid var(--border-thin);
     }
 
-    .modal-body {
-        @apply px-4 py-4 md:px-6 md:py-5;
+    .modal-body,
+    .modal-scroll {
+        @apply flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 py-4 md:px-6 md:py-5;
+        scrollbar-width: thin;
+        scrollbar-color: var(--teal) var(--cream-inset);
+    }
+
+    .modal-body::-webkit-scrollbar,
+    .modal-scroll::-webkit-scrollbar {
+        width: 11px;
+        height: 11px;
+    }
+
+    .modal-body::-webkit-scrollbar-track,
+    .modal-scroll::-webkit-scrollbar-track {
+        background: var(--cream-inset);
+        border-radius: 8px;
+        margin: 6px 0;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb,
+    .modal-scroll::-webkit-scrollbar-thumb {
+        background: var(--teal);
+        border-radius: 8px;
+        border: 2px solid var(--cream-inset);
+    }
+
+    .modal-body::-webkit-scrollbar-thumb:hover,
+    .modal-scroll::-webkit-scrollbar-thumb:hover {
+        background: var(--teal-dark);
     }
 
     .modal-footer {
-        @apply px-4 pb-4 md:px-6 md:pb-6 flex gap-3 justify-end;
+        @apply shrink-0 px-4 pb-4 md:px-6 md:pb-6 flex gap-3 justify-end;
         border-top: 1px solid var(--border-thin);
         padding-top: 1rem;
     }
