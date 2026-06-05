@@ -48,6 +48,26 @@ class KegiatanCalendar
     }
 
     /**
+     * Warna indikator kalender: hijau = sudah dilaksanakan (ada foto), kuning = belum.
+     *
+     * @return array{backgroundColor: string, borderColor: string}
+     */
+    public static function eventColors(Kegiatan $k): array
+    {
+        if (! empty($k->photos)) {
+            return [
+                'backgroundColor' => '#10B981',
+                'borderColor' => '#059669',
+            ];
+        }
+
+        return [
+            'backgroundColor' => '#EAB308',
+            'borderColor' => '#CA8A04',
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public static function toPengajarEvent(Kegiatan $k): array
@@ -83,13 +103,15 @@ class KegiatanCalendar
             'photo_urls_raw' => $k->photos ?? [],
         ];
 
+        $colors = self::eventColors($k);
+
         return [
             'id' => (string) $k->id,
             'title' => $k->title,
             'start' => self::formatDate($k),
             'allDay' => true,
-            'backgroundColor' => !empty($k->photos) ? '#10B981' : null,
-            'borderColor' => !empty($k->photos) ? '#059669' : null,
+            'backgroundColor' => $colors['backgroundColor'],
+            'borderColor' => $colors['borderColor'],
             'extendedProps' => [
                 'mode' => 'pengajar',
                 'delete_url' => route('pengajar.kegiatan.destroy', $k),
@@ -153,13 +175,15 @@ class KegiatanCalendar
             })->values()->all(),
         ];
 
+        $colors = self::eventColors($k);
+
         return [
             'id' => (string) $k->id,
             'title' => $k->title,
             'start' => self::formatDate($k),
             'allDay' => true,
-            'backgroundColor' => !empty($k->photos) ? '#10B981' : null,
-            'borderColor' => !empty($k->photos) ? '#059669' : null,
+            'backgroundColor' => $colors['backgroundColor'],
+            'borderColor' => $colors['borderColor'],
             'extendedProps' => [
                 'mode' => 'readonly',
                 'detail' => $detail,
@@ -200,13 +224,15 @@ class KegiatanCalendar
             'photo_urls_raw' => $k->photos ?? [],
         ];
 
+        $colors = self::eventColors($k);
+
         return [
             'id' => (string) $k->id,
             'title' => $k->title,
             'start' => self::formatDate($k),
             'allDay' => true,
-            'backgroundColor' => !empty($k->photos) ? '#10B981' : null,
-            'borderColor' => !empty($k->photos) ? '#059669' : null,
+            'backgroundColor' => $colors['backgroundColor'],
+            'borderColor' => $colors['borderColor'],
             'extendedProps' => [
                 'mode' => 'admin',
                 'delete_url' => route('admin.kegiatan.destroy', $k),
