@@ -125,7 +125,7 @@
     @endif
 </div>
 
-<div class="card overflow-hidden" x-data="monevBulkTable()">
+<div class="card overflow-hidden" x-data="window.monevBulkTable()">
     <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
         <div>
             <h3 class="section-title">Daftar Siswa</h3>
@@ -134,7 +134,7 @@
         <div class="flex flex-wrap items-center gap-2" x-show="selected.length > 0" x-cloak>
             <span class="text-xs font-semibold px-2 py-1 rounded" style="background:#E8F5F5; color:#1A6B6B;" x-text="selected.length + ' dipilih'"></span>
             @if($canBulkSelected)
-            <form method="post" action="{{ $bulkGenerateRoute }}" class="inline" @submit="return prepareSubmit($event) && confirm('Generate ringkasan untuk siswa terpilih? (mode testing)')">
+            <form method="post" action="{{ $bulkGenerateRoute }}" class="inline" @submit="submitBulkGenerate($event)">
                 @csrf
                 <input type="hidden" name="tahun" value="{{ $tahun }}">
                 <input type="hidden" name="bulan" value="{{ $bulan }}">
@@ -151,7 +151,7 @@
             @elseif(!$aiReady)
                 <span class="text-xs" style="color:#9E9790;">Generate terpilih membutuhkan pengaturan AI.</span>
             @endif
-            <form method="post" action="{{ $bulkResetRoute }}" class="inline" @submit="return prepareSubmit($event) && confirm('Reset ringkasan siswa terpilih? Data summary akan dihapus.')">
+            <form method="post" action="{{ $bulkResetRoute }}" class="inline" @submit="submitBulkReset($event)">
                 @csrf
                 <input type="hidden" name="tahun" value="{{ $tahun }}">
                 <input type="hidden" name="bulan" value="{{ $bulan }}">
@@ -238,7 +238,7 @@
 @once
 @push('scripts')
 <script>
-function monevBulkTable() {
+window.monevBulkTable = function monevBulkTable() {
     const allIds = @json($anaks->pluck('id')->values());
 
     return {
@@ -262,9 +262,25 @@ function monevBulkTable() {
                 return false;
             }
             return true;
+        },
+        submitBulkGenerate(event) {
+            if (!this.prepareSubmit(event)) {
+                return;
+            }
+            if (!confirm('Generate ringkasan untuk siswa terpilih? (mode testing)')) {
+                event.preventDefault();
+            }
+        },
+        submitBulkReset(event) {
+            if (!this.prepareSubmit(event)) {
+                return;
+            }
+            if (!confirm('Reset ringkasan siswa terpilih? Data summary akan dihapus.')) {
+                event.preventDefault();
+            }
         }
     };
-}
+};
 </script>
 @endpush
 @endonce

@@ -1,6 +1,6 @@
 @if($activeGeneration && !$activeGeneration->isFinished())
 <div
-    x-data="monevProgress({
+    x-data="window.monevProgress({
         generationId: @js($activeGeneration->id),
         statusUrl: @js($statusRoute),
         initial: @js([
@@ -8,6 +8,7 @@
             'processed' => $activeGeneration->processed(),
             'percent' => $activeGeneration->progressPercent(),
             'status' => $activeGeneration->status,
+            'failed' => $activeGeneration->failed,
         ])
     })"
     x-init="start()"
@@ -41,7 +42,7 @@
 @once
 @push('scripts')
 <script>
-function monevProgress({ generationId, statusUrl, initial }) {
+window.monevProgress = function monevProgress({ generationId, statusUrl, initial }) {
     return {
         generationId,
         statusUrl,
@@ -49,7 +50,7 @@ function monevProgress({ generationId, statusUrl, initial }) {
         processed: initial.processed,
         completed: 0,
         skipped: 0,
-        failed: 0,
+        failed: initial.failed ?? 0,
         percent: initial.percent,
         status: initial.status,
         pollTimer: null,
@@ -60,9 +61,12 @@ function monevProgress({ generationId, statusUrl, initial }) {
         async poll() {
             try {
                 const res = await fetch(this.statusUrl, {
-                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin',
                 });
-                if (!res.ok) return;
+                if (!res.ok) {
+                    return;
+                }
                 const data = await res.json();
                 this.total = data.total;
                 this.processed = data.processed;
@@ -75,10 +79,12 @@ function monevProgress({ generationId, statusUrl, initial }) {
                     clearInterval(this.pollTimer);
                     setTimeout(() => window.location.reload(), 800);
                 }
-            } catch (e) {}
-        }
+            } catch (e) {
+                console.error('Monev progress poll failed', e);
+            }
+        },
     };
-}
+};
 </script>
 @endpush
 @endonce
