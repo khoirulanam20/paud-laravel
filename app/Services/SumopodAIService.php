@@ -121,6 +121,19 @@ PROMPT;
         array $stats
     ): string {
         $statsJson = json_encode($stats, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $aspekNames = implode(', ', array_keys($stats['per_aspek'] ?? []));
+        $aspekInstruction = $aspekNames !== ''
+            ? <<<ASPEK
+
+Setelah section REKOMENDASI, tambahkan ringkasan naratif per aspek capaian dengan format persis:
+[ASPEK:{nama_aspek}]
+- (poin ringkasan 1)
+- (poin ringkasan 2)
+
+WAJIB buat section [ASPEK:...] untuk setiap aspek berikut (nama harus sama persis): {$aspekNames}
+Setiap aspek 2-4 poin bullet, bahasa hangat seperti guru PAUD, jelaskan makna perkembangan (bukan hanya angka).
+ASPEK
+            : '';
 
         $prompt = <<<PROMPT
 Kamu adalah guru PAUD / TK yang profesional. Buat ringkasan monitoring & evaluasi (monev) perkembangan siswa berdasarkan data pencapaian matrikulasi selama satu bulan.
@@ -134,23 +147,30 @@ Data Pencapaian Matrikulasi (agregat):
 {$statsJson}
 
 Instruksi:
-- Tulis dalam Bahasa Indonesia, naratif dan profesional namun hangat.
+- Tulis dalam Bahasa Indonesia, profesional namun hangat.
 - WAJIB gunakan format section marker persis seperti ini (4 section):
 [GAMBARAN_UMUM]
-(paragraf gambaran umum perkembangan bulan ini)
+- (poin pertama gambaran umum)
+- (poin kedua)
+- (poin ketiga)
 
 [KEKUATAN]
-(paragraf kekuatan/aspek yang menonjol)
+- (poin kekuatan 1)
+- (poin kekuatan 2)
 
 [PERHATIAN]
-(paragraf area yang perlu perhatian)
+- (poin area perhatian 1)
+- (poin area perhatian 2)
 
 [REKOMENDASI]
-(paragraf rekomendasi singkat untuk bulan depan)
+- (poin rekomendasi 1)
+- (poin rekomendasi 2)
 
+- Setiap section WAJIB berupa daftar poin (bullet), bukan paragraf. Tiap baris diawali "- ".
+- Setiap section 3-5 poin singkat (1-2 kalimat per poin).
 - Gunakan data statistik sebagai dasar, jangan hanya menyebut angka mentah.
-- Jika total entri 0, jelaskan bahwa belum ada data pencapaian pada periode ini dan berikan saran umum pemantauan.
-- Setiap section 1 paragraf singkat (3-5 kalimat).
+- Jika total entri 0, jelaskan bahwa belum ada data dan berikan 2-3 saran pemantauan umum dalam bentuk poin.
+{$aspekInstruction}
 PROMPT;
 
         $response = Http::withToken($this->apiKey)
@@ -160,7 +180,7 @@ PROMPT;
                 'messages' => [
                     ['role' => 'user', 'content' => $prompt],
                 ],
-                'max_tokens'  => 1024,
+                'max_tokens'  => 2048,
                 'temperature' => 0.7,
             ]);
 

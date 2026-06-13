@@ -88,6 +88,7 @@
             @include('monev._show-content', [
                 'anak' => $selectedAnak,
                 'summary' => $summary,
+                'pdfRoute' => route('orangtua.monev.export-pdf', ['anak' => $selectedAnak->id, 'tahun' => $tahun, 'bulan' => $bulan]),
                 'showBackLink' => false,
             ])
         @endif

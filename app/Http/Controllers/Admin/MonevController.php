@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\HandlesMonevGeneration;
+use App\Http\Controllers\Concerns\HandlesMonevPdfExport;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kelas;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 class MonevController extends Controller
 {
     use HandlesMonevGeneration;
+    use HandlesMonevPdfExport;
 
     public function __construct(
         protected MonevSummaryService $monevService
@@ -81,6 +83,16 @@ class MonevController extends Controller
         $anak->load('kelas');
 
         return view('admin.monev.show', compact('anak', 'summary', 'tahun', 'bulan'));
+    }
+
+    public function exportPdf(Anak $anak, Request $request)
+    {
+        $user = auth()->user();
+        abort_unless((int) $anak->sekolah_id === (int) $user->sekolah_id, 403);
+
+        $summary = $this->resolveMonevSummaryForExport($anak, $request, $this->monevService);
+
+        return $this->downloadMonevPdf($anak, $summary);
     }
 
     public function generate(Request $request)

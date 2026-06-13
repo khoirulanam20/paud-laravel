@@ -92,6 +92,7 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::post('monev/bulk-generate', [AdminMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');
     Route::post('monev/bulk-reset', [AdminMonevController::class, 'bulkReset'])->middleware('throttle:20,1')->name('monev.bulk-reset');
     Route::get('monev/generation/{generation}/status', [AdminMonevController::class, 'generationStatus'])->name('monev.generation.status');
+    Route::get('monev/{anak}/pdf', [AdminMonevController::class, 'exportPdf'])->name('monev.export-pdf');
     Route::get('monev/{anak}', [AdminMonevController::class, 'show'])->name('monev.show');
     Route::resource('kelas', KelasController::class)->except(['create', 'edit', 'show']);
     Route::resource('matrikulasi', AdminMatrikulasiController::class)->except(['create', 'edit', 'show']);
@@ -150,6 +151,7 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
     Route::post('monev/bulk-generate', [AdminKelasMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');
     Route::post('monev/bulk-reset', [AdminKelasMonevController::class, 'bulkReset'])->middleware('throttle:20,1')->name('monev.bulk-reset');
     Route::get('monev/generation/{generation}/status', [AdminKelasMonevController::class, 'generationStatus'])->name('monev.generation.status');
+    Route::get('monev/{anak}/pdf', [AdminKelasMonevController::class, 'exportPdf'])->name('monev.export-pdf');
     Route::get('monev/{anak}', [AdminKelasMonevController::class, 'show'])->name('monev.show');
 });
 
@@ -183,6 +185,7 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kegiatan-rutin', [\App\Http\Controllers\OrangTua\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::get('pencapaian', [OrangTuaPencapaianController::class, 'index'])->name('pencapaian.index');
     Route::get('monev', [\App\Http\Controllers\OrangTua\MonevController::class, 'index'])->name('monev.index');
+    Route::get('monev/{anak}/pdf', [\App\Http\Controllers\OrangTua\MonevController::class, 'exportPdf'])->name('monev.export-pdf');
     Route::get('monev/{anak}', [\App\Http\Controllers\OrangTua\MonevController::class, 'show'])->name('monev.show');
     Route::get('menu-makanan', [OrangTuaMenuMakananController::class, 'index'])->name('menu-makanan.index');
     Route::redirect('kritik-saran/riwayat', '/orangtua/kritik-saran');

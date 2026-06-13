@@ -6,14 +6,29 @@
     $perAspek = MonevSummaryPresenter::perAspek($summary);
     $feedbacks = MonevSummaryPresenter::feedbackSamples($summary);
     $totalEntri = MonevSummaryPresenter::totalEntri($summary);
-    $maxScore = max(array_values($scoreDist) ?: [1]);
+    $pieSegments = MonevSummaryPresenter::pieChartSegments($scoreDist);
+    $pieGradient = MonevSummaryPresenter::pieConicGradient($scoreDist);
+    $scoreTotal = array_sum($scoreDist);
 @endphp
 
 @if($showBackLink ?? true)
-    <div class="mb-4">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <a href="{{ $backRoute }}" class="text-sm font-semibold inline-flex items-center gap-1" style="color:#1A6B6B;">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
             Kembali ke daftar Monev
+        </a>
+        @isset($pdfRoute)
+            <a href="{{ $pdfRoute }}" class="btn-primary text-sm inline-flex items-center gap-2" target="_blank" rel="noopener">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                Export PDF
+            </a>
+        @endisset
+    </div>
+@elseif(isset($pdfRoute))
+    <div class="mb-4 flex justify-end">
+        <a href="{{ $pdfRoute }}" class="btn-primary text-sm inline-flex items-center gap-2" target="_blank" rel="noopener">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Export PDF
         </a>
     </div>
 @endif
@@ -90,7 +105,14 @@
                     </svg>
                 </button>
                 <div x-show="openSection === '{{ $section['key'] }}'" x-transition class="px-6 py-5">
-                    <p class="text-sm leading-relaxed whitespace-pre-line" style="color:#2C2C2C;">{{ $section['content'] }}</p>
+                    <ul class="space-y-2.5 m-0 p-0 list-none">
+                        @foreach($section['points'] ?? [] as $point)
+                            <li class="flex gap-2.5 text-sm leading-relaxed">
+                                <span class="shrink-0 font-bold mt-0.5" style="color:#1A6B6B;">•</span>
+                                <span style="color:#2C2C2C;">{{ $point }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
         @endforeach
@@ -103,18 +125,39 @@
                 <div class="px-6 py-4 border-b" style="border-color: rgba(0,0,0,0.06);">
                     <h4 class="section-title">Distribusi Skor Capaian</h4>
                 </div>
-                <div class="px-6 py-5 space-y-4">
-                    @foreach($scoreDist as $label => $count)
-                        <div>
-                            <div class="flex justify-between text-xs mb-1.5">
-                                <span class="font-medium" style="color:#2C2C2C;">{{ $label }}</span>
-                                <span class="font-bold tabular-nums" style="color:#1A6B6B;">{{ $count }}</span>
-                            </div>
-                            <div class="h-2.5 rounded-full overflow-hidden" style="background:#F0F0F0;">
-                                <div class="h-full rounded-full transition-all duration-700" style="background:#1A6B6B; width: {{ $maxScore > 0 ? round(($count / $maxScore) * 100) : 0 }}%;"></div>
+                <div class="px-6 py-6">
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <div class="relative shrink-0" style="width: 220px; height: 220px;">
+                            <div
+                                class="w-full h-full rounded-full"
+                                style="background: {{ $pieGradient }};"
+                                role="img"
+                                aria-label="Grafik pie distribusi skor capaian"
+                            ></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="rounded-full flex flex-col items-center justify-center text-center"
+                                    style="width: 110px; height: 110px; background: white; box-shadow: 0 0 0 1px rgba(0,0,0,0.04);">
+                                    <span class="text-2xl font-bold tabular-nums" style="color:#1A6B6B;">{{ $scoreTotal }}</span>
+                                    <span class="text-[10px] font-semibold uppercase tracking-wider" style="color:#9E9790;">Total Entri</span>
+                                </div>
                             </div>
                         </div>
-                    @endforeach
+
+                        <div class="flex-1 w-full space-y-3">
+                            @foreach($pieSegments as $segment)
+                                <div class="flex items-center justify-between gap-3 text-sm">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <span class="shrink-0 h-3 w-3 rounded-full" style="background: {{ $segment['color'] }};"></span>
+                                        <span class="font-medium truncate" style="color:#2C2C2C;">{{ $segment['label'] }}</span>
+                                    </div>
+                                    <div class="shrink-0 text-right tabular-nums">
+                                        <span class="font-bold" style="color:#1A6B6B;">{{ $segment['count'] }}</span>
+                                        <span class="text-xs ml-1" style="color:#9E9790;">({{ $segment['percent'] }}%)</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             </div>
         @endif
@@ -126,21 +169,34 @@
                 </div>
                 <div class="grid md:grid-cols-2 gap-4 p-6">
                     @foreach($perAspek as $aspek => $data)
+                        @php
+                            $aspekNarrative = MonevSummaryPresenter::perAspekNarrativePoints($aspek, $data);
+                            $aspekStats = MonevSummaryPresenter::perAspekSummaryPoints($aspek, $data);
+                        @endphp
                         <div class="rounded-xl p-4 border" style="border-color: rgba(0,0,0,0.06); background:#FAF6F0;">
                             <div class="flex items-center justify-between mb-3">
                                 <h5 class="font-bold text-sm" style="color:#2C2C2C;">{{ $aspek }}</h5>
                                 <span class="text-xs font-bold px-2 py-1 rounded-lg" style="background:#D0E8E8; color:#1A6B6B;">{{ $data['jumlah'] }} entri</span>
                             </div>
-                            @if(!empty($data['skor']))
-                                <div class="space-y-2">
-                                    @foreach($data['skor'] as $skorLabel => $cnt)
-                                        <div class="flex justify-between text-xs">
-                                            <span style="color:#6B6560;">{{ $skorLabel }}</span>
-                                            <span class="font-semibold" style="color:#2C2C2C;">{{ $cnt }}</span>
-                                        </div>
+                            <ul class="space-y-2 m-0 p-0 list-none mb-3">
+                                @foreach($aspekNarrative as $point)
+                                    <li class="flex gap-2 text-sm leading-relaxed">
+                                        <span class="shrink-0 font-bold mt-0.5" style="color:#1A6B6B;">•</span>
+                                        <span style="color:#2C2C2C;">{{ $point }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <div class="pt-3 border-t" style="border-color: rgba(0,0,0,0.06);">
+                                <p class="text-[10px] font-bold uppercase tracking-wider mb-2" style="color:#9E9790;">Statistik</p>
+                                <ul class="space-y-1.5 m-0 p-0 list-none">
+                                    @foreach($aspekStats as $point)
+                                        <li class="flex gap-2 text-xs leading-relaxed">
+                                            <span class="shrink-0 font-bold mt-0.5" style="color:#9E9790;">•</span>
+                                            <span style="color:#6B6560;">{{ $point }}</span>
+                                        </li>
                                     @endforeach
-                                </div>
-                            @endif
+                                </ul>
+                            </div>
                         </div>
                     @endforeach
                 </div>

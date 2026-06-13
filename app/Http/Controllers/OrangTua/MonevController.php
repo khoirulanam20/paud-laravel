@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\OrangTua;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\HandlesMonevPdfExport;
 use App\Models\Anak;
 use App\Models\MonevSummary;
 use App\Services\MonevSummaryService;
@@ -10,6 +11,8 @@ use Illuminate\Http\Request;
 
 class MonevController extends Controller
 {
+    use HandlesMonevPdfExport;
+
     public function __construct(
         protected MonevSummaryService $monevService
     ) {}
@@ -60,6 +63,18 @@ class MonevController extends Controller
             'tahun' => $tahun,
             'bulan' => $bulan,
         ]);
+    }
+
+    public function exportPdf(Anak $anak, Request $request)
+    {
+        $user = auth()->user();
+        abort_unless((int) $anak->user_id === (int) $user->id, 403);
+        abort_unless((int) $anak->sekolah_id === (int) $user->sekolah_id, 403);
+        abort_unless($anak->status === 'approved', 404);
+
+        $summary = $this->resolveMonevSummaryForExport($anak, $request, $this->monevService);
+
+        return $this->downloadMonevPdf($anak, $summary);
     }
 
     /**

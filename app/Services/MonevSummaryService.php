@@ -10,6 +10,7 @@ use App\Models\MonevGeneration;
 use App\Models\MonevManualTrigger;
 use App\Models\MonevSummary;
 use App\Models\User;
+use App\Support\MonevSummaryPresenter;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -427,6 +428,8 @@ class MonevSummaryService
                 $stats['periode_label'],
                 $stats
             );
+
+            [$ringkasan, $stats] = $this->applyAspekSummariesToSnapshot($ringkasan, $stats);
         }
 
         return MonevSummary::updateOrCreate(
@@ -443,6 +446,23 @@ class MonevSummaryService
                 'generated_by_user_id' => $by?->id,
             ]
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $stats
+     * @return array{0: string, 1: array<string, mixed>}
+     */
+    protected function applyAspekSummariesToSnapshot(string $ringkasan, array $stats): array
+    {
+        [$ringkasan, $aspekSummaries] = MonevSummaryPresenter::splitRingkasanAndAspekSummaries($ringkasan);
+
+        foreach ($aspekSummaries as $aspek => $points) {
+            if (isset($stats['per_aspek'][$aspek])) {
+                $stats['per_aspek'][$aspek]['ringkasan'] = $points;
+            }
+        }
+
+        return [$ringkasan, $stats];
     }
 
     /**

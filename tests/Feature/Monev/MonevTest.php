@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Services\MonevDataAggregator;
 use App\Services\MonevSummaryService;
 use App\Services\SumopodAIService;
+use App\Support\MonevSummaryPresenter;
 use Carbon\Carbon;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -248,7 +249,23 @@ class MonevTest extends TestCase
         ]);
 
         $mockAi = $this->createMock(SumopodAIService::class);
-        $mockAi->method('generateMonevSummary')->willReturn('Ringkasan AI uji coba.');
+        $mockAi->method('generateMonevSummary')->willReturn(<<<'AI'
+[GAMBARAN_UMUM]
+- Perkembangan baik.
+
+[KEKUATAN]
+- Komunikasi lancar.
+
+[PERHATIAN]
+- Motorik perlu stimulasi.
+
+[REKOMENDASI]
+- Latihan rutin di rumah.
+
+[ASPEK:Kognitif]
+- Siswa mulai menunjukkan rasa ingin tahu.
+- Mayoritas indikator masih MB namun konsisten.
+AI);
 
         $service = new MonevSummaryService(app(MonevDataAggregator::class));
 
@@ -261,7 +278,12 @@ class MonevTest extends TestCase
             $mockAi
         );
 
-        $this->assertSame('Ringkasan AI uji coba.', $summary->ringkasan);
+        $this->assertStringNotContainsString('[ASPEK:', $summary->ringkasan);
+        $this->assertStringContainsString('[GAMBARAN_UMUM]', $summary->ringkasan);
+        $this->assertSame(
+            ['Siswa mulai menunjukkan rasa ingin tahu.', 'Mayoritas indikator masih MB namun konsisten.'],
+            $summary->data_snapshot['per_aspek']['Kognitif']['ringkasan'] ?? null
+        );
         $this->assertSame(MonevSummary::SUMBER_MANUAL, $summary->sumber);
 
         Carbon::setTestNow();
@@ -623,5 +645,124 @@ class MonevTest extends TestCase
         $response->assertSessionHasErrors('monev');
 
         Carbon::setTestNow();
+    }
+
+    public function test_per_aspek_narrative_uses_fallback_when_no_ai_summary(): void
+    {
+        $points = MonevSummaryPresenter::perAspekNarrativePoints('Kognitif', [
+            'jumlah' => 9,
+            'skor' => [
+                'Mulai Berkembang (MB)' => 6,
+                'Berkembang Sesuai Harapan (BSH)' => 3,
+            ],
+        ]);
+
+        $this->assertGreaterThanOrEqual(3, count($points));
+        $this->assertStringContainsString('Kognitif', $points[0]);
+        $this->assertStringContainsString('Mulai Berkembang (MB)', $points[1]);
+    }
+
+    public function test_split_ringkasan_extracts_aspek_sections(): void
+    {
+        [$main, $aspek] = MonevSummaryPresenter::splitRingkasanAndAspekSummaries(<<<'TEXT'
+[GAMBARAN_UMUM]
+- Umum baik.
+
+[ASPEK:Motorik Halus]
+- Koordinasi tangan membaik.
+- Masih perlu latihan menggunting.
+
+[ASPEK:Kognitif]
+- Rasa ingin tahu meningkat.
+TEXT);
+
+        $this->assertStringContainsString('[GAMBARAN_UMUM]', $main);
+        $this->assertStringNotContainsString('[ASPEK:', $main);
+        $this->assertSame(['Koordinasi tangan membaik.', 'Masih perlu latihan menggunting.'], $aspek['Motorik Halus']);
+        $this->assertSame(['Rasa ingin tahu meningkat.'], $aspek['Kognitif']);
+    }
+
+    public function test_admin_can_export_monev_pdf(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 6, 15));
+        $f = $this->createFixtures();
+
+        MonevSummary::create([
+            'anak_id' => $f['anak']->id,
+            'tahun' => 2026,
+            'bulan' => 6,
+            'ringkasan' => "[GAMBARAN_UMUM]\n- Perkembangan baik.\n[KEKUATAN]\n- Komunikasi lancar.",
+            'data_snapshot' => [
+                'total_entri' => 5,
+                'distribusi_skor' => ['MB' => 3, 'BSH' => 2],
+                'per_aspek' => ['Kognitif' => ['jumlah' => 5, 'skor' => ['MB' => 3, 'BSH' => 2]]],
+                'cuplikan_feedback' => ['Bagus sekali'],
+                'indikator_tercatat' => ['Indikator 1'],
+            ],
+            'sumber' => MonevSummary::SUMBER_OTOMATIS,
+            'generated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($f['admin'])->get(route('admin.monev.export-pdf', [
+            'anak' => $f['anak']->id,
+            'tahun' => 2026,
+            'bulan' => 6,
+        ]));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', (string) $response->headers->get('content-type'));
+        $this->assertStringContainsString('Monev-Anak Satu - Juni.pdf', (string) $response->headers->get('content-disposition'));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_wali_kelas_cannot_export_other_class_student_pdf(): void
+    {
+        $f = $this->createFixtures();
+
+        MonevSummary::create([
+            'anak_id' => $f['anak2']->id,
+            'tahun' => 2026,
+            'bulan' => 6,
+            'ringkasan' => 'Ringkasan rahasia',
+            'sumber' => MonevSummary::SUMBER_MANUAL,
+            'generated_at' => now(),
+        ]);
+
+        $this->actingAs($f['wali'])->get(route('adminkelas.monev.export-pdf', [
+            'anak' => $f['anak2']->id,
+            'tahun' => 2026,
+            'bulan' => 6,
+        ]))->assertForbidden();
+    }
+
+    public function test_orang_tua_can_export_own_child_monev_pdf(): void
+    {
+        $f = $this->createFixtures();
+
+        $ortuUser = User::factory()->create([
+            'email' => 'ortu-pdf@test.com',
+            'sekolah_id' => $f['sekolah']->id,
+        ]);
+        $ortuUser->assignRole('Orang Tua');
+        $f['anak']->update(['user_id' => $ortuUser->id]);
+
+        MonevSummary::create([
+            'anak_id' => $f['anak']->id,
+            'tahun' => 2026,
+            'bulan' => 6,
+            'ringkasan' => '[GAMBARAN_UMUM]\nPerkembangan baik.',
+            'sumber' => MonevSummary::SUMBER_OTOMATIS,
+            'generated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($ortuUser)->get(route('orangtua.monev.export-pdf', [
+            'anak' => $f['anak']->id,
+            'tahun' => 2026,
+            'bulan' => 6,
+        ]));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', (string) $response->headers->get('content-type'));
     }
 }
