@@ -149,6 +149,8 @@
                               :disabled="loading"
                               @keydown.enter.prevent="if (!$event.shiftKey) sendMessage()"
                               @input="resizeInput()"
+                              @focus="onComposerFocus()"
+                              @blur="onComposerBlur()"
                               class="w-full resize-none bg-transparent border-0 focus:ring-0 focus:outline-none text-sm leading-5 py-2.5 pl-4 pr-2 max-h-32 min-h-[42px]"></textarea>
                 </div>
                 <button type="submit"
@@ -190,13 +192,19 @@
                 left: 0;
                 right: 0;
                 top: 0;
-                bottom: env(safe-area-inset-bottom, 0px);
+                height: 100dvh;
+                bottom: auto;
                 z-index: 30;
                 max-width: none;
                 width: 100%;
+                transition: top 0.08s ease-out, height 0.08s ease-out;
             }
             .orangtua-chat-composer {
                 padding-bottom: max(0.625rem, env(safe-area-inset-bottom, 0px));
+            }
+            body.orangtua-chat-keyboard-open {
+                overflow: hidden;
+                touch-action: none;
             }
         }
         @media (min-width: 1024px) {
@@ -278,6 +286,61 @@
                     if (!el) return;
                     el.style.height = 'auto';
                     el.style.height = Math.min(el.scrollHeight, 128) + 'px';
+                    this.$nextTick(() => this.scrollToBottom('auto'));
+                },
+
+                isMobileChat() {
+                    return window.matchMedia('(max-width: 1023px)').matches;
+                },
+
+                updateViewport() {
+                    if (!this.isMobileChat()) {
+                        this.$el.style.top = '';
+                        this.$el.style.height = '';
+                        document.body.classList.remove('orangtua-chat-keyboard-open');
+                        return;
+                    }
+
+                    const vv = window.visualViewport;
+                    if (!vv) return;
+
+                    this.$el.style.top = `${vv.offsetTop}px`;
+                    this.$el.style.height = `${vv.height}px`;
+                    this.scrollToBottom('auto');
+                },
+
+                onComposerFocus() {
+                    document.body.classList.add('orangtua-chat-keyboard-open');
+                    [50, 150, 350].forEach((delay) => {
+                        setTimeout(() => {
+                            this.updateViewport();
+                            this.scrollToBottom('auto');
+                        }, delay);
+                    });
+                },
+
+                onComposerBlur() {
+                    document.body.classList.remove('orangtua-chat-keyboard-open');
+                    [100, 300].forEach((delay) => {
+                        setTimeout(() => this.updateViewport(), delay);
+                    });
+                },
+
+                bindViewportListeners() {
+                    if (!this.isMobileChat() || !window.visualViewport) return;
+
+                    this._onViewportChange = () => this.updateViewport();
+                    window.visualViewport.addEventListener('resize', this._onViewportChange);
+                    window.visualViewport.addEventListener('scroll', this._onViewportChange);
+                    window.addEventListener('orientationchange', this._onViewportChange);
+                },
+
+                unbindViewportListeners() {
+                    if (!this._onViewportChange) return;
+                    window.visualViewport?.removeEventListener('resize', this._onViewportChange);
+                    window.visualViewport?.removeEventListener('scroll', this._onViewportChange);
+                    window.removeEventListener('orientationchange', this._onViewportChange);
+                    document.body.classList.remove('orangtua-chat-keyboard-open');
                 },
 
                 onScroll() {},
@@ -369,8 +432,14 @@
                 },
 
                 init() {
+                    this.bindViewportListeners();
+                    this.updateViewport();
                     this.scrollToBottom();
                     setTimeout(() => this.scrollToBottom(), 100);
+                },
+
+                destroy() {
+                    this.unbindViewportListeners();
                 },
             }));
         });
