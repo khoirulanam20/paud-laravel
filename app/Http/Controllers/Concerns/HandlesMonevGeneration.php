@@ -62,7 +62,7 @@ trait HandlesMonevGeneration
         }
 
         try {
-            $generation = $service->dispatchManualGeneration(
+            $generation = $service->dispatchSelectedGeneration(
                 $anaks,
                 $tahun,
                 $bulan,

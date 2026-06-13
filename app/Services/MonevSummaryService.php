@@ -64,6 +64,22 @@ class MonevSummaryService
         return new SumopodAIService($aiSetting->ai_api_key, $aiSetting->ai_model ?? 'gpt-4o-mini');
     }
 
+    public function assertCanStartSelectedGeneration(
+        User $user,
+        ?int $sekolahId = null,
+        ?int $kelasId = null
+    ): void {
+        if (! $this->resolveAiServiceForUser($user)) {
+            throw new MonevManualGenerationException(
+                'Pengaturan AI belum dikonfigurasi. Minta admin lembaga mengisi API Key di menu Pengaturan AI.'
+            );
+        }
+
+        if ($this->hasActiveGeneration($sekolahId, $kelasId)) {
+            throw new MonevManualGenerationException('Masih ada proses generate yang berjalan. Tunggu hingga selesai.');
+        }
+    }
+
     public function assertCanStartManualGeneration(
         User $user,
         int $tahun,
@@ -513,6 +529,38 @@ class MonevSummaryService
                 }
 
                 throw $e;
+            }
+
+            return MonevGeneration::create([
+                'sekolah_id' => $kelasId ? null : $sekolahId,
+                'kelas_id' => $kelasId,
+                'tahun' => $tahun,
+                'bulan' => $bulan,
+                'sumber' => MonevSummary::SUMBER_MANUAL,
+                'total' => $anaks->count(),
+                'status' => MonevGeneration::STATUS_PENDING,
+                'triggered_by_user_id' => $by->id,
+            ]);
+        });
+
+        $this->dispatchJobsForGeneration($generation, $anaks, $tahun, $bulan, MonevSummary::SUMBER_MANUAL, $by);
+
+        return $generation;
+    }
+
+    public function dispatchSelectedGeneration(
+        Collection $anaks,
+        int $tahun,
+        int $bulan,
+        User $by,
+        ?int $sekolahId = null,
+        ?int $kelasId = null
+    ): MonevGeneration {
+        $this->assertCanStartSelectedGeneration($by, $sekolahId, $kelasId);
+
+        $generation = DB::transaction(function () use ($anaks, $tahun, $bulan, $by, $sekolahId, $kelasId) {
+            if ($this->activeGenerationQuery($sekolahId, $kelasId)->lockForUpdate()->exists()) {
+                throw new MonevManualGenerationException('Masih ada proses generate yang berjalan. Tunggu hingga selesai.');
             }
 
             return MonevGeneration::create([

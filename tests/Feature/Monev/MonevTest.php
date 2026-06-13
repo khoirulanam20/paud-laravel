@@ -413,7 +413,7 @@ class MonevTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_bulk_generate_blocked_after_manual_quota_used(): void
+    public function test_bulk_generate_works_after_manual_quota_used(): void
     {
         Carbon::setTestNow(Carbon::create(2026, 6, 15));
         $f = $this->createFixtures();
@@ -427,12 +427,12 @@ class MonevTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHasErrors('monev');
+        $response->assertSessionHas('monev_generation_id');
 
         Carbon::setTestNow();
     }
 
-    public function test_bulk_generate_blocked_for_non_current_month(): void
+    public function test_bulk_generate_works_for_non_current_month(): void
     {
         Carbon::setTestNow(Carbon::create(2026, 6, 15));
         $f = $this->createFixtures();
@@ -444,7 +444,7 @@ class MonevTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHasErrors('monev');
+        $response->assertSessionHas('monev_generation_id');
 
         Carbon::setTestNow();
     }
