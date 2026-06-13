@@ -9,7 +9,9 @@ use App\Models\Anak;
 use App\Models\MonevGeneration;
 use App\Models\MonevManualTrigger;
 use App\Models\MonevSummary;
+use App\Models\SekolahAiPersona;
 use App\Models\User;
+use App\Support\AiPersonaScope;
 use App\Support\MonevSummaryPresenter;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -422,11 +424,19 @@ class MonevSummaryService
                 );
             }
 
+            $sekolahName = $anak->sekolah?->name ?? 'PAUD';
+            $personaPrompt = SekolahAiPersona::resolveActivePrompt(
+                (int) $anak->sekolah_id,
+                AiPersonaScope::MONEV,
+                $sekolahName
+            );
+
             $ringkasan = $ai->generateMonevSummary(
                 $stats['anak_name'],
                 $stats['kelas_name'],
                 $stats['periode_label'],
-                $stats
+                $stats,
+                $personaPrompt
             );
 
             [$ringkasan, $stats] = $this->applyAspekSummariesToSnapshot($ringkasan, $stats);

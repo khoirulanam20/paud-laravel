@@ -79,4 +79,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(KritikSaran::class);
     }
+
+    public function orangTuaChat()
+    {
+        return $this->hasOne(OrangTuaChat::class);
+    }
 }

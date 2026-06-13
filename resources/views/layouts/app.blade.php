@@ -6,6 +6,8 @@
         $pendingCount = \App\Models\Anak::where('sekolah_id', $user->sekolah_id)->where('status', 'pending')->count();
     }
     $roleNavItems = [];
+    $orangTuaBottomNavItems = null;
+    $orangTuaMoreNavItems = null;
     if ($user && $user->hasRole('Lembaga')) {
         $roleNavItems = array_merge($roleNavItems, [
             ['route' => 'lembaga.sekolah.index', 'label' => 'Sekolah', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'pattern' => 'lembaga.sekolah.*'],
@@ -51,6 +53,8 @@
                 'items' => [
                     ['route' => 'admin.cashflow.index', 'label' => 'Cashflow', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.cashflow.*'],
                     ['route' => 'admin.kritik-saran.index', 'label' => 'Kritik & Saran', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'admin.kritik-saran.*'],
+                    ['route' => 'admin.orangtua-chat.index', 'label' => 'Chat Orang Tua', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', 'pattern' => 'admin.orangtua-chat.*'],
+                    ['route' => 'admin.ai-persona.index', 'label' => 'Persona AI', 'icon' => 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'pattern' => 'admin.ai-persona.*'],
                 ]
             ],
         ]);
@@ -79,8 +83,10 @@
         $roleNavItems = array_merge($roleNavItems, $pengajarNav);
     }
     if ($user && $user->hasRole('Orang Tua')) {
+        $chatIcon = 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z';
         $roleNavItems = array_merge($roleNavItems, [
             ['route' => 'orangtua.pencapaian.index', 'label' => 'Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.pencapaian.*'],
+            ['route' => 'orangtua.chat.index', 'label' => 'Chat', 'icon' => $chatIcon, 'pattern' => 'orangtua.chat.*'],
             ['route' => 'orangtua.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'orangtua.monev.*'],
             ['route' => 'orangtua.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'],
             ['route' => 'orangtua.kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'orangtua.kegiatan-rutin.*'],
@@ -89,6 +95,19 @@
             ['route' => 'orangtua.kritik-saran.index', 'label' => 'Saran & Kritik', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'orangtua.kritik-saran.*'],
             ['route' => 'orangtua.kesehatan.index', 'label' => 'Kesehatan Anak', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'orangtua.kesehatan.*'],
         ]);
+        $orangTuaBottomNavItems = [
+            ['route' => 'orangtua.pencapaian.index', 'label' => 'Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.pencapaian.*'],
+            ['route' => 'orangtua.chat.index', 'label' => 'Chat', 'icon' => $chatIcon, 'pattern' => 'orangtua.chat.*', 'center' => true],
+            ['route' => 'orangtua.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'],
+        ];
+        $orangTuaMoreNavItems = [
+            ['route' => 'orangtua.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'orangtua.monev.*'],
+            ['route' => 'orangtua.kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'orangtua.kegiatan-rutin.*'],
+            ['route' => 'orangtua.presensi.index', 'label' => 'Kehadiran', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'pattern' => 'orangtua.presensi.*'],
+            ['route' => 'orangtua.menu-makanan.index', 'label' => 'Menu Makanan', 'icon' => 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z', 'pattern' => 'orangtua.menu-makanan.*'],
+            ['route' => 'orangtua.kritik-saran.index', 'label' => 'Saran & Kritik', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'orangtua.kritik-saran.*'],
+            ['route' => 'orangtua.kesehatan.index', 'label' => 'Kesehatan Anak', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'orangtua.kesehatan.*'],
+        ];
     }
     $roleLabel = 'Pengguna Khusus';
     if ($user && $user->hasRole('Lembaga'))
@@ -101,6 +120,8 @@
         $roleLabel = 'Guru';
     elseif ($user && $user->hasRole('Orang Tua'))
         $roleLabel = 'Wali Murid';
+
+    $isOrangTua = $user && $user->hasRole('Orang Tua');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -131,14 +152,30 @@
             @include('layouts.topbar')
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto w-full pb-20 lg:pb-0">
-                <!-- Page Heading -->
+            <main class="flex-1 overflow-y-auto w-full {{ ($user && $user->hasRole('Orang Tua')) ? 'pb-24' : 'pb-20' }} lg:pb-0">
                 @isset($header)
-                    <header class="page-header sticky top-0 z-20 bg-[#F5F0E8]/90 backdrop-blur-sm border-b border-black/5">
-                        <div class="max-w-7xl mx-auto py-2 px-4 md:py-4 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
+                    @if($isOrangTua)
+                        {{-- Mobile: judul halaman (profil ada di menu Lainnya) --}}
+                        @if(!request()->routeIs('orangtua.chat.*'))
+                        <header class="lg:hidden sticky top-0 z-20 bg-[#FAF6F0]/95 backdrop-blur-sm border-b border-black/5 pt-[max(env(safe-area-inset-top),0px)]">
+                            <div class="flex items-center gap-2 px-3 py-2 min-h-[2.75rem]">
+                                <div class="flex-1 min-w-0 [&>div]:gap-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:leading-tight [&_p]:text-[10px] [&_p]:leading-tight [&_p]:mt-0.5 [&_.h-8]:h-7 [&_.h-8]:w-7 [&_.h-8_svg]:h-3.5 [&_.h-8_svg]:w-3.5">{{ $header }}</div>
+                            </div>
+                        </header>
+                        @endif
+                        {{-- Desktop --}}
+                        <header class="hidden lg:block page-header sticky top-0 z-20 bg-[#F5F0E8]/90 backdrop-blur-sm border-b border-black/5">
+                            <div class="max-w-7xl mx-auto py-2 px-4 md:py-4 sm:px-6 lg:px-8">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @else
+                        <header class="page-header sticky top-0 z-20 bg-[#F5F0E8]/90 backdrop-blur-sm border-b border-black/5">
+                            <div class="max-w-7xl mx-auto py-2 px-4 md:py-4 sm:px-6 lg:px-8">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endif
                 @endisset
 
                 <!-- Page Content -->

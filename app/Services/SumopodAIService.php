@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\SekolahAiPersona;
+use App\Support\AiPersonaScope;
 use Illuminate\Support\Facades\Http;
 
 class SumopodAIService
@@ -29,10 +31,15 @@ class SumopodAIService
         string $anakName,
         string $kegiatanTitle,
         string $matrikulasiLabel,
-        string $scoreLabel
+        string $scoreLabel,
+        ?string $personaPrefix = null
     ): array {
+        $identity = $personaPrefix !== null && trim($personaPrefix) !== ''
+            ? trim($personaPrefix)
+            : 'Kamu adalah guru PAUD / TK yang profesional dan penuh kasih sayang.';
+
         $prompt = <<<PROMPT
-Kamu adalah guru PAUD / TK yang profesional dan penuh kasih sayang.
+{$identity}
 Berikan TEPAT 3 saran umpan balik positif dan konstruktif dalam Bahasa Indonesia untuk dicatat dalam laporan perkembangan siswa.
 
 Konteks:
@@ -118,7 +125,8 @@ PROMPT;
         string $anakName,
         string $kelasName,
         string $periodeLabel,
-        array $stats
+        array $stats,
+        ?string $personaPrefix = null
     ): string {
         $statsJson = json_encode($stats, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $aspekNames = implode(', ', array_keys($stats['per_aspek'] ?? []));
@@ -135,8 +143,12 @@ Setiap aspek 2-4 poin bullet, bahasa hangat seperti guru PAUD, jelaskan makna pe
 ASPEK
             : '';
 
+        $identity = $personaPrefix !== null && trim($personaPrefix) !== ''
+            ? trim($personaPrefix)
+            : 'Kamu adalah guru PAUD / TK yang profesional.';
+
         $prompt = <<<PROMPT
-Kamu adalah guru PAUD / TK yang profesional. Buat ringkasan monitoring & evaluasi (monev) perkembangan siswa berdasarkan data pencapaian matrikulasi selama satu bulan.
+{$identity} Buat ringkasan monitoring & evaluasi (monev) perkembangan siswa berdasarkan data pencapaian matrikulasi selama satu bulan.
 
 Konteks Siswa:
 - Nama: {$anakName}
@@ -197,5 +209,166 @@ PROMPT;
         }
 
         return $content;
+    }
+
+    /**
+     * Multi-turn chat completion.
+     *
+     * @param  array<int, array{role: string, content: string}>  $messages
+     */
+    public function chatCompletion(array $messages, int $maxTokens = 1024): string
+    {
+        $response = Http::withToken($this->apiKey)
+            ->timeout(60)
+            ->post("{$this->baseUrl}/chat/completions", [
+                'model'       => $this->model,
+                'messages'    => $messages,
+                'max_tokens'  => $maxTokens,
+                'temperature' => 0.7,
+            ]);
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Sumopod AI API error: HTTP ' . $response->status()
+            );
+        }
+
+        $content = trim((string) $response->json('choices.0.message.content', ''));
+
+        if ($content === '') {
+            throw new \RuntimeException('Sumopod AI mengembalikan respons kosong.');
+        }
+
+        return $content;
+    }
+
+    /**
+     * Generate structured persona fields for a PAUD school AI function.
+     *
+     * @return array<string, mixed>
+     */
+    public function generatePersonaFields(string $sekolahName, string $scope, ?string $brief = null): array
+    {
+        $briefBlock = filled($brief)
+            ? "\nDeskripsi sekolah dari admin:\n{$brief}\n"
+            : '';
+
+        $scopeContext = AiPersonaScope::generateContext($scope);
+        $defaultRole = AiPersonaScope::defaultRoleTitle($scope);
+
+        $prompt = <<<PROMPT
+Buat persona AI untuk PAUD / daycare.
+
+Nama sekolah: {$sekolahName}
+Fungsi AI: {$scopeContext}
+Judul peran default (referensi): {$defaultRole}
+{$briefBlock}
+Jawab HANYA dengan JSON valid (tanpa markdown, tanpa penjelasan) dengan key persis:
+{
+  "name": "nama persona",
+  "role_title": "judul peran",
+  "description": "deskripsi singkat persona",
+  "gender": "perempuan atau laki_laki atau netral",
+  "age": 28,
+  "dialog_language": "Bahasa Indonesia",
+  "personality_traits": "sifat kepribadian",
+  "communication_style": "gaya komunikasi",
+  "behavior_guidelines": "panduan perilaku AI",
+  "background": "latar belakang persona"
+}
+
+Gunakan Bahasa Indonesia untuk teks. Field age harus angka 18-80.
+Hindari sapaan kaku berulang seperti Bu/Ibu/Bapak/Ibu.
+PROMPT;
+
+        $content = $this->chatCompletion([
+            ['role' => 'user', 'content' => $prompt],
+        ], 1536);
+
+        try {
+            return $this->parsePersonaFields($content, $scope);
+        } catch (\RuntimeException) {
+            $retryPrompt = $prompt . "\n\nPENTING: Balas HANYA JSON valid tanpa teks lain.";
+            $retryContent = $this->chatCompletion([
+                ['role' => 'user', 'content' => $retryPrompt],
+            ], 1536);
+
+            return $this->parsePersonaFields($retryContent, $scope);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function parsePersonaFields(string $content, string $scope): array
+    {
+        $defaults = [
+            'name' => AiPersonaScope::defaultName($scope),
+            'role_title' => AiPersonaScope::defaultRoleTitle($scope),
+            'description' => '',
+            'gender' => null,
+            'age' => null,
+            'dialog_language' => 'Bahasa Indonesia',
+            'personality_traits' => '',
+            'communication_style' => '',
+            'behavior_guidelines' => '',
+            'background' => '',
+        ];
+
+        $json = trim($content);
+        if (preg_match('/```(?:json)?\s*([\s\S]*?)```/i', $json, $matches)) {
+            $json = trim($matches[1]);
+        }
+
+        $decoded = json_decode($json, true);
+        if (! is_array($decoded)) {
+            if (preg_match('/\{[\s\S]*\}/', $content, $objectMatch)) {
+                $decoded = json_decode($objectMatch[0], true);
+            }
+        }
+
+        if (! is_array($decoded)) {
+            throw new \RuntimeException('AI tidak mengembalikan JSON persona yang valid.');
+        }
+
+        $limits = [
+            'name' => 120,
+            'role_title' => 120,
+            'description' => 2000,
+            'dialog_language' => 60,
+            'personality_traits' => 2000,
+            'communication_style' => 2000,
+            'behavior_guidelines' => 2000,
+            'background' => 2000,
+        ];
+
+        $result = [];
+        foreach ($defaults as $key => $default) {
+            if ($key === 'gender') {
+                $gender = strtolower(trim((string) ($decoded['gender'] ?? '')));
+                $result['gender'] = in_array($gender, [
+                    SekolahAiPersona::GENDER_PEREMPUAN,
+                    SekolahAiPersona::GENDER_LAKI_LAKI,
+                    SekolahAiPersona::GENDER_NETRAL,
+                ], true) ? $gender : null;
+                continue;
+            }
+
+            if ($key === 'age') {
+                $age = $decoded['age'] ?? null;
+                $age = is_numeric($age) ? (int) $age : null;
+                $result['age'] = ($age !== null && $age >= 18 && $age <= 80) ? $age : null;
+                continue;
+            }
+
+            $value = trim((string) ($decoded[$key] ?? $default));
+            $result[$key] = mb_substr($value, 0, $limits[$key] ?? 2000);
+        }
+
+        if ($result['name'] === '') {
+            $result['name'] = $defaults['name'];
+        }
+
+        return $result;
     }
 }

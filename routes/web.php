@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranControll
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
 use App\Http\Controllers\Admin\SkalaPencapaianController;
 use App\Http\Controllers\Admin\MenuMakananController;
+use App\Http\Controllers\Admin\MonevController as AdminMonevController;
 use App\Http\Controllers\Admin\PendaftaranController;
 use App\Http\Controllers\Admin\PengajarController;
 use App\Http\Controllers\Admin\PresensiController;
@@ -26,7 +27,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
 use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
-use App\Http\Controllers\Admin\MonevController as AdminMonevController;
+use App\Http\Controllers\Admin\OrangTuaChatController;
+use App\Http\Controllers\Admin\AiPersonaController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
 use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
@@ -124,6 +126,11 @@ Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->
     Route::get('kritik-saran', [AdminKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'show'])->name('kritik-saran.show');
     Route::patch('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'update'])->name('kritik-saran.update');
+    Route::get('orangtua-chat', [OrangTuaChatController::class, 'index'])->name('orangtua-chat.index');
+    Route::get('orangtua-chat/{orangtua_chat}', [OrangTuaChatController::class, 'show'])->name('orangtua-chat.show');
+    Route::get('ai-persona', [AiPersonaController::class, 'index'])->name('ai-persona.index');
+    Route::post('ai-persona', [AiPersonaController::class, 'update'])->name('ai-persona.update');
+    Route::post('ai-persona/generate', [AiPersonaController::class, 'generate'])->middleware('throttle:10,1')->name('ai-persona.generate');
     // Pendaftaran approval
     Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
     Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');
@@ -197,6 +204,9 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kesehatan', [\App\Http\Controllers\OrangTua\KesehatanController::class, 'index'])->name('kesehatan.index');
     Route::get('presensi', [\App\Http\Controllers\OrangTua\PresensiController::class, 'index'])->name('presensi.index');
     Route::post('menu-makanan/vote', [\App\Http\Controllers\OrangTua\MenuMakananVoteController::class, 'vote'])->name('menu-makanan.vote');
+    Route::get('chat', [\App\Http\Controllers\OrangTua\ChatController::class, 'index'])->name('chat.index');
+    Route::post('chat/messages', [\App\Http\Controllers\OrangTua\ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.messages.store');
+    Route::delete('chat', [\App\Http\Controllers\OrangTua\ChatController::class, 'destroy'])->name('chat.destroy');
 });
 
 require __DIR__.'/auth.php';

@@ -1,7 +1,17 @@
 <x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center gap-3">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
+                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kehadiran</h2>
+        </div>
+    </x-slot>
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
+            <div class="hidden lg:block">
                 <h2 class="text-2xl font-bold text-gray-900 leading-tight">Rekap Kehadiran Siswa</h2>
                 <p class="text-sm text-gray-500 mt-1">Pantau kehadiran anak Anda secara berkala.</p>
             </div>

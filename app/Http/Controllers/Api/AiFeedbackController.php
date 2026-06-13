@@ -7,7 +7,9 @@ use App\Models\AiSetting;
 use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
+use App\Services\AiPersonaService;
 use App\Services\SumopodAIService;
+use App\Support\AiPersonaScope;
 use App\Support\LabelSkorPencapaian;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +17,10 @@ use Illuminate\Validation\Rule;
 
 class AiFeedbackController extends Controller
 {
+    public function __construct(
+        protected AiPersonaService $personaService
+    ) {}
+
     public function suggest(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -55,6 +61,10 @@ class AiFeedbackController extends Controller
 
         $matrikulasiLabel = ($matrikulasi->aspek ? $matrikulasi->aspek . ': ' : '') . $matrikulasi->indicator;
         $scoreLabel = LabelSkorPencapaian::scoreLabelForAi($request->score, $sekolahId ?: null);
+        $sekolahName = $anak->sekolah?->name ?? 'PAUD';
+        $personaPrompt = $sekolahId > 0
+            ? $this->personaService->resolveActivePrompt($sekolahId, AiPersonaScope::FEEDBACK_PENCAPAIAN, $sekolahName)
+            : null;
 
         try {
             $service = new SumopodAIService($aiSetting->ai_api_key, $aiSetting->ai_model ?? 'gpt-4o-mini');
@@ -62,7 +72,8 @@ class AiFeedbackController extends Controller
                 $anak->displayName(),
                 $kegiatan->title,
                 $matrikulasiLabel,
-                $scoreLabel
+                $scoreLabel,
+                $personaPrompt
             );
 
             return response()->json(['suggestions' => $suggestions]);

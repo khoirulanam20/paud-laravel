@@ -1,0 +1,320 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Anak;
+use App\Models\Kegiatan;
+use App\Models\KegiatanRutin;
+use App\Models\Kesehatan;
+use App\Models\MenuMakanan;
+use App\Models\MonevSummary;
+use App\Models\Pencapaian;
+use App\Models\Presensi;
+use App\Models\SekolahAiPersona;
+use App\Models\User;
+use App\Support\AiPersonaScope;
+use App\Support\LabelSkorPencapaian;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+
+class OrangTuaChatContextBuilder
+{
+    public function __construct(
+        protected MonevDataAggregator $monevAggregator
+    ) {}
+
+    public function buildSystemPrompt(User $user): string
+    {
+        $anaks = Anak::query()
+            ->where('user_id', $user->id)
+            ->where('sekolah_id', $user->sekolah_id)
+            ->where('status', 'approved')
+            ->with('kelas')
+            ->orderBy('name')
+            ->get();
+
+        $sekolahName = $user->sekolah?->name ?? 'PAUD';
+        $contextBlocks = [];
+
+        foreach ($anaks as $anak) {
+            $contextBlocks[] = $this->buildAnakContext($anak);
+        }
+
+        $menuBlock = $this->buildMenuContext((int) $user->sekolah_id);
+        if ($menuBlock !== '') {
+            $contextBlocks[] = $menuBlock;
+        }
+
+        $dataContext = $contextBlocks !== []
+            ? implode("\n\n---\n\n", $contextBlocks)
+            : 'Belum ada data anak aktif yang terdaftar.';
+
+        $dataContext = Str::limit($dataContext, 10000, '…');
+
+        $personaPrompt = SekolahAiPersona::resolveActivePrompt(
+            (int) $user->sekolah_id,
+            AiPersonaScope::CHAT_ORANGTUA,
+            $sekolahName
+        );
+
+        $identityLine = $personaPrompt !== null
+            ? $personaPrompt
+            : "Kamu adalah asisten AI PAUD / daycare yang membantu orang tua memahami perkembangan anak mereka di {$sekolahName}.";
+
+        $styleRules = $personaPrompt !== null
+            ? ''
+            : "\n- Untuk sapaan singkat (mis. \"halo\"), balas 1-2 kalimat saja, natural dan tidak berlebihan formal.";
+
+        $parentContext = $this->buildParentContext($user);
+
+        return <<<PROMPT
+{$identityLine}
+
+ATURAN WAJIB:
+- Jawab HANYA seputar anak-anak orang tua ini di PAUD/daycare ini (perkembangan, kegiatan, kehadiran, kesehatan, monev, menu makanan, dll.).
+- Tolak sopan pertanyaan di luar topik (politik, cuaca umum, pekerjaan rumah mata pelajaran SD, dll.) dan arahkan kembali ke perkembangan anak di PAUD.
+- Gunakan Bahasa Indonesia yang hangat, mudah dipahami orang tua.
+- Sapa orang tua dengan "Ayah/Bunda" (format aman). Jangan memanggil "Bu", "Ibu", "Bapak", atau menebak gender dari nama.
+- Jika data belum tersedia, jelaskan dengan jujur dan arahkan ke menu aplikasi yang relevan (Monev, Pencapaian, Kehadiran, dll.).
+- Jangan mengarang data yang tidak ada di konteks di bawah.{$styleRules}
+
+{$parentContext}
+
+DATA ANAK & SEKOLAH:
+{$dataContext}
+PROMPT;
+    }
+
+    protected function buildParentContext(User $user): string
+    {
+        $name = trim($user->name) ?: 'Orang tua';
+
+        return <<<BLOCK
+ORANG TUA PENGGUNA:
+- Nama: {$name}
+- Panggilan aman: Ayah/Bunda (gunakan persis format ini saat menyapa, jangan tebak Ayah atau Bunda dari nama)
+BLOCK;
+    }
+
+    protected function buildAnakContext(Anak $anak): string
+    {
+        $lines = [];
+        $lines[] = '=== ANAK: ' . $anak->displayName() . ' ===';
+        $lines[] = 'Kelas: ' . ($anak->kelas?->name ?? 'Belum ada kelas');
+        $lines[] = 'Usia: ' . ($anak->dob ? $anak->age : 'Tidak dicatat');
+
+        $now = Carbon::now();
+        $monevBlock = $this->buildMonevContext($anak, $now->year, $now->month);
+        if ($monevBlock !== '') {
+            $lines[] = $monevBlock;
+        }
+
+        $pencapaianBlock = $this->buildPencapaianContext($anak);
+        if ($pencapaianBlock !== '') {
+            $lines[] = $pencapaianBlock;
+        }
+
+        $presensiBlock = $this->buildPresensiContext($anak, $now);
+        if ($presensiBlock !== '') {
+            $lines[] = $presensiBlock;
+        }
+
+        $kesehatanBlock = $this->buildKesehatanContext($anak);
+        if ($kesehatanBlock !== '') {
+            $lines[] = $kesehatanBlock;
+        }
+
+        $kegiatanBlock = $this->buildKegiatanContext($anak);
+        if ($kegiatanBlock !== '') {
+            $lines[] = $kegiatanBlock;
+        }
+
+        return implode("\n", $lines);
+    }
+
+    protected function buildMonevContext(Anak $anak, int $tahun, int $bulan): string
+    {
+        $summary = MonevSummary::query()
+            ->where('anak_id', $anak->id)
+            ->forPeriode($tahun, $bulan)
+            ->first();
+
+        if (! $summary) {
+            $summary = MonevSummary::query()
+                ->where('anak_id', $anak->id)
+                ->orderByDesc('tahun')
+                ->orderByDesc('bulan')
+                ->first();
+        }
+
+        if (! $summary) {
+            return 'Monev: Belum ada laporan monev yang dipublikasikan.';
+        }
+
+        $ringkasan = Str::limit(strip_tags((string) $summary->ringkasan), 1500);
+
+        return 'Monev (' . $summary->periodeLabel() . "):\n" . $ringkasan;
+    }
+
+    protected function buildPencapaianContext(Anak $anak): string
+    {
+        $items = Pencapaian::query()
+            ->where('anak_id', $anak->id)
+            ->with(['kegiatan', 'matrikulasi'])
+            ->latest()
+            ->limit(12)
+            ->get();
+
+        if ($items->isEmpty()) {
+            return 'Pencapaian terbaru: Belum ada catatan pencapaian.';
+        }
+
+        $lines = ['Pencapaian terbaru:'];
+        $sekolahId = (int) $anak->sekolah_id;
+
+        foreach ($items as $p) {
+            $aspek = $p->matrikulasi
+                ? (($p->matrikulasi->aspek ? $p->matrikulasi->aspek . ': ' : '') . $p->matrikulasi->indicator)
+                : '—';
+            $skor = LabelSkorPencapaian::scoreLabelForAi((string) $p->score, $sekolahId ?: null);
+            $kegiatan = $p->kegiatan?->title ?? 'Kegiatan';
+            $feedback = trim((string) ($p->feedback ?? ''));
+            $line = "- {$kegiatan} | {$aspek} | {$skor}";
+            if ($feedback !== '') {
+                $line .= ' | Umpan balik: ' . Str::limit($feedback, 120);
+            }
+            $lines[] = $line;
+        }
+
+        return implode("\n", $lines);
+    }
+
+    protected function buildPresensiContext(Anak $anak, Carbon $now): string
+    {
+        $start = $now->copy()->startOfMonth();
+        $end = $now->copy()->endOfMonth();
+
+        $records = Presensi::query()
+            ->where('anak_id', $anak->id)
+            ->whereBetween('tanggal', [$start, $end])
+            ->get();
+
+        if ($records->isEmpty()) {
+            return 'Kehadiran bulan ini: Belum ada data presensi.';
+        }
+
+        $hadir = $records->where('hadir', true)->count();
+        $total = $records->count();
+        $izin = $records->where('status', 'izin')->count();
+        $sakit = $records->where('status', 'sakit')->count();
+        $alpha = $records->where('status', 'alpha')->count();
+
+        return "Kehadiran bulan ini ({$now->translatedFormat('F Y')}): hadir {$hadir}/{$total}, izin {$izin}, sakit {$sakit}, alpha {$alpha}";
+    }
+
+    protected function buildKesehatanContext(Anak $anak): string
+    {
+        $records = Kesehatan::query()
+            ->where('anak_id', $anak->id)
+            ->orderByDesc('tanggal_pemeriksaan')
+            ->limit(5)
+            ->get();
+
+        if ($records->isEmpty()) {
+            return 'Kesehatan: Belum ada catatan kesehatan.';
+        }
+
+        $lines = ['Catatan kesehatan terbaru:'];
+        foreach ($records as $r) {
+            $tanggal = $r->tanggal_pemeriksaan?->format('d M Y') ?? '—';
+            $parts = array_filter([
+                $r->berat_badan ? "BB {$r->berat_badan} kg" : null,
+                $r->tinggi_badan ? "TB {$r->tinggi_badan} cm" : null,
+                $r->alergi ? "Alergi: {$r->alergi}" : null,
+            ]);
+            $lines[] = '- ' . $tanggal . ': ' . ($parts !== [] ? implode(', ', $parts) : 'Pemeriksaan rutin');
+        }
+
+        return implode("\n", $lines);
+    }
+
+    protected function buildKegiatanContext(Anak $anak): string
+    {
+        $lines = [];
+        $today = Carbon::today();
+        $until = $today->copy()->addDays(7);
+
+        if ($anak->kelas_id) {
+            $kegiatans = Kegiatan::query()
+                ->where('kelas_id', $anak->kelas_id)
+                ->whereBetween('date', [$today, $until])
+                ->orderBy('date')
+                ->limit(5)
+                ->get();
+
+            if ($kegiatans->isNotEmpty()) {
+                $lines[] = 'Agenda belajar 7 hari ke depan:';
+                foreach ($kegiatans as $k) {
+                    $lines[] = '- ' . Carbon::parse($k->date)->format('d M') . ': ' . $k->title;
+                }
+            }
+        }
+
+        $rutins = KegiatanRutin::query()
+            ->where('anak_id', $anak->id)
+            ->whereBetween('tanggal', [$today, $until])
+            ->orderBy('tanggal')
+            ->limit(5)
+            ->get();
+
+        if ($rutins->isNotEmpty()) {
+            $lines[] = 'Kegiatan rutin 7 hari ke depan:';
+            foreach ($rutins as $r) {
+                $lines[] = '- ' . $r->tanggal->format('d M') . ': ' . ($r->kegiatan ?? $r->aspek ?? 'Kegiatan rutin');
+            }
+        }
+
+        if ($lines === []) {
+            return 'Kegiatan mendatang: Tidak ada agenda tercatat untuk 7 hari ke depan.';
+        }
+
+        return implode("\n", $lines);
+    }
+
+    protected function buildMenuContext(int $sekolahId): string
+    {
+        $start = Carbon::today()->startOfWeek();
+        $end = Carbon::today()->endOfWeek();
+
+        $menus = MenuMakanan::query()
+            ->where('sekolah_id', $sekolahId)
+            ->whereBetween('date', [$start, $end])
+            ->orderBy('date')
+            ->get();
+
+        if ($menus->isEmpty()) {
+            return 'Menu makanan minggu ini: Belum diunggah sekolah.';
+        }
+
+        $lines = ['Menu makanan minggu ini:'];
+        foreach ($menus as $m) {
+            $lines[] = '- ' . Carbon::parse($m->date)->format('d M') . ': ' . Str::limit((string) $m->menu, 100);
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * @return Collection<int, Anak>
+     */
+    public function approvedAnaks(User $user): Collection
+    {
+        return Anak::query()
+            ->where('user_id', $user->id)
+            ->where('sekolah_id', $user->sekolah_id)
+            ->where('status', 'approved')
+            ->orderBy('name')
+            ->get();
+    }
+}
