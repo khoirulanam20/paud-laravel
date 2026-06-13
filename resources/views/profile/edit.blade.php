@@ -186,7 +186,7 @@
                 <div><label class="input-label">Password Saat Ini</label><input type="password" name="current_password" class="input-field" autocomplete="current-password"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="input-label">Password Baru</label><input type="password" name="password" class="input-field" autocomplete="new-password"></div>
-                    <div><label class="input-label">Konfirmasi Password Baru</label><input type="password" name="password_confirmation" class="input-field" autocomplete="new-password"></div>
+                    <div><label class="input-label">Konfirmasi Password</label><input type="password" name="password_confirmation" class="input-field" autocomplete="new-password"></div>
                 </div>
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Ganti Password</button></div>
             </form>

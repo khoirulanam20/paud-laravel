@@ -30,7 +30,7 @@
 
         {{-- DETAIL MODAL --}}
         <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
-            <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
+            <div x-show="showDetailModal" x-transition class="modal-box w-11/12 !max-w-none md:max-w-xl" @click.away="showDetailModal=false">
                 <div class="modal-header">
                     <h3 class="section-title">Detail: <span x-text="detailData.title"></span></h3>
                 </div>
@@ -74,7 +74,46 @@
                     {{-- Daftar Pencapaian Siswa Section --}}
                     <div>
                         <h4 class="font-bold mb-3 text-sm text-gray-800">Pencapaian Terkait</h4>
-                        <div class="table-responsive border rounded-xl overflow-hidden"
+
+                        {{-- Mobile: kartu bertumpuk --}}
+                        <div class="md:hidden space-y-3">
+                            <template x-for="pc in (detailData.pencapaians || [])" :key="pc.id">
+                                <div class="rounded-xl border p-4 space-y-3" style="border-color:rgba(0,0,0,0.06); background:#FAFAF8;">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <img x-show="pc.anak_photo_url" :src="pc.anak_photo_url" alt=""
+                                            class="h-10 w-10 rounded-xl object-cover shrink-0 border border-black/5">
+                                        <div x-show="!pc.anak_photo_url"
+                                            class="h-10 w-10 rounded-xl shrink-0 flex items-center justify-center text-xs font-bold text-white bg-[#1A6B6B]"
+                                            x-text="(pc.anak_name || '?').charAt(0).toUpperCase()"></div>
+                                        <span class="font-semibold text-sm min-w-0 break-words leading-snug" style="color:#2C2C2C;"
+                                            x-text="pc.anak_name || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#9E9790;">Aspek / Indikator</p>
+                                        <span class="font-semibold text-sm text-[#1A6B6B] block" x-text="pc.aspek || '—'"></span>
+                                        <span x-show="pc.indicator" class="block mt-1 text-xs leading-relaxed break-words" style="color:#5A5A5A;"
+                                            x-text="pc.indicator"></span>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#9E9790;">Nilai</p>
+                                        <span class="inline-block text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap"
+                                            x-bind:style="'background:' + (pc.score_color || '#eee')"
+                                            x-text="pc.score_label || pc.score"></span>
+                                    </div>
+                                    <div x-show="pc.feedback">
+                                        <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#9E9790;">Catatan</p>
+                                        <p class="text-xs leading-relaxed break-words" style="color:#5A5A5A;" x-text="pc.feedback"></p>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="!detailData.pencapaians || detailData.pencapaians.length === 0"
+                                class="rounded-xl border px-4 py-6 text-center text-xs" style="border-color:rgba(0,0,0,0.06); color:#9E9790;">
+                                Belum ada data pencapaian pada kegiatan ini.
+                            </div>
+                        </div>
+
+                        {{-- Desktop: tabel --}}
+                        <div class="hidden md:block border rounded-xl overflow-hidden"
                             style="border-color:rgba(0,0,0,0.06);">
                             <table class="w-full text-sm">
                                 <thead style="background:#F5F5F3;">
@@ -83,7 +122,7 @@
                                             Anak</th>
                                         <th class="text-left px-4 py-3 font-semibold text-xs" style="color:#5A5A5A;">
                                             Aspek / Indikator</th>
-                                        <th class="text-left px-4 py-3 font-semibold text-xs" style="color:#5A5A5A;">
+                                        <th class="text-left px-4 py-3 font-semibold text-xs whitespace-nowrap w-px" style="color:#5A5A5A;">
                                             Nilai</th>
                                         <th class="text-left px-4 py-3 font-semibold text-xs" style="color:#5A5A5A;">
                                             Catatan</th>
@@ -109,9 +148,9 @@
                                                 <span x-show="pc.indicator" class="block mt-0.5"
                                                     x-text="pc.indicator"></span>
                                             </td>
-                                            <td class="px-4 py-3">
+                                            <td class="px-4 py-3 whitespace-nowrap w-px align-top">
                                                 <span
-                                                    class="text-xs font-bold px-2 py-1 rounded max-w-[12rem] leading-snug"
+                                                    class="inline-block text-xs font-bold px-2.5 py-1 rounded whitespace-nowrap"
                                                     x-bind:style="'background:' + (pc.score_color || '#eee')"
                                                     x-text="pc.score_label || pc.score"></span>
                                             </td>
