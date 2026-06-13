@@ -34,6 +34,7 @@
                     ['route' => 'admin.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'pattern' => 'admin.kegiatan.*'],
                     ['route' => 'admin.master-kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'admin.master-kegiatan-rutin.*'],
                     ['route' => 'admin.pencapaian.index', 'label' => 'Pencapaian Siswa', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.pencapaian.*'],
+                    ['route' => 'admin.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.monev.*'],
                 ]
             ],
             [
@@ -62,6 +63,7 @@
                     ['route' => 'adminkelas.anak.index', 'label' => 'Siswa Kelasku', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'adminkelas.anak.*'],
                     ['route' => 'adminkelas.presensi.index', 'label' => 'Presensi Kelasku', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'adminkelas.presensi.*'],
                     ['route' => 'adminkelas.kesehatan.index', 'label' => 'Kesehatan Kelasku', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'adminkelas.kesehatan.*'],
+                    ['route' => 'adminkelas.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'adminkelas.monev.*'],
                 ]
             ],
         ]);
@@ -79,6 +81,7 @@
     if ($user && $user->hasRole('Orang Tua')) {
         $roleNavItems = array_merge($roleNavItems, [
             ['route' => 'orangtua.pencapaian.index', 'label' => 'Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.pencapaian.*'],
+            ['route' => 'orangtua.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'orangtua.monev.*'],
             ['route' => 'orangtua.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'],
             ['route' => 'orangtua.kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'orangtua.kegiatan-rutin.*'],
             ['route' => 'orangtua.presensi.index', 'label' => 'Kehadiran', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'pattern' => 'orangtua.presensi.*'],
@@ -188,6 +191,7 @@
             });
         };
     </script>
+    @stack('scripts')
 </body>
 
 </html>

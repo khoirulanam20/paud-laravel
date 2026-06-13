@@ -24,7 +24,9 @@ use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranCont
 use App\Http\Controllers\Lembaga\SekolahController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
+use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
+use App\Http\Controllers\Admin\MonevController as AdminMonevController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
 use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
@@ -85,6 +87,12 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('monev', [AdminMonevController::class, 'index'])->name('monev.index');
+    Route::post('monev/generate', [AdminMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
+    Route::post('monev/bulk-generate', [AdminMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');
+    Route::post('monev/bulk-reset', [AdminMonevController::class, 'bulkReset'])->middleware('throttle:20,1')->name('monev.bulk-reset');
+    Route::get('monev/generation/{generation}/status', [AdminMonevController::class, 'generationStatus'])->name('monev.generation.status');
+    Route::get('monev/{anak}', [AdminMonevController::class, 'show'])->name('monev.show');
     Route::resource('kelas', KelasController::class)->except(['create', 'edit', 'show']);
     Route::resource('matrikulasi', AdminMatrikulasiController::class)->except(['create', 'edit', 'show']);
     Route::resource('skala-pencapaian', SkalaPencapaianController::class)->except(['create', 'edit', 'show']);
@@ -137,6 +145,12 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
     Route::get('kesehatan/history/{anak}', [\App\Http\Controllers\AdminKelas\KesehatanController::class, 'history'])->name('kesehatan.history');
     Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('matrikulasi', [MatrikulasiController::class, 'index'])->name('matrikulasi.index');
+    Route::get('monev', [AdminKelasMonevController::class, 'index'])->name('monev.index');
+    Route::post('monev/generate', [AdminKelasMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
+    Route::post('monev/bulk-generate', [AdminKelasMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');
+    Route::post('monev/bulk-reset', [AdminKelasMonevController::class, 'bulkReset'])->middleware('throttle:20,1')->name('monev.bulk-reset');
+    Route::get('monev/generation/{generation}/status', [AdminKelasMonevController::class, 'generationStatus'])->name('monev.generation.status');
+    Route::get('monev/{anak}', [AdminKelasMonevController::class, 'show'])->name('monev.show');
 });
 
 // ─────────────────────────────────────────────
@@ -168,6 +182,8 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');
     Route::get('kegiatan-rutin', [\App\Http\Controllers\OrangTua\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::get('pencapaian', [OrangTuaPencapaianController::class, 'index'])->name('pencapaian.index');
+    Route::get('monev', [\App\Http\Controllers\OrangTua\MonevController::class, 'index'])->name('monev.index');
+    Route::get('monev/{anak}', [\App\Http\Controllers\OrangTua\MonevController::class, 'show'])->name('monev.show');
     Route::get('menu-makanan', [OrangTuaMenuMakananController::class, 'index'])->name('menu-makanan.index');
     Route::redirect('kritik-saran/riwayat', '/orangtua/kritik-saran');
     Route::get('kritik-saran', [OrangTuaKritikSaranController::class, 'index'])->name('kritik-saran.index');

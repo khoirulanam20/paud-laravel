@@ -108,4 +108,74 @@ PROMPT;
 
         return array_slice($suggestions, 0, 3);
     }
+
+    /**
+     * Generate a monthly monitoring summary for a student's matriculation achievements.
+     *
+     * @param  array<string, mixed>  $stats  Aggregated data from MonevDataAggregator
+     */
+    public function generateMonevSummary(
+        string $anakName,
+        string $kelasName,
+        string $periodeLabel,
+        array $stats
+    ): string {
+        $statsJson = json_encode($stats, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        $prompt = <<<PROMPT
+Kamu adalah guru PAUD / TK yang profesional. Buat ringkasan monitoring & evaluasi (monev) perkembangan siswa berdasarkan data pencapaian matrikulasi selama satu bulan.
+
+Konteks Siswa:
+- Nama: {$anakName}
+- Kelas: {$kelasName}
+- Periode: {$periodeLabel}
+
+Data Pencapaian Matrikulasi (agregat):
+{$statsJson}
+
+Instruksi:
+- Tulis dalam Bahasa Indonesia, naratif dan profesional namun hangat.
+- WAJIB gunakan format section marker persis seperti ini (4 section):
+[GAMBARAN_UMUM]
+(paragraf gambaran umum perkembangan bulan ini)
+
+[KEKUATAN]
+(paragraf kekuatan/aspek yang menonjol)
+
+[PERHATIAN]
+(paragraf area yang perlu perhatian)
+
+[REKOMENDASI]
+(paragraf rekomendasi singkat untuk bulan depan)
+
+- Gunakan data statistik sebagai dasar, jangan hanya menyebut angka mentah.
+- Jika total entri 0, jelaskan bahwa belum ada data pencapaian pada periode ini dan berikan saran umum pemantauan.
+- Setiap section 1 paragraf singkat (3-5 kalimat).
+PROMPT;
+
+        $response = Http::withToken($this->apiKey)
+            ->timeout(60)
+            ->post("{$this->baseUrl}/chat/completions", [
+                'model'    => $this->model,
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens'  => 1024,
+                'temperature' => 0.7,
+            ]);
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Sumopod AI API error: HTTP ' . $response->status()
+            );
+        }
+
+        $content = trim((string) $response->json('choices.0.message.content', ''));
+
+        if ($content === '') {
+            throw new \RuntimeException('Sumopod AI mengembalikan respons kosong.');
+        }
+
+        return $content;
+    }
 }
