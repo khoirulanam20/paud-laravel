@@ -137,21 +137,23 @@
         <div x-show="error" x-cloak class="orangtua-chat-error mx-3 px-3 py-2 rounded-xl text-xs alert-danger" x-text="error"></div>
 
         {{-- Composer --}}
-        <div class="orangtua-chat-composer shrink-0 border-t bg-[#FAF6F0]/95 backdrop-blur-md px-3 md:px-4 py-1.5">
-            <form @submit.prevent="sendMessage()" class="flex items-center gap-2 min-w-0">
-                <div class="flex-1 min-w-0 rounded-full border bg-white shadow-sm flex items-center overflow-hidden"
+        <div class="orangtua-chat-composer shrink-0 border-t bg-[#FAF6F0]/95 backdrop-blur-md px-3 md:px-4">
+            <form @submit.prevent="sendMessage()" class="orangtua-chat-form flex items-center gap-2 min-w-0">
+                <div class="orangtua-chat-field flex-1 min-w-0 rounded-full border bg-white shadow-sm flex items-center overflow-hidden"
                      style="border-color:rgba(0,0,0,0.08);">
-                    <textarea x-model="input"
-                              x-ref="inputField"
-                              rows="1"
-                              maxlength="1000"
-                              placeholder="Ketik pesan..."
-                              :disabled="loading"
-                              @keydown.enter.prevent="if (!$event.shiftKey) sendMessage()"
-                              @input="resizeInput()"
-                              @focus="onComposerFocus()"
-                              @blur="onComposerBlur()"
-                              class="orangtua-chat-input w-full resize-none bg-transparent border-0 focus:ring-0 focus:outline-none text-sm leading-5 py-2 pl-4 pr-2"></textarea>
+                    <input type="text"
+                           x-model="input"
+                           x-ref="inputField"
+                           maxlength="1000"
+                           placeholder="Ketik pesan..."
+                           autocomplete="off"
+                           autocorrect="on"
+                           enterkeyhint="send"
+                           :disabled="loading"
+                           @keydown.enter.prevent="sendMessage()"
+                           @focus="onComposerFocus()"
+                           @blur="onComposerBlur()"
+                           class="orangtua-chat-input w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm">
                 </div>
                 <button type="submit"
                         :disabled="loading || !input.trim()"
@@ -200,7 +202,12 @@
                 transition: top 0.08s ease-out, height 0.08s ease-out;
             }
             .orangtua-chat-composer {
-                padding-bottom: max(0.625rem, env(safe-area-inset-bottom, 0px));
+                flex: 0 0 auto;
+                padding-top: 0.5rem;
+                padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+            }
+            body.orangtua-chat-keyboard-open .orangtua-chat-composer {
+                padding-bottom: 0.375rem;
             }
             body.orangtua-chat-keyboard-open {
                 overflow: hidden;
@@ -235,21 +242,56 @@
             border: 1px solid rgba(0, 0, 0, 0.06);
             border-bottom-left-radius: 0.25rem;
         }
+        .orangtua-chat-form {
+            height: 2.75rem;
+            min-height: 2.75rem;
+            max-height: 2.75rem;
+        }
+        .orangtua-chat-composer {
+            flex: 0 0 auto;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .orangtua-chat-field {
+            height: 2.5rem;
+            min-height: 2.5rem;
+            max-height: 2.5rem;
+        }
         .orangtua-chat-input {
             height: 2.5rem;
             min-height: 2.5rem;
-            max-height: 6.5rem;
-            overflow-y: hidden;
+            max-height: 2.5rem;
+            line-height: 2.5rem;
+            padding: 0 0.75rem 0 1rem;
+            margin: 0;
             box-sizing: border-box;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .orangtua-chat-send {
             width: 2.5rem;
             height: 2.5rem;
+            min-width: 2.5rem;
+            min-height: 2.5rem;
         }
         @media (min-width: 768px) {
+            .orangtua-chat-form {
+                height: 3rem;
+                min-height: 3rem;
+                max-height: 3rem;
+            }
+            .orangtua-chat-field,
+            .orangtua-chat-input {
+                height: 2.75rem;
+                min-height: 2.75rem;
+                max-height: 2.75rem;
+                line-height: 2.75rem;
+            }
             .orangtua-chat-send {
                 width: 2.75rem;
                 height: 2.75rem;
+                min-width: 2.75rem;
+                min-height: 2.75rem;
             }
         }
     </style>
@@ -298,33 +340,6 @@
                     });
                 },
 
-                resizeInput() {
-                    const el = this.$refs.inputField;
-                    if (!el) return;
-
-                    const minHeight = 40;
-                    const maxHeight = 104;
-
-                    if (!this.input.trim()) {
-                        el.style.height = `${minHeight}px`;
-                        el.style.overflowY = 'hidden';
-                        return;
-                    }
-
-                    el.style.height = `${minHeight}px`;
-                    el.style.overflowY = 'hidden';
-                    const nextHeight = Math.max(minHeight, Math.min(el.scrollHeight, maxHeight));
-                    el.style.height = `${nextHeight}px`;
-                    el.style.overflowY = nextHeight >= maxHeight ? 'auto' : 'hidden';
-                },
-
-                resetInputHeight() {
-                    const el = this.$refs.inputField;
-                    if (!el) return;
-                    el.style.height = '40px';
-                    el.style.overflowY = 'hidden';
-                },
-
                 isMobileChat() {
                     return window.matchMedia('(max-width: 1023px)').matches;
                 },
@@ -347,9 +362,6 @@
 
                 onComposerFocus() {
                     document.body.classList.add('orangtua-chat-keyboard-open');
-                    if (!this.input.trim()) {
-                        this.resetInputHeight();
-                    }
                     [50, 150, 350].forEach((delay) => {
                         setTimeout(() => {
                             this.updateViewport();
@@ -399,7 +411,6 @@
                         created_at: sentAt,
                     });
                     this.input = '';
-                    this.resizeInput();
                     this.scrollToBottom('smooth');
 
                     this.loading = true;
@@ -419,7 +430,6 @@
                             this.messages = this.messages.filter((m) => m.id !== tempId);
                             this.error = data.error || 'Gagal mengirim pesan.';
                             this.input = content;
-                            this.resizeInput();
                             return;
                         }
 
@@ -437,7 +447,6 @@
                         this.messages = this.messages.filter((m) => m.id !== tempId);
                         this.error = 'Gagal mengirim pesan. Periksa koneksi internet.';
                         this.input = content;
-                        this.resizeInput();
                     } finally {
                         this.loading = false;
                         this.scrollToBottom('smooth');
@@ -473,7 +482,6 @@
                 init() {
                     this.bindViewportListeners();
                     this.updateViewport();
-                    this.resetInputHeight();
                     this.scrollToBottom();
                     setTimeout(() => this.scrollToBottom(), 100);
                 },
