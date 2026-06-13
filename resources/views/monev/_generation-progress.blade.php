@@ -24,11 +24,14 @@
             <span class="text-lg font-bold tabular-nums" style="color:#1A6B6B;" x-text="processed + '/' + total">0/0</span>
         </div>
 
-        <div class="w-full h-3 rounded-full overflow-hidden" style="background:#D0E8E8;">
+        <div class="relative w-full h-4 rounded-full overflow-hidden" style="background:#D0E8E8;">
             <div
-                class="h-full rounded-full transition-all duration-500 ease-out"
-                style="background: linear-gradient(90deg, #1A6B6B, #2D9B9B);"
-                :style="'width:' + percent + '%'"
+                class="absolute top-0 left-0 h-full rounded-full transition-[width] duration-500 ease-out"
+                :style="{
+                    width: percent + '%',
+                    minWidth: percent > 0 ? '0.5rem' : '0',
+                    background: 'linear-gradient(90deg, #1A6B6B, #2D9B9B)',
+                }"
             ></div>
         </div>
 
@@ -51,7 +54,7 @@ window.monevProgress = function monevProgress({ generationId, statusUrl, initial
         completed: 0,
         skipped: 0,
         failed: initial.failed ?? 0,
-        percent: initial.percent,
+        percent: Number(initial.percent) || 0,
         status: initial.status,
         pollTimer: null,
         start() {
@@ -73,7 +76,7 @@ window.monevProgress = function monevProgress({ generationId, statusUrl, initial
                 this.completed = data.completed;
                 this.skipped = data.skipped;
                 this.failed = data.failed;
-                this.percent = data.percent;
+                this.percent = Number(data.percent) || 0;
                 this.status = data.status;
                 if (data.is_finished) {
                     clearInterval(this.pollTimer);
