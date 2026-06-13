@@ -12,6 +12,7 @@ use App\Models\Pengajar;
 use App\Models\Sekolah;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -25,6 +26,7 @@ class ChatTest extends TestCase
     {
         parent::setUp();
         $this->seed(RoleSeeder::class);
+        $this->withoutMiddleware(ValidateCsrfToken::class);
     }
 
     /**
@@ -109,7 +111,9 @@ class ChatTest extends TestCase
             ->get(route('orangtua.chat.index'))
             ->assertOk()
             ->assertSee('Chat AI')
-            ->assertSee('Mulai percakapan');
+            ->assertSee('Mulai percakapan')
+            ->assertSee('aria-label="Kembali"', false)
+            ->assertDontSee('Menu Lainnya');
     }
 
     public function test_orang_tua_can_send_message_and_receive_ai_reply(): void
@@ -142,6 +146,28 @@ class ChatTest extends TestCase
         ]);
     }
 
+    public function test_ai_reply_is_stored_without_markdown(): void
+    {
+        $f = $this->createFixtures();
+
+        Http::fake([
+            'ai.sumopod.com/*' => Http::response([
+                'choices' => [
+                    ['message' => ['content' => "**Anak Chat** berkembang dengan _baik_.\n\n- poin satu\n- poin dua"]],
+                ],
+            ]),
+        ]);
+
+        $this->actingAs($f['ortu'])->postJson(route('orangtua.chat.messages.store'), [
+            'content' => 'Bagaimana perkembangan anak saya?',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('orangtua_chat_messages', [
+            'role' => OrangTuaChatMessage::ROLE_ASSISTANT,
+            'content' => "Anak Chat berkembang dengan baik.\n\n- poin satu\n- poin dua",
+        ]);
+    }
+
     public function test_chat_system_prompt_uses_ayah_bunda_salutation(): void
     {
         $f = $this->createFixtures();
@@ -150,6 +176,7 @@ class ChatTest extends TestCase
 
         $this->assertStringContainsString('Ayah/Bunda', $prompt);
         $this->assertStringContainsString($f['ortu']->name, $prompt);
+        $this->assertStringContainsString('Jangan gunakan format markdown', $prompt);
     }
 
     public function test_orang_tua_can_clear_chat_history_with_soft_delete(): void

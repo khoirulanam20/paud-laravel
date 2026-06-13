@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
             tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false, isCompressing: false,
             photoToDelete: {id:null, path:''},
             openEdit(d){ 
@@ -172,7 +172,7 @@
                             <template x-for="(url, idx) in detailData.photo_urls" :key="url">
                                 <div class="relative aspect-square rounded-xl overflow-hidden border bg-gray-100 shadow-sm flex flex-col group transition-all hover:shadow-md">
                                     <div class="h-full w-full overflow-hidden">
-                                        <img :src="url" class="w-full h-full object-cover cursor-pointer" @click="window.open(url, '_blank')">
+                                        <img :src="url" class="w-full h-full object-cover cursor-pointer" @click.stop="activeImage = url; showImageModal = true">
                                     </div>
                                     <button type="button" @click="confirmDeletePhoto(detailData.id, detailData.photo_urls_raw[idx])"
                                         class="absolute -top-1 -right-1 p-2 bg-red-600 rounded-bl-xl text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -425,6 +425,24 @@
                      <button @click="executeDeletePhoto()" class="btn-danger flex-1">Ya, Hapus</button>
                  </div>
              </div>
+        </div>
+
+        {{-- Modal Preview Gambar --}}
+        <div x-show="showImageModal"
+            class="modal-overlay modal-overlay--elevated modal-overlay--dark"
+            style="display: none;" x-transition @keydown.escape.window="showImageModal = false">
+            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
+                <button
+                    class="absolute -top-12 right-0 text-white hover:text-gray-300 transition flex items-center gap-2"
+                    @click="showImageModal = false">
+                    <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                <img :src="activeImage"
+                    class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
+            </div>
         </div>
 
     </div>

@@ -152,7 +152,7 @@
             @include('layouts.topbar')
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto w-full {{ ($user && $user->hasRole('Orang Tua')) ? 'pb-24' : 'pb-20' }} lg:pb-0">
+            <main class="flex-1 overflow-y-auto w-full {{ ($user && $user->hasRole('Orang Tua') && !request()->routeIs('orangtua.chat.*')) ? 'pb-24' : (($user && $user->hasRole('Orang Tua')) ? 'pb-0' : 'pb-20') }} lg:pb-0">
                 @isset($header)
                     @if($isOrangTua)
                         {{-- Mobile: judul halaman (profil ada di menu Lainnya) --}}
@@ -185,7 +185,9 @@
             </main>
 
             <!-- Bottom Navbar (Mobile only) -->
-            @include('layouts.bottom-nav')
+            @if(!request()->routeIs('orangtua.chat.*'))
+                @include('layouts.bottom-nav')
+            @endif
         </div>
     </div>
     <script>

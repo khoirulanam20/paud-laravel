@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\OrangTuaChat;
 use App\Models\OrangTuaChatMessage;
 use App\Models\User;
+use App\Support\ChatPlainText;
 use Illuminate\Support\Collection;
 
 class OrangTuaChatService
@@ -68,7 +69,7 @@ class OrangTuaChatService
             'content' => $content,
         ];
 
-        $reply = $ai->chatCompletion($apiMessages);
+        $reply = ChatPlainText::fromMarkdown($ai->chatCompletion($apiMessages));
 
         $assistantMessage = $chat->messages()->create([
             'role'    => OrangTuaChatMessage::ROLE_ASSISTANT,

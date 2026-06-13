@@ -1,6 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3 min-w-0">
+            <a href="{{ route('dashboard') }}"
+               class="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-lg hover:bg-black/5 transition-colors"
+               style="color:#1A6B6B;"
+               aria-label="Kembali">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
             <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -19,7 +27,9 @@
         $initialMessages = $messages->map(fn ($m) => [
             'id' => $m->id,
             'role' => $m->role,
-            'content' => $m->content,
+            'content' => $m->role === 'assistant'
+                ? \App\Support\ChatPlainText::fromMarkdown($m->content)
+                : $m->content,
             'created_at' => $m->created_at->format('H:i'),
         ])->values();
     @endphp
@@ -40,6 +50,14 @@
         <div class="lg:hidden shrink-0 sticky top-0 z-20 bg-[#FAF6F0]/95 backdrop-blur-sm border-b border-black/5 pt-[max(env(safe-area-inset-top),0px)]">
             <div class="flex items-center justify-between gap-2 px-3 py-2 min-h-[2.75rem]">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <a href="{{ route('dashboard') }}"
+                       class="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-lg hover:bg-black/5 transition-colors"
+                       style="color:#1A6B6B;"
+                       aria-label="Kembali">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
                     <div class="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style="background: #1A6B6B;">
                         <svg class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -91,7 +109,7 @@
                     <div class="flex w-full" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
                         <div class="chat-bubble max-w-[min(78%,20rem)] shadow-sm"
                              :class="msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'">
-                            <p class="text-[14px] leading-[1.45] whitespace-pre-wrap break-words" x-text="msg.content"></p>
+                            <p class="text-[14px] leading-[1.45] whitespace-pre-wrap break-words" x-text="displayContent(msg)"></p>
                             <div class="flex justify-end mt-1">
                                 <span class="text-[10px] leading-none opacity-70" x-text="msg.created_at"></span>
                             </div>
@@ -172,13 +190,13 @@
                 left: 0;
                 right: 0;
                 top: 0;
-                bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-                z-index: 10;
+                bottom: env(safe-area-inset-bottom, 0px);
+                z-index: 30;
                 max-width: none;
                 width: 100%;
             }
             .orangtua-chat-composer {
-                padding-bottom: 0.625rem;
+                padding-bottom: max(0.625rem, env(safe-area-inset-bottom, 0px));
             }
         }
         @media (min-width: 1024px) {
@@ -222,6 +240,24 @@
                 storeUrl: config.storeUrl,
                 destroyUrl: config.destroyUrl,
                 sampleQuestions: config.sampleQuestions || [],
+
+                plainText(content) {
+                    if (!content) return '';
+                    let text = String(content);
+                    text = text.replace(/```[\s\S]*?```/g, '');
+                    text = text.replace(/`([^`]+)`/g, '@$1');
+                    text = text.replace(/\*\*([^*]+)\*\*/g, '@$1');
+                    text = text.replace(/\*([^*]+)\*/g, '@$1');
+                    text = text.replace(/__([^_]+)__/g, '@$1');
+                    text = text.replace(/_([^_\n]+)_/g, '@$1');
+                    text = text.replace(/^#{1,6}\s+/gm, '');
+                    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '@$1');
+                    return text.replace(/\n{3,}/g, '\n\n').trim();
+                },
+
+                displayContent(msg) {
+                    return msg.role === 'assistant' ? this.plainText(msg.content) : msg.content;
+                },
 
                 scrollToBottom(behavior = 'auto') {
                     this.$nextTick(() => {
@@ -290,7 +326,7 @@
                             this.messages.push({
                                 id: m.id,
                                 role: m.role,
-                                content: m.content,
+                                content: m.role === 'assistant' ? this.plainText(m.content) : m.content,
                                 created_at: new Date(m.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
                             });
                         });
