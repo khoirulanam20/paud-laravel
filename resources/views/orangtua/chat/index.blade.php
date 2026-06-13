@@ -137,9 +137,9 @@
         <div x-show="error" x-cloak class="orangtua-chat-error mx-3 px-3 py-2 rounded-xl text-xs alert-danger" x-text="error"></div>
 
         {{-- Composer --}}
-        <div class="orangtua-chat-composer shrink-0 border-t bg-[#FAF6F0]/95 backdrop-blur-md px-3 md:px-4 pt-2 pb-2">
-            <form @submit.prevent="sendMessage()" class="flex items-end gap-2 min-w-0">
-                <div class="flex-1 min-w-0 rounded-3xl border bg-white shadow-sm flex items-end"
+        <div class="orangtua-chat-composer shrink-0 border-t bg-[#FAF6F0]/95 backdrop-blur-md px-3 md:px-4 py-1.5">
+            <form @submit.prevent="sendMessage()" class="flex items-center gap-2 min-w-0">
+                <div class="flex-1 min-w-0 rounded-full border bg-white shadow-sm flex items-center overflow-hidden"
                      style="border-color:rgba(0,0,0,0.08);">
                     <textarea x-model="input"
                               x-ref="inputField"
@@ -151,11 +151,11 @@
                               @input="resizeInput()"
                               @focus="onComposerFocus()"
                               @blur="onComposerBlur()"
-                              class="w-full resize-none bg-transparent border-0 focus:ring-0 focus:outline-none text-sm leading-5 py-2.5 pl-4 pr-2 max-h-32 min-h-[42px]"></textarea>
+                              class="orangtua-chat-input w-full resize-none bg-transparent border-0 focus:ring-0 focus:outline-none text-sm leading-5 py-2 pl-4 pr-2"></textarea>
                 </div>
                 <button type="submit"
                         :disabled="loading || !input.trim()"
-                        class="shrink-0 h-11 w-11 rounded-full flex items-center justify-center text-white shadow-md transition-all disabled:opacity-40 disabled:shadow-none hover:brightness-110 active:scale-95"
+                        class="orangtua-chat-send shrink-0 rounded-full flex items-center justify-center text-white shadow-md transition-all disabled:opacity-40 disabled:shadow-none hover:brightness-110 active:scale-95"
                         style="background:#1A6B6B;"
                         aria-label="Kirim pesan">
                     <svg class="h-5 w-5 translate-x-px" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -235,6 +235,23 @@
             border: 1px solid rgba(0, 0, 0, 0.06);
             border-bottom-left-radius: 0.25rem;
         }
+        .orangtua-chat-input {
+            height: 2.5rem;
+            min-height: 2.5rem;
+            max-height: 6.5rem;
+            overflow-y: hidden;
+            box-sizing: border-box;
+        }
+        .orangtua-chat-send {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .orangtua-chat-send {
+                width: 2.75rem;
+                height: 2.75rem;
+            }
+        }
     </style>
     <script>
         document.addEventListener('alpine:init', () => {
@@ -284,9 +301,28 @@
                 resizeInput() {
                     const el = this.$refs.inputField;
                     if (!el) return;
-                    el.style.height = 'auto';
-                    el.style.height = Math.min(el.scrollHeight, 128) + 'px';
-                    this.$nextTick(() => this.scrollToBottom('auto'));
+
+                    const minHeight = 40;
+                    const maxHeight = 104;
+
+                    if (!this.input.trim()) {
+                        el.style.height = `${minHeight}px`;
+                        el.style.overflowY = 'hidden';
+                        return;
+                    }
+
+                    el.style.height = `${minHeight}px`;
+                    el.style.overflowY = 'hidden';
+                    const nextHeight = Math.max(minHeight, Math.min(el.scrollHeight, maxHeight));
+                    el.style.height = `${nextHeight}px`;
+                    el.style.overflowY = nextHeight >= maxHeight ? 'auto' : 'hidden';
+                },
+
+                resetInputHeight() {
+                    const el = this.$refs.inputField;
+                    if (!el) return;
+                    el.style.height = '40px';
+                    el.style.overflowY = 'hidden';
                 },
 
                 isMobileChat() {
@@ -311,6 +347,9 @@
 
                 onComposerFocus() {
                     document.body.classList.add('orangtua-chat-keyboard-open');
+                    if (!this.input.trim()) {
+                        this.resetInputHeight();
+                    }
                     [50, 150, 350].forEach((delay) => {
                         setTimeout(() => {
                             this.updateViewport();
@@ -434,6 +473,7 @@
                 init() {
                     this.bindViewportListeners();
                     this.updateViewport();
+                    this.resetInputHeight();
                     this.scrollToBottom();
                     setTimeout(() => this.scrollToBottom(), 100);
                 },
