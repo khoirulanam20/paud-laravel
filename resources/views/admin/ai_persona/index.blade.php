@@ -1,4 +1,5 @@
 @php
+    use App\Support\AiChatDataSource;
     use App\Support\AiPersonaScope;
 @endphp
 <x-app-layout>
@@ -176,6 +177,69 @@
                         </button>
                     </div>
                 </div>
+
+                @if($scope === AiPersonaScope::CHAT_ORANGTUA)
+                    <div class="card overflow-hidden mb-6">
+                        <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                            <h3 class="section-title">Akses Data Chat</h3>
+                            <p class="section-subtitle mt-1">Pilih data apa saja yang boleh dibaca AI saat menjawab chat orang tua.</p>
+                        </div>
+                        <form action="{{ route('admin.ai-persona.data-access.update') }}" method="POST">
+                            @csrf
+                            <div class="px-6 py-6 space-y-5">
+                                <div class="grid sm:grid-cols-2 gap-3">
+                                    @foreach(AiChatDataSource::toggleKeys() as $key)
+                                        <div class="flex items-center gap-3">
+                                            <input type="hidden" name="{{ $key }}" value="0">
+                                            <input type="checkbox" name="{{ $key }}" value="1" id="data_access_{{ $key }}"
+                                                class="rounded border-gray-300 text-[#1A6B6B] focus:ring-[#1A6B6B]"
+                                                {{ old($key, $dataAccess->{$key}) ? 'checked' : '' }}>
+                                            <label for="data_access_{{ $key }}" class="text-sm font-medium" style="color:#2C2C2C;">
+                                                {{ AiChatDataSource::label($key) }}
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-5">
+                                    <div class="rounded-xl border p-4 space-y-3" style="background:#FAF6F0; border-color:rgba(0,0,0,0.06);">
+                                        <div class="text-sm font-semibold" style="color:#2C2C2C;">Rentang Agenda Belajar</div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="input-label">Hari ke belakang</label>
+                                                <input type="number" name="agenda_days_back" min="0" max="30" required class="input-field bg-white"
+                                                    value="{{ old('agenda_days_back', $dataAccess->agenda_days_back) }}">
+                                            </div>
+                                            <div>
+                                                <label class="input-label">Hari ke depan</label>
+                                                <input type="number" name="agenda_days_forward" min="0" max="30" required class="input-field bg-white"
+                                                    value="{{ old('agenda_days_forward', $dataAccess->agenda_days_forward) }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="rounded-xl border p-4 space-y-3" style="background:#FAF6F0; border-color:rgba(0,0,0,0.06);">
+                                        <div class="text-sm font-semibold" style="color:#2C2C2C;">Rentang Kegiatan Rutin</div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="input-label">Hari ke belakang</label>
+                                                <input type="number" name="kegiatan_rutin_days_back" min="0" max="30" required class="input-field bg-white"
+                                                    value="{{ old('kegiatan_rutin_days_back', $dataAccess->kegiatan_rutin_days_back) }}">
+                                            </div>
+                                            <div>
+                                                <label class="input-label">Hari ke depan</label>
+                                                <input type="number" name="kegiatan_rutin_days_forward" min="0" max="30" required class="input-field bg-white"
+                                                    value="{{ old('kegiatan_rutin_days_forward', $dataAccess->kegiatan_rutin_days_forward) }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="px-6 pb-6 flex justify-end border-t pt-5" style="border-color:rgba(0,0,0,0.06);">
+                                <button type="submit" class="btn-primary">Simpan Pengaturan Akses Data</button>
+                            </div>
+                        </form>
+                    </div>
+                @endif
 
                 <div class="card overflow-hidden">
                     <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">

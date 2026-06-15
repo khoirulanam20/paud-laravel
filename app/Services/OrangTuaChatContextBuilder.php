@@ -10,6 +10,7 @@ use App\Models\MenuMakanan;
 use App\Models\MonevSummary;
 use App\Models\Pencapaian;
 use App\Models\Presensi;
+use App\Models\SekolahAiChatDataAccess;
 use App\Models\SekolahAiPersona;
 use App\Models\User;
 use App\Support\AiPersonaScope;
@@ -21,11 +22,14 @@ use Illuminate\Support\Str;
 class OrangTuaChatContextBuilder
 {
     public function __construct(
-        protected MonevDataAggregator $monevAggregator
+        protected MonevDataAggregator $monevAggregator,
+        protected AiChatDataAccessService $dataAccessService
     ) {}
 
     public function buildSystemPrompt(User $user): string
     {
+        $access = $this->dataAccessService->resolveForSekolah((int) $user->sekolah_id);
+
         $anaks = Anak::query()
             ->where('user_id', $user->id)
             ->where('sekolah_id', $user->sekolah_id)
@@ -38,12 +42,14 @@ class OrangTuaChatContextBuilder
         $contextBlocks = [];
 
         foreach ($anaks as $anak) {
-            $contextBlocks[] = $this->buildAnakContext($anak);
+            $contextBlocks[] = $this->buildAnakContext($anak, $access);
         }
 
-        $menuBlock = $this->buildMenuContext((int) $user->sekolah_id);
-        if ($menuBlock !== '') {
-            $contextBlocks[] = $menuBlock;
+        if ($access->access_menu_makanan) {
+            $menuBlock = $this->buildMenuContext((int) $user->sekolah_id);
+            if ($menuBlock !== '') {
+                $contextBlocks[] = $menuBlock;
+            }
         }
 
         $dataContext = $contextBlocks !== []
@@ -67,6 +73,7 @@ class OrangTuaChatContextBuilder
             : "\n- Untuk sapaan singkat (mis. \"halo\"), balas 1-2 kalimat saja, natural dan tidak berlebihan formal.";
 
         $parentContext = $this->buildParentContext($user);
+        $metaContext = $this->buildMetaContext($access);
 
         return <<<PROMPT
 {$identityLine}
@@ -78,13 +85,30 @@ ATURAN WAJIB:
 - Sapa orang tua dengan "Ayah/Bunda" (format aman). Jangan memanggil "Bu", "Ibu", "Bapak", atau menebak gender dari nama.
 - Jawab dalam teks biasa saja. Jangan gunakan format markdown (**, *, #, bullet markdown, link markdown).
 - Jika data belum tersedia, jelaskan dengan jujur dan arahkan ke menu aplikasi yang relevan (Monev, Pencapaian, Kehadiran, dll.).
+- Jika pengguna menanyakan jenis data yang nonaktif di pengaturan akses data, jelaskan bahwa akses data tersebut belum diaktifkan oleh admin sekolah.
 - Jangan mengarang data yang tidak ada di konteks di bawah.{$styleRules}
 
 {$parentContext}
 
+{$metaContext}
+
 DATA ANAK & SEKOLAH:
 {$dataContext}
 PROMPT;
+    }
+
+    protected function buildMetaContext(SekolahAiChatDataAccess $access): string
+    {
+        $lines = [];
+
+        if ($access->include_tanggal) {
+            $today = Carbon::today();
+            $lines[] = 'Tanggal hari ini: ' . $today->translatedFormat('l, d F Y');
+        }
+
+        $lines[] = $this->dataAccessService->buildAccessSummary($access);
+
+        return implode("\n", $lines);
     }
 
     protected function buildParentContext(User $user): string
@@ -98,7 +122,7 @@ ORANG TUA PENGGUNA:
 BLOCK;
     }
 
-    protected function buildAnakContext(Anak $anak): string
+    protected function buildAnakContext(Anak $anak, SekolahAiChatDataAccess $access): string
     {
         $lines = [];
         $lines[] = '=== ANAK: ' . $anak->displayName() . ' ===';
@@ -106,29 +130,47 @@ BLOCK;
         $lines[] = 'Usia: ' . ($anak->dob ? $anak->age : 'Tidak dicatat');
 
         $now = Carbon::now();
-        $monevBlock = $this->buildMonevContext($anak, $now->year, $now->month);
-        if ($monevBlock !== '') {
-            $lines[] = $monevBlock;
+
+        if ($access->access_monev) {
+            $monevBlock = $this->buildMonevContext($anak, $now->year, $now->month);
+            if ($monevBlock !== '') {
+                $lines[] = $monevBlock;
+            }
         }
 
-        $pencapaianBlock = $this->buildPencapaianContext($anak);
-        if ($pencapaianBlock !== '') {
-            $lines[] = $pencapaianBlock;
+        if ($access->access_pencapaian) {
+            $pencapaianBlock = $this->buildPencapaianContext($anak);
+            if ($pencapaianBlock !== '') {
+                $lines[] = $pencapaianBlock;
+            }
         }
 
-        $presensiBlock = $this->buildPresensiContext($anak, $now);
-        if ($presensiBlock !== '') {
-            $lines[] = $presensiBlock;
+        if ($access->access_presensi) {
+            $presensiBlock = $this->buildPresensiContext($anak, $now);
+            if ($presensiBlock !== '') {
+                $lines[] = $presensiBlock;
+            }
         }
 
-        $kesehatanBlock = $this->buildKesehatanContext($anak);
-        if ($kesehatanBlock !== '') {
-            $lines[] = $kesehatanBlock;
+        if ($access->access_kesehatan) {
+            $kesehatanBlock = $this->buildKesehatanContext($anak);
+            if ($kesehatanBlock !== '') {
+                $lines[] = $kesehatanBlock;
+            }
         }
 
-        $kegiatanBlock = $this->buildKegiatanContext($anak);
-        if ($kegiatanBlock !== '') {
-            $lines[] = $kegiatanBlock;
+        if ($access->access_agenda) {
+            $agendaBlock = $this->buildAgendaContext($anak, $access);
+            if ($agendaBlock !== '') {
+                $lines[] = $agendaBlock;
+            }
+        }
+
+        if ($access->access_kegiatan_rutin) {
+            $rutinBlock = $this->buildKegiatanRutinContext($anak, $access);
+            if ($rutinBlock !== '') {
+                $lines[] = $rutinBlock;
+            }
         }
 
         return implode("\n", $lines);
@@ -240,44 +282,55 @@ BLOCK;
         return implode("\n", $lines);
     }
 
-    protected function buildKegiatanContext(Anak $anak): string
+    protected function buildAgendaContext(Anak $anak, SekolahAiChatDataAccess $access): string
     {
-        $lines = [];
-        $today = Carbon::today();
-        $until = $today->copy()->addDays(7);
-
-        if ($anak->kelas_id) {
-            $kegiatans = Kegiatan::query()
-                ->where('kelas_id', $anak->kelas_id)
-                ->whereBetween('date', [$today, $until])
-                ->orderBy('date')
-                ->limit(5)
-                ->get();
-
-            if ($kegiatans->isNotEmpty()) {
-                $lines[] = 'Agenda belajar 7 hari ke depan:';
-                foreach ($kegiatans as $k) {
-                    $lines[] = '- ' . Carbon::parse($k->date)->format('d M') . ': ' . $k->title;
-                }
-            }
+        if (! $anak->kelas_id) {
+            return '';
         }
+
+        $today = Carbon::today();
+        $from = $today->copy()->subDays($access->agenda_days_back);
+        $until = $today->copy()->addDays($access->agenda_days_forward);
+
+        $kegiatans = Kegiatan::query()
+            ->where('kelas_id', $anak->kelas_id)
+            ->whereBetween('date', [$from, $until])
+            ->orderBy('date')
+            ->limit(15)
+            ->get();
+
+        if ($kegiatans->isEmpty()) {
+            return "Agenda belajar ({$access->agenda_days_back} hari ke belakang, {$access->agenda_days_forward} hari ke depan): Tidak ada agenda tercatat.";
+        }
+
+        $lines = ["Agenda belajar ({$access->agenda_days_back} hari ke belakang, {$access->agenda_days_forward} hari ke depan):"];
+        foreach ($kegiatans as $k) {
+            $lines[] = '- ' . Carbon::parse($k->date)->format('d M') . ': ' . $k->title;
+        }
+
+        return implode("\n", $lines);
+    }
+
+    protected function buildKegiatanRutinContext(Anak $anak, SekolahAiChatDataAccess $access): string
+    {
+        $today = Carbon::today();
+        $from = $today->copy()->subDays($access->kegiatan_rutin_days_back);
+        $until = $today->copy()->addDays($access->kegiatan_rutin_days_forward);
 
         $rutins = KegiatanRutin::query()
             ->where('anak_id', $anak->id)
-            ->whereBetween('tanggal', [$today, $until])
+            ->whereBetween('tanggal', [$from, $until])
             ->orderBy('tanggal')
-            ->limit(5)
+            ->limit(15)
             ->get();
 
-        if ($rutins->isNotEmpty()) {
-            $lines[] = 'Kegiatan rutin 7 hari ke depan:';
-            foreach ($rutins as $r) {
-                $lines[] = '- ' . $r->tanggal->format('d M') . ': ' . ($r->kegiatan ?? $r->aspek ?? 'Kegiatan rutin');
-            }
+        if ($rutins->isEmpty()) {
+            return "Kegiatan rutin ({$access->kegiatan_rutin_days_back} hari ke belakang, {$access->kegiatan_rutin_days_forward} hari ke depan): Tidak ada catatan.";
         }
 
-        if ($lines === []) {
-            return 'Kegiatan mendatang: Tidak ada agenda tercatat untuk 7 hari ke depan.';
+        $lines = ["Kegiatan rutin ({$access->kegiatan_rutin_days_back} hari ke belakang, {$access->kegiatan_rutin_days_forward} hari ke depan):"];
+        foreach ($rutins as $r) {
+            $lines[] = '- ' . $r->tanggal->format('d M') . ': ' . ($r->kegiatan ?? $r->aspek ?? 'Kegiatan rutin');
         }
 
         return implode("\n", $lines);

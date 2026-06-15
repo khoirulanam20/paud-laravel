@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Sekolah extends Model
 {
@@ -26,5 +27,10 @@ class Sekolah extends Model
     public function aiPersonas(): HasMany
     {
         return $this->hasMany(SekolahAiPersona::class);
+    }
+
+    public function aiChatDataAccess(): HasOne
+    {
+        return $this->hasOne(SekolahAiChatDataAccess::class);
     }
 }

@@ -130,6 +130,7 @@ Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->
     Route::get('orangtua-chat/{orangtua_chat}', [OrangTuaChatController::class, 'show'])->name('orangtua-chat.show');
     Route::get('ai-persona', [AiPersonaController::class, 'index'])->name('ai-persona.index');
     Route::post('ai-persona', [AiPersonaController::class, 'update'])->name('ai-persona.update');
+    Route::post('ai-persona/data-access', [AiPersonaController::class, 'updateDataAccess'])->name('ai-persona.data-access.update');
     Route::post('ai-persona/generate', [AiPersonaController::class, 'generate'])->middleware('throttle:10,1')->name('ai-persona.generate');
     // Pendaftaran approval
     Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');

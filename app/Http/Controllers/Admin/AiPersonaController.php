@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Sekolah;
 use App\Models\SekolahAiPersona;
+use App\Services\AiChatDataAccessService;
 use App\Services\AiPersonaService;
+use App\Support\AiChatDataSource;
 use App\Support\AiPersonaScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +18,8 @@ use Illuminate\View\View;
 class AiPersonaController extends Controller
 {
     public function __construct(
-        protected AiPersonaService $personaService
+        protected AiPersonaService $personaService,
+        protected AiChatDataAccessService $dataAccessService
     ) {}
 
     private function sekolahId(): ?int
@@ -34,6 +37,7 @@ class AiPersonaController extends Controller
         $sekolah = Sekolah::findOrFail($sekolahId);
         $personas = $this->personaService->allForSekolah($sekolahId);
         $aiConfigured = $this->personaService->isAiConfiguredForSekolah($sekolahId);
+        $dataAccess = $this->dataAccessService->resolveForSekolah($sekolahId);
         $activeTab = $request->query('tab', AiPersonaScope::CHAT_ORANGTUA);
 
         if (! in_array($activeTab, AiPersonaScope::all(), true)) {
@@ -44,6 +48,7 @@ class AiPersonaController extends Controller
             'sekolah',
             'personas',
             'aiConfigured',
+            'dataAccess',
             'activeTab'
         ));
     }
@@ -91,6 +96,30 @@ class AiPersonaController extends Controller
         return redirect()
             ->route('admin.ai-persona.index', ['tab' => $scope])
             ->with('success', 'Persona ' . AiPersonaScope::label($scope) . ' berhasil disimpan.');
+    }
+
+    public function updateDataAccess(Request $request): RedirectResponse
+    {
+        $sekolahId = $this->sekolahId();
+        abort_if($sekolahId === null, 403, 'Akun tidak terikat sekolah.');
+
+        $validated = $request->validate([
+            'agenda_days_back' => ['required', 'integer', 'min:0', 'max:30'],
+            'agenda_days_forward' => ['required', 'integer', 'min:0', 'max:30'],
+            'kegiatan_rutin_days_back' => ['required', 'integer', 'min:0', 'max:30'],
+            'kegiatan_rutin_days_forward' => ['required', 'integer', 'min:0', 'max:30'],
+        ]);
+
+        $payload = $validated;
+        foreach (AiChatDataSource::toggleKeys() as $key) {
+            $payload[$key] = $request->boolean($key);
+        }
+
+        $this->dataAccessService->updateForSekolah($sekolahId, $payload);
+
+        return redirect()
+            ->route('admin.ai-persona.index', ['tab' => AiPersonaScope::CHAT_ORANGTUA])
+            ->with('success', 'Pengaturan akses data chat berhasil disimpan.');
     }
 
     public function generate(Request $request): JsonResponse
