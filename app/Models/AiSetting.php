@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\SumopodAIService;
+use App\Support\AiProvider;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +16,7 @@ class AiSetting extends Model
         'ai_provider',
         'ai_api_key',
         'ai_model',
+        'ai_base_url',
     ];
 
     public function lembaga(): BelongsTo
@@ -73,5 +76,24 @@ class AiSetting extends Model
         } catch (DecryptException) {
             return true;
         }
+    }
+
+    public function providerLabel(): string
+    {
+        return AiProvider::label($this->ai_provider ?? 'sumopod');
+    }
+
+    public function toAiService(): SumopodAIService
+    {
+        $baseUrl = AiProvider::resolveBaseUrl(
+            $this->ai_provider ?? 'sumopod',
+            $this->ai_base_url
+        );
+
+        return new SumopodAIService(
+            $this->ai_api_key,
+            $this->ai_model ?? 'gpt-4o-mini',
+            $baseUrl
+        );
     }
 }

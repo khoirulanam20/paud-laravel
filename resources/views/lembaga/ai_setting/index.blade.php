@@ -11,10 +11,30 @@
         </div>
     </x-slot>
 
+  @php
+      $selectedProvider = old('ai_provider', $aiSetting?->ai_provider ?? 'sumopod');
+      $providersJson = json_encode($providers, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+  @endphp
+
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto"
         x-data="{
             testLoading: false,
             testResult: null,
+            providers: {{ $providersJson }},
+            selectedProvider: @js($selectedProvider),
+            onProviderChange() {
+                const preset = this.providers[this.selectedProvider];
+                if (!preset?.default_model) return;
+                const modelInput = document.getElementById('ai_model');
+                if (!modelInput || modelInput.dataset.userEdited === '1') return;
+                modelInput.value = preset.default_model;
+            },
+            providerLabel() {
+                return this.providers[this.selectedProvider]?.label ?? this.selectedProvider;
+            },
+            providerHint() {
+                return this.providers[this.selectedProvider]?.hint ?? '';
+            },
             async testConnection() {
                 this.testLoading = true;
                 this.testResult = null;
@@ -53,7 +73,7 @@
         @endif
         @if($aiSetting?->apiKeyNeedsReentry())
             <div class="alert-danger mb-5">
-                API Key tersimpan tidak dapat dibaca (biasanya karena <code>APP_KEY</code> berubah). Masukkan API Key Sumopod lagi lalu simpan.
+                API Key tersimpan tidak dapat dibaca (biasanya karena <code>APP_KEY</code> berubah). Masukkan API Key lagi lalu simpan.
             </div>
         @endif
 
@@ -78,9 +98,9 @@
                 </div>
                 <div class="text-xs mt-1" style="color:#6B6560;">
                     @if($aiSetting?->hasValidApiKey())
-                        Model: <strong>{{ $aiSetting->ai_model ?? '-' }}</strong> · Provider: Sumopod
+                        Provider: <strong>{{ $aiSetting->providerLabel() }}</strong> · Model: <strong>{{ $aiSetting->ai_model ?? '-' }}</strong>
                     @else
-                        Masukkan API Key dan nama model dari Sumopod untuk mengaktifkan fitur saran umpan balik AI pada pencapaian siswa.
+                        Pilih provider, masukkan API Key dan nama model untuk mengaktifkan fitur AI.
                     @endif
                 </div>
             </div>
@@ -123,22 +143,40 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Konfigurasi AI Provider</h3>
-                <p class="section-subtitle mt-1">Gunakan API dari <strong>Sumopod</strong> (<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">ai.sumopod.com</code>) untuk mengaktifkan saran umpan balik cerdas.</p>
+                <p class="section-subtitle mt-1">Pilih provider AI dengan API <strong>OpenAI-compatible</strong> (<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">/v1/chat/completions</code>).</p>
             </div>
             <form action="{{ route('lembaga.ai-setting.update') }}" method="POST">
                 @csrf
                 <div class="px-6 py-6 space-y-6">
 
-                    {{-- Provider (readonly info) --}}
+                    {{-- Provider --}}
                     <div>
-                        <label class="input-label">Provider AI</label>
-                        <div class="input-field bg-gray-50 text-gray-500 flex items-center gap-2 cursor-not-allowed">
-                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            Sumopod AI (ai.sumopod.com)
-                        </div>
-                        <p class="text-[11px] mt-1" style="color:#9E9790;">Saat ini hanya mendukung Sumopod AI.</p>
+                        <label class="input-label" for="ai_provider">Provider AI</label>
+                        <select id="ai_provider" name="ai_provider"
+                            class="input-field @error('ai_provider') border-red-500 @enderror"
+                            x-model="selectedProvider"
+                            @change="onProviderChange()"
+                            required>
+                            @foreach($providers as $key => $provider)
+                                <option value="{{ $key }}" @selected($selectedProvider === $key)>
+                                    {{ $provider['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('ai_provider')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        <p class="text-[11px] mt-1" style="color:#9E9790;" x-text="providerHint()"></p>
+                    </div>
+
+                    {{-- Base URL (custom only) --}}
+                    <div x-show="selectedProvider === 'custom'" x-cloak>
+                        <label class="input-label" for="ai_base_url">Base URL</label>
+                        <input type="url" id="ai_base_url" name="ai_base_url"
+                            class="input-field @error('ai_base_url') border-red-500 @enderror"
+                            value="{{ old('ai_base_url', $aiSetting?->ai_base_url ?? '') }}"
+                            placeholder="https://api.example.com/v1"
+                            :required="selectedProvider === 'custom'">
+                        @error('ai_base_url')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        <p class="text-[11px] mt-1" style="color:#9E9790;">Endpoint harus kompatibel OpenAI, tanpa trailing slash (akan dinormalisasi otomatis).</p>
                     </div>
 
                     {{-- API Key --}}
@@ -146,7 +184,7 @@
                         <label class="input-label" for="ai_api_key">API Key</label>
                         <input type="password" id="ai_api_key" name="ai_api_key"
                             class="input-field @error('ai_api_key') border-red-500 @enderror"
-                            placeholder="{{ $aiSetting?->apiKeyNeedsReentry() ? 'Masukkan ulang API Key dari ai.sumopod.com' : ($aiSetting?->hasValidApiKey() ? '••••••••••••••••••• (terisi — kosongkan jika tidak ingin mengubah)' : 'Masukkan API Key dari ai.sumopod.com') }}"
+                            placeholder="{{ $aiSetting?->apiKeyNeedsReentry() ? 'Masukkan ulang API Key dari provider' : ($aiSetting?->hasValidApiKey() ? '••••••••••••••••••• (terisi — kosongkan jika tidak ingin mengubah)' : 'Masukkan API Key dari provider yang dipilih') }}"
                             autocomplete="new-password">
                         @error('ai_api_key')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         <p class="text-[11px] mt-1" style="color:#9E9790;">API Key disimpan terenkripsi. Kosongkan jika tidak ingin mengubah key yang sudah tersimpan.</p>
@@ -157,32 +195,33 @@
                         <label class="input-label" for="ai_model">Nama Model AI</label>
                         <input type="text" id="ai_model" name="ai_model"
                             class="input-field @error('ai_model') border-red-500 @enderror"
-                            value="{{ old('ai_model', $aiSetting->ai_model ?? 'gpt-4o-mini') }}"
+                            value="{{ old('ai_model', $aiSetting?->ai_model ?? 'gpt-4o-mini') }}"
                             placeholder="gpt-4o-mini"
+                            @input="$event.target.dataset.userEdited = '1'"
                             required>
                         @error('ai_model')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         <p class="text-[11px] mt-1" style="color:#9E9790;">
                             Gunakan model <strong>chat/text</strong> (bukan speech/image). Contoh:
                             <code class="bg-gray-100 px-1 rounded">gpt-4o-mini</code>,
-                            <code class="bg-gray-100 px-1 rounded">gpt-4o</code>,
-                            <code class="bg-gray-100 px-1 rounded">claude-3-5-haiku</code>
+                            <code class="bg-gray-100 px-1 rounded">deepseek-chat</code>,
+                            <code class="bg-gray-100 px-1 rounded">llama-3.3-70b-versatile</code>
                         </p>
                         <div class="mt-2 rounded-lg border px-3 py-2 text-[11px] flex items-start gap-2" style="background:#FEF9EC; border-color:#F0B84233; color:#92640A;">
                             <svg class="h-3.5 w-3.5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
-                            <span>Pastikan model yang dipilih mendukung <strong>Chat Completions</strong>. Model speech (misal: <code>speech-2.8-hd</code>) atau image tidak akan berfungsi.</span>
+                            <span>Pastikan model yang dipilih mendukung <strong>Chat Completions</strong>. Model speech atau image tidak akan berfungsi.</span>
                         </div>
                     </div>
 
                     {{-- Info Box --}}
                     <div class="rounded-xl border p-4 text-xs space-y-2" style="background:#FAF6F0; border-color:rgba(0,0,0,0.06); color:#6B6560;">
-                        <div class="font-semibold" style="color:#2C2C2C;">ℹ️ Cara mendapatkan API Key Sumopod</div>
+                        <div class="font-semibold" style="color:#2C2C2C;">ℹ️ Cara konfigurasi</div>
                         <ol class="list-decimal pl-4 space-y-1">
-                            <li>Daftar atau masuk ke akun di <strong>ai.sumopod.com</strong></li>
-                            <li>Buka menu <strong>API Keys</strong> di dashboard</li>
-                            <li>Buat API Key baru dan salin ke kolom di atas</li>
-                            <li>Pilih nama model yang ingin digunakan</li>
+                            <li>Pilih provider AI dari daftar, atau pilih <strong>Custom</strong> untuk endpoint sendiri.</li>
+                            <li>Buat API Key di dashboard provider yang dipilih.</li>
+                            <li>Masukkan API Key dan nama model yang mendukung chat completions.</li>
+                            <li>Gunakan tombol <strong>Test Koneksi AI</strong> untuk memverifikasi.</li>
                         </ol>
                     </div>
                 </div>

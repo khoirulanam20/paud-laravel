@@ -8,7 +8,6 @@ use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
 use App\Services\AiPersonaService;
-use App\Services\SumopodAIService;
 use App\Support\AiPersonaScope;
 use App\Support\LabelSkorPencapaian;
 use Illuminate\Http\JsonResponse;
@@ -67,7 +66,7 @@ class AiFeedbackController extends Controller
             : null;
 
         try {
-            $service = new SumopodAIService($aiSetting->ai_api_key, $aiSetting->ai_model ?? 'gpt-4o-mini');
+            $service = $aiSetting->toAiService();
             $suggestions = $service->generateFeedbackSuggestions(
                 $anak->displayName(),
                 $kegiatan->title,

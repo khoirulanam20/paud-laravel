@@ -4,18 +4,21 @@ namespace App\Services;
 
 use App\Models\SekolahAiPersona;
 use App\Support\AiPersonaScope;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SumopodAIService
 {
     protected string $apiKey;
     protected string $model;
-    protected string $baseUrl = 'https://ai.sumopod.com/v1';
+    protected string $baseUrl;
 
-    public function __construct(string $apiKey, string $model = 'gpt-4o-mini')
+    public function __construct(string $apiKey, string $model = 'gpt-4o-mini', ?string $baseUrl = null)
     {
-        $this->apiKey = $apiKey;
-        $this->model  = $model;
+        $this->apiKey  = $apiKey;
+        $this->model   = $model;
+        $this->baseUrl = rtrim($baseUrl ?? 'https://ai.sumopod.com/v1', '/');
     }
 
     /**
@@ -72,14 +75,23 @@ PROMPT;
             ]);
 
         if (! $response->successful()) {
-            throw new \RuntimeException(
-                'Sumopod AI API error: ' . $response->status() . ' ' . $response->body()
-            );
+            $this->throwApiError($response);
         }
 
         $content = $response->json('choices.0.message.content', '');
 
         return $this->parseSuggestions($content);
+    }
+
+    protected function throwApiError(Response $response): void
+    {
+        Log::warning('AI API request failed', [
+            'status'   => $response->status(),
+            'body'     => mb_substr($response->body(), 0, 2000),
+            'base_url' => $this->baseUrl,
+        ]);
+
+        throw new \RuntimeException('AI API error: HTTP ' . $response->status());
     }
 
     /**
@@ -197,15 +209,13 @@ PROMPT;
             ]);
 
         if (! $response->successful()) {
-            throw new \RuntimeException(
-                'Sumopod AI API error: HTTP ' . $response->status()
-            );
+            $this->throwApiError($response);
         }
 
         $content = trim((string) $response->json('choices.0.message.content', ''));
 
         if ($content === '') {
-            throw new \RuntimeException('Sumopod AI mengembalikan respons kosong.');
+            throw new \RuntimeException('AI mengembalikan respons kosong.');
         }
 
         return $content;
@@ -228,15 +238,13 @@ PROMPT;
             ]);
 
         if (! $response->successful()) {
-            throw new \RuntimeException(
-                'Sumopod AI API error: HTTP ' . $response->status()
-            );
+            $this->throwApiError($response);
         }
 
         $content = trim((string) $response->json('choices.0.message.content', ''));
 
         if ($content === '') {
-            throw new \RuntimeException('Sumopod AI mengembalikan respons kosong.');
+            throw new \RuntimeException('AI mengembalikan respons kosong.');
         }
 
         return $content;

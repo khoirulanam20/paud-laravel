@@ -41,7 +41,7 @@ class MonevSummaryService
             return null;
         }
 
-        return new SumopodAIService($aiSetting->ai_api_key, $aiSetting->ai_model ?? 'gpt-4o-mini');
+        return $aiSetting->toAiService();
     }
 
     public function resolveAiServiceForUser(User $user): ?SumopodAIService
@@ -64,7 +64,7 @@ class MonevSummaryService
             return null;
         }
 
-        return new SumopodAIService($aiSetting->ai_api_key, $aiSetting->ai_model ?? 'gpt-4o-mini');
+        return $aiSetting->toAiService();
     }
 
     public function assertCanStartSelectedGeneration(
@@ -768,7 +768,7 @@ class MonevSummaryService
 
     public function sanitizeGenerationError(string $message): string
     {
-        $message = preg_replace('/Sumopod AI API error:\s*\d+\s*\{.*$/s', 'Sumopod AI API error.', $message) ?? $message;
+        $message = preg_replace('/AI API error:\s*\d+\s*\{.*$/s', 'AI API error.', $message) ?? $message;
 
         return mb_substr(trim($message), 0, 500);
     }
