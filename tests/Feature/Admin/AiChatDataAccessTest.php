@@ -244,7 +244,8 @@ class AiChatDataAccessTest extends TestCase
             $prompt = app(OrangTuaChatContextBuilder::class)->buildSystemPrompt($fixtures['ortu']);
 
             $this->assertStringContainsString('Kegiatan Jumat Kemarin', $prompt);
-            $this->assertStringContainsString('7 hari ke belakang', $prompt);
+            $this->assertStringContainsString('jadwal/rencana', $prompt);
+            $this->assertStringContainsString('JADWAL & RENCANA KEGIATAN', $prompt);
         } finally {
             Carbon::setTestNow();
         }
@@ -280,7 +281,32 @@ class AiChatDataAccessTest extends TestCase
             $prompt = app(OrangTuaChatContextBuilder::class)->buildSystemPrompt($fixtures['ortu']);
 
             $this->assertStringContainsString('Toilet Training', $prompt);
-            $this->assertStringContainsString('Kegiatan rutin (7 hari ke belakang', $prompt);
+            $this->assertStringContainsString('JADWAL & RENCANA KEGIATAN', $prompt);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_context_builder_includes_today_agenda_as_plan_without_pencapaian(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-15 10:00:00'));
+
+        try {
+            $fixtures = $this->createFixtures();
+
+            Kegiatan::create([
+                'sekolah_id' => $fixtures['sekolah']->id,
+                'pengajar_id' => $fixtures['pengajar']->id,
+                'kelas_id' => $fixtures['kelas']->id,
+                'date' => Carbon::parse('2026-06-15'),
+                'title' => 'mengenalkan jenis transportasi udara',
+            ]);
+
+            $prompt = app(OrangTuaChatContextBuilder::class)->buildSystemPrompt($fixtures['ortu']);
+
+            $this->assertStringContainsString('mengenalkan jenis transportasi udara', $prompt);
+            $this->assertStringContainsString('Hari ini', $prompt);
+            $this->assertStringContainsString('jadwal/rencana', $prompt);
         } finally {
             Carbon::setTestNow();
         }

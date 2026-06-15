@@ -6,6 +6,7 @@ use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\KegiatanRutin;
 use App\Models\Kesehatan;
+use App\Models\MasterKegiatanRutin;
 use App\Models\MenuMakanan;
 use App\Models\MonevSummary;
 use App\Models\Pencapaian;
@@ -39,6 +40,7 @@ class OrangTuaChatContextBuilder
             ->get();
 
         $sekolahName = $user->sekolah?->name ?? 'PAUD';
+        $scheduleBlock = $this->buildScheduleSection($anaks, $access);
         $contextBlocks = [];
 
         foreach ($anaks as $anak) {
@@ -52,11 +54,15 @@ class OrangTuaChatContextBuilder
             }
         }
 
-        $dataContext = $contextBlocks !== []
+        $detailContext = $contextBlocks !== []
             ? implode("\n\n---\n\n", $contextBlocks)
             : 'Belum ada data anak aktif yang terdaftar.';
 
-        $dataContext = Str::limit($dataContext, 10000, '…');
+        $detailContext = Str::limit($detailContext, 8000, '…');
+
+        $dataContext = $scheduleBlock !== ''
+            ? $scheduleBlock . "\n\n---\n\n" . $detailContext
+            : $detailContext;
 
         $personaPrompt = SekolahAiPersona::resolveActivePrompt(
             (int) $user->sekolah_id,
@@ -86,6 +92,9 @@ ATURAN WAJIB:
 - Jawab dalam teks biasa saja. Jangan gunakan format markdown (**, *, #, bullet markdown, link markdown).
 - Jika data belum tersedia, jelaskan dengan jujur dan arahkan ke menu aplikasi yang relevan (Monev, Pencapaian, Kehadiran, dll.).
 - Jika pengguna menanyakan jenis data yang nonaktif di pengaturan akses data, jelaskan bahwa akses data tersebut belum diaktifkan oleh admin sekolah.
+- Agenda belajar dan kegiatan rutin di konteks bisa berstatus jadwal/rencana (belum terlaksana atau belum ada pencapaian per anak) — tetap jawab sebagai rencana kegiatan kelas/anak, jangan anggap belum ada hanya karena belum ditugaskan atau belum dieksekusi.
+- Bedakan jadwal/rencana dengan kegiatan yang sudah dilaksanakan bila statusnya tercantum di konteks.
+- Bedakan agenda belajar dan kegiatan rutin: agenda belajar = kegiatan pembelajaran terjadwal per hari untuk kelas anak (menu Agenda Belajar); kegiatan rutin = aktivitas harian berulang per anak seperti toilet training atau makan sendiri (menu Kegiatan Rutin). Jika orang tua tanya umum "kegiatan hari ini", jawab keduanya terpisah bila keduanya ada di konteks; jika hanya salah satu yang ada, sebutkan yang tersedia dan jelaskan jenisnya.
 - Jangan mengarang data yang tidak ada di konteks di bawah.{$styleRules}
 
 {$parentContext}
@@ -159,21 +168,55 @@ BLOCK;
             }
         }
 
-        if ($access->access_agenda) {
-            $agendaBlock = $this->buildAgendaContext($anak, $access);
-            if ($agendaBlock !== '') {
-                $lines[] = $agendaBlock;
-            }
-        }
-
-        if ($access->access_kegiatan_rutin) {
-            $rutinBlock = $this->buildKegiatanRutinContext($anak, $access);
-            if ($rutinBlock !== '') {
-                $lines[] = $rutinBlock;
-            }
-        }
-
         return implode("\n", $lines);
+    }
+
+    /**
+     * @param  Collection<int, Anak>  $anaks
+     */
+    protected function buildScheduleSection(Collection $anaks, SekolahAiChatDataAccess $access): string
+    {
+        if ($anaks->isEmpty()) {
+            return '';
+        }
+
+        if (! $access->access_agenda && ! $access->access_kegiatan_rutin) {
+            return '';
+        }
+
+        $blocks = [
+            '=== JADWAL & RENCANA KEGIATAN ===',
+            'Agenda belajar = jadwal pembelajaran kelas per hari. Kegiatan rutin = aktivitas harian berulang per anak (plus template kelas jika ada).',
+        ];
+
+        foreach ($anaks as $anak) {
+            $childLines = ['-- ' . $anak->displayName() . ' --'];
+
+            if ($access->access_agenda) {
+                $agendaBlock = $this->buildAgendaContext($anak, $access);
+                if ($agendaBlock !== '') {
+                    $childLines[] = $agendaBlock;
+                }
+            }
+
+            if ($access->access_kegiatan_rutin) {
+                $rutinBlock = $this->buildKegiatanRutinContext($anak, $access);
+                if ($rutinBlock !== '') {
+                    $childLines[] = $rutinBlock;
+                }
+
+                $masterBlock = $this->buildMasterKegiatanRutinPlanContext($anak);
+                if ($masterBlock !== '') {
+                    $childLines[] = $masterBlock;
+                }
+            }
+
+            if (count($childLines) > 1) {
+                $blocks[] = implode("\n", $childLines);
+            }
+        }
+
+        return count($blocks) > 1 ? implode("\n\n", $blocks) : '';
     }
 
     protected function buildMonevContext(Anak $anak, int $tahun, int $bulan): string
@@ -285,30 +328,82 @@ BLOCK;
     protected function buildAgendaContext(Anak $anak, SekolahAiChatDataAccess $access): string
     {
         if (! $anak->kelas_id) {
-            return '';
+            return 'Agenda belajar: Anak belum terdaftar di kelas.';
         }
 
         $today = Carbon::today();
         $from = $today->copy()->subDays($access->agenda_days_back);
         $until = $today->copy()->addDays($access->agenda_days_forward);
 
-        $kegiatans = Kegiatan::query()
+        $todayItems = Kegiatan::query()
+            ->where('sekolah_id', $anak->sekolah_id)
             ->where('kelas_id', $anak->kelas_id)
-            ->whereBetween('date', [$from, $until])
-            ->orderBy('date')
-            ->limit(15)
+            ->whereDate('date', $today)
+            ->with(['pencapaians' => fn ($q) => $q->where('anak_id', $anak->id)])
+            ->orderBy('id')
             ->get();
 
-        if ($kegiatans->isEmpty()) {
-            return "Agenda belajar ({$access->agenda_days_back} hari ke belakang, {$access->agenda_days_forward} hari ke depan): Tidak ada agenda tercatat.";
+        $rangeItems = Kegiatan::query()
+            ->where('sekolah_id', $anak->sekolah_id)
+            ->where('kelas_id', $anak->kelas_id)
+            ->whereBetween('date', [$from, $until])
+            ->whereDate('date', '!=', $today)
+            ->with(['pencapaians' => fn ($q) => $q->where('anak_id', $anak->id)])
+            ->get()
+            ->sortBy(fn (Kegiatan $k) => abs(Carbon::parse($k->date)->diffInDays($today)))
+            ->take(20)
+            ->values();
+
+        if ($todayItems->isEmpty() && $rangeItems->isEmpty()) {
+            return "Agenda belajar kelas {$anak->kelas?->name} ({$access->agenda_days_back} hari ke belakang, {$access->agenda_days_forward} hari ke depan): Tidak ada jadwal tercatat.";
         }
 
-        $lines = ["Agenda belajar ({$access->agenda_days_back} hari ke belakang, {$access->agenda_days_forward} hari ke depan):"];
-        foreach ($kegiatans as $k) {
-            $lines[] = '- ' . Carbon::parse($k->date)->format('d M') . ': ' . $k->title;
+        $lines = ["Agenda belajar kelas {$anak->kelas?->name} (jadwal/rencana kelas, belum tentu sudah terlaksana per anak):"];
+
+        if ($todayItems->isNotEmpty()) {
+            $lines[] = 'Hari ini (' . $today->translatedFormat('d M Y') . '):';
+            foreach ($todayItems as $k) {
+                $lines[] = $this->formatAgendaLine($k, $anak->id);
+            }
+        }
+
+        if ($rangeItems->isNotEmpty()) {
+            $lines[] = "Rentang {$access->agenda_days_back} hari ke belakang / {$access->agenda_days_forward} hari ke depan:";
+            foreach ($rangeItems as $k) {
+                $lines[] = $this->formatAgendaLine($k, $anak->id);
+            }
         }
 
         return implode("\n", $lines);
+    }
+
+    protected function formatAgendaLine(Kegiatan $k, int $anakId): string
+    {
+        $date = Carbon::parse($k->date)->format('d M');
+        $status = $this->kegiatanStatusLabel($k);
+        $title = $k->title;
+        $desc = trim((string) ($k->description ?? ''));
+
+        $line = "- {$date}: {$title} | status: {$status}";
+        if ($desc !== '') {
+            $line .= ' | ' . Str::limit($desc, 80);
+        }
+
+        return $line;
+    }
+
+    protected function kegiatanStatusLabel(Kegiatan $k): string
+    {
+        $hasPencapaian = $k->relationLoaded('pencapaians')
+            ? $k->pencapaians->isNotEmpty()
+            : $k->pencapaians()->exists();
+        $hasPhotos = ! empty($k->photos);
+
+        if ($hasPencapaian || $hasPhotos) {
+            return 'sudah dilaksanakan';
+        }
+
+        return 'jadwal/rencana';
     }
 
     protected function buildKegiatanRutinContext(Anak $anak, SekolahAiChatDataAccess $access): string
@@ -317,20 +412,77 @@ BLOCK;
         $from = $today->copy()->subDays($access->kegiatan_rutin_days_back);
         $until = $today->copy()->addDays($access->kegiatan_rutin_days_forward);
 
-        $rutins = KegiatanRutin::query()
+        $todayItems = KegiatanRutin::query()
             ->where('anak_id', $anak->id)
-            ->whereBetween('tanggal', [$from, $until])
-            ->orderBy('tanggal')
-            ->limit(15)
+            ->where('sekolah_id', $anak->sekolah_id)
+            ->whereDate('tanggal', $today)
+            ->orderBy('id')
             ->get();
 
-        if ($rutins->isEmpty()) {
-            return "Kegiatan rutin ({$access->kegiatan_rutin_days_back} hari ke belakang, {$access->kegiatan_rutin_days_forward} hari ke depan): Tidak ada catatan.";
+        $rangeItems = KegiatanRutin::query()
+            ->where('anak_id', $anak->id)
+            ->where('sekolah_id', $anak->sekolah_id)
+            ->whereBetween('tanggal', [$from, $until])
+            ->whereDate('tanggal', '!=', $today)
+            ->get()
+            ->sortBy(fn (KegiatanRutin $r) => abs($r->tanggal->diffInDays($today)))
+            ->take(20)
+            ->values();
+
+        if ($todayItems->isEmpty() && $rangeItems->isEmpty()) {
+            return "Kegiatan rutin harian ({$access->kegiatan_rutin_days_back} hari ke belakang, {$access->kegiatan_rutin_days_forward} hari ke depan): Belum ada catatan harian. Lihat daftar template kegiatan rutin kelas di bawah jika ada.";
         }
 
-        $lines = ["Kegiatan rutin ({$access->kegiatan_rutin_days_back} hari ke belakang, {$access->kegiatan_rutin_days_forward} hari ke depan):"];
-        foreach ($rutins as $r) {
-            $lines[] = '- ' . $r->tanggal->format('d M') . ': ' . ($r->kegiatan ?? $r->aspek ?? 'Kegiatan rutin');
+        $lines = ['Kegiatan rutin harian (catatan per tanggal, bisa jadwal atau sudah diisi):'];
+
+        if ($todayItems->isNotEmpty()) {
+            $lines[] = 'Hari ini (' . $today->translatedFormat('d M Y') . '):';
+            foreach ($todayItems as $r) {
+                $lines[] = $this->formatKegiatanRutinLine($r);
+            }
+        }
+
+        if ($rangeItems->isNotEmpty()) {
+            $lines[] = "Rentang {$access->kegiatan_rutin_days_back} hari ke belakang / {$access->kegiatan_rutin_days_forward} hari ke depan:";
+            foreach ($rangeItems as $r) {
+                $lines[] = $this->formatKegiatanRutinLine($r);
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    protected function formatKegiatanRutinLine(KegiatanRutin $r): string
+    {
+        $nama = $r->kegiatan ?? $r->aspek ?? 'Kegiatan rutin';
+        $status = filled($r->status_pencapaian) ? $r->status_pencapaian : 'jadwal/rencana';
+
+        return '- ' . $r->tanggal->format('d M') . ': ' . $nama . ' | status: ' . $status;
+    }
+
+    protected function buildMasterKegiatanRutinPlanContext(Anak $anak): string
+    {
+        if (! $anak->kelas_id) {
+            return '';
+        }
+
+        $masters = MasterKegiatanRutin::query()
+            ->where('sekolah_id', $anak->sekolah_id)
+            ->whereHas('kelas', fn ($q) => $q->where('kelas.id', $anak->kelas_id))
+            ->orderBy('nama_kegiatan')
+            ->get();
+
+        if ($masters->isEmpty()) {
+            return '';
+        }
+
+        $lines = ['Template kegiatan rutin kelas (rencana berulang, belum tentu sudah dicatat per hari):'];
+        foreach ($masters as $m) {
+            $line = '- ' . $m->nama_kegiatan;
+            if (filled($m->aspek)) {
+                $line .= ' (' . $m->aspek . ')';
+            }
+            $lines[] = $line;
         }
 
         return implode("\n", $lines);
