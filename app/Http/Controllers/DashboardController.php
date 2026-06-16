@@ -87,7 +87,8 @@ class DashboardController extends Controller
                 ->where('sekolah_id', $sekolahId)
                 ->orderBy('name')
                 ->get();
-            $data['anakIds'] = $data['anaks']->pluck('id');
+            $approvedAnaks = $data['anaks']->where('status', 'approved')->values();
+            $data['anakIds'] = $approvedAnaks->pluck('id');
 
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)
                 ->whereDate('date', Carbon::today())
@@ -106,7 +107,7 @@ class DashboardController extends Controller
             $feeds = collect();
 
             if ($data['anakIds']->isNotEmpty()) {
-                $childKelasIds = $data['anaks']->pluck('kelas_id')->filter()->unique();
+                $childKelasIds = $approvedAnaks->pluck('kelas_id')->filter()->unique();
                 $kegiatansQuery = Kegiatan::query()
                     ->where('sekolah_id', $sekolahId)
                     ->whereIn('kelas_id', $childKelasIds)
@@ -126,7 +127,7 @@ class DashboardController extends Controller
 
                 foreach ($kegiatans as $keg) {
                     // Check if at least one child of this parent in this class is present today
-                    $childrenInClass = $data['anaks']->where('kelas_id', $keg->kelas_id);
+                    $childrenInClass = $approvedAnaks->where('kelas_id', $keg->kelas_id);
                     $anyPresent = false;
                     foreach ($childrenInClass as $child) {
                         if (in_array($child->id, $presentAnakIdsToday)) {
@@ -201,7 +202,16 @@ class DashboardController extends Controller
                 $effectiveDays = HariLiburIndonesia::hitungHariEfektif($from, $to);
                 $data['effectiveDaysCount'] = $effectiveDays;
 
-                $data['presensiSummaryPerAnak'] = $data['anaks']->mapWithKeys(function($anak) use ($from, $to, $effectiveDays) {
+                $data['presensiSummaryPerAnak'] = $data['anaks']->mapWithKeys(function ($anak) use ($from, $to, $effectiveDays) {
+                    if (($anak->status ?? '') !== 'approved') {
+                        return [$anak->id => [
+                            'hadir' => 0,
+                            'tidak_hadir' => 0,
+                            'efektif' => $effectiveDays,
+                            'pending' => true,
+                        ]];
+                    }
+
                     $hadir = Presensi::where('anak_id', $anak->id)
                         ->where('hadir', true)
                         ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])

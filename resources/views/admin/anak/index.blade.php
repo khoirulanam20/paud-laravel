@@ -12,11 +12,17 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
-            showCreateModal: false,
+            showCreateModal: @js($errors->any()),
             showEditModal: false,
             showDeleteModal: false,
             editData: {},
             deleteRoute: '',
+            parentMode: @js(old('parent_mode', 'new')),
+            parentSearch: '',
+            parentResults: [],
+            selectedParent: null,
+            parentSearchLoading: false,
+            parentSearchTimer: null,
             openEdit(d) { 
                 this.editData = { ...d }; 
                 if (d.dob) {
@@ -26,7 +32,38 @@
                 this.editData.parent_email = d.user ? d.user.email : '';
                 this.showEditModal = true; 
             },
-            openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true; }
+            openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true; },
+            resetParentSearch() {
+                this.parentSearch = '';
+                this.parentResults = [];
+                this.selectedParent = null;
+            },
+            searchParents() {
+                clearTimeout(this.parentSearchTimer);
+                if (this.parentSearch.trim().length < 2) {
+                    this.parentResults = [];
+                    return;
+                }
+                this.parentSearchTimer = setTimeout(async () => {
+                    this.parentSearchLoading = true;
+                    try {
+                        const res = await fetch(`{{ route('admin.orang-tua.search') }}?q=${encodeURIComponent(this.parentSearch.trim())}`, {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const json = await res.json();
+                        this.parentResults = json.data || [];
+                    } catch (e) {
+                        this.parentResults = [];
+                    } finally {
+                        this.parentSearchLoading = false;
+                    }
+                }, 300);
+            },
+            selectParent(parent) {
+                this.selectedParent = parent;
+                this.parentResults = [];
+                this.parentSearch = `${parent.name} (${parent.email})`;
+            }
          }">
 
         @if(session('success'))
@@ -254,22 +291,69 @@
 
                         <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Akun Login Utama
                             (Wali)</div>
-                        <div class="col-span-1">
-                            <label class="input-label">Nama Wali Untuk Login</label>
-                            <input type="text" name="parent_name" required
-                                class="input-field @error('parent_name') border-red-500 @enderror"
-                                placeholder="Nama lengkap" value="{{ old('parent_name') }}">
-                            @error('parent_name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+
+                        <div class="col-span-2 flex flex-wrap gap-4">
+                            <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="radio" name="parent_mode" value="new" x-model="parentMode" @change="resetParentSearch()" class="rounded-full border-gray-300 text-[#1A6B6B] focus:ring-[#1A6B6B]">
+                                <span>Orang tua baru</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="radio" name="parent_mode" value="existing" x-model="parentMode" @change="resetParentSearch()" class="rounded-full border-gray-300 text-[#1A6B6B] focus:ring-[#1A6B6B]">
+                                <span>Orang tua sudah terdaftar</span>
+                            </label>
                         </div>
-                        <div class="col-span-1">
-                            <label class="input-label">Email Wali</label>
-                            <input type="email" name="parent_email" required
-                                class="input-field @error('parent_email') border-red-500 @enderror"
-                                placeholder="email@contoh.com" value="{{ old('parent_email') }}">
-                            @error('parent_email')
-                                <p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+
+                        <template x-if="parentMode === 'new'">
+                            <div class="col-span-2 grid grid-cols-2 gap-4">
+                                <div class="col-span-1">
+                                    <label class="input-label">Nama Wali Untuk Login</label>
+                                    <input type="text" name="parent_name"
+                                        class="input-field @error('parent_name') border-red-500 @enderror"
+                                        placeholder="Nama lengkap" value="{{ old('parent_name') }}"
+                                        :required="parentMode === 'new'">
+                                    @error('parent_name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="input-label">Email Wali</label>
+                                    <input type="email" name="parent_email"
+                                        class="input-field @error('parent_email') border-red-500 @enderror"
+                                        placeholder="email@contoh.com" value="{{ old('parent_email') }}"
+                                        :required="parentMode === 'new'">
+                                    @error('parent_email')
+                                        <p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="parentMode === 'existing'">
+                            <div class="col-span-2 space-y-3">
+                                <div class="relative">
+                                    <label class="input-label">Cari orang tua (nama atau email)</label>
+                                    <input type="text" x-model="parentSearch" @input="searchParents()"
+                                        class="input-field" placeholder="Ketik minimal 2 karakter..."
+                                        autocomplete="off">
+                                    <input type="hidden" name="parent_user_id" :value="selectedParent ? selectedParent.id : ''">
+                                    <p x-show="parentSearchLoading" class="text-[10px] text-gray-500 mt-1">Mencari...</p>
+                                    <div x-show="parentResults.length > 0" class="absolute z-20 mt-1 w-full rounded-lg border bg-white shadow-lg max-h-48 overflow-y-auto" style="border-color:rgba(0,0,0,0.08);">
+                                        <template x-for="parent in parentResults" :key="parent.id">
+                                            <button type="button" @click="selectParent(parent)"
+                                                class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b last:border-b-0"
+                                                style="border-color:rgba(0,0,0,0.06);">
+                                                <span class="font-semibold block" x-text="parent.name"></span>
+                                                <span class="text-xs text-gray-500" x-text="parent.email"></span>
+                                                <span class="text-[10px] text-[#1A6B6B] font-bold" x-text="`${parent.anaks_count} anak terdaftar`"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div x-show="selectedParent" class="rounded-lg px-3 py-2 text-sm" style="background:#EDE8DF; color:#6B6560;">
+                                    <span class="font-semibold" x-text="selectedParent?.name"></span>
+                                    <span class="block text-xs" x-text="selectedParent?.email"></span>
+                                </div>
+                                @error('parent_user_id')<p class="text-[10px] text-red-500">{{ $message }}</p>@enderror
+                            </div>
+                        </template>
                     </div>
                     <div class="modal-footer">
                         <button type="button" @click="showCreateModal = false" class="btn-secondary">Batal</button>

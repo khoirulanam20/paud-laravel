@@ -118,61 +118,111 @@
             </form>
         </div>
 
-        {{-- SECTION: Data Anak --}}
-        @foreach($anaks as $anak)
-        @php
-            $statusLabel = match ($anak->status ?? '') {
-                'approved' => 'Disetujui',
-                'pending' => 'Menunggu persetujuan',
-                'rejected' => 'Ditolak',
-                default => $anak->status ? ucfirst((string) $anak->status) : '—',
-            };
-            $jkAnak = old('jenis_kelamin', $anak->jenis_kelamin);
-        @endphp
-        <div class="card">
-            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
+        {{-- SECTION: Data Anak (accordion) --}}
+        <div class="space-y-3" x-data="{ openAnakId: null }">
+            <div class="flex items-center justify-between gap-3 px-1">
                 <div>
-                    <h3 class="section-title">Data Anak: {{ $anak->name }}</h3>
-                    <p class="section-subtitle">Informasi tersimpan di database untuk siswa ini.</p>
+                    <h3 class="section-title">Data Anak</h3>
+                    <p class="section-subtitle">{{ $anaks->count() }} anak terdaftar pada akun ini.</p>
                 </div>
-                <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" rounded="full" class="ring-2 ring-[#1A6B6B]/15" />
+                <a href="{{ route('orangtua.anak.create') }}" class="text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap" style="background:#E8F4F4; color:#1A6B6B;">+ Tambah Anak</a>
             </div>
-            <div class="px-6 py-4 bg-gray-50/80 border-b text-sm space-y-2" style="border-color:rgba(0,0,0,0.06);">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#2C2C2C]">
-                    <div><span class="text-gray-500">Sekolah:</span> <span class="font-medium">{{ $anak->sekolah->name ?? '—' }}</span></div>
-                    <div><span class="text-gray-500">Kelas:</span> <span class="font-medium">{{ $anak->kelas->name ?? 'Tanpa kelas' }}</span></div>
-                    <div><span class="text-gray-500">Status pendaftaran:</span> <span class="font-medium">{{ $statusLabel }}</span></div>
-                    <div><span class="text-gray-500">Usia:</span> <span class="font-medium">{{ $anak->dob ? $anak->age : '—' }}</span></div>
-                    @if(filled($anak->parent_name))
-                        <div class="sm:col-span-2"><span class="text-gray-500">Nama wali (di data anak):</span> <span class="font-medium">{{ $anak->parent_name }}</span></div>
-                    @endif
+
+            @foreach($anaks as $anak)
+            @php
+                $statusLabel = match ($anak->status ?? '') {
+                    'approved' => 'Disetujui',
+                    'pending' => 'Menunggu persetujuan',
+                    'rejected' => 'Ditolak',
+                    default => $anak->status ? ucfirst((string) $anak->status) : '—',
+                };
+                $statusClass = match ($anak->status ?? '') {
+                    'approved' => 'badge-teal',
+                    'pending' => 'badge-amber',
+                    'rejected' => 'badge-rose',
+                    default => 'badge-teal',
+                };
+                $jkAnak = old('jenis_kelamin', $anak->jenis_kelamin);
+            @endphp
+            <div class="card overflow-hidden">
+                <button
+                    type="button"
+                    class="w-full px-6 py-4 flex items-center gap-4 text-left hover:bg-gray-50/80 transition"
+                    @click="openAnakId = openAnakId === {{ $anak->id }} ? null : {{ $anak->id }}"
+                    :aria-expanded="openAnakId === {{ $anak->id }}"
+                >
+                    <x-foto-profil :path="$anak->photo" :name="$anak->name" size="md" rounded="full" class="ring-2 ring-[#1A6B6B]/15 shrink-0" />
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-semibold text-[#2C2C2C]">{{ $anak->name }}</span>
+                            <span class="badge {{ $statusClass }} text-[10px]">{{ $statusLabel }}</span>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color:#9E9790;">
+                            {{ $anak->kelas->name ?? 'Tanpa kelas' }}
+                            @if($anak->dob)
+                                · {{ $anak->age }}
+                            @endif
+                        </p>
+                    </div>
+                    <svg
+                        class="h-5 w-5 shrink-0 transition-transform duration-200"
+                        style="color:#9E9790;"
+                        :class="{ 'rotate-180': openAnakId === {{ $anak->id }} }"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <div
+                    x-show="openAnakId === {{ $anak->id }}"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                >
+                    <div class="border-t" style="border-color:rgba(0,0,0,0.06);">
+                        <div class="px-6 py-4 bg-gray-50/80 border-b text-sm space-y-2" style="border-color:rgba(0,0,0,0.06);">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#2C2C2C]">
+                                <div><span class="text-gray-500">Sekolah:</span> <span class="font-medium">{{ $anak->sekolah->name ?? '—' }}</span></div>
+                                <div><span class="text-gray-500">Kelas:</span> <span class="font-medium">{{ $anak->kelas->name ?? 'Tanpa kelas' }}</span></div>
+                                <div><span class="text-gray-500">Status pendaftaran:</span> <span class="font-medium">{{ $statusLabel }}</span></div>
+                                <div><span class="text-gray-500">Usia:</span> <span class="font-medium">{{ $anak->dob ? $anak->age : '—' }}</span></div>
+                                @if(filled($anak->parent_name))
+                                    <div class="sm:col-span-2"><span class="text-gray-500">Nama wali (di data anak):</span> <span class="font-medium">{{ $anak->parent_name }}</span></div>
+                                @endif
+                            </div>
+                        </div>
+                        <form method="post" action="{{ route('profile.anak.update', $anak) }}" enctype="multipart/form-data" class="px-6 py-5 space-y-4">
+                            @csrf @method('patch')
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2"><label class="input-label">Nama Lengkap Anak</label><input type="text" name="name" value="{{ old('name', $anak->name) }}" required class="input-field"></div>
+                                <div class="col-span-2">
+                                    <label class="input-label">Nama Panggilan</label>
+                                    <input type="text" name="nickname" maxlength="50" value="{{ old('nickname', $anak->nickname) }}" class="input-field @error('nickname') border-red-500 @enderror" placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian">
+                                    @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" value="{{ old('dob', $anak->dob?->format('Y-m-d')) }}" required class="input-field"></div>
+                                <div><label class="input-label">NIK Anak (opsional)</label><input type="text" name="nik" value="{{ old('nik', $anak->nik) }}" class="input-field"></div>
+                                <div><label class="input-label">Jenis Kelamin</label>
+                                    <select name="jenis_kelamin" class="input-field">
+                                        <option value="">Pilih...</option>
+                                        <option value="Laki-laki" @selected($jkAnak === 'Laki-laki')>Laki-laki</option>
+                                        <option value="Perempuan" @selected($jkAnak === 'Perempuan')>Perempuan</option>
+                                    </select>
+                                </div>
+                                <div><label class="input-label">Foto Anak</label><input type="file" id="photo-anak-{{ $anak->id }}" name="photo" accept="image/*" class="input-field py-1 text-xs"></div>
+                                <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="2">{{ old('alamat', $anak->alamat) }}</textarea></div>
+                            </div>
+                            <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data Anak</button></div>
+                        </form>
+                    </div>
                 </div>
             </div>
-            <form method="post" action="{{ route('profile.anak.update', $anak) }}" enctype="multipart/form-data" class="px-6 py-5 space-y-4">
-                @csrf @method('patch')
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2"><label class="input-label">Nama Lengkap Anak</label><input type="text" name="name" value="{{ old('name', $anak->name) }}" required class="input-field"></div>
-                    <div class="col-span-2">
-                        <label class="input-label">Nama Panggilan</label>
-                        <input type="text" name="nickname" maxlength="50" value="{{ old('nickname', $anak->nickname) }}" class="input-field @error('nickname') border-red-500 @enderror" placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian">
-                        @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                    </div>
-                    <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" value="{{ old('dob', $anak->dob?->format('Y-m-d')) }}" required class="input-field"></div>
-                    <div><label class="input-label">NIK Anak (opsional)</label><input type="text" name="nik" value="{{ old('nik', $anak->nik) }}" class="input-field"></div>
-                    <div><label class="input-label">Jenis Kelamin</label>
-                        <select name="jenis_kelamin" class="input-field">
-                            <option value="">Pilih...</option>
-                            <option value="Laki-laki" @selected($jkAnak === 'Laki-laki')>Laki-laki</option>
-                            <option value="Perempuan" @selected($jkAnak === 'Perempuan')>Perempuan</option>
-                        </select>
-                    </div>
-                    <div><label class="input-label">Foto Anak</label><input type="file" id="photo-anak-{{ $anak->id }}" name="photo" accept="image/*" class="input-field py-1 text-xs"></div>
-                    <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="2">{{ old('alamat', $anak->alamat) }}</textarea></div>
-                </div>
-                <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Data Anak</button></div>
-            </form>
+            @endforeach
         </div>
-        @endforeach
         @endif
 
         {{-- SECTION: Ganti Password --}}

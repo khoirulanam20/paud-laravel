@@ -16,7 +16,6 @@
         <div class="card overflow-hidden mb-6">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06); background: linear-gradient(to right, #FFF9C4, #FFFBF0);">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">⏳</span>
                     <div>
                         <h3 class="section-title">Menunggu Persetujuan</h3>
                         <p class="section-subtitle">{{ $pending->count() }} pendaftar baru membutuhkan tindakan</p>
@@ -28,9 +27,12 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Anak</th><th>Orang Tua</th><th>Email</th><th>Tgl. Lahir</th><th>Catatan Ortu</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Anak</th><th>Orang Tua</th><th>Email</th><th>Tipe</th><th>Tgl. Lahir</th><th>Catatan Ortu</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($pending as $a)
+                        @php
+                            $isAnakTambahan = $a->user && $a->user->anaks->where('status', 'approved')->isNotEmpty();
+                        @endphp
                         <tr>
                             <td>
                                 <div class="flex items-center gap-2">
@@ -41,6 +43,13 @@
                             <td>{{ $a->parent_name ?? $a->user->name }}</td>
                             <td class="text-sm" style="color:#9E9790;">{{ $a->user->email }}</td>
                             <td>
+                                @if($isAnakTambahan)
+                                    <span class="badge badge-teal text-[10px]">Anak tambahan</span>
+                                @else
+                                    <span class="text-xs" style="color:#9E9790;">Baru</span>
+                                @endif
+                            </td>
+                            <td>
                                 {{ $a->dob ? \Carbon\Carbon::parse($a->dob)->format('d M Y') : '-' }}
                                 @if($a->dob)<span class="text-[10px] block text-[#1A6B6B] font-bold">{{ $a->age }}</span>@endif
                             </td>
@@ -49,14 +58,14 @@
                                 <div class="flex items-center justify-end gap-2">
                                     <form method="POST" action="{{ route('admin.pendaftaran.approve', $a) }}">
                                         @csrf
-                                        <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#1A6B6B;">✅ Setujui</button>
+                                        <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#1A6B6B;">Setujui</button>
                                     </form>
-                                    <button @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">❌ Tolak</button>
+                                    <button @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Tolak</button>
                                 </div>
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="6" class="py-10 text-center" style="color:#9E9790;">🎉 Tidak ada pendaftaran yang menunggu persetujuan.</td></tr>
+                        <tr><td colspan="7" class="py-10 text-center" style="color:#9E9790;"> Tidak ada pendaftaran yang menunggu persetujuan.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -66,7 +75,7 @@
         {{-- APPROVED --}}
         <div class="card overflow-hidden mb-6">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">✅ Telah Disetujui</h3>
+                <h3 class="section-title"> Telah Disetujui</h3>
                 <p class="section-subtitle">Siswa aktif di sekolah ini</p>
             </div>
             <div class="overflow-x-auto">
@@ -98,7 +107,7 @@
         {{-- REJECTED --}}
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">❌ Ditolak</h3>
+                <h3 class="section-title"> Ditolak</h3>
                 <p class="section-subtitle">Pendaftaran yang tidak disetujui</p>
             </div>
             <div class="overflow-x-auto">

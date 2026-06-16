@@ -3,16 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAnakPendaftaranRequest;
 use App\Models\Anak;
 use App\Models\Kelas;
 use App\Models\User;
+use App\Services\AnakRegistrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Traits\CanUploadImage;
+use Illuminate\Validation\Rule;
 
 class AnakController extends Controller
 {
     use CanUploadImage;
+
+    public function __construct(
+        protected AnakRegistrationService $anakRegistration
+    ) {}
+
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -56,64 +64,75 @@ class AnakController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'nickname' => 'nullable|string|max:50',
-            'dob' => 'nullable|date',
-            'kelas_id' => 'nullable|exists:kelas,id',
-            'nik' => 'nullable|string|max:50',
-            'alamat' => 'nullable|string',
-            'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
-            'nik_bapak' => 'nullable|string|max:50',
-            'nama_bapak' => 'nullable|string|max:255',
-            'nik_ibu' => 'nullable|string|max:50',
-            'nama_ibu' => 'nullable|string|max:255',
-            'parent_name' => 'required|string|max:255',
-            'parent_email' => 'required|email|max:255',
-            // Default password for parents can be specified or generated
-        ]);
-
         $sekolah_id = auth()->user()->sekolah_id;
+        $parentMode = $request->input('parent_mode', 'new');
 
-        $request->validate([
-            'parent_email' => 'unique:users,email',
-        ]);
+        $rules = array_merge(
+            [
+                'parent_mode' => ['required', Rule::in(['new', 'existing'])],
+                'name' => 'required|string|max:255',
+            ],
+            StoreAnakPendaftaranRequest::adminOptionalRules()
+        );
 
-        $user = User::create([
-            'name' => $request->parent_name,
-            'email' => $request->parent_email,
-            'password' => Hash::make('password123'),
-            'sekolah_id' => $sekolah_id,
-        ]);
-        $user->assignRole('Orang Tua');
+        $rules['dob'] = 'nullable|date|before:today';
+        $rules['photo'] = 'nullable|image|max:2048';
 
-        $data = [
-            'user_id' => $user->id,
-            'sekolah_id' => $sekolah_id,
-            'kelas_id' => $request->kelas_id,
-            'name' => $request->name,
-            'nickname' => filled(trim($request->input('nickname', '')))
-                ? trim($request->input('nickname'))
-                : null,
-            'dob' => $request->dob,
-            'nik' => $request->nik,
-            'alamat' => $request->alamat,
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'nik_bapak' => $request->nik_bapak,
-            'nama_bapak' => $request->nama_bapak,
-            'nik_ibu' => $request->nik_ibu,
-            'nama_ibu' => $request->nama_ibu,
-            'parent_name' => $user->name,
-            'status' => 'approved',
-        ];
-
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $this->uploadImage($request->file('photo'), 'anak');
+        if ($parentMode === 'existing') {
+            $rules['parent_user_id'] = [
+                'required',
+                'integer',
+                Rule::exists('users', 'id')->where(fn ($q) => $q->where('sekolah_id', $sekolah_id)),
+            ];
+        } else {
+            $rules['parent_name'] = 'required|string|max:255';
+            $rules['parent_email'] = 'required|email|max:255|unique:users,email';
         }
 
-        Anak::create($data);
+        $validated = $request->validate($rules);
 
-        return redirect()->route('admin.anak.index')->with('success', 'Data Anak dan Orang Tua berhasil ditambahkan. Password default Ortu: password123');
+        if ($parentMode === 'existing') {
+            $user = User::query()
+                ->where('id', $validated['parent_user_id'])
+                ->where('sekolah_id', $sekolah_id)
+                ->role('Orang Tua')
+                ->firstOrFail();
+        } else {
+            $user = User::create([
+                'name' => $validated['parent_name'],
+                'email' => $validated['parent_email'],
+                'password' => Hash::make('password123'),
+                'sekolah_id' => $sekolah_id,
+            ]);
+            $user->assignRole('Orang Tua');
+        }
+
+        $anakData = [
+            'name' => $validated['name'],
+            'dob' => $validated['dob'] ?? null,
+            'nickname' => $validated['nickname'] ?? null,
+            'nik' => $validated['nik'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
+            'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
+            'kelas_id' => $validated['kelas_id'] ?? null,
+            'nik_bapak' => $validated['nik_bapak'] ?? null,
+            'nama_bapak' => $validated['nama_bapak'] ?? null,
+            'nik_ibu' => $validated['nik_ibu'] ?? null,
+            'nama_ibu' => $validated['nama_ibu'] ?? null,
+        ];
+
+        $this->anakRegistration->createApprovedForParent(
+            $user,
+            $anakData,
+            $sekolah_id,
+            $request->file('photo')
+        );
+
+        $message = $parentMode === 'existing'
+            ? 'Data anak berhasil ditambahkan ke akun orang tua yang dipilih.'
+            : 'Data Anak dan Orang Tua berhasil ditambahkan. Password default Ortu: password123';
+
+        return redirect()->route('admin.anak.index')->with('success', $message);
     }
 
     public function update(Request $request, Anak $anak)
@@ -135,10 +154,8 @@ class AnakController extends Controller
             'parent_email' => 'required|email|max:255',
         ]);
 
-        // If parent email changed, we need to handle it carefully
         $user = $anak->user;
         if ($user && $user->email !== $request->parent_email) {
-            // Check if new email is taken by someone else
             $exists = User::where('email', $request->parent_email)->where('id', '!=', $user->id)->exists();
             if ($exists) {
                 return back()->withInput()->withErrors(['parent_email' => 'Email wali sudah digunakan oleh pengguna lain.']);
@@ -182,17 +199,17 @@ class AnakController extends Controller
     public function destroy(Anak $anak)
     {
         abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
-        
+
         $user = $anak->user;
         if ($anak->photo) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
         }
         $anak->delete();
-        
-        if ($user && $user->hasRole('Orang Tua')) {
+
+        if ($user && $user->hasRole('Orang Tua') && $user->anaks()->count() === 0) {
             $user->delete();
         }
 
-        return redirect()->route('admin.anak.index')->with('success', 'Data Anak dan akun Orang Tua berhasil dihapus.');
+        return redirect()->route('admin.anak.index')->with('success', 'Data Anak berhasil dihapus.');
     }
 }

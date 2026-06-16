@@ -29,6 +29,8 @@ use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
 use App\Http\Controllers\Admin\OrangTuaChatController;
 use App\Http\Controllers\Admin\AiPersonaController;
+use App\Http\Controllers\Admin\OrangTuaSearchController;
+use App\Http\Controllers\OrangTua\AnakController as OrangTuaAnakController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
 use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
@@ -99,6 +101,7 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('kelas', KelasController::class)->except(['create', 'edit', 'show']);
     Route::resource('matrikulasi', AdminMatrikulasiController::class)->except(['create', 'edit', 'show']);
     Route::resource('skala-pencapaian', SkalaPencapaianController::class)->except(['create', 'edit', 'show']);
+    Route::get('orang-tua/search', OrangTuaSearchController::class)->name('orang-tua.search');
     Route::resource('anak', AnakController::class)->except(['create', 'edit']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
@@ -189,6 +192,8 @@ Route::middleware(['auth', 'role:Pengajar|Admin Kelas'])->prefix('pengajar')->na
 // ORANG TUA
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtua.')->group(function () {
+    Route::get('anak/tambah', [OrangTuaAnakController::class, 'create'])->name('anak.create');
+    Route::post('anak', [OrangTuaAnakController::class, 'store'])->name('anak.store');
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');
     Route::get('kegiatan-rutin', [\App\Http\Controllers\OrangTua\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::get('pencapaian', [OrangTuaPencapaianController::class, 'index'])->name('pencapaian.index');

@@ -274,12 +274,29 @@
                 {{-- 3. Children Attendance Stats List --}}
                 <div class="relative px-5 py-5 md:px-6 md:py-6">
                     @forelse($anaks ?? [] as $anak)
-                        @php $summary = $presensiSummaryPerAnak[$anak->id] ?? ['hadir' => 0, 'tidak_hadir' => 0, 'efektif' => 0]; @endphp
+                        @php
+                            $summary = $presensiSummaryPerAnak[$anak->id] ?? ['hadir' => 0, 'tidak_hadir' => 0, 'efektif' => 0];
+                            $statusLabel = match ($anak->status ?? '') {
+                                'approved' => null,
+                                'pending' => 'Menunggu persetujuan',
+                                'rejected' => 'Ditolak',
+                                default => $anak->status ? ucfirst((string) $anak->status) : null,
+                            };
+                            $isPending = ($anak->status ?? '') !== 'approved';
+                        @endphp
                         <div class="rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm p-4 mb-3 last:mb-0">
                             <div class="flex items-center gap-3">
                                 <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" class="border border-white/25 shadow-sm shrink-0" />
                                 <div class="min-w-0 flex-1">
-                                    <p class="font-bold text-[15px] leading-tight">{{ $anak->name }}</p>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <p class="font-bold text-[15px] leading-tight">{{ $anak->name }}</p>
+                                        @if($statusLabel)
+                                            <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full {{ ($anak->status ?? '') === 'rejected' ? 'bg-red-500/30 text-red-100' : 'bg-amber-400/25 text-amber-100' }}">{{ $statusLabel }}</span>
+                                        @endif
+                                    </div>
+                                    @if($isPending)
+                                        <p class="text-xs text-white/70 mt-2">Kehadiran akan tampil setelah pendaftaran disetujui admin.</p>
+                                    @else
                                     <div class="flex items-center gap-3 mt-1.5">
                                         <div class="flex flex-col">
                                             <span class="text-[8px] text-white/60 uppercase font-bold tracking-wider">Hadir</span>
@@ -296,12 +313,23 @@
                                             <span class="text-sm font-bold tabular-nums leading-none text-white">{{ $summary['efektif'] }} hari</span>
                                         </div>
                                     </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                     @empty
                         <p class="text-sm text-white/75 py-2">Belum ada anak tertaut pada akun ini.</p>
-                    @endforelse              
+                    @endforelse
+
+                    <div class="mt-4 pt-4 border-t border-white/10">
+                        <a href="{{ route('orangtua.anak.create') }}"
+                           class="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 transition">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Tambah Anak
+                        </a>
+                    </div>
                 </div>
             </div>
 

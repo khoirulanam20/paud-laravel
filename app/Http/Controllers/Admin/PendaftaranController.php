@@ -12,7 +12,7 @@ class PendaftaranController extends Controller
     {
         $sekolahId = auth()->user()->sekolah_id;
 
-        $pending  = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'pending')->latest()->get();
+        $pending  = Anak::with(['user.anaks'])->where('sekolah_id', $sekolahId)->where('status', 'pending')->latest()->get();
         $approved = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'approved')->latest()->paginate(10, ['*'], 'approved_page');
         $rejected = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'rejected')->latest()->paginate(10, ['*'], 'rejected_page');
 

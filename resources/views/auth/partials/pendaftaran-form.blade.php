@@ -10,6 +10,11 @@
     Pendaftaran akan ditinjau oleh Admin Sekolah. Anda bisa masuk setelah akun disetujui.
 </div>
 
+<div class="mb-5 rounded-xl px-4 py-3 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" style="background: #E8F4F4; color: #1A6B6B;">
+    <span>Sudah punya akun dan ingin mendaftarkan anak lain?</span>
+    <a href="{{ route('orangtua.anak.create') }}" class="font-semibold hover:underline whitespace-nowrap">Masuk untuk menambah anak →</a>
+</div>
+
 <form method="POST" action="{{ $action }}" class="space-y-5" enctype="multipart/form-data">
     @csrf
 

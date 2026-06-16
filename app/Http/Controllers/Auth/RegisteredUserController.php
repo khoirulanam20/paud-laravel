@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Anak;
 use App\Models\Sekolah;
 use App\Models\User;
+use App\Services\AnakRegistrationService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
@@ -19,6 +18,10 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RegisteredUserController extends Controller
 {
+    public function __construct(
+        protected AnakRegistrationService $anakRegistration
+    ) {}
+
     /**
      * Form pendaftaran (tampilan sama dengan /pendaftaran — kartu auth SIPP).
      */
@@ -55,7 +58,6 @@ class RegisteredUserController extends Controller
                 'sekolah_id' => $request->sekolah_id,
             ]);
 
-            // Production sering lupa seed role → assignRole melempar exception
             Role::firstOrCreate(
                 ['name' => 'Orang Tua', 'guard_name' => 'web']
             );
@@ -65,27 +67,11 @@ class RegisteredUserController extends Controller
 
             event(new Registered($user));
 
-            $anakData = [
-                'user_id' => $user->id,
-                'sekolah_id' => $request->sekolah_id,
+            $this->anakRegistration->createPendingForParent($user, [
                 'name' => $request->anak_name,
                 'dob' => $request->anak_dob,
-                'parent_name' => $request->name,
-            ];
-
-            if ($request->hasFile('photo')) {
-                $path = $request->file('photo')->store('anak_photos', 'public');
-                $anakData['photo'] = $path;
-            }
-
-            if (Schema::hasColumn('anaks', 'status')) {
-                $anakData['status'] = 'pending';
-            }
-            if (Schema::hasColumn('anaks', 'catatan_ortu')) {
-                $anakData['catatan_ortu'] = $request->catatan_ortu;
-            }
-
-            Anak::create($anakData);
+                'catatan_ortu' => $request->catatan_ortu,
+            ], $request->file('photo'));
 
             DB::commit();
         } catch (\Throwable $e) {
