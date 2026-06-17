@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
             </div>
@@ -10,7 +10,7 @@
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
         @forelse($anaks as $anak)
-            <div class="card overflow-hidden">
+            <div class="card overflow-hidden" data-tour="ortu-kesehatan-metrics">
                 <div class="px-6 py-4 bg-[#F8F5F1] border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
                     <div class="flex items-center gap-4">
                         <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" rounded="xl" />
@@ -31,7 +31,7 @@
                             Belum ada catatan kesehatan untuk {{ $anak->name }}.
                         </div>
                     @else
-                        <div class="space-y-6">
+                        <div class="space-y-6" data-tour="ortu-kesehatan-timeline">
                             @foreach($anak->kesehatans as $record)
                                 <div class="relative pl-8 border-l-2 border-[#1A6B6B]/20 pb-6 last:pb-0">
                                     <div class="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 border-white bg-[#1A6B6B]"></div>

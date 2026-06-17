@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -19,7 +19,7 @@
          }">
         <div class="card overflow-hidden">
             <div class="px-5 py-5 border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF9F6;">
-                <form method="GET" class="grid grid-cols-2 lg:flex lg:items-end gap-4">
+                <form data-tour="ortu-rutin-filters" method="GET" class="grid grid-cols-2 lg:flex lg:items-end gap-4">
                     @if($anaks->count() > 1)
                         <div class="col-span-2 lg:col-auto lg:min-w-[160px]">
                             <label class="input-label">Pilih Anak</label>
@@ -67,7 +67,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="data-table">
+                <table class="data-table" data-tour="ortu-rutin-results">
                     <thead>
                         <tr>
                             <th>Tanggal</th>

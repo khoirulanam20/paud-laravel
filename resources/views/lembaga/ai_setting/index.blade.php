@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -78,7 +78,7 @@
         @endif
 
         {{-- Status Banner --}}
-        <div class="mb-6 rounded-2xl border p-5 flex items-start gap-4"
+        <div data-tour="lembaga-ai-status" class="mb-6 rounded-2xl border p-5 flex items-start gap-4"
             style="background:{{ $aiSetting?->hasValidApiKey() ? '#D0E8E8' : '#FEF9EC' }}; border-color: {{ $aiSetting?->hasValidApiKey() ? '#1A6B6B33' : '#F0B84233' }};">
             <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
                 style="background:{{ $aiSetting?->hasValidApiKey() ? '#1A6B6B' : '#F0B842' }};">
@@ -145,7 +145,7 @@
                 <h3 class="section-title">Konfigurasi AI Provider</h3>
                 <p class="section-subtitle mt-1">Pilih provider AI dengan API <strong>OpenAI-compatible</strong> (<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">/v1/chat/completions</code>).</p>
             </div>
-            <form action="{{ route('lembaga.ai-setting.update') }}" method="POST">
+            <form data-tour="lembaga-ai-form" action="{{ route('lembaga.ai-setting.update') }}" method="POST">
                 @csrf
                 <div class="px-6 py-6 space-y-6">
 

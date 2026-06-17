@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Jadwal Menu Makanan</h2>
         </div>
@@ -16,7 +16,7 @@
                         <p class="text-sm font-medium" style="color:#9E9790;">Pilih rentang tanggal untuk melihat jadwal menu mingguan</p>
                     </div>
                     
-                    <form method="get" action="{{ route('orangtua.menu-makanan.index') }}" class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end">
+                    <form data-tour="ortu-menu-date-filter" method="get" action="{{ route('orangtua.menu-makanan.index') }}" class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end">
                         <div class="col-span-1 lg:col-span-4 min-w-0">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Tanggal Dari</label>
                             <input type="date" name="start_date" value="{{ $startDate }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
@@ -54,7 +54,7 @@
                     </div>
                 </div>
             </div>
-            <div class="divide-y" style="divide-color:rgba(0,0,0,0.05);">
+            <div class="divide-y" data-tour="ortu-menu-list" style="divide-color:rgba(0,0,0,0.05);">
                 @forelse($menus as $m)
                 <div class="px-5 sm:px-6 py-5 flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="flex gap-2 shrink-0 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">

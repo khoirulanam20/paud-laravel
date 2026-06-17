@@ -1,15 +1,20 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <h2 class="text-2xl font-bold text-amber-900 leading-tight">Presensi Guru & Staf</h2>
-                <p class="text-sm text-amber-800/60 mt-1">Kelola kehadiran pengajar setiap harinya.</p>
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="page-header">
+            <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background: #1A6B6B;">
+                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                </div>
+                <div>
+                    <h2 class="font-bold text-xl" style="color: #2C2C2C;">Presensi Guru & Staf</h2>
+                    <p class="text-sm text-amber-800/60 mt-0.5">Kelola kehadiran pengajar setiap harinya.</p>
+                </div>
             </div>
-            
-            <form method="GET" action="{{ route('admin.presensi-guru.index') }}" class="flex items-center gap-3">
+
+            <form data-tour="admin-presensi-guru-date" method="GET" action="{{ route('admin.presensi-guru.index') }}" class="flex items-center gap-3">
                 <div class="relative">
-                    <input type="date" name="tanggal" value="{{ $tanggal }}" 
-                        class="input-field py-2 pl-10 pr-4 text-sm font-bold border-amber-100 bg-white" 
+                    <input type="date" name="tanggal" value="{{ $tanggal }}"
+                        class="input-field py-2 pl-10 pr-4 text-sm font-bold border-amber-100 bg-white"
                         onchange="this.form.submit()">
                     <div class="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -17,7 +22,9 @@
                 </div>
             </form>
         </div>
+    </x-slot>
 
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         @if(session('success'))
             <div class="mb-6 p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl flex items-center gap-3 animate-fade-in">
                 <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
@@ -28,10 +35,10 @@
         <form action="{{ route('admin.presensi-guru.store') }}" method="POST">
             @csrf
             <input type="hidden" name="tanggal" value="{{ $tanggal }}">
-            
+
             <div class="card overflow-hidden border-none shadow-sm shadow-amber-900/5">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left" data-tour="admin-presensi-guru-input-table">
                         <thead>
                             <tr class="bg-amber-50/50">
                                 <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40">Nama Pengajar</th>
@@ -100,7 +107,7 @@
                     <h3 class="text-lg font-bold text-amber-900 leading-tight">Rekap Absensi</h3>
                     <p class="text-xs text-amber-800/60 font-medium">Akumulasi kehadiran pengajar periode {{ Carbon\Carbon::create($rekapYear, $rekapMonth, 1)->translatedFormat('F Y') }}</p>
                 </div>
-                
+
                 <form action="{{ route('admin.presensi-guru.index') }}" method="GET" class="flex items-center gap-2">
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <select name="rekap_month" class="input-field py-1.5 text-xs border-amber-100 bg-white min-w-[8rem]" onchange="this.form.submit()">
@@ -118,10 +125,10 @@
                     </select>
                 </form>
             </div>
-            
+
             <div class="card overflow-hidden border-none shadow-sm shadow-amber-900/5">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left" data-tour="admin-presensi-guru-rekap-table">
                         <thead>
                             <tr class="bg-amber-50/50">
                                 <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40">Nama Pengajar</th>

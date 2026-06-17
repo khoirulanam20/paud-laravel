@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="mb-6 flex items-center gap-4">
+        <div class="mb-6 flex items-center gap-4" data-tour="page-header">
             <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.index') }}" class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </a>
@@ -26,7 +26,7 @@
     $oldMatrikulasi = old('matrikulasi_id', $masterKegiatanRutin->matrikulasi_id);
 @endphp
 
-        <div class="card border-none shadow-sm shadow-gray-200" x-data="{
+        <div class="card border-none shadow-sm shadow-gray-200" data-tour="kegiatan-rutin-form" x-data="{
                 aspek: '{{ $oldAspek }}',
                 allMatrikulasi: {{ $matrikulasiList->toJson() }},
                 get filteredMatrikulasi() {

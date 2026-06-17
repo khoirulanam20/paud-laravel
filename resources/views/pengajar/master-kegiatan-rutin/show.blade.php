@@ -38,7 +38,7 @@
             }
         }
     }">
-        <div class="mb-6 flex items-center gap-4">
+        <div class="mb-6 flex items-center gap-4" data-tour="page-header">
             <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.index') }}" class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </a>
@@ -48,7 +48,7 @@
             </div>
         </div>
         
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="kegiatan-rutin-summary">
             <div>
                 <h3 class="text-lg font-bold text-gray-800">Daftar Siswa</h3>
                 <p class="text-xs text-gray-500">Isi status pencapaian untuk tanggal di bawah ini.</p>
@@ -77,7 +77,7 @@
             </div>
         @endif
 
-        <div class="card overflow-hidden border-none shadow-sm shadow-gray-200">
+        <div class="card overflow-hidden border-none shadow-sm shadow-gray-200" data-tour="kegiatan-rutin-records">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>

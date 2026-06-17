@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg
                     class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -17,7 +17,7 @@
                     <p class="text-sm leading-relaxed m-0 max-w-3xl" style="color:#9E9790;">Tanggal, anak, dan aspek
                         bersifat opsional. Reset lewat &quot;Tampilkan semua&quot;.</p>
                 </div>
-                <form method="get" action="{{ route('orangtua.pencapaian.index') }}"
+                <form data-tour="ortu-pencapaian-filter" method="get" action="{{ route('orangtua.pencapaian.index') }}"
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
                     <div class="sm:col-span-2 lg:col-span-3 min-w-0">
                         <label class="input-label" for="ortu-penc-aspek">Aspek</label>
@@ -93,7 +93,7 @@
             </div>
         </details>
 
-        <div class="card overflow-hidden">
+        <div class="card overflow-hidden" data-tour="ortu-pencapaian-reports">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Rapor per kegiatan &amp; aspek</h3>
                 <p class="section-subtitle">Setiap kartu = satu kegiatan; di dalamnya nilai per indikator matrikulasi

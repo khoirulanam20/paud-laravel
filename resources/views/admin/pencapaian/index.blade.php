@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;"><svg
                     class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -201,7 +201,7 @@
                 this.deleteBundleAnak = b.anak_id; this.deleteBundleKeg = b.kegiatan_id;
                 this.showDeleteBundleModal = true;
             }
-         }">
+         }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteBundleModal=false">
 
         <script type="application/json" id="pencapaian-payload-json">{!! $payloadJson !!}</script>
 
@@ -222,7 +222,7 @@
                     <div class="space-y-1">
                         <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Evaluasi (Sekolah)</h3>
                     </div>
-                    <form method="get" action="{{ route('admin.pencapaian.index') }}"
+                    <form data-tour="admin-pencapaian-filter" method="get" action="{{ route('admin.pencapaian.index') }}"
                         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 items-end">
                         <div class="col-span-1 lg:col-span-2 min-w-0">
                             <label class="input-label">Dari</label>
@@ -305,7 +305,7 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Laporan Pencapaian Sekolah</h3>
-                <button type="button" @click="openCreateModal()" class="btn-primary">Buat Evaluasi</button>
+                <button type="button" data-tour="admin-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary">Buat Evaluasi</button>
             </div>
 
             <div class="overflow-x-auto">
@@ -381,9 +381,9 @@
                                 <td class="text-xs">{{ \Carbon\Carbon::parse($first->created_at)->format('d/m/Y') }}</td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <button type="button" @click="openEditBundle('{{ $bundleKey }}')"
+                                        <button type="button" @if($loop->first) data-tour="admin-pencapaian-action-edit" data-tour-open-modal="edit" @endif @click="openEditBundle('{{ $bundleKey }}')"
                                             class="btn-xs border border-teal-200 text-teal-700 bg-teal-50 px-2 py-1 rounded">Edit</button>
-                                        <button type="button" @click="openDeleteBundle('{{ $bundleKey }}')"
+                                        <button type="button" @if($loop->first) data-tour="admin-pencapaian-action-delete" data-tour-demo-action="delete" @endif @click="openDeleteBundle('{{ $bundleKey }}')"
                                             class="btn-xs border border-red-200 text-red-700 bg-red-50 px-2 py-1 rounded">Hapus</button>
                                     </div>
                                 </td>
@@ -401,9 +401,9 @@
         </div>
 
         {{-- CREATE MODAL --}}
-        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
-            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative"
-                @click.away="!isCompressing && (showCreateModal=false)">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;"
+            @click.self="!isCompressing && (showCreateModal=false)">
+            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
                 <div x-show="isCompressing"
                     class="absolute inset-0 z-[60] bg-white/90 flex flex-col items-center justify-center">
                     <div class="h-10 w-10 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin">
@@ -417,7 +417,7 @@
                         <h3 class="section-title">Rekam Pencapaian</h3>
                     </div>
                     <div class="modal-body space-y-4">
-                        <div>
+                        <div data-tour="modal-create-section-kelas">
                             <label class="input-label">Filter Kelas</label>
                             <select class="input-field" x-model="selectedKelasIdCreate"
                                 @change="selectedAnakId = ''; selectedKegiatanId = ''">
@@ -427,7 +427,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
+                        <div data-tour="modal-create-section-siswa">
                             <label class="input-label">Target Siswa</label>
                             <select name="anak_id" required class="input-field" x-model="selectedAnakId"
                                 @change="selectedKegiatanId = ''">
@@ -442,7 +442,7 @@
                                 <span class="text-[10px] italic" style="color:#9E9790;"> — dipakai saran AI</span>
                             </p>
                         </div>
-                        <div x-show="selectedAnakId">
+                        <div data-tour="modal-create-section-kegiatan" x-show="selectedAnakId">
                             <label class="input-label">Jurnal Kegiatan</label>
                             <select name="kegiatan_id" required class="input-field" x-model="selectedKegiatanId"
                                 @change="resetCreateMatrices()">
@@ -459,17 +459,19 @@
                                     pencapaiannya, dan siswa <strong>hadir</strong> (sudah dipresensi) di tanggal tersebut.</p>
                             </template>
                         </div>
-                        <template x-for="opt in matrikulasiOptions" :key="opt.id">
+                        <template x-for="(opt, index) in matrikulasiOptions" :key="opt.id">
                             <div class="p-3 bg-gray-50 rounded-xl border border-black/5 space-y-2">
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
-                                <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'"
-                                    x-model="createNilai[String(opt.id)]">
-                                    <option value="">— Skala Capaian —</option>
-                                    <template x-for="sk in skalaOptions" :key="sk.code">
-                                        <option :value="sk.code" x-text="sk.code + ' (' + sk.label + ')'"></option>
-                                    </template>
-                                </select>
-                                <div class="space-y-1.5">
+                                <div :data-tour="index === 0 ? 'modal-create-section-skala' : null">
+                                    <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'"
+                                        x-model="createNilai[String(opt.id)]">
+                                        <option value="">— Skala Capaian —</option>
+                                        <template x-for="sk in skalaOptions" :key="sk.code">
+                                            <option :value="sk.code" x-text="sk.code + ' (' + sk.label + ')'"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="space-y-1.5" :data-tour="index === 0 ? 'modal-create-section-feedback' : null">
                                     <textarea class="input-field bg-white text-xs" rows="3"
                                         :name="'catatan[' + opt.id + ']'" x-model="createCatatan[String(opt.id)]"
                                         placeholder="Berikan umpan balik positif…"></textarea>
@@ -515,14 +517,14 @@
                                 </div>
                             </div>
                         </template>
-                        <div>
+                        <div data-tour="modal-create-section-evidence">
                             <label class="input-label">Unggah Dokumentasi (Evidence)</label>
                             <input type="file" name="photo" accept="image/*" class="input-field py-1"
                                 @change="handleFile($event)">
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false"
-                            class="btn-secondary">Batal</button><button type="submit" class="btn-primary"
+                            class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary"
                             :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0">Simpan Evaluasi</button>
                     </div>
                 </form>
@@ -530,9 +532,9 @@
         </div>
 
         {{-- EDIT MODAL --}}
-        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
-            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative"
-                @click.away="!isCompressing && (showEditModal=false)">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;"
+            @click.self="!isCompressing && (showEditModal=false)">
+            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
                 <div x-show="isCompressing"
                     class="absolute inset-0 z-[60] bg-white/90 flex flex-col items-center justify-center">
                     <div class="h-10 w-10 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin">
@@ -549,6 +551,7 @@
                         <h3 class="section-title">Ubah Hasil Evaluasi</h3>
                     </div>
                     <div class="modal-body space-y-3">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-edit-section-form">Data Evaluasi</div>
                         <div class="rounded-xl border p-3 flex items-start gap-3"
                             style="background:#F0F9F9; border-color:#1A6B6B22;">
                             <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
@@ -666,14 +669,14 @@
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false"
-                            class="btn-secondary">Batal</button><button type="submit"
+                            class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit"
                             class="btn-primary">Update</button></div>
                 </form>
             </div>
         </div>
 
         {{-- DELETE MODAL --}}
-        <div x-show="showDeleteBundleModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteBundleModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteBundleModal" x-transition class="modal-box max-w-sm"
                 @click.away="showDeleteBundleModal=false">
                 <form method="POST" action="{{ route('admin.pencapaian.destroy-bundle') }}">

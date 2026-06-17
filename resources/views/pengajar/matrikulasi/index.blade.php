@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Indikator Matrikulasi</h2>
         </div>
@@ -11,7 +11,7 @@
                 <div><h3 class="section-title">Daftar Indikator Matrikulasi</h3><p class="section-subtitle">Standar perkembangan yang digunakan sebagai dasar penilaian siswa</p></div>
             </div>
             <div class="overflow-x-auto">
-                <table class="data-table">
+                <table class="data-table" data-tour="pg-matrikulasi-table">
                     <thead><tr><th>Aspek / Bidang</th><th>Indikator Perkembangan</th><th>Deskripsi</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($matrikulasis as $m)

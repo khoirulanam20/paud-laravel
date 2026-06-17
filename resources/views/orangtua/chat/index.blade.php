@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3 min-w-0">
+        <div class="flex items-center gap-3 min-w-0" data-tour="page-header">
             <a href="{{ route('dashboard') }}"
                class="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-lg hover:bg-black/5 transition-colors"
                style="color:#1A6B6B;"
@@ -34,7 +34,7 @@
         ])->values();
     @endphp
 
-    <div class="orangtua-chat-shell mx-auto w-full max-w-3xl lg:max-w-4xl"
+    <div data-tour="ortu-chat-messages" class="orangtua-chat-shell mx-auto w-full max-w-3xl lg:max-w-4xl"
          x-data="orangTuaChat({
             messages: @js($initialMessages),
             storeUrl: @js(route('orangtua.chat.messages.store')),
@@ -93,7 +93,7 @@
                         </div>
                         <p class="text-sm font-semibold mb-1" style="color:#2C2C2C;">Mulai percakapan</p>
                         <p class="text-xs mb-4 max-w-xs leading-relaxed" style="color:#9E9790;">Tanyakan perkembangan, kegiatan, kehadiran, atau hal seputar anak di daycare.</p>
-                        <div class="flex flex-col gap-2 w-full max-w-sm">
+                        <div class="flex flex-col gap-2 w-full max-w-sm" data-tour="ortu-chat-suggestions">
                             <template x-for="(q, i) in sampleQuestions" :key="i">
                                 <button type="button"
                                         @click="input = q; sendMessage()"
@@ -137,7 +137,7 @@
         <div x-show="error" x-cloak class="orangtua-chat-error mx-3 px-3 py-2 rounded-xl text-xs alert-danger" x-text="error"></div>
 
         {{-- Composer --}}
-        <div class="orangtua-chat-composer shrink-0 border-t bg-[#FAF6F0]/95 backdrop-blur-md px-3 md:px-4">
+        <div class="orangtua-chat-composer shrink-0 border-t bg-[#FAF6F0]/95 backdrop-blur-md px-3 md:px-4" data-tour="ortu-chat-input">
             <form @submit.prevent="sendMessage()" class="orangtua-chat-form flex items-center gap-2 min-w-0">
                 <div class="orangtua-chat-field flex-1 min-w-0 rounded-full border bg-white shadow-sm flex items-center overflow-hidden"
                      style="border-color:rgba(0,0,0,0.08);">

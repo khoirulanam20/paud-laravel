@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -35,7 +35,7 @@
                         <p class="text-sm font-medium" style="color:#9E9790;">Pilih kelas dan tanggal untuk mengelola checklist siswa</p>
                     </div>
                     
-                    <form method="get" action="{{ route('adminkelas.presensi.index') }}" class="grid grid-cols-2 gap-4 w-full md:w-auto">
+                    <form data-tour="ak-presensi-filter" method="get" action="{{ route('adminkelas.presensi.index') }}" class="grid grid-cols-2 gap-4 w-full md:w-auto">
                         <div class="col-span-2 sm:col-span-1 lg:w-48">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Pilih Kelas</label>
                             <select name="filter_kelas_id" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500" onchange="this.form.submit()" style="background:white;">
@@ -73,7 +73,7 @@
             @if($anaks->isEmpty())
                 <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada data siswa di kelas ini.</div>
             @else
-                <form method="post" action="{{ route('adminkelas.presensi.store') }}">
+                <form data-tour="ak-presensi-checklist" method="post" action="{{ route('adminkelas.presensi.store') }}">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="filter_kelas_id" value="{{ $filterKelasId }}">

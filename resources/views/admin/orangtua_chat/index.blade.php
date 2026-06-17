@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -17,7 +17,7 @@
                 <p class="section-subtitle">Pantau pertanyaan orang tua seputar perkembangan anak di sekolah Anda.</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="data-table">
+                <table class="data-table" data-tour="admin-chat-table">
                     <thead>
                         <tr>
                             <th>Terakhir aktif</th>
@@ -63,7 +63,7 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    <a href="{{ route('admin.orangtua-chat.show', $chat) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg inline-block" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
+                                    <a href="{{ route('admin.orangtua-chat.show', $chat) }}" @if($loop->first) data-tour="admin-chat-action-detail" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg inline-block" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
                                 </td>
                             </tr>
                         @empty

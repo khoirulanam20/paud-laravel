@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
@@ -28,20 +28,20 @@
                 this.messageValue = msg;
                 this.showModal = true;
             }
-         }">
+         }" @tour-close-modals.window="showModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if(session('error'))<div class="alert-danger mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>{{ session('error') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
             <p class="text-sm" style="color:#6B6560;">Riwayat masukan dan <strong>tanggapan sekolah</strong> ditampilkan di bawah. Buka detail untuk membaca penuh.</p>
-            <button type="button" @click="initCreate()" class="btn-primary text-sm inline-flex items-center gap-1.5">
+            <button type="button" data-tour="ortu-kritik-add-btn" data-tour-open-modal="create" @click="initCreate()" class="btn-primary text-sm inline-flex items-center gap-1.5">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                 Kirim masukan baru
             </button>
         </div>
 
-        <div class="space-y-5">
+        <div class="space-y-5" data-tour="ortu-kritik-feed">
             @forelse($feedbacks as $fb)
                 <article class="card overflow-hidden">
                     <div class="px-5 py-4 border-b flex flex-wrap items-start justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
@@ -64,13 +64,13 @@
                         </div>
                         <div class="flex items-center gap-2">
                             @if($fb->status === 'Terkirim')
-                                <button type="button" @click="initEdit('{{ $fb->id }}', '{{ addslashes($fb->message) }}')" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#1A6B6B] hover:bg-[#D0E8E8] transition">
+                                <button type="button" @if($loop->first) data-tour="ortu-kritik-action-edit" data-tour-open-modal="edit" @endif @click="initEdit('{{ $fb->id }}', '{{ addslashes($fb->message) }}')" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#1A6B6B] hover:bg-[#D0E8E8] transition">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                 </button>
                                 <form action="{{ route('orangtua.kritik-saran.destroy', $fb) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pesan ini?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition">
+                                    <button type="submit" @if($loop->first) data-tour="ortu-kritik-action-delete" data-tour-demo-action="delete" @endif class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </form>
@@ -120,6 +120,7 @@
                         <p class="section-subtitle mt-1">Pesan minimal 10 karakter akan dikirim ke pihak sekolah.</p>
                     </div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" :data-tour="isEdit ? 'modal-edit-section-form' : 'modal-create-section-form'">Isi Pesan</div>
                         <div>
                             <label class="input-label">Pesan <span class="text-red-600">*</span></label>
                             <textarea name="message" x-model="messageValue" rows="5" class="input-field" placeholder="Tuliskan pesan Anda di sini..." required minlength="10"></textarea>
@@ -135,7 +136,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" @click="showModal = false" class="btn-secondary">Batal</button>
-                        <button type="submit" class="btn-primary" x-text="isEdit ? 'Simpan Perbaruan' : 'Kirim Masukan'"></button>
+                        <button type="submit" :data-tour="isEdit ? 'modal-edit-submit' : 'modal-create-submit'" class="btn-primary" x-text="isEdit ? 'Simpan Perbaruan' : 'Kirim Masukan'"></button>
                     </div>
                 </form>
             </div>

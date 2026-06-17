@@ -24,6 +24,7 @@ use App\Http\Controllers\Lembaga\CmsController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
 use App\Http\Controllers\Lembaga\SekolahController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TourController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
 use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
@@ -71,6 +72,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/pengajar', [ProfileController::class, 'updatePengajar'])->name('profile.pengajar.update');
     Route::patch('/profile/orangtua', [ProfileController::class, 'updateOrangTua'])->name('profile.orangtua.update');
     Route::patch('/profile/anak/{anak}', [ProfileController::class, 'updateAnak'])->name('profile.anak.update');
+
+    Route::post('/tour/complete', [TourController::class, 'complete'])
+        ->middleware('throttle:30,1')
+        ->name('tour.complete');
 });
 
 // ─────────────────────────────────────────────

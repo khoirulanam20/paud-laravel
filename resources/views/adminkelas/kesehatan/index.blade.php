@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
             </div>
@@ -60,7 +60,7 @@
                 }
                 this.isLoadingHistory = false;
             }
-         }">
+         }" @tour-close-modals.window="showInputModal=false; showHistoryModal=false">
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -71,7 +71,7 @@
 
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex flex-col gap-4 border-b" style="border-color: rgba(0,0,0,0.06);">
-                <form method="get" class="flex flex-wrap items-end gap-3">
+                <form method="get" data-tour="ak-kesehatan-filter" class="flex flex-wrap items-end gap-3">
                     <div class="flex-1 min-w-[15rem]">
                         <label class="input-label">Cari Nama Siswa</label>
                         <div class="relative">
@@ -166,8 +166,8 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <button type="button" @click="openHistory({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Riwayat</button>
-                                        <button type="button" @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
+                                        <button type="button" @if($loop->first) data-tour="ak-kesehatan-action-riwayat" data-tour-open-modal="history" @endif @click="openHistory({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Riwayat</button>
+                                        <button type="button" @if($loop->first) data-tour="ak-kesehatan-action-input" data-tour-open-modal="create" @endif @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
                                     </div>
                                 </td>
                             </tr>
@@ -196,7 +196,7 @@
                         <h3 class="section-title">Input Kesehatan & Kebersihan</h3>
                         <p class="section-subtitle">Siswa: <span class="font-bold text-[#1A6B6B]" x-text="selectedAnak?.name || ''"></span></p>
                     </div>
-                    <div class="modal-body grid grid-cols-2 gap-4">
+                    <div class="modal-body grid grid-cols-2 gap-4" data-tour="modal-create-section-form">
                         <div class="col-span-2">
                             <label class="input-label">Tanggal Pemeriksaan</label>
                             <input type="date" name="tanggal_pemeriksaan" required class="input-field" x-model="form.tanggal_pemeriksaan">
@@ -250,26 +250,26 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" @click="showInputModal = false" class="btn-secondary">Batal</button>
-                        <button type="submit" class="btn-primary">Simpan Data</button>
+                        <button type="submit" data-tour="modal-create-submit" class="btn-primary">Simpan Data</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- HISTORY MODAL -->
-        <div x-show="showHistoryModal" class="modal-overlay modal-overlay--blur" style="display:none;" x-transition>
+        <div x-show="showHistoryModal" data-tour="modal-history" class="modal-overlay" style="display:none;" x-transition>
             <div class="modal-box max-w-4xl w-full" @click.away="showHistoryModal = false">
-                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <div class="modal-header shrink-0 flex items-start justify-between gap-3">
                     <div>
-                        <h3 class="font-bold text-gray-900">Riwayat Kesehatan: <span x-text="selectedAnak?.name || ''" class="text-[#1A6B6B]"></span></h3>
-                        <p class="text-xs text-gray-500 mt-1">Daftar riwayat pemeriksaan kesehatan dan kebersihan</p>
+                        <h3 class="section-title">Riwayat Kesehatan</h3>
+                        <p class="section-subtitle mt-1">Siswa: <span class="font-bold text-[#1A6B6B]" x-text="selectedAnak?.name || ''"></span></p>
                     </div>
-                    <button type="button" @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-600 transition">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    <button type="button" @click="showHistoryModal = false" class="shrink-0 p-1.5 rounded-lg hover:bg-black/5 transition" aria-label="Tutup">
+                        <svg class="h-5 w-5" style="color:#5A5A5A;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
-                <div class="p-6 overflow-y-auto flex-1 bg-gray-50/30">
+                <div class="modal-body modal-scroll" data-tour="modal-history-content">
                     <div x-show="isLoadingHistory" class="flex justify-center items-center py-12">
                         <svg class="animate-spin h-8 w-8 text-[#1A6B6B]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     </div>
@@ -320,6 +320,9 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+                <div class="modal-footer shrink-0">
+                    <button type="button" @click="showHistoryModal = false" class="btn-secondary">Tutup</button>
                 </div>
             </div>
         </div>

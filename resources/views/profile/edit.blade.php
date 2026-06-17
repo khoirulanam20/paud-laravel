@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Profil Akun Saya</h2>
         </div>
@@ -17,7 +17,7 @@
         @endif
 
         {{-- SECTION: Akun Login --}}
-        <div class="card">
+        <div class="card" data-tour="profile-account">
             <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Informasi Akun Login</h3>
@@ -43,7 +43,7 @@
 
         {{-- SECTION: Profil Sekolah --}}
         @if($user->hasRole('Admin Sekolah') && $sekolah)
-        <div class="card">
+        <div class="card" data-tour="profile-role">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Profil Sekolah</h3>
                 <p class="section-subtitle">Informasi resmi sekolah yang Anda kelola.</p>
@@ -63,7 +63,7 @@
 
         {{-- SECTION: Profil Pengajar / Admin Kelas --}}
         @if(($user->hasRole('Pengajar') || $user->hasRole('Admin Kelas')) && $pengajar)
-        <div class="card">
+        <div class="card" data-tour="profile-role">
             <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Profil Pendidik</h3>
@@ -100,7 +100,7 @@
         @php
             $waliRef = $anaks->sortByDesc('updated_at')->first();
         @endphp
-        <div class="card">
+        <div class="card" data-tour="profile-role">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Profil Wali Murid</h3>
                 <p class="section-subtitle">Data orang tua / wali tersimpan di database (sama untuk semua anak pada akun ini).</p>
@@ -226,7 +226,7 @@
         @endif
 
         {{-- SECTION: Ganti Password --}}
-        <div class="card">
+        <div class="card" data-tour="profile-security">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Ganti Password</h3>
                 <p class="section-subtitle">Password default adalah "password123" silahkan ganti password setelah login pertama kali.</p>

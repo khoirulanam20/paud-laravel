@@ -1,20 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Pendaftaran Siswa Baru</h2>
         </div>
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showRejectModal: false, rejectRoute: '', rejectData: {}, openReject(r, d){ this.rejectRoute=r; this.rejectData=d; this.showRejectModal=true; } }">
+         x-data="{ showRejectModal: false, rejectRoute: '', rejectData: {}, openReject(r, d){ this.rejectRoute=r; this.rejectData=d; this.showRejectModal=true; } }" @tour-close-modals.window="showRejectModal=false">
 
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
         {{-- PENDING --}}
-        <div class="card overflow-hidden mb-6">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06); background: linear-gradient(to right, #FFF9C4, #FFFBF0);">
+        <div class="card overflow-hidden mb-6" data-tour="admin-pendaftaran-pending">
+            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06); background: linear-gradient(to right, #E8F5F5, #F0FAFA);">
                 <div class="flex items-center gap-3">
                     <div>
                         <h3 class="section-title">Menunggu Persetujuan</h3>
@@ -58,9 +58,9 @@
                                 <div class="flex items-center justify-end gap-2">
                                     <form method="POST" action="{{ route('admin.pendaftaran.approve', $a) }}">
                                         @csrf
-                                        <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#1A6B6B;">Setujui</button>
+                                        <button type="submit" @if($loop->first) data-tour="admin-pendaftaran-action-approve" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#1A6B6B;">Setujui</button>
                                     </form>
-                                    <button @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Tolak</button>
+                                    <button @if($loop->first) data-tour="admin-pendaftaran-action-reject" data-tour-open-modal="reject" @endif @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Tolak</button>
                                 </div>
                             </td>
                         </tr>
@@ -73,7 +73,7 @@
         </div>
 
         {{-- APPROVED --}}
-        <div class="card overflow-hidden mb-6">
+        <div class="card overflow-hidden mb-6" data-tour="admin-pendaftaran-approved">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title"> Telah Disetujui</h3>
                 <p class="section-subtitle">Siswa aktif di sekolah ini</p>
@@ -135,7 +135,7 @@
         </div>
 
         {{-- REJECT MODAL --}}
-        <div x-show="showRejectModal" class="modal-overlay" style="display:none;">
+        <div x-show="showRejectModal" data-tour="modal-reject" class="modal-overlay" style="display:none;">
             <div x-show="showRejectModal" x-transition class="modal-box max-w-md" @click.away="showRejectModal=false">
                 <form :action="rejectRoute" method="POST">
                     @csrf

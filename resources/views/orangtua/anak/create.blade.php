@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -34,7 +34,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('orangtua.anak.store') }}" enctype="multipart/form-data" class="px-6 py-5 space-y-5">
+            <form method="POST" action="{{ route('orangtua.anak.store') }}" enctype="multipart/form-data" class="px-6 py-5 space-y-5" data-tour="anak-create-form">
                 @csrf
 
                 <div>
@@ -62,7 +62,7 @@
                     @error('catatan_ortu')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <div class="flex flex-col sm:flex-row gap-3 pt-2" data-tour="anak-create-actions">
                     <button type="submit" class="btn-primary justify-center">Kirim pendaftaran anak</button>
                     <a href="{{ route('dashboard') }}" class="btn-secondary justify-center text-center">Batal</a>
                 </div>

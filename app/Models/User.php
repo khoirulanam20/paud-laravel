@@ -47,7 +47,16 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tour_completed' => 'array',
         ];
+    }
+
+    public function markTourCompleted(string $route): void
+    {
+        $completed = $this->tour_completed ?? [];
+        $completed[$route] = now()->toIso8601String();
+        $this->tour_completed = $completed;
+        $this->save();
     }
 
     public function lembaga()

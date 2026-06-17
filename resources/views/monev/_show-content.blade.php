@@ -12,7 +12,7 @@
 @endphp
 
 @if($showBackLink ?? true)
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3" data-tour="monev-actions">
         <a href="{{ $backRoute }}" class="text-sm font-semibold inline-flex items-center gap-1" style="color:#1A6B6B;">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
             Kembali ke daftar Monev
@@ -25,7 +25,7 @@
         @endisset
     </div>
 @elseif(isset($pdfRoute))
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex justify-end" data-tour="monev-actions">
         <a href="{{ $pdfRoute }}" class="btn-primary text-sm inline-flex items-center gap-2" target="_blank" rel="noopener">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             Export PDF
@@ -35,7 +35,7 @@
 
 <div x-data="{ tab: 'ringkasan', openSection: @js($sections[0]['key'] ?? 'full') }">
     {{-- Header --}}
-    <div class="card overflow-hidden mb-6">
+    <div class="card overflow-hidden mb-6" data-tour="monev-summary">
         <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
             <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div>
@@ -78,6 +78,7 @@
         </div>
     </div>
 
+    <div data-tour="monev-detail">
     {{-- Tabs --}}
     <div class="flex gap-1 mb-4 border-b" style="border-color: rgba(0,0,0,0.08);">
         @foreach(['ringkasan' => 'Ringkasan AI', 'statistik' => 'Statistik', 'umpan' => 'Umpan Balik'] as $key => $label)
@@ -227,5 +228,6 @@
                 </div>
             @endif
         </div>
+    </div>
     </div>
 </div>

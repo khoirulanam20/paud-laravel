@@ -459,3 +459,83 @@
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 }
+
+/* Driver.js tour — tema SIPP */
+.driver-popover.sipp-tour-popover {
+    background: #FAF6F0;
+    color: #2C2C2C;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 12px 40px rgba(26, 107, 107, 0.18);
+    max-width: min(360px, calc(100vw - 2rem));
+}
+
+.driver-popover.sipp-tour-popover .driver-popover-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1A6B6B;
+}
+
+.driver-popover.sipp-tour-popover .driver-popover-description {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #5A5A5A;
+}
+
+.driver-popover.sipp-tour-popover .driver-popover-progress-text {
+    font-size: 0.75rem;
+    color: #9E9790;
+}
+
+.driver-popover.sipp-tour-popover button {
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-shadow: none;
+}
+
+.driver-popover.sipp-tour-popover .driver-popover-next-btn,
+.driver-popover.sipp-tour-popover .driver-popover-done-btn {
+    background: #1A6B6B;
+    color: #fff;
+    border: none;
+}
+
+.driver-popover.sipp-tour-popover .driver-popover-prev-btn {
+    background: transparent;
+    color: #1A6B6B;
+    border: 1px solid rgba(26, 107, 107, 0.25);
+}
+
+.driver-popover.sipp-tour-popover .driver-popover-close-btn {
+    color: #9E9790;
+}
+
+/* Highlight section form di dalam modal */
+.tour-section-highlight-proxy {
+    position: fixed;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+body.driver-active .driver-overlay {
+    z-index: 10050 !important;
+}
+
+body.driver-active .modal-overlay:has(.driver-active-element) {
+    z-index: 10055 !important;
+}
+
+body.driver-active .driver-active-element,
+body.driver-active .driver-active-element * {
+    pointer-events: auto !important;
+}
+
+body.driver-active .driver-popover {
+    z-index: 10060 !important;
+}
+
+body.driver-active .modal-body:has(.driver-active-element),
+body.driver-active .modal-scroll:has(.driver-active-element) {
+    overflow-y: auto !important;
+}

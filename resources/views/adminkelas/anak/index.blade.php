@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Siswa Kelasku</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d; this.showEditModal=true}, openDelete(r){this.deleteRoute=r; this.showDeleteModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d; this.showEditModal=true}, openDelete(r){this.deleteRoute=r; this.showDeleteModal=true} }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
@@ -18,7 +18,7 @@
                     </div>
                     
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full md:w-auto">
-                        <form method="get" class="flex-1 grid grid-cols-2 sm:flex items-end gap-3">
+                        <form data-tour="ak-anak-filter" method="get" class="flex-1 grid grid-cols-2 sm:flex items-end gap-3">
                             <div class="col-span-2 sm:w-48">
                                 <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Filter Kelas</label>
                                 <select name="kelas_id" class="input-field w-full text-xs font-bold h-11 sm:h-10 border-black/10 transition focus:border-teal-500" onchange="this.form.submit()" style="background:white;">
@@ -35,7 +35,7 @@
                             @endif
                         </form>
                         
-                        <button @click="showCreateModal=true" class="btn-primary h-11 sm:h-10 px-6 font-bold flex items-center justify-center gap-2 whitespace-nowrap shadow-md shadow-teal-900/10">
+                        <button data-tour="ak-anak-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary h-11 sm:h-10 px-6 font-bold flex items-center justify-center gap-2 whitespace-nowrap shadow-md shadow-teal-900/10">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                             Registrasi Siswa
                         </button>
@@ -132,9 +132,9 @@
                             </td>
                             <td>{{ $anak->parent_name ?? '-' }}</td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('adminkelas.anak.show', $anak) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Detail</a>
-                                <button @click="openEdit({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button @click="openDelete('{{ route('adminkelas.anak.destroy', $anak) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <a href="{{ route('adminkelas.anak.show', $anak) }}" @if($loop->first) data-tour="ak-anak-action-detail" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Detail</a>
+                                <button @if($loop->first) data-tour="ak-anak-action-edit" data-tour-open-modal="edit" @endif @click="openEdit({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button @if($loop->first) data-tour="ak-anak-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('adminkelas.anak.destroy', $anak) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                         </tr>
                         @empty
@@ -160,25 +160,27 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Siswa Baru</h3><p class="section-subtitle">Password login ortu awal: <code>password123</code></p></div>
                     <div class="modal-body space-y-4">
+                        <p class="text-[13px] font-bold text-[#1A6B6B] border-b pb-1" data-tour="modal-create-section-siswa">Data Siswa</p>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Nama Lengkap Siswa</label><input type="text" name="name" required class="input-field" placeholder="Nama lengkap siswa"></div>
-                            <div><label class="input-label">Email Orang Tua (Login)</label><input type="email" name="email" required class="input-field" placeholder="email@ortu.com"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Penempatan Kelas</label><select name="kelas_id" required class="input-field">@foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach</select></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" class="input-field"><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" class="input-field"></div>
-                            <div><label class="input-label">Foto Siswa</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Foto Siswa</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5"></div>
                             <div><label class="input-label">NIK Siswa</label><input type="text" name="nik" class="input-field" placeholder="NIK (opsional)"></div>
+                        </div>
+                        <p class="text-[13px] font-bold text-[#1A6B6B] border-b pb-1" data-tour="modal-create-section-ortu">Data Orang Tua & Akun Login</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Email Orang Tua (Login)</label><input type="email" name="email" required class="input-field" placeholder="email@ortu.com"></div>
                             <div><label class="input-label">Nama Orang Tua</label><input type="text" name="parent_name" class="input-field" placeholder="Nama Wali"></div>
                         </div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" rows="2" class="input-field" placeholder="Prov, Kab, Kec, Kel..."></textarea></div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Registrasikan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary">Registrasikan</button></div>
                 </form>
             </div>
         </div>
@@ -190,6 +192,7 @@
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Siswa</h3></div>
                     <div class="modal-body space-y-4">
+                        <p class="text-[13px] font-bold text-[#1A6B6B] border-b pb-1" data-tour="modal-edit-section-siswa">Data Siswa</p>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Nama Lengkap Siswa</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
                             <div><label class="input-label">Penempatan Kelas</label><select name="kelas_id" x-model="editData.kelas_id" required class="input-field">@foreach($kelas as $k)<option value="{{ $k->id }}">{{ $k->name }}</option>@endforeach</select></div>
@@ -198,19 +201,20 @@
                             <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" x-model="editData.dob" class="input-field"></div>
                             <div><label class="input-label">Ganti Foto</label><input type="file" name="photo" accept="image/*" class="input-field py-1.5"></div>
                         </div>
+                        <p class="text-[13px] font-bold text-[#1A6B6B] border-b pb-1" data-tour="modal-edit-section-ortu">Data Orang Tua & Akun Login</p>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Jenis Kelamin</label><select name="jenis_kelamin" x-model="editData.jenis_kelamin" class="input-field"><option value="Pria">Pria</option><option value="Wanita">Wanita</option></select></div>
                             <div><label class="input-label">Nama Orang Tua</label><input type="text" name="parent_name" x-model="editData.parent_name" class="input-field"></div>
                         </div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" x-model="editData.alamat" rows="2" class="input-field"></textarea></div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>
             </div>
         </div>
 
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -64,7 +64,7 @@
                 this.parentResults = [];
                 this.parentSearch = `${parent.name} (${parent.email})`;
             }
-         }">
+         }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -87,7 +87,7 @@
                     <h3 class="section-title">Daftar Siswa &amp; Orang Tua</h3>
                 </div>
                 <div class="flex items-end gap-3 flex-wrap">
-                    <form method="get" class="flex flex-wrap items-end gap-3">
+                    <form data-tour="admin-anak-filter" method="get" class="flex flex-wrap items-end gap-3">
                         <div class="min-w-[12rem]">
                             <label class="input-label">Cari Nama Siswa</label>
                             <input type="text" name="search" value="{{ request('search') }}" class="input-field"
@@ -109,7 +109,7 @@
                                 class="btn-secondary text-xs h-11 flex items-center">Reset</a>
                         @endif
                     </form>
-                    <button type="button" @click="showCreateModal = true" class="btn-primary">
+                    <button type="button" data-tour="admin-anak-add-btn" data-tour-open-modal="create" @click="showCreateModal = true" class="btn-primary">
                         <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -162,12 +162,13 @@
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('admin.anak.show', $anak) }}"
+                                            @if($loop->first) data-tour="admin-anak-action-detail" @endif
                                             class="text-xs font-semibold px-3 py-1.5 rounded-lg transition"
                                             style="color: #1A6B6B; background: #E8F5F5;">Detail</a>
-                                        <button @click="openEdit({{ json_encode($anak) }})"
+                                        <button @if($loop->first) data-tour="admin-anak-action-edit" data-tour-open-modal="edit" @endif @click="openEdit({{ json_encode($anak) }})"
                                             class="text-xs font-semibold px-3 py-1.5 rounded-lg transition"
                                             style="color: #1A6B6B; background: #D0E8E8;">Edit</button>
-                                        <button @click="openDelete('{{ route('admin.anak.destroy', $anak) }}')"
+                                        <button @if($loop->first) data-tour="admin-anak-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.anak.destroy', $anak) }}')"
                                             class="text-xs font-semibold px-3 py-1.5 rounded-lg transition"
                                             style="color: #C0392B; background: #FAD7D2;">Hapus</button>
                                     </div>
@@ -209,7 +210,7 @@
                             <code>password123</code>)</p>
                     </div>
                     <div class="modal-body grid grid-cols-2 gap-4">
-                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-create-section-anak">Data Anak
                             (Siswa)</div>
                         <div class="col-span-1">
                             <label class="input-label">Nama Lengkap Anak</label>
@@ -270,7 +271,7 @@
                             @error('alamat')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
 
-                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Data Orang Tua
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1" data-tour="modal-create-section-ortu">Data Orang Tua
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">NIK Bapak</label>
@@ -289,7 +290,7 @@
                             <input type="text" name="nama_ibu" class="input-field" placeholder="Nama">
                         </div>
 
-                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Akun Login Utama
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1" data-tour="modal-create-section-wali">Akun Login Utama
                             (Wali)</div>
 
                         <div class="col-span-2 flex flex-wrap gap-4">
@@ -357,7 +358,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" @click="showCreateModal = false" class="btn-secondary">Batal</button>
-                        <button type="submit" class="btn-primary">Simpan Registrasi</button>
+                        <button type="submit" data-tour="modal-create-submit" class="btn-primary">Simpan Registrasi</button>
                     </div>
                 </form>
             </div>
@@ -372,7 +373,7 @@
                         <h3 class="section-title">Edit Data Anak</h3>
                     </div>
                     <div class="modal-body grid grid-cols-2 gap-4">
-                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1">Data Anak
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-edit-section-anak">Data Anak
                             (Siswa)</div>
                         <div class="col-span-1">
                             <label class="input-label">Nama Lengkap Anak</label>
@@ -440,7 +441,7 @@
                             @error('alamat')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
 
-                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Data Orang Tua
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1" data-tour="modal-edit-section-ortu">Data Orang Tua
                         </div>
                         <div class="col-span-1">
                             <label class="input-label">NIK Bapak</label>
@@ -461,7 +462,7 @@
                             @error('nama_ibu')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
 
-                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Akun Login Utama
+                        <div class="col-span-2 text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1" data-tour="modal-edit-section-wali">Akun Login Utama
                             (Wali)</div>
                         <div class="col-span-1">
                             <label class="input-label">Nama Wali Untuk Login</label>
@@ -480,14 +481,14 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" @click="showEditModal = false" class="btn-secondary">Batal</button>
-                        <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                        <button type="submit" data-tour="modal-edit-submit" class="btn-primary">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal = false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

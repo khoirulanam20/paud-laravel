@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Matrikulasi Sekolah</h2>
         </div>
@@ -16,7 +16,7 @@
         openEdit(d){this.editData=d;this.showEditModal=true}, 
         openDetail(d){this.detailData=d;this.showDetailModal=true},
         openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} 
-    }">
+    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false; showDetailModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
@@ -25,7 +25,7 @@
                     <h3 class="section-title">Indikator matrikulasi</h3>
                     <p class="section-subtitle">Standar penilaian tingkat sekolah; dipakai di jurnal kegiatan dan pencapaian siswa.</p>
                 </div>
-                <button type="button" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah indikator</button>
+                <button data-tour="admin-matrikulasi-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah indikator</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
@@ -47,9 +47,9 @@
                                         'strategi' => $m->strategi,
                                     ];
                                 @endphp
-                                <button type="button" @click="openDetail(@js($matPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;">Detail</button>
-                                <button type="button" @click="openEdit(@js($matPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button type="button" @click="openDelete('{{ route('admin.matrikulasi.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <button type="button" @if($loop->first) data-tour="admin-matrikulasi-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js($matPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;">Detail</button>
+                                <button type="button" @if($loop->first) data-tour="admin-matrikulasi-action-edit" data-tour-open-modal="edit" @endif @click="openEdit(@js($matPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button type="button" @if($loop->first) data-tour="admin-matrikulasi-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.matrikulasi.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                         </tr>
                         @empty
@@ -62,13 +62,13 @@
         </div>
 
         {{-- DETAIL MODAL --}}
-        <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDetailModal" data-tour="modal-detail" class="modal-overlay" style="display:none;">
             <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
                 <div class="modal-header flex items-center justify-between">
                     <h3 class="section-title">Detail Indikator Matrikulasi</h3>
                     <button @click="showDetailModal=false" class="text-gray-400 hover:text-gray-600"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
-                <div class="modal-body space-y-5">
+                <div class="modal-body space-y-5" data-tour="modal-detail-content">
                     <div class="grid grid-cols-2 gap-4">
                         <div><p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Aspek / Bidang</p><p class="text-sm font-semibold text-gray-900" x-text="detailData.aspek || 'Umum'"></p></div>
                         <div><p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Indikator</p><p class="text-sm font-semibold text-gray-900" x-text="detailData.indicator"></p></div>
@@ -87,33 +87,37 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Tambah indikator</h3></div>
                     <div class="modal-body space-y-4">
-                        <div>
-                            <label class="input-label">Aspek / faktor</label>
-                            <input type="text" name="aspek" class="input-field @error('aspek') border-red-500 @enderror" placeholder="Contoh: Kognitif, Motorik halus…" value="{{ old('aspek') }}">
-                            @error('aspek')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        <div data-tour="modal-create-section-indikator" class="space-y-4">
+                            <div>
+                                <label class="input-label">Aspek / faktor</label>
+                                <input type="text" name="aspek" class="input-field @error('aspek') border-red-500 @enderror" placeholder="Contoh: Kognitif, Motorik halus…" value="{{ old('aspek') }}">
+                                @error('aspek')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Indikator <span class="text-red-600">*</span></label>
+                                <input type="text" name="indicator" required class="input-field @error('indicator') border-red-500 @enderror" placeholder="Contoh: Mampu menghitung 1–10" value="{{ old('indicator') }}">
+                                @error('indicator')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
-                        <div>
-                            <label class="input-label">Indikator <span class="text-red-600">*</span></label>
-                            <input type="text" name="indicator" required class="input-field @error('indicator') border-red-500 @enderror" placeholder="Contoh: Mampu menghitung 1–10" value="{{ old('indicator') }}">
-                            @error('indicator')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="input-label">Tujuan pembelajaran</label>
-                            <textarea name="tujuan" rows="2" class="input-field @error('tujuan') border-red-500 @enderror">{{ old('tujuan') }}</textarea>
-                            @error('tujuan')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="input-label">Strategi / metode</label>
-                            <textarea name="strategi" rows="2" class="input-field @error('strategi') border-red-500 @enderror">{{ old('strategi') }}</textarea>
-                            @error('strategi')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="input-label">Deskripsi <span class="text-red-600">*</span></label>
-                            <textarea name="description" rows="2" required class="input-field @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
-                            @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        <div data-tour="modal-create-section-detail" class="space-y-4">
+                            <div>
+                                <label class="input-label">Tujuan pembelajaran</label>
+                                <textarea name="tujuan" rows="2" class="input-field @error('tujuan') border-red-500 @enderror">{{ old('tujuan') }}</textarea>
+                                @error('tujuan')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Strategi / metode</label>
+                                <textarea name="strategi" rows="2" class="input-field @error('strategi') border-red-500 @enderror">{{ old('strategi') }}</textarea>
+                                @error('strategi')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Deskripsi <span class="text-red-600">*</span></label>
+                                <textarea name="description" rows="2" required class="input-field @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
+                                @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary">Simpan</button></div>
                 </form>
             </div>
         </div>
@@ -123,37 +127,41 @@
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit indikator</h3></div>
                     <div class="modal-body space-y-4">
-                        <div>
-                            <label class="input-label">Aspek / faktor</label>
-                            <input type="text" name="aspek" x-model="editData.aspek" class="input-field @error('aspek') border-red-500 @enderror">
-                            @error('aspek')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        <div data-tour="modal-edit-section-indikator" class="space-y-4">
+                            <div>
+                                <label class="input-label">Aspek / faktor</label>
+                                <input type="text" name="aspek" x-model="editData.aspek" class="input-field @error('aspek') border-red-500 @enderror">
+                                @error('aspek')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Indikator</label>
+                                <input type="text" name="indicator" x-model="editData.indicator" required class="input-field @error('indicator') border-red-500 @enderror">
+                                @error('indicator')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
-                        <div>
-                            <label class="input-label">Indikator</label>
-                            <input type="text" name="indicator" x-model="editData.indicator" required class="input-field @error('indicator') border-red-500 @enderror">
-                            @error('indicator')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="input-label">Tujuan pembelajaran</label>
-                            <textarea name="tujuan" x-model="editData.tujuan" rows="2" class="input-field @error('tujuan') border-red-500 @enderror"></textarea>
-                            @error('tujuan')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="input-label">Strategi / metode</label>
-                            <textarea name="strategi" x-model="editData.strategi" rows="2" class="input-field @error('strategi') border-red-500 @enderror"></textarea>
-                            @error('strategi')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="input-label">Deskripsi</label>
-                            <textarea name="description" x-model="editData.description" rows="2" required class="input-field @error('description') border-red-500 @enderror"></textarea>
-                            @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        <div data-tour="modal-edit-section-detail" class="space-y-4">
+                            <div>
+                                <label class="input-label">Tujuan pembelajaran</label>
+                                <textarea name="tujuan" x-model="editData.tujuan" rows="2" class="input-field @error('tujuan') border-red-500 @enderror"></textarea>
+                                @error('tujuan')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Strategi / metode</label>
+                                <textarea name="strategi" x-model="editData.strategi" rows="2" class="input-field @error('strategi') border-red-500 @enderror"></textarea>
+                                @error('strategi')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Deskripsi</label>
+                                <textarea name="description" x-model="editData.description" rows="2" required class="input-field @error('description') border-red-500 @enderror"></textarea>
+                                @error('description')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Simpan</button></div>
                 </form>
             </div>
         </div>
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')
@@ -162,6 +170,5 @@
                 </form>
             </div>
         </div>
-    </div>
     </div>
 </x-app-layout>

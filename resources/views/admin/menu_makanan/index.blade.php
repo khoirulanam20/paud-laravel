@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Menu Makanan</h2>
         </div>
@@ -68,14 +68,14 @@
             });
             form.submit();
         }
-    }">
+    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Jadwal Menu Makanan Harian</h3><p class="section-subtitle">Informasi menu dan gizi yang dikonsumsi siswa di sekolah</p></div>
                 @if(auth()->user()->hasRole('Admin Sekolah'))
-                    <button type="button" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Input Menu</button>
+                    <button type="button" data-tour="admin-menu-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Input Menu</button>
                 @endif
             </div>
             <div class="overflow-x-auto">
@@ -111,8 +111,8 @@
                             </td>
                             @if(auth()->user()->hasRole('Admin Sekolah'))
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
-                                <button type="button" @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button type="button" @click="openDelete('{{ route('admin.menu-makanan.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <button type="button" @if($loop->first) data-tour="admin-menu-action-edit" data-tour-open-modal="edit" @endif @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button type="button" @if($loop->first) data-tour="admin-menu-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.menu-makanan.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                             @endif
                         </tr>
@@ -137,6 +137,7 @@
                     <input type="hidden" name="menu" :value="joinMenuLines(menuLines)">
                     <div class="modal-header"><h3 class="section-title">Input Jadwal Menu Baru</h3></div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-create-section-form">Data Menu</div>
                         <div><label class="input-label">Tanggal</label><input type="date" name="date" required value="{{ date('Y-m-d') }}" class="input-field"></div>
                         <div>
                             <div class="flex items-center justify-between gap-2 mb-2">
@@ -162,7 +163,7 @@
                             <div><label class="input-label">Foto Kegiatan Makan</label><input type="file" name="photo_kegiatan" accept="image/*" class="input-field py-2" @change="handleFile($event, 'photo_kegiatan')"></div>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(menuLines) || isCompressing">Simpan Menu</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary" :disabled="!joinMenuLines(menuLines) || isCompressing">Simpan Menu</button></div>
                 </form>
             </div>
         </div>
@@ -179,6 +180,7 @@
                     <input type="hidden" name="menu" :value="joinMenuLines(editMenuLines)">
                     <div class="modal-header"><h3 class="section-title">Edit Menu Makanan</h3></div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-edit-section-form">Data Menu</div>
                         <div><label class="input-label">Tanggal</label><input type="date" name="date" :value="editData.date ? editData.date.split('T')[0] : ''" required class="input-field"></div>
                         <div>
                             <div class="flex items-center justify-between gap-2 mb-2">
@@ -227,12 +229,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!joinMenuLines(editMenuLines) || isCompressing">Simpan Perubahan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary" :disabled="!joinMenuLines(editMenuLines) || isCompressing">Simpan Perubahan</button></div>
                 </form>
             </div>
         </div>
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

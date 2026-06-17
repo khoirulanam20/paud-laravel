@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
@@ -19,7 +19,7 @@
                 <p class="section-subtitle">Hanya masukan yang ditujukan ke sekolah Anda.</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="data-table">
+                <table class="data-table" data-tour="admin-kritik-table">
                     <thead>
                         <tr>
                             <th>Tanggal</th>
@@ -54,7 +54,7 @@
                                     <p class="text-sm line-clamp-2" style="color:#6B6560;">{{ \Illuminate\Support\Str::limit($fb->message, 120) }}</p>
                                 </td>
                                 <td class="text-right">
-                                    <a href="{{ route('admin.kritik-saran.show', $fb) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg inline-block" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
+                                    <a href="{{ route('admin.kritik-saran.show', $fb) }}" @if($loop->first) data-tour="admin-kritik-action-detail" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg inline-block" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
                                 </td>
                             </tr>
                         @empty

@@ -1,5 +1,7 @@
 @php
     $hideOnMobileOrtu = auth()->user()?->hasRole('Orang Tua');
+    $currentRoute = Route::currentRouteName();
+    $hasPageTour = \App\Support\TourRegistry::has($currentRoute);
 @endphp
 <header class="bg-[#FAF6F0] border-b border-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] sticky top-0 z-30 min-h-[4rem] h-auto pt-safe md:pt-0 shrink-0 items-center justify-between px-3 md:px-4 sm:px-6 lg:px-8 py-2.5 md:py-0 {{ $hideOnMobileOrtu ? 'hidden lg:flex' : 'flex' }}">
     <div class="flex items-center">
@@ -13,5 +15,14 @@
         </a>
     </div>
 
-    <x-profile-menu :show-name="true" />
+    <div class="flex items-center gap-2">
+        @if($hasPageTour)
+        <button type="button" data-tour-trigger title="Ulangi panduan halaman" class="h-9 w-9 rounded-xl flex items-center justify-center text-[#1A6B6B] bg-[#1A6B6B]/10 hover:bg-[#1A6B6B]/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[#1A6B6B] focus:ring-offset-2 ring-offset-[#FAF6F0]" aria-label="Ulangi panduan halaman">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </button>
+        @endif
+        <x-profile-menu :show-name="true" :has-page-tour="$hasPageTour" />
+    </div>
 </header>

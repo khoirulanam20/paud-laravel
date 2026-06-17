@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3" data-tour="page-header">
                 <a href="{{ route('adminkelas.anak.index') }}" class="h-8 w-8 rounded-lg flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition">
                     <svg class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
                 </a>
@@ -11,8 +11,7 @@
     </x-slot>
 
     <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
-        <!-- Profile Header Card -->
-        <div class="card overflow-hidden">
+        <div class="card overflow-hidden" data-tour="anak-summary">
             <div class="p-6 md:p-8">
                 <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
                     <x-foto-profil :path="$anak->photo" :name="$anak->name" size="hero" rounded="xl" class="shadow-lg ring-2 ring-white" />
@@ -50,8 +49,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column: Quick Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-tour="anak-detail">
             <div class="space-y-6">
                 <div class="card p-6">
                     <h3 class="font-bold text-[#2C2C2C] mb-4 flex items-center justify-between">

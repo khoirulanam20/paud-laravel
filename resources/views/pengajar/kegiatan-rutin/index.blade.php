@@ -38,8 +38,8 @@
                 this.loadDetail(this.selectedAnak.id, this.selectedAnak.name);
             }
         }
-    }">
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    }" @tour-close-modals.window="openModal=false; openDetailModal=false">
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="page-header">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 leading-tight">Update Pencapaian Rutin</h2>
                 <p class="text-sm text-gray-500 mt-1">Input pencapaian perkembangan harian siswa di kelas Anda.</p>
@@ -68,7 +68,7 @@
             </div>
         @endif
 
-        <div class="card overflow-hidden border-none shadow-sm shadow-gray-200">
+        <div class="card overflow-hidden border-none shadow-sm shadow-gray-200" data-tour="kegiatan-rutin-list">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -122,6 +122,7 @@
                                         <td class="px-6 py-4 text-center border-l border-gray-50" rowspan="{{ count($displayItems) }}">
                                             <div class="flex flex-col items-center justify-center gap-2">
                                                 <button type="button" 
+                                                    @if($loop->parent->first) data-tour-open-modal="create" @endif
                                                     @click="initAnak('{{ $anak->id }}', '{{ addslashes($anak->name) }}', {{ json_encode($formItems) }})"
                                                     class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-[#1A6B6B] hover:text-white transition group border border-gray-100 shadow-sm" title="Update Capaian">
                                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -157,7 +158,7 @@
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <form action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'kegiatan-rutin.store') }}" method="POST" class="p-6 space-y-6 overflow-y-auto flex-1">
+                <form action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'kegiatan-rutin.store') }}" method="POST" class="p-6 space-y-6 overflow-y-auto flex-1" data-tour="modal-create-section-form">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="kelas_id" value="{{ $kelasId }}">
@@ -188,7 +189,7 @@
                     </template>
                     
                     <div class="pt-2 sticky bottom-0 bg-white">
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20">
+                        <button type="submit" data-tour="modal-create-submit" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20">
                             Simpan Perubahan
                         </button>
                     </div>

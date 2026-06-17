@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Akun Admin Sekolah</h2>
         </div>
@@ -18,13 +18,13 @@
             this.editRoute = route;
             this.showEditModal = true;
         }
-    }">
+    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Admin Sekolah</h3><p class="section-subtitle">Berikan akses manajemen ke staf terpercaya setiap cabang</p></div>
-                <button @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah Admin</button>
+                <button data-tour="lembaga-admin-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah Admin</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
@@ -36,8 +36,8 @@
                             <td><span class="badge badge-teal">{{ $a->email }}</span></td>
                             <td>{{ $a->sekolah->name ?? '-' }}</td>
                             <td class="text-right flex items-center justify-end gap-2">
-                                <button @click="openEdit({{ json_encode($a) }}, '{{ route('lembaga.admin-sekolah.update', $a) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#E8F2F2;">Edit</button>
-                                <button @click="openDelete('{{ route('lembaga.admin-sekolah.destroy', $a) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <button @if($loop->first) data-tour="lembaga-admin-action-edit" data-tour-open-modal="edit" @endif @click="openEdit({{ json_encode($a) }}, '{{ route('lembaga.admin-sekolah.update', $a) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#E8F2F2;">Edit</button>
+                                <button @if($loop->first) data-tour="lembaga-admin-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('lembaga.admin-sekolah.destroy', $a) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </td>
                         </tr>
                         @empty
@@ -55,6 +55,7 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Admin Sekolah Baru</h3><p class="section-subtitle">Password awal: <code>password123</code></p></div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-create-section-form">Data Admin</div>
                         <div>
                             <label class="input-label">Nama Lengkap</label>
                             <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Nama admin" value="{{ old('name') }}">
@@ -65,7 +66,7 @@
                             <input type="email" name="email" required class="input-field @error('email') border-red-500 @enderror" placeholder="admin@sekolah.com" value="{{ old('email') }}">
                             @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
-                        <div>
+                        <div data-tour="modal-create-section-penugasan">
                             <label class="input-label">Cabang Sekolah</label>
                             <select name="sekolah_id" required class="input-field @error('sekolah_id') border-red-500 @enderror">
                                 <option value="">-- Pilih Cabang --</option>
@@ -74,7 +75,7 @@
                             @error('sekolah_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary">Simpan</button></div>
                 </form>
             </div>
         </div>
@@ -86,6 +87,7 @@
                     @method('PATCH')
                     <div class="modal-header"><h3 class="section-title">Edit Admin Sekolah</h3><p class="section-subtitle">Perbarui kredensial atau penempatan admin</p></div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-edit-section-form">Data Admin</div>
                         <div>
                             <label class="input-label">Nama Lengkap</label>
                             <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
@@ -96,6 +98,8 @@
                             <input type="email" name="email" x-model="editData.email" required class="input-field @error('email') border-red-500 @enderror">
                             @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        <div data-tour="modal-edit-section-penugasan">
+                            <div class="text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1">Penugasan Sekolah</div>
                         <div>
                             <label class="input-label">Cabang Sekolah</label>
                             <select name="sekolah_id" x-model="editData.sekolah_id" required class="input-field @error('sekolah_id') border-red-500 @enderror">
@@ -109,13 +113,14 @@
                             <input type="password" name="password" class="input-field @error('password') border-red-500 @enderror" placeholder="Kosongkan jika tidak mau ganti">
                             @error('password')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Update</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Update</button></div>
                 </form>
             </div>
         </div>
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

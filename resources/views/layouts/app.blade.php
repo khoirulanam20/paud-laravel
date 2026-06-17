@@ -138,7 +138,7 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
         rel="stylesheet">
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/tour.js'])
 </head>
 
 <body class="font-sans antialiased text-[#2C2C2C] bg-[#F5F0E8]">
@@ -230,6 +230,22 @@
             });
         };
     </script>
+    @auth
+    <script>
+        window.__tourContext = {
+            route: @json($tourCurrentRoute),
+            hubRoute: @json($tourHubRoute),
+            isHubPage: @json($tourSessionContext['isHubPage']),
+            isShowPage: @json($tourSessionContext['isShowPage']),
+            showRoutes: @json($tourSessionContext['showRoutes']),
+            modalTypes: @json($tourSessionContext['modalTypes']),
+            steps: @json($tourPageSteps),
+            modalSteps: @json($tourModalSteps),
+            completed: @json(auth()->user()->tour_completed ?? []),
+            completeUrl: @json(route('tour.complete')),
+        };
+    </script>
+    @endauth
     @stack('scripts')
 </body>
 

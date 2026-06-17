@@ -5,6 +5,7 @@
     $periodeLabel = IndonesianMonths::label($bulan, $tahun);
     $search = $search ?? '';
     $canBulkSelected = $aiReady && empty($activeGeneration);
+    $tourPrefix = $tourPrefix ?? 'admin-monev';
 @endphp
 
 @if(session('success'))
@@ -30,7 +31,7 @@
     @include('monev._generation-progress', ['statusRoute' => $statusRoute, 'activeGeneration' => $activeGeneration])
 @endif
 
-<div class="card overflow-hidden mb-6">
+<div class="card overflow-hidden mb-6" data-tour="{{ $tourPrefix }}-summary">
     <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
         <div class="space-y-1">
             <h3 class="text-xl font-bold" style="color:#2C2C2C;">Ringkasan Monev Matrikulasi</h3>
@@ -39,7 +40,7 @@
             </p>
         </div>
 
-        <form method="get" action="{{ $indexRoute }}"
+        <form data-tour="{{ $tourPrefix }}-filters" method="get" action="{{ $indexRoute }}"
             class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-3 sm:gap-4 items-end">
             <div class="sm:col-span-2 xl:col-span-4 min-w-0">
                 <label class="input-label" for="monev-search">Cari Siswa</label>
@@ -175,7 +176,7 @@
         </div>
     @else
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm" data-tour="{{ $tourPrefix }}-table">
                 <thead>
                     <tr class="border-b text-left" style="border-color: rgba(0,0,0,0.06); background:#FAF6F0;">
                         <th class="px-4 py-3 w-10">

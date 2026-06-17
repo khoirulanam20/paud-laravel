@@ -39,7 +39,7 @@
 
     @foreach($bottomItems as $item)
         @if(!empty($item['center']))
-        <a href="{{ route($item['route']) }}" class="relative flex flex-col items-center justify-center w-full -mt-5">
+        <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full -mt-5">
             <span class="flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform {{ request()->routeIs($item['pattern']) ? 'bg-[#145252] scale-105' : 'bg-[#1A6B6B]' }}">
                 <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
@@ -48,7 +48,7 @@
             <span class="truncate w-full text-center text-[9px] font-semibold mt-1 px-1 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-500' }}">{{ $item['label'] }}</span>
         </a>
         @else
-        <a href="{{ route($item['route']) }}" class="relative flex flex-col items-center justify-center w-full h-full {{ $isOrangTua ? 'text-[9px]' : 'text-[10px]' }} font-medium transition-colors pt-1 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
+        <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full h-full {{ $isOrangTua ? 'text-[9px]' : 'text-[10px]' }} font-medium transition-colors pt-1 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
             <svg class="{{ $isOrangTua ? 'h-5 w-5' : 'h-6 w-6' }} mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
             </svg>
@@ -96,7 +96,7 @@
 
         <div class="flex-1 overflow-y-auto px-4 py-4 space-y-2 max-h-[60vh]">
             @foreach($moreItems as $item)
-            <a href="{{ route($item['route']) }}" @click="moreMenuOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all {{ request()->routeIs($item['pattern']) ? 'bg-[#1A6B6B] text-white shadow-md shadow-[#1A6B6B]/20' : 'text-[#2C2C2C] bg-[#FAF6F0] hover:bg-black/5' }}">
+            <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" @click="moreMenuOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all {{ request()->routeIs($item['pattern']) ? 'bg-[#1A6B6B] text-white shadow-md shadow-[#1A6B6B]/20' : 'text-[#2C2C2C] bg-[#FAF6F0] hover:bg-black/5' }}">
                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
                 </svg>
@@ -110,6 +110,18 @@
 
             @if($isOrangTua)
             <div class="border-t border-black/5 mt-2 pt-3 space-y-2">
+                @php
+                    $currentRoute = Route::currentRouteName();
+                    $hasPageTour = \App\Support\TourRegistry::has($currentRoute);
+                @endphp
+                @if($hasPageTour)
+                <button type="button" data-tour-trigger @click="moreMenuOpen = false" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all text-[#2C2C2C] bg-[#FAF6F0] hover:bg-black/5">
+                    <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="flex-1 text-left">Ulangi panduan halaman</div>
+                </button>
+                @endif
                 <a href="{{ route('profile.edit') }}" @click="moreMenuOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all {{ request()->routeIs('profile.*') ? 'bg-[#1A6B6B] text-white shadow-md shadow-[#1A6B6B]/20' : 'text-[#2C2C2C] bg-[#FAF6F0] hover:bg-black/5' }}">
                     <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

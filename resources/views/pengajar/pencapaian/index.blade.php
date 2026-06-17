@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Evaluasi Pencapaian Siswa</h2>
         </div>
@@ -173,7 +173,7 @@
                 this.deleteBundleAnak = b.anak_id; this.deleteBundleKeg = b.kegiatan_id;
                 this.showDeleteBundleModal = true;
             }
-         }">
+         }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteBundleModal=false">
 
         <script type="application/json" id="pencapaian-payload-json">{!! $payloadJson !!}</script>
 
@@ -192,7 +192,7 @@
                         <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Evaluasi</h3>
                         <p class="text-sm font-medium" style="color:#9E9790;">Cari data berdasarkan rentang tanggal, kelas, dan indikator aspek</p>
                     </div>
-                    <form method="get" action="{{ route('pengajar.pencapaian.index') }}" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 items-end">
+                    <form data-tour="pg-pencapaian-filter" method="get" action="{{ route('pengajar.pencapaian.index') }}" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 items-end">
                         <div class="col-span-1 lg:col-span-2 min-w-0">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Dari</label>
                             <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
@@ -252,7 +252,7 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Laporan per Kegiatan & Aspek</h3><p class="section-subtitle">Satu baris = satu anak + satu kegiatan; nilai per indikator matrikulasi.</p></div>
-                <button type="button" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>Buat Evaluasi</button>
+                <button type="button" data-tour="pg-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>Buat Evaluasi</button>
             </div>
 
             {{-- Mobile Card View --}}
@@ -349,8 +349,8 @@
                                 <td class="whitespace-nowrap text-sm">{{ \Carbon\Carbon::parse($first->created_at)->format('d M Y') }}</td>
                                 <td class="text-right">
                                     <div class="flex flex-wrap items-center justify-end gap-2">
-                                        <button type="button" @click="openEditBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                        <button type="button" @click="openDeleteBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-edit" data-tour-open-modal="edit" @endif @click="openEditBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-delete" data-tour-demo-action="delete" @endif @click="openDeleteBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -364,8 +364,9 @@
         </div>
 
         {{-- CREATE MODAL --}}
-        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
-            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative" @click.away="!isCompressing && (showCreateModal=false)">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;"
+            @click.self="!isCompressing && (showCreateModal=false)">
+            <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
                 <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
                     <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
@@ -378,7 +379,7 @@
                     @if($filterAspekRaw !== '')<input type="hidden" name="aspek" value="{{ $filterAspekRaw }}">@endif
                     <div class="modal-header"><h3 class="section-title">Rekam Pencapaian</h3></div>
                     <div class="modal-body space-y-4">
-                        <div>
+                        <div data-tour="modal-create-section-siswa">
                             <label class="input-label">Target Siswa <span class="text-red-500">*</span></label>
                             <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''">
                                 <option value="">— Pilih Siswa —</option>
@@ -392,7 +393,7 @@
                                 <span class="text-[10px] italic" style="color:#9E9790;"> — dipakai saran AI</span>
                             </p>
                         </div>
-                        <div x-show="selectedAnakId">
+                        <div data-tour="modal-create-section-kegiatan" x-show="selectedAnakId">
                             <label class="input-label">Jurnal Kegiatan <span class="text-red-500">*</span></label>
                             <select name="kegiatan_id" required class="input-field" x-model="selectedKegiatanId" @change="resetCreateMatrices()">
                                 <option value="">— Pilih —</option>
@@ -406,16 +407,18 @@
                             </template>
                         </div>
                         <p class="text-sm" x-show="selectedKegiatanId && matrikulasiOptions.length === 0" style="display:none;color:#C0392B;">Kegiatan ini belum punya matrikulasi. Ubah di Jurnal Kegiatan.</p>
-                        <template x-for="opt in matrikulasiOptions" :key="opt.id">
+                        <template x-for="(opt, index) in matrikulasiOptions" :key="opt.id">
                             <div class="p-3 bg-gray-50 rounded-xl border border-black/5 space-y-2">
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
-                                <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="createNilai[String(opt.id)]">
-                                    <option value="">— Skala Capaian —</option>
-                                    <template x-for="sk in skalaOptions" :key="sk.code">
-                                        <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
-                                    </template>
-                                </select>
-                                <div class="space-y-1.5">
+                                <div :data-tour="index === 0 ? 'modal-create-section-skala' : null">
+                                    <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="createNilai[String(opt.id)]">
+                                        <option value="">— Skala Capaian —</option>
+                                        <template x-for="sk in skalaOptions" :key="sk.code">
+                                            <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="space-y-1.5" :data-tour="index === 0 ? 'modal-create-section-feedback' : null">
                                     <textarea class="input-field bg-white text-xs" rows="3" :name="'catatan[' + opt.id + ']'"
                                         x-model="createCatatan[String(opt.id)]"
                                         placeholder="Berikan umpan balik positif…"></textarea>
@@ -450,20 +453,21 @@
                                 </div>
                             </div>
                         </template>
-                        <div>
+                        <div data-tour="modal-create-section-evidence">
                             <label class="input-label">Foto bukti (opsional, berlaku untuk seluruh aspek)</label>
                             <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror" @change="handleFile($event)">
                             @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0">Simpan Evaluasi</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary" :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0">Simpan Evaluasi</button></div>
                 </form>
             </div>
         </div>
 
         {{-- EDIT MODAL --}}
-        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
-            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative" @click.away="!isCompressing && (showEditModal=false)">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;"
+            @click.self="!isCompressing && (showEditModal=false)">
+            <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
                 <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
                     <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
@@ -479,6 +483,7 @@
                     <input type="hidden" name="kegiatan_id" :value="editBundles[editBundleKey]?.kegiatan_id">
                     <div class="modal-header"><h3 class="section-title">Ubah Hasil Evaluasi</h3></div>
                     <div class="modal-body space-y-3">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-edit-section-form">Data Evaluasi</div>
                         <div class="rounded-xl border p-3 flex items-start gap-3" style="background:#F0F9F9; border-color:#1A6B6B22;">
                             <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background:#1A6B6B;">
                                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -560,13 +565,13 @@
                             <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs" @change="handleFile($event)">
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Update Evaluasi</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Update Evaluasi</button></div>
                 </form>
             </div>
         </div>
 
         {{-- DELETE BUNDLE --}}
-        <div x-show="showDeleteBundleModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteBundleModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteBundleModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteBundleModal=false">
                 <form method="POST" action="{{ route('pengajar.pencapaian.destroy-bundle') }}">
                     @csrf @method('DELETE')

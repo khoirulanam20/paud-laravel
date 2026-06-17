@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -16,7 +16,7 @@
                 <p class="text-sm text-gray-500 mt-1">Pantau kehadiran anak Anda secara berkala.</p>
             </div>
             
-            <form method="GET" action="{{ route('orangtua.presensi.index') }}" class="flex flex-wrap gap-3 items-end">
+            <form data-tour="ortu-presensi-period-filter" method="GET" action="{{ route('orangtua.presensi.index') }}" class="flex flex-wrap gap-3 items-end">
                 <div class="w-full sm:w-auto">
                     <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 ml-1">Rentang</label>
                     <select name="periode" class="input-field py-2 text-sm min-w-[140px]" onchange="this.form.submit()">
@@ -48,7 +48,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {{-- Summary Sidebar --}}
-            <div class="lg:col-span-1 space-y-4">
+            <div class="lg:col-span-1 space-y-4" data-tour="ortu-presensi-summary-cards">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 ml-1">Ringkasan {{ $filter['label'] }}</h3>
                 @foreach($anaks as $anak)
                     @php

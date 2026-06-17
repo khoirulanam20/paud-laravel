@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;"><svg
                     class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -19,7 +19,7 @@
             }
          }" @kegiatan-cal-click.window="onCalClick($event.detail)">
 
-        <div class="card overflow-hidden">
+        <div class="card overflow-hidden" data-tour="ortu-kegiatan-calendar">
             <div class="px-4 py-3 md:px-6 md:py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title text-sm md:text-base">Kalender Jurnal Kegiatan</h3>
             </div>

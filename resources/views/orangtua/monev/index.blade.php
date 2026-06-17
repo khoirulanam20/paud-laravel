@@ -7,7 +7,7 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -29,7 +29,7 @@
                     </p>
                 </div>
 
-                <form method="get" action="{{ route('orangtua.monev.index') }}"
+                <form data-tour="ortu-monev-filters" method="get" action="{{ route('orangtua.monev.index') }}"
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 items-end">
                     @if($anaks->count() > 1)
                         <div class="sm:col-span-2 lg:col-span-4 min-w-0">
@@ -85,12 +85,14 @@
                 </p>
             </div>
         @else
+            <div data-tour="ortu-monev-report">
             @include('monev._show-content', [
                 'anak' => $selectedAnak,
                 'summary' => $summary,
                 'pdfRoute' => route('orangtua.monev.export-pdf', ['anak' => $selectedAnak->id, 'tahun' => $tahun, 'bulan' => $bulan]),
                 'showBackLink' => false,
             ])
+            </div>
         @endif
     </div>
 </x-app-layout>

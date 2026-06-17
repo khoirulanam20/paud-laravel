@@ -3,8 +3,8 @@
 
         <!-- ═══ LEMBAGA DASHBOARD ═══ -->
         @hasrole('Lembaga')
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div class="stat-card">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5" data-tour="dashboard-stats">
+            <div class="stat-card" data-tour="dashboard-welcome">
                 <div class="stat-icon">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -13,7 +13,7 @@
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #9E9790;">Total Cabang</p>
                     <p class="text-3xl font-bold" style="color: #2C2C2C;">{{ $totalSekolah ?? 0 }}</p>
-                    <a href="{{ route('lembaga.sekolah.index') }}" class="text-xs font-medium mt-1 inline-block" style="color: #1A6B6B;">Kelola &rarr;</a>
+                    <a href="{{ route('lembaga.sekolah.index') }}" data-tour="dashboard-quick-links" class="text-xs font-medium mt-1 inline-block" style="color: #1A6B6B;">Kelola &rarr;</a>
                 </div>
             </div>
             <div class="stat-card">
@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" data-tour="dashboard-recent">
             <div class="px-6 py-4 border-b flex justify-between items-center" style="border-color: rgba(0,0,0,0.06);">
                 <h3 class="section-title">Masukan Terbaru</h3>
                 <a href="{{ route('lembaga.kritik-saran.index') }}" class="text-sm font-medium" style="color: #1A6B6B;">Lihat Semua</a>
@@ -67,14 +67,14 @@
 
         <!-- ═══ ADMIN SEKOLAH DASHBOARD ═══ -->
         @hasrole('Admin Sekolah')
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5" data-tour="dashboard-stats">
             @foreach([
                 ['label' => 'Total Siswa', 'value' => $totalAnak ?? 0, 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'href' => route('admin.anak.index')],
                 ['label' => 'Total Pengajar', 'value' => $totalPengajar ?? 0, 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'href' => route('admin.pengajar.index')],
                 ['label' => 'Total Sarana', 'value' => $totalSarana ?? 0, 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'href' => route('admin.sarana.index')],
                 ['label' => 'Saldo Kas', 'value' => 'Rp ' . number_format($saldoKas ?? 0, 0, ',', '.'), 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'href' => route('admin.cashflow.index')],
             ] as $stat)
-            <div class="stat-card">
+            <div class="stat-card" @if($loop->first) data-tour="dashboard-welcome" @endif>
                 <div class="stat-icon shrink-0">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="{{ $stat['icon'] }}" />
@@ -83,13 +83,13 @@
                 <div class="min-w-0">
                     <p class="text-xs font-semibold uppercase tracking-wider mb-1 truncate" style="color: #9E9790;">{{ $stat['label'] }}</p>
                     <p class="text-2xl font-bold truncate" style="color: #2C2C2C;">{{ $stat['value'] }}</p>
-                    <a href="{{ $stat['href'] }}" class="text-xs font-medium" style="color: #1A6B6B;">Detail &rarr;</a>
+                    <a href="{{ $stat['href'] }}" @if($loop->first) data-tour="dashboard-quick-links" @endif class="text-xs font-medium" style="color: #1A6B6B;">Detail &rarr;</a>
                 </div>
             </div>
             @endforeach
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5" data-tour="dashboard-recent">
             <div class="card">
                 <div class="px-6 py-4 border-b" style="border-color: rgba(0,0,0,0.06);">
                     <h3 class="section-title">Kegiatan Hari Ini</h3>
@@ -121,7 +121,7 @@
 
         <!-- ═══ ADMIN KELAS / WALI KELAS ═══ -->
         @hasrole('Admin Kelas')
-        <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-2"
+        <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-2" data-tour="dashboard-welcome"
              style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);
                     box-shadow: 0 8px 32px rgba(26,107,107,0.25);">
             
@@ -139,14 +139,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>
-                    <div>
+                    <div data-tour="dashboard-stats">
                         <p class="text-xs font-semibold uppercase tracking-widest opacity-80 mb-1">Wali Kelas</p>
                         <h3 class="text-xl font-bold">Terdaftar di {{ $kelasWaliCount ?? 0 }} Kelas</h3>
                         <p class="text-sm opacity-90 mt-1">Total siswa kelolaan: <strong>{{ $kelasAnakCount ?? 0 }}</strong> anak</p>
                     </div>
                 </div>
                 
-                <div class="flex flex-wrap gap-2 sm:gap-3">
+                <div class="flex flex-wrap gap-2 sm:gap-3" data-tour="dashboard-quick-links">
                     <a href="{{ route('adminkelas.anak.index') }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all">Siswa Kelasku</a>
                     <a href="{{ route('adminkelas.presensi.index') }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold bg-white text-[#1A6B6B] hover:shadow-lg transition-all">Presensi Kelasku</a>
                 </div>
@@ -156,8 +156,8 @@
 
         <!-- ═══ PENGAJAR DASHBOARD ═══ -->
         @hasrole('Pengajar')
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 mb-6">
-            <div class="stat-card">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 mb-6" data-tour="dashboard-stats">
+            <div class="stat-card" data-tour="dashboard-welcome">
                 <div class="stat-icon"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg></div>
                 <div class="min-w-0">
                     <p class="text-[10px] font-bold uppercase tracking-widest mb-1 truncate" style="color: #9E9790;">{{ $dashboardAnakLabel ?? 'Siswa' }}</p>
@@ -180,7 +180,7 @@
             </div>
         </div>
 
-        <div class="relative rounded-3xl overflow-hidden bg-white shadow-xl shadow-gray-200/50 p-6 sm:p-10 text-center border border-gray-100 mb-8">
+        <div class="relative rounded-3xl overflow-hidden bg-white shadow-xl shadow-gray-200/50 p-6 sm:p-10 text-center border border-gray-100 mb-8" data-tour="dashboard-recent">
             {{-- Background patterns --}}
             <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#1A6B6B] to-transparent"></div>
             
@@ -195,7 +195,7 @@
                 <h2 class="text-3xl font-extrabold tracking-tight mb-3" style="color: #2C2C2C;">Selamat Datang, {{ auth()->user()->name }}</h2>
                 <p class="text-base text-gray-500 mb-8 max-w-lg mx-auto leading-relaxed font-medium">Mari terus cerahkan masa depan anak bangsa. Gunakan tombol di bawah untuk mulai mengelola jurnal dan perkembangan siswa hari ini.</p>
                 
-                <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <div class="flex flex-col sm:flex-row gap-3 justify-center items-center" data-tour="dashboard-quick-links">
                     <a href="{{ route('pengajar.kegiatan.index') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#1A6B6B] text-white font-bold shadow-lg hover:bg-[#155959] transform hover:-translate-y-0.5 transition-all">Buat Jurnal Kegiatan</a>
                     <a href="{{ route('pengajar.pencapaian.index') }}" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gray-100 text-[#1A6B6B] font-bold hover:bg-gray-200 transition-all">Nilai Pencapaian</a>
                 </div>
@@ -222,7 +222,7 @@
             }
         }">
             {{-- ═══ Welcome & Attendance Summary Card ═══ --}}
-            <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-6"
+            <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-6" data-tour="dashboard-welcome"
                  style="background: linear-gradient(135deg, #1A6B6B 0%, #155959 50%, #0f4040 100%);
                         box-shadow: 0 8px 32px rgba(26,107,107,0.30);">
 
@@ -272,7 +272,7 @@
                 </div>
 
                 {{-- 3. Children Attendance Stats List --}}
-                <div class="relative px-5 py-5 md:px-6 md:py-6">
+                <div class="relative px-5 py-5 md:px-6 md:py-6" data-tour="dashboard-stats">
                     @forelse($anaks ?? [] as $anak)
                         @php
                             $summary = $presensiSummaryPerAnak[$anak->id] ?? ['hadir' => 0, 'tidak_hadir' => 0, 'efektif' => 0];
@@ -322,7 +322,7 @@
                     @endforelse
 
                     <div class="mt-4 pt-4 border-t border-white/10">
-                        <a href="{{ route('orangtua.anak.create') }}"
+                        <a href="{{ route('orangtua.anak.create') }}" data-tour="dashboard-quick-links"
                            class="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 transition">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -334,7 +334,7 @@
             </div>
 
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8" data-tour="dashboard-recent">
                 <div class="lg:col-span-1 flex flex-col gap-5">
                     
 

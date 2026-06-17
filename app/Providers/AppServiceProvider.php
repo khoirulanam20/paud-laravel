@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\View\Composers\TourComposer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('viewApiDocs', fn () => (bool) config('scramble.docs_enabled', false));
+
+        View::composer('layouts.app', TourComposer::class);
 
         View::composer('layouts.topbar', function ($view) {
             $user = auth()->user();

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;"><svg
                     class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -96,7 +96,7 @@
                 this.openDetailFromCal(p.detail, p.edit);
                 this.deleteRoute = p.delete_url || '';
             }
-         }" @kegiatan-cal-click.window="onCalClick($event.detail)">
+         }" @kegiatan-cal-click.window="onCalClick($event.detail)" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false; showDetailModal=false; showDocModal=false; showPhotoDeleteModal=false; showImageModal=false">
 
         @if(session('success'))
             <div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24"
@@ -109,14 +109,14 @@
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
         </div>@endif
 
-        <div class="card overflow-hidden mb-6">
+        <div class="card overflow-hidden mb-6" data-tour="pg-kegiatan-calendar">
             <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b"
                 style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Kalender Agenda Saya</h3>
                     <p class="section-subtitle">Klik entri untuk detail, edit, atau hapus.</p>
                 </div>
-                <button type="button" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
+                <button type="button" data-tour="pg-kegiatan-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
                         class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>Buat Entri Jurnal</button>
@@ -281,8 +281,8 @@
                         Dokumentasi
                     </button>
                     <button type="button" @click="showDetailModal=false; openEdit(detailEditPayload)"
-                        class="btn-secondary">Edit</button>
-                    <button type="button" @click="openDelete(deleteRoute); showDetailModal=false" class="btn-danger"
+                        data-tour-open-modal="edit" class="btn-secondary">Edit</button>
+                    <button type="button" @click="openDelete(deleteRoute); showDetailModal=false" data-tour-open-modal="delete" class="btn-danger"
                         x-show="deleteRoute">Hapus</button>
                     <button type="button" @click="showDetailModal=false" class="btn-primary ml-auto">Tutup</button>
                 </div>
@@ -298,6 +298,7 @@
                         <h3 class="section-title">Buat Entri Jurnal Baru</h3>
                     </div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-create-section-form">Data Jurnal</div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="input-label">Tanggal <span class="text-red-500">*</span></label>
@@ -357,7 +358,7 @@
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false"
-                            class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan
+                            class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary">Simpan
                             Jurnal</button></div>
                 </form>
             </div>
@@ -372,6 +373,7 @@
                         <h3 class="section-title">Edit Jurnal Kegiatan</h3>
                     </div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-edit-section-form">Data Jurnal</div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="input-label">Tanggal <span class="text-red-500">*</span></label>
@@ -429,14 +431,14 @@
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false"
-                            class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan
+                            class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Simpan
                             Perubahan</button></div>
                 </form>
             </div>
         </div>
 
         {{-- DELETE MODAL --}}
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')

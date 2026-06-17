@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3 min-w-0">
+        <div class="flex items-center gap-3 min-w-0" data-tour="page-header">
             <a href="{{ route('admin.orangtua-chat.index') }}"
                class="shrink-0 inline-flex items-center gap-1 text-sm font-medium px-2 py-1 rounded-lg hover:bg-black/5 transition-colors"
                style="color:#1A6B6B;">
@@ -34,7 +34,7 @@
                 </div>
             @endif
 
-            <div class="admin-chat-panel rounded-2xl border border-black/5 overflow-hidden shadow-sm flex flex-col bg-white">
+            <div class="admin-chat-panel rounded-2xl border border-black/5 overflow-hidden shadow-sm flex flex-col bg-white" data-tour="chat-thread">
                 <div id="admin-chat-thread" class="admin-chat-thread flex-1 overflow-y-auto overscroll-contain px-4 py-4">
                     @forelse($messages as $msg)
                         @if($msg->role === 'user')
@@ -75,7 +75,7 @@
                     @endforelse
                 </div>
 
-                <div class="shrink-0 px-4 py-2.5 border-t border-black/5 text-center text-[11px]" style="background:#FAF6F0;color:#9E9790;">
+                <div class="shrink-0 px-4 py-2.5 border-t border-black/5 text-center text-[11px]" style="background:#FAF6F0;color:#9E9790;" data-tour="chat-compose">
                     Mode baca saja · {{ $messages->count() }} pesan
                 </div>
             </div>

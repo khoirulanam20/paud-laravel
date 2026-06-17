@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3" data-tour="page-header">
                 <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                     <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
@@ -94,7 +94,7 @@
             </dl>
         </div>
 
-        <div class="card overflow-hidden">
+        <div class="card overflow-hidden" data-tour="kritik-message">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Isi pesan</h3>
             </div>
@@ -114,7 +114,7 @@
             </div>
         @endif
 
-        <div class="card overflow-hidden">
+        <div class="card overflow-hidden" data-tour="kritik-response">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Update status &amp; tanggapan</h3>
                 <p class="section-subtitle mt-1">Orang tua dapat melihat status di menu Saran &amp; Kritik mereka.</p>

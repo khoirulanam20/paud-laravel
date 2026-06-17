@@ -1,17 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Data Pengajar</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{ kelas_ids: [] }, deleteRoute:'', openEdit(d){this.editData=d; this.editData.kelas_ids = d.kelas ? d.kelas.map(k => k.id) : []; this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{ kelas_ids: [] }, deleteRoute:'', openEdit(d){this.editData=d; this.editData.kelas_ids = d.kelas ? d.kelas.map(k => k.id) : []; this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Guru & Pengajar</h3><p class="section-subtitle">Kelola data SDM dan akun login yang diberikan kepada pengajar</p></div>
-                <button @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Registrasi Pengajar</button>
+                <button data-tour="admin-pengajar-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Registrasi Pengajar</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
@@ -36,8 +36,8 @@
                                 @endif
                             </td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
-                                <button @click="openEdit({{ json_encode($p) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button @click="openDelete('{{ route('admin.pengajar.destroy', $p) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <button @if($loop->first) data-tour="admin-pengajar-action-edit" data-tour-open-modal="edit" @endif @click="openEdit({{ json_encode($p) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button @if($loop->first) data-tour="admin-pengajar-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.pengajar.destroy', $p) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                         </tr>
                         @empty
@@ -55,11 +55,13 @@
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Registrasi Pengajar Baru</h3><p class="section-subtitle">Password login awal: <code>password123</code></p></div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-create-section-data">Data Pengajar</div>
                         <div>
                             <label class="input-label">Nama Lengkap</label>
                             <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Nama lengkap pengajar" value="{{ old('name') }}">
                             @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1" data-tour="modal-create-section-akun">Akun & Penugasan</div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="input-label">Alamat Email Valid</label>
@@ -113,7 +115,7 @@
                         </div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" rows="2" class="input-field" placeholder="Prov, Kab, Kec, Kel..."></textarea></div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Registrasikan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary">Registrasikan</button></div>
                 </form>
             </div>
         </div>
@@ -124,11 +126,13 @@
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Data Pengajar</h3></div>
                     <div class="modal-body space-y-4">
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-1 border-b pb-1" data-tour="modal-edit-section-data">Data Pengajar</div>
                         <div>
                             <label class="input-label">Nama Lengkap</label>
                             <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
                             @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        <div class="text-[13px] font-bold text-[#1A6B6B] mt-2 border-b pb-1" data-tour="modal-edit-section-akun">Akun & Penugasan</div>
                         <div>
                             <label class="input-label">Penempatan Kelas</label>
                             <div class="mt-1 rounded-xl border p-3 max-h-40 overflow-y-auto bg-gray-50 grid grid-cols-1 sm:grid-cols-2 gap-2" style="border-color:rgba(0,0,0,0.1);">
@@ -164,12 +168,12 @@
                         </div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" x-model="editData.alamat" rows="2" class="input-field"></textarea></div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>
             </div>
         </div>
         <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
+        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
             <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
                 <form :action="deleteRoute" method="POST">
                     @csrf @method('DELETE')
