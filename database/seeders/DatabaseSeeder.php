@@ -2,17 +2,18 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     *
+     * Memanggil DemoSeeder yang meliputi RoleSeeder
+     * ditambah data demo (kelas, anak, matrikulasi, pencapaian, token AI).
      */
     public function run(): void
     {
-        $this->call(RoleSeeder::class);
+        $this->call(DemoSeeder::class);
     }
 }
