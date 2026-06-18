@@ -143,6 +143,106 @@ return [
         ],
     ),
 
+    'admin.biaya-bulanan.index' => array_merge(
+        tour_modal_create_sections([
+            ['element' => '[data-tour="modal-create-section-form"]', 'title' => 'Data Jenis Biaya', 'description' => 'Isi nama biaya, tarif harian default, dan keterangan.'],
+            ['element' => '[data-tour="modal-create-submit"]', 'title' => 'Simpan', 'description' => 'Simpan jenis biaya baru.', 'side' => 'top'],
+        ]),
+        [
+            [
+                'element' => '[data-tour="modal-add-siswa"]',
+                'openModal' => 'addSiswa',
+                'title' => 'Filter Kelas',
+                'description' => 'Saring daftar siswa berdasarkan kelas sebelum memilih.',
+                'side' => 'left',
+            ],
+            [
+                'element' => '[data-tour="modal-add-siswa-list"]',
+                'openModal' => 'addSiswa',
+                'title' => 'Pilih Siswa',
+                'description' => 'Centang siswa yang akan dikenakan biaya ini.',
+                'side' => 'top',
+            ],
+            [
+                'element' => '[data-tour="modal-add-siswa-submit"]',
+                'openModal' => 'addSiswa',
+                'title' => 'Simpan',
+                'description' => 'Tambahkan siswa terpilih ke daftar biaya harian.',
+                'side' => 'top',
+            ],
+        ],
+    ),
+
+    'admin.diskon.index' => tour_crud_modal_bundle(
+        [
+            ['element' => '[data-tour="modal-create-section-form"]', 'title' => 'Data Diskon', 'description' => 'Isi nama, tipe (persentase/nominal), nilai, dan keterangan.'],
+            ['element' => '[data-tour="modal-create-submit"]', 'title' => 'Simpan', 'description' => 'Simpan diskon baru.', 'side' => 'top'],
+        ],
+        'Konfirmasi Hapus Diskon',
+        'Hapus diskon yang tidak lagi digunakan.',
+        [
+            0 => ['title' => 'Ubah Data Diskon', 'description' => 'Perbarui nama, nilai, atau status aktif diskon.'],
+        ],
+    ),
+
+    'admin.pembayaran-bulanan.index' => [
+        [
+            'element' => '[data-tour="modal-generate"]',
+            'openModal' => 'generate',
+            'title' => 'Periode Tagihan',
+            'description' => 'Pilih bulan dan tahun tagihan yang akan digenerate.',
+            'side' => 'left',
+        ],
+        [
+            'element' => '[data-tour="modal-generate-checklist"]',
+            'openModal' => 'generate',
+            'title' => 'Pilih Siswa',
+            'description' => 'Centang siswa yang akan digenerate. Bisa atur diskon per baris.',
+            'side' => 'top',
+        ],
+        [
+            'element' => '[data-tour="modal-generate-submit"]',
+            'openModal' => 'generate',
+            'title' => 'Generate',
+            'description' => 'Buat tagihan untuk siswa yang dicentang.',
+            'side' => 'top',
+        ],
+    ],
+
+    'admin.pembayaran-bulanan.show' => [
+        [
+            'element' => '[data-tour="modal-approve"]',
+            'openModal' => 'approve',
+            'title' => 'Setujui Pembayaran',
+            'description' => 'Konfirmasi pembayaran setelah bukti transfer diverifikasi.',
+            'side' => 'left',
+        ],
+        [
+            'element' => '[data-tour="modal-reject"]',
+            'openModal' => 'reject',
+            'title' => 'Tolak Pembayaran',
+            'description' => 'Tolak dengan alasan jika bukti tidak valid atau nominal salah.',
+            'side' => 'left',
+        ],
+    ],
+
+    'orangtua.pembayaran.show' => [
+        [
+            'element' => '[data-tour="modal-create-section-form"]',
+            'openModal' => 'bayar',
+            'title' => 'Upload Bukti',
+            'description' => 'Unggah foto bukti transfer dan catatan opsional.',
+            'side' => 'left',
+        ],
+        [
+            'element' => '[data-tour="modal-create-submit"]',
+            'openModal' => 'bayar',
+            'title' => 'Kirim',
+            'description' => 'Kirim bukti ke sekolah untuk diverifikasi.',
+            'side' => 'top',
+        ],
+    ],
+
     'admin.kesehatan.index' => array_merge(
         tour_modal_create_sections([
             ['element' => '[data-tour="modal-create-section-form"]', 'title' => 'Data Pemeriksaan', 'description' => 'Isi antropometri, kebersihan, dan catatan kesehatan siswa.'],

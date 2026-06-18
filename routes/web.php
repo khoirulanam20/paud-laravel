@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\Admin\AnakController;
+use App\Http\Controllers\Admin\BiayaBulananController;
 use App\Http\Controllers\Admin\CashflowController;
+use App\Http\Controllers\Admin\DiskonController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
 // Lembaga Controllers
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
+use App\Http\Controllers\Admin\PembayaranBulananController;
 use App\Http\Controllers\Admin\SkalaPencapaianController;
 use App\Http\Controllers\Admin\MenuMakananController;
 use App\Http\Controllers\Admin\MonevController as AdminMonevController;
@@ -35,6 +38,7 @@ use App\Http\Controllers\OrangTua\AnakController as OrangTuaAnakController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
 use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
+use App\Http\Controllers\OrangTua\PembayaranController;
 use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
 use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
 use App\Http\Controllers\Pengajar\MatrikulasiController;
@@ -112,6 +116,27 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
     Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
+
+    // Biaya Harian & Pembayaran
+    Route::get('biaya-bulanan', [BiayaBulananController::class, 'index'])->name('biaya-bulanan.index');
+    Route::post('biaya-bulanan', [BiayaBulananController::class, 'store'])->name('biaya-bulanan.store');
+    Route::put('biaya-bulanan/{biayaBulanan}', [BiayaBulananController::class, 'update'])->name('biaya-bulanan.update');
+    Route::delete('biaya-bulanan/{biayaBulanan}', [BiayaBulananController::class, 'destroy'])->name('biaya-bulanan.destroy');
+    Route::patch('biaya-bulanan/{biayaBulanan}/siswa', [BiayaBulananController::class, 'updateSiswaBiayaHarian'])->name('biaya-bulanan.update-siswa');
+    Route::post('biaya-bulanan/{biayaBulanan}/siswa', [BiayaBulananController::class, 'addSiswa'])->name('biaya-bulanan.add-siswa');
+    Route::delete('biaya-bulanan/{biayaBulanan}/siswa/{anak}', [BiayaBulananController::class, 'removeSiswa'])->name('biaya-bulanan.remove-siswa');
+
+    Route::resource('diskon', DiskonController::class)->except(['create', 'edit', 'show']);
+
+    Route::get('pembayaran-bulanan', [PembayaranBulananController::class, 'index'])->name('pembayaran-bulanan.index');
+    Route::get('pembayaran-bulanan/generate-preview', [PembayaranBulananController::class, 'generatePreview'])->name('pembayaran-bulanan.generate-preview');
+    Route::get('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'show'])->name('pembayaran-bulanan.show');
+    Route::post('pembayaran-bulanan/generate', [PembayaranBulananController::class, 'generate'])->name('pembayaran-bulanan.generate');
+    Route::delete('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'destroy'])->name('pembayaran-bulanan.destroy');
+    Route::patch('pembayaran-bulanan/{pembayaran}/hari-hadir', [PembayaranBulananController::class, 'updateHariHadir'])->name('pembayaran-bulanan.update-hari-hadir');
+    Route::patch('pembayaran-bulanan/{pembayaran}/diskon', [PembayaranBulananController::class, 'updateDiskon'])->name('pembayaran-bulanan.update-diskon');
+    Route::patch('pembayaran-bulanan/{pembayaran}/approve', [PembayaranBulananController::class, 'approve'])->name('pembayaran-bulanan.approve');
+    Route::patch('pembayaran-bulanan/{pembayaran}/reject', [PembayaranBulananController::class, 'reject'])->name('pembayaran-bulanan.reject');
 });
 
 Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
@@ -220,6 +245,10 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('chat', [\App\Http\Controllers\OrangTua\ChatController::class, 'index'])->name('chat.index');
     Route::post('chat/messages', [\App\Http\Controllers\OrangTua\ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.messages.store');
     Route::delete('chat', [\App\Http\Controllers\OrangTua\ChatController::class, 'destroy'])->name('chat.destroy');
+
+    Route::get('pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
+    Route::get('pembayaran/{pembayaran}', [PembayaranController::class, 'show'])->name('pembayaran.show');
+    Route::post('pembayaran/{pembayaran}/bayar', [PembayaranController::class, 'bayar'])->name('pembayaran.bayar');
 });
 
 require __DIR__.'/auth.php';

@@ -65,4 +65,19 @@ return [
         ['element' => '[data-tour="kegiatan-rutin-records"]', 'title' => 'Pencatatan Siswa', 'description' => 'Input dan lihat catatan per siswa.', 'side' => 'top'],
     ],
 
+    'admin.pembayaran-bulanan.show' => [
+        ['element' => '[data-tour="page-header"]', 'title' => 'Detail Pembayaran', 'description' => 'Rincian tagihan siswa untuk periode ini.', 'side' => 'bottom'],
+        ['element' => '[data-tour="pembayaran-rincian"]', 'title' => 'Rincian Perhitungan', 'description' => 'Biaya harian × hari hadir − diskon. Edit hari hadir atau diskon di sini.', 'side' => 'bottom'],
+        ['element' => '[data-tour="pembayaran-bukti"]', 'title' => 'Bukti Transfer', 'description' => 'Foto bukti yang diunggah orang tua (jika ada).', 'side' => 'top'],
+        ['element' => '[data-tour="pembayaran-approve-btn"]', 'title' => 'Setujui', 'description' => 'Setujui pembayaran setelah bukti diverifikasi.', 'side' => 'left'],
+        ['element' => '[data-tour="pembayaran-reject-btn"]', 'title' => 'Tolak', 'description' => 'Tolak pembayaran dengan catatan alasan.', 'side' => 'left'],
+    ],
+
+    'orangtua.pembayaran.show' => [
+        ['element' => '[data-tour="page-header"]', 'title' => 'Detail Tagihan', 'description' => 'Rincian tagihan anak untuk periode ini.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-pembayaran-rincian"]', 'title' => 'Rincian Biaya', 'description' => 'Breakdown biaya harian, hari hadir, diskon, dan total bayar.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-pembayaran-bukti"]', 'title' => 'Bukti Transfer', 'description' => 'Bukti yang sudah diunggah sebelumnya.', 'side' => 'top'],
+        ['element' => '[data-tour="ortu-pembayaran-bayar-btn"]', 'title' => 'Upload Bukti', 'description' => 'Unggah atau perbarui bukti transfer pembayaran.', 'side' => 'left'],
+    ],
+
 ];

@@ -33,4 +33,12 @@ return [
     'orangtua.kritik-saran.index' => [
         'show' => ['orangtua.kritik-saran.show'],
     ],
+
+    'admin.pembayaran-bulanan.index' => [
+        'show' => ['admin.pembayaran-bulanan.show'],
+    ],
+
+    'orangtua.pembayaran.index' => [
+        'show' => ['orangtua.pembayaran.show'],
+    ],
 ];
