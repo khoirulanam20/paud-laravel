@@ -10,6 +10,8 @@ class AiPersonaScope
 
     public const FEEDBACK_PENCAPAIAN = 'feedback_pencapaian';
 
+    public const TAB_LOG_AI = 'log_ai';
+
     /**
      * @return list<string>
      */
@@ -34,9 +36,22 @@ class AiPersonaScope
         ];
     }
 
+    /**
+     * Tab yang tersedia di halaman Pengaturan AI (admin).
+     *
+     * @return list<string>
+     */
+    public static function adminIndexTabs(): array
+    {
+        return [...self::all(), self::TAB_LOG_AI];
+    }
+
     public static function label(string $scope): string
     {
-        return self::labels()[$scope] ?? $scope;
+        return self::labels()[$scope] ?? match ($scope) {
+            self::TAB_LOG_AI => 'Log AI',
+            default => $scope,
+        };
     }
 
     public static function defaultName(string $scope): string

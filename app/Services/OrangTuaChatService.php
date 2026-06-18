@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Exceptions\InsufficientAiTokensException;
 use App\Models\OrangTuaChat;
 use App\Models\OrangTuaChatMessage;
+use App\Models\SekolahAiTokenTransaction;
 use App\Models\User;
 use App\Support\ChatPlainText;
 use Illuminate\Support\Collection;
@@ -14,7 +16,8 @@ class OrangTuaChatService
 
     public function __construct(
         protected MonevSummaryService $monevService,
-        protected OrangTuaChatContextBuilder $contextBuilder
+        protected OrangTuaChatContextBuilder $contextBuilder,
+        protected AiTokenService $tokenService
     ) {}
 
     public function getOrCreateChat(User $user): OrangTuaChat
@@ -43,6 +46,7 @@ class OrangTuaChatService
         }
 
         $chat = $this->getOrCreateChat($user);
+        $sekolahId = (int) $user->sekolah_id;
 
         $userMessage = $chat->messages()->create([
             'role'    => OrangTuaChatMessage::ROLE_USER,
@@ -69,7 +73,24 @@ class OrangTuaChatService
             'content' => $content,
         ];
 
-        $reply = ChatPlainText::fromMarkdown($ai->chatCompletion($apiMessages));
+        try {
+            $reply = $this->tokenService->runWithToken(
+                $sekolahId,
+                SekolahAiTokenTransaction::TYPE_CHAT,
+                $user,
+                ['chat_id' => $chat->id, 'message_id' => $userMessage->id],
+                'Chat orang tua',
+                fn () => ChatPlainText::fromMarkdown($ai->chatCompletion($apiMessages))
+            );
+        } catch (InsufficientAiTokensException $e) {
+            $assistantMessage = $chat->messages()->create([
+                'role'    => OrangTuaChatMessage::ROLE_ASSISTANT,
+                'content' => $e->fallbackMessage,
+            ]);
+            $chat->touch();
+
+            throw $e;
+        }
 
         $assistantMessage = $chat->messages()->create([
             'role'    => OrangTuaChatMessage::ROLE_ASSISTANT,

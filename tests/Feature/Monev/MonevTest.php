@@ -23,11 +23,13 @@ use Carbon\Carbon;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Tests\Concerns\SeedsAiTokens;
 use Tests\TestCase;
 
 class MonevTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAiTokens;
 
     protected function setUp(): void
     {
@@ -267,7 +269,8 @@ class MonevTest extends TestCase
 - Mayoritas indikator masih MB namun konsisten.
 AI);
 
-        $service = new MonevSummaryService(app(MonevDataAggregator::class));
+        $service = app(MonevSummaryService::class);
+        $this->seedAiTokens($f['sekolah'], 1, $f['admin']);
 
         $summary = $service->generateForAnak(
             $f['anak'],
@@ -345,6 +348,49 @@ AI);
             'tahun' => 2026,
             'bulan' => 6,
             'total' => 1,
+        ]);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_bulk_generate_rejects_when_insufficient_tokens(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 6, 15));
+        $f = $this->createFixtures();
+
+        $matrikulasi = Matrikulasi::create([
+            'sekolah_id' => $f['sekolah']->id,
+            'indicator' => 'Indikator 1',
+            'aspek' => 'Kognitif',
+            'description' => 'Deskripsi',
+        ]);
+
+        foreach ([$f['anak'], $f['anak2']] as $anak) {
+            Pencapaian::create([
+                'anak_id' => $anak->id,
+                'matrikulasi_id' => $matrikulasi->id,
+                'pengajar_id' => $f['pengajar']->id,
+                'score' => 'MB',
+                'feedback' => 'Mulai berkembang',
+                'created_at' => Carbon::create(2026, 6, 5),
+                'updated_at' => Carbon::create(2026, 6, 5),
+            ]);
+        }
+
+        $this->seedAiTokens($f['sekolah'], 1, $f['admin']);
+
+        $response = $this->actingAs($f['admin'])->post(route('admin.monev.bulk-generate'), [
+            'anak_ids' => [$f['anak']->id, $f['anak2']->id],
+            'tahun' => 2026,
+            'bulan' => 6,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('monev');
+        $this->assertDatabaseMissing('monev_generations', [
+            'sekolah_id' => $f['sekolah']->id,
+            'tahun' => 2026,
+            'bulan' => 6,
         ]);
 
         Carbon::setTestNow();

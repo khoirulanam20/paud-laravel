@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\InsufficientAiTokensException;
 use App\Http\Controllers\Controller;
 use App\Models\Sekolah;
 use App\Models\SekolahAiPersona;
+use App\Models\SekolahAiTokenTransaction;
 use App\Services\AiChatDataAccessService;
 use App\Services\AiPersonaService;
+use App\Services\AiTokenService;
 use App\Support\AiChatDataSource;
 use App\Support\AiPersonaScope;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +22,8 @@ class AiPersonaController extends Controller
 {
     public function __construct(
         protected AiPersonaService $personaService,
-        protected AiChatDataAccessService $dataAccessService
+        protected AiChatDataAccessService $dataAccessService,
+        protected AiTokenService $tokenService
     ) {}
 
     private function sekolahId(): ?int
@@ -38,17 +42,26 @@ class AiPersonaController extends Controller
         $personas = $this->personaService->allForSekolah($sekolahId);
         $aiConfigured = $this->personaService->isAiConfiguredForSekolah($sekolahId);
         $dataAccess = $this->dataAccessService->resolveForSekolah($sekolahId);
+        $aiSettings = $this->tokenService->resolveSettings($sekolahId);
+        $tokenBalance = $this->tokenService->getBalance($sekolahId);
         $activeTab = $request->query('tab', AiPersonaScope::CHAT_ORANGTUA);
 
-        if (! in_array($activeTab, AiPersonaScope::all(), true)) {
+        if (! in_array($activeTab, AiPersonaScope::adminIndexTabs(), true)) {
             $activeTab = AiPersonaScope::CHAT_ORANGTUA;
         }
+
+        $tokenTransactions = $activeTab === AiPersonaScope::TAB_LOG_AI
+            ? $this->tokenService->paginateTransactionsForSekolah($sekolahId)
+            : null;
 
         return view('admin.ai_persona.index', compact(
             'sekolah',
             'personas',
             'aiConfigured',
             'dataAccess',
+            'aiSettings',
+            'tokenBalance',
+            'tokenTransactions',
             'activeTab'
         ));
     }
@@ -136,7 +149,21 @@ class AiPersonaController extends Controller
         $scope = $request->string('scope')->toString();
 
         try {
-            $fields = $this->personaService->generate($sekolah, $scope, $request->input('brief'));
+            $fields = $this->tokenService->runWithToken(
+                $sekolahId,
+                SekolahAiTokenTransaction::TYPE_PERSONA,
+                auth()->user(),
+                ['scope' => $scope],
+                'Generate persona: ' . AiPersonaScope::label($scope),
+                fn () => $this->personaService->generate($sekolah, $scope, $request->input('brief'))
+            );
+        } catch (InsufficientAiTokensException $e) {
+            return response()->json([
+                'ok' => false,
+                'error' => $e->fallbackMessage,
+                'token_exhausted' => true,
+                'token_balance' => $this->tokenService->getBalance($sekolahId),
+            ], 422);
         } catch (\RuntimeException $e) {
             return response()->json([
                 'ok' => false,
@@ -158,6 +185,29 @@ class AiPersonaController extends Controller
         return response()->json([
             'ok' => true,
             'fields' => $fields,
+            'token_balance' => $this->tokenService->getBalance($sekolahId),
         ]);
+    }
+
+    public function updateFallbacks(Request $request): RedirectResponse
+    {
+        $sekolahId = $this->sekolahId();
+        abort_if($sekolahId === null, 403, 'Akun tidak terikat sekolah.');
+
+        $validated = $request->validate([
+            'fallback_monev' => ['nullable', 'string', 'max:1000'],
+            'fallback_pencapaian' => ['nullable', 'string', 'max:1000'],
+            'fallback_chat' => ['nullable', 'string', 'max:1000'],
+            'fallback_persona' => ['nullable', 'string', 'max:1000'],
+            'tab' => ['nullable', Rule::in(AiPersonaScope::all())],
+        ]);
+
+        $this->tokenService->updateFallbacks($sekolahId, $validated);
+
+        $tab = $validated['tab'] ?? AiPersonaScope::CHAT_ORANGTUA;
+
+        return redirect()
+            ->route('admin.ai-persona.index', ['tab' => $tab])
+            ->with('success', 'Pesan fallback berhasil disimpan.');
     }
 }

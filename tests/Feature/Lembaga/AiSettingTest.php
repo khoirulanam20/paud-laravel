@@ -4,17 +4,21 @@ namespace Tests\Feature\Lembaga;
 
 use App\Models\AiSetting;
 use App\Models\Lembaga;
+use App\Models\Sekolah;
+use App\Models\SekolahAiToken;
 use App\Models\User;
 use App\Support\AiProvider;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Tests\Concerns\SeedsAiTokens;
 use Tests\TestCase;
 
 class AiSettingTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAiTokens;
 
     protected function setUp(): void
     {
@@ -268,5 +272,28 @@ class AiSettingTest extends TestCase
             'https://ai.sumopod.com/v1',
             AiProvider::resolveBaseUrl('sumopod', null)
         );
+    }
+
+    public function test_lembaga_can_top_up_tokens_for_school(): void
+    {
+        $fixtures = $this->createFixtures();
+        $sekolah = Sekolah::firstOrFail();
+
+        $response = $this->actingAs($fixtures['user'])
+            ->post(route('lembaga.ai-setting.tokens.store'), [
+                'sekolah_id' => $sekolah->id,
+                'amount' => 25,
+                'description' => 'Paket awal',
+            ]);
+
+        $response->assertRedirect(route('lembaga.ai-setting.index', ['tab' => 'tokens']));
+        $response->assertSessionHas('success');
+
+        $this->assertSame(25, SekolahAiToken::query()->where('sekolah_id', $sekolah->id)->value('balance'));
+        $this->assertDatabaseHas('sekolah_ai_token_transactions', [
+            'sekolah_id' => $sekolah->id,
+            'amount' => 25,
+            'type' => 'topup',
+        ]);
     }
 }

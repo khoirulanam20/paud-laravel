@@ -11,8 +11,8 @@
                 </svg>
             </div>
             <div>
-                <h2 class="font-bold text-xl" style="color:#2C2C2C;">Persona AI</h2>
-                <p class="text-xs" style="color:#9E9790;">Atur persona terpisah per fungsi AI · {{ $sekolah->name }}</p>
+                <h2 class="font-bold text-xl" style="color:#2C2C2C;">Pengaturan AI</h2>
+                <p class="text-xs" style="color:#9E9790;">Persona, fallback, dan token · {{ $sekolah->name }}</p>
             </div>
         </div>
     </x-slot>
@@ -20,6 +20,7 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto"
          x-data="{
             activeTab: @js($activeTab),
+            tokenBalance: @js($tokenBalance),
             generateLoading: {},
             generateResult: {},
             briefs: {},
@@ -35,12 +36,6 @@
                 'behavior_guidelines' => old('behavior_guidelines', $p->behavior_guidelines ?? ''),
                 'background' => old('background', $p->background ?? ''),
             ]])->toArray()),
-            setTab(scope) {
-                this.activeTab = scope;
-                const url = new URL(window.location);
-                url.searchParams.set('tab', scope);
-                window.history.replaceState({}, '', url);
-            },
             async generatePersona(scope) {
                 if (this.generateLoading[scope]) {
                     return;
@@ -69,6 +64,11 @@
                     }
 
                     if (!res.ok || data.ok !== true) {
+                        if (data.token_exhausted) {
+                            this.tokenBalance = 0;
+                        } else if (typeof data.token_balance === 'number') {
+                            this.tokenBalance = data.token_balance;
+                        }
                         this.generateResult[scope] = {
                             ok: false,
                             error: data.error || data.message || 'Generate gagal. Coba lagi.',
@@ -78,6 +78,10 @@
 
                     if (data.fields) {
                         this.fields[scope] = { ...this.fields[scope], ...data.fields };
+                    }
+
+                    if (typeof data.token_balance === 'number') {
+                        this.tokenBalance = data.token_balance;
                     }
 
                     this.generateResult[scope] = { ok: true };
@@ -106,7 +110,23 @@
             </div>
         @endif
 
+        @if(auth()->user()->hasRole('Admin Sekolah'))
+            <div data-tour="admin-ai-token-balance" class="mb-6 rounded-2xl border p-5 flex items-center justify-between gap-4"
+                style="background:#D0E8E8; border-color:#1A6B6B33;">
+                <div>
+                    <div class="text-xs font-semibold uppercase tracking-wide" style="color:#1A6B6B;">Saldo Token AI</div>
+                    <div class="text-3xl font-bold mt-1" style="color:#2C2C2C;" x-text="new Intl.NumberFormat('id-ID').format(tokenBalance)">{{ number_format($tokenBalance) }}</div>
+                </div>
+                <div class="h-12 w-12 rounded-xl flex items-center justify-center shrink-0" style="background:#1A6B6B;">
+                    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        @endif
+
         <div class="mb-6 rounded-2xl border p-5 flex items-start gap-4"
+            x-show="activeTab !== '{{ AiPersonaScope::TAB_LOG_AI }}'"
             style="background:{{ $aiConfigured ? '#D0E8E8' : '#FEF9EC' }}; border-color: {{ $aiConfigured ? '#1A6B6B33' : '#F0B84233' }};">
             <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
                 style="background:{{ $aiConfigured ? '#1A6B6B' : '#F0B842' }};">
@@ -132,20 +152,71 @@
 
         <div data-tour="admin-ai-persona-tabs" class="flex flex-wrap gap-2 mb-6">
             @foreach(AiPersonaScope::labels() as $scope => $label)
-                <button type="button"
-                        @click="setTab('{{ $scope }}')"
-                        class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all"
-                        :class="activeTab === '{{ $scope }}'
-                            ? 'text-white border-transparent shadow-md'
-                            : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5'"
-                        :style="activeTab === '{{ $scope }}' ? 'background:#1A6B6B' : ''">
+                <a href="{{ route('admin.ai-persona.index', ['tab' => $scope]) }}"
+                   class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === $scope ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
+                   @if($activeTab === $scope) style="background:#1A6B6B" @endif>
                     {{ $label }}
-                </button>
+                </a>
             @endforeach
+            @if(auth()->user()->hasRole('Admin Sekolah'))
+                <a href="{{ route('admin.ai-persona.index', ['tab' => AiPersonaScope::TAB_LOG_AI]) }}"
+                   class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === AiPersonaScope::TAB_LOG_AI ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
+                   @if($activeTab === AiPersonaScope::TAB_LOG_AI) style="background:#1A6B6B" @endif>
+                    Log AI
+                </a>
+            @endif
         </div>
 
+        @if(auth()->user()->hasRole('Admin Sekolah') && $activeTab === AiPersonaScope::TAB_LOG_AI)
+            <div class="card overflow-hidden" data-tour="admin-ai-log">
+                    <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                        <h3 class="section-title">Log AI</h3>
+                        <p class="section-subtitle mt-1">Riwayat top-up dan pemakaian token AI sekolah ini.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b text-left text-xs uppercase tracking-wide" style="border-color:rgba(0,0,0,0.06); color:#9E9790;">
+                                    <th class="px-6 py-3 font-semibold">Waktu</th>
+                                    <th class="px-4 py-3 font-semibold">Jenis</th>
+                                    <th class="px-4 py-3 font-semibold">Jumlah</th>
+                                    <th class="px-6 py-3 font-semibold">Keterangan</th>
+                                    <th class="px-6 py-3 font-semibold">Oleh</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($tokenTransactions ?? [] as $tx)
+                                    <tr class="border-b" style="border-color:rgba(0,0,0,0.04);">
+                                        <td class="px-6 py-3 text-xs whitespace-nowrap" style="color:#6B6560;">{{ $tx->created_at->format('d M Y H:i') }}</td>
+                                        <td class="px-4 py-3">{{ $tx->typeLabel() }}</td>
+                                        <td class="px-4 py-3 font-semibold" style="color:{{ $tx->amount >= 0 ? '#1A6B6B' : '#DC2626' }};">
+                                            {{ $tx->amount >= 0 ? '+' : '' }}{{ number_format($tx->amount) }}
+                                        </td>
+                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->description ?? '—' }}</td>
+                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->createdBy?->name ?? '—' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-10 text-center text-sm" style="color:#9E9790;">
+                                            Belum ada aktivitas token AI.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    @if(isset($tokenTransactions) && $tokenTransactions->hasPages())
+                        <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                            {{ $tokenTransactions->appends(['tab' => AiPersonaScope::TAB_LOG_AI])->links() }}
+                        </div>
+                    @endif
+                </div>
+        @endif
+
+        @if($activeTab !== AiPersonaScope::TAB_LOG_AI)
         @foreach($personas as $scope => $persona)
-            <div x-show="activeTab === '{{ $scope }}'" x-cloak style="display:none;">
+            @if($activeTab === $scope)
+            <div>
                 <div x-show="!generateLoading['{{ $scope }}'] && generateResult['{{ $scope }}']" x-transition
                      class="mb-6 rounded-2xl border p-4"
                      :style="generateResult['{{ $scope }}']?.ok ? 'background:#D0E8E8; border-color:#1A6B6B33' : 'background:#FEE2E2; border-color:#EF444433'">
@@ -169,13 +240,50 @@
                                 placeholder="Contoh: PAUD dengan fokus karakter dan kreativitas."></textarea>
                         </div>
                         <button type="button" @click="generatePersona('{{ $scope }}')"
-                            :disabled="generateLoading['{{ $scope }}'] || {{ $aiConfigured ? 'false' : 'true' }}"
+                            :disabled="generateLoading['{{ $scope }}'] || {{ $aiConfigured ? 'false' : 'true' }} || tokenBalance < 1"
                             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50"
                             style="color:#1A6B6B; background:#D0E8E8; border-color:#1A6B6B33;">
-                            <span x-show="!generateLoading['{{ $scope }}']">Generate dengan AI</span>
+                            <span x-show="!generateLoading['{{ $scope }}']">Generate dengan AI (1 token)</span>
                             <span x-show="generateLoading['{{ $scope }}']">Men-generate...</span>
                         </button>
+                        <p class="text-xs" style="color:#DC2626;" x-show="tokenBalance < 1" x-cloak>Token habis. Minta lembaga untuk menambah token.</p>
                     </div>
+                </div>
+
+                @php
+                    $fallbackField = match ($scope) {
+                        AiPersonaScope::CHAT_ORANGTUA => 'fallback_chat',
+                        AiPersonaScope::MONEV => 'fallback_monev',
+                        AiPersonaScope::FEEDBACK_PENCAPAIAN => 'fallback_pencapaian',
+                        default => null,
+                    };
+                @endphp
+                <div class="card overflow-hidden mb-6">
+                    <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                        <h3 class="section-title">Pesan Saat Token Habis</h3>
+                        <p class="section-subtitle mt-1">Ditampilkan ke pengguna jika saldo token tidak mencukupi untuk fitur ini.</p>
+                    </div>
+                    <form action="{{ route('admin.ai-persona.fallbacks.update') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="tab" value="{{ $scope }}">
+                        <div class="px-6 py-6 space-y-4">
+                            @if($fallbackField)
+                                <div>
+                                    <label class="input-label">{{ AiPersonaScope::label($scope) }}</label>
+                                    <textarea name="{{ $fallbackField }}" rows="2" maxlength="1000" class="input-field resize-none"
+                                        placeholder="Maaf, fitur ini sedang terbatas.">{{ old($fallbackField, $aiSettings->{$fallbackField}) }}</textarea>
+                                </div>
+                            @endif
+                            <div>
+                                <label class="input-label">Generate Persona AI</label>
+                                <textarea name="fallback_persona" rows="2" maxlength="1000" class="input-field resize-none"
+                                    placeholder="Maaf, fitur ini sedang terbatas.">{{ old('fallback_persona', $aiSettings->fallback_persona) }}</textarea>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6 flex justify-end border-t pt-5" style="border-color:rgba(0,0,0,0.06);">
+                            <button type="submit" class="btn-primary">Simpan Pesan Fallback</button>
+                        </div>
+                    </form>
                 </div>
 
                 @if($scope === AiPersonaScope::CHAT_ORANGTUA)
@@ -348,6 +456,8 @@
                     </form>
                 </div>
             </div>
+            @endif
         @endforeach
+        @endif
     </div>
 </x-app-layout>

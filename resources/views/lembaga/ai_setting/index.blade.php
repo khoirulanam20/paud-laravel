@@ -16,10 +16,17 @@
       $providersJson = json_encode($providers, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
   @endphp
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto"
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto"
         x-data="{
+            activeTab: @js($activeTab),
             testLoading: false,
             testResult: null,
+            setTab(tab) {
+                this.activeTab = tab;
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tab);
+                window.history.replaceState({}, '', url);
+            },
             providers: {{ $providersJson }},
             selectedProvider: @js($selectedProvider),
             onProviderChange() {
@@ -77,6 +84,20 @@
             </div>
         @endif
 
+        <div data-tour="lembaga-ai-tabs" class="flex flex-wrap gap-2 mb-6">
+            <button type="button" @click="setTab('provider')"
+                class="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                :style="activeTab === 'provider' ? 'background:#1A6B6B; color:#fff;' : 'background:#F5F0E8; color:#6B6560;'">
+                Provider & API
+            </button>
+            <button type="button" @click="setTab('tokens')"
+                class="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                :style="activeTab === 'tokens' ? 'background:#1A6B6B; color:#fff;' : 'background:#F5F0E8; color:#6B6560;'">
+                Token Sekolah
+            </button>
+        </div>
+
+        <div x-show="activeTab === 'provider'" x-cloak>
         {{-- Status Banner --}}
         <div data-tour="lembaga-ai-status" class="mb-6 rounded-2xl border p-5 flex items-start gap-4"
             style="background:{{ $aiSetting?->hasValidApiKey() ? '#D0E8E8' : '#FEF9EC' }}; border-color: {{ $aiSetting?->hasValidApiKey() ? '#1A6B6B33' : '#F0B84233' }};">
@@ -261,6 +282,112 @@
                     </button>
                 </div>
             </form>
+        </div>
+        </div>
+
+        <div x-show="activeTab === 'tokens'" x-cloak>
+            <div class="card overflow-hidden mb-6" data-tour="lembaga-ai-tokens">
+                <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                    <h3 class="section-title">Saldo Token per Sekolah</h3>
+                    <p class="section-subtitle mt-1">Tambahkan token AI untuk setiap sekolah. Satu token = satu kali generate monev per anak, saran pencapaian, chat, atau generate persona.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b text-left text-xs uppercase tracking-wide" style="border-color:rgba(0,0,0,0.06); color:#9E9790;">
+                                <th class="px-6 py-3 font-semibold">Sekolah</th>
+                                <th class="px-4 py-3 font-semibold">Saldo</th>
+                                <th class="px-6 py-3 font-semibold">Top-up</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($schoolsWithBalances as $row)
+                                <tr class="border-b" style="border-color:rgba(0,0,0,0.04);">
+                                    <td class="px-6 py-4 font-medium" style="color:#2C2C2C;">{{ $row['sekolah']->name }}</td>
+                                    <td class="px-4 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold"
+                                            style="background:#D0E8E8; color:#1A6B6B;">
+                                            {{ number_format($row['balance']) }} token
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <form action="{{ route('lembaga.ai-setting.tokens.store') }}" method="POST" class="flex flex-wrap items-center gap-2">
+                                            @csrf
+                                            <input type="hidden" name="sekolah_id" value="{{ $row['sekolah']->id }}">
+                                            <input type="number" name="amount" min="1" max="100000" required
+                                                class="input-field w-28 text-sm py-2" placeholder="Jumlah">
+                                            <button type="submit" class="btn-primary text-xs py-2 px-3">Tambah</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="px-6 py-8 text-center text-sm" style="color:#9E9790;">
+                                        Belum ada sekolah terdaftar di bawah lembaga ini.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card overflow-hidden">
+                <div class="px-6 py-4 border-b flex flex-wrap items-center justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                    <div>
+                        <h3 class="section-title">Riwayat Transaksi Token</h3>
+                        <p class="section-subtitle mt-1">Top-up dan pemakaian token terbaru.</p>
+                    </div>
+                    <form method="GET" action="{{ route('lembaga.ai-setting.index') }}" class="flex items-center gap-2">
+                        <input type="hidden" name="tab" value="tokens">
+                        <select name="sekolah_id" class="input-field text-sm py-2" onchange="this.form.submit()">
+                            <option value="">Semua sekolah</option>
+                            @foreach($schoolsWithBalances as $row)
+                                <option value="{{ $row['sekolah']->id }}" @selected(request('sekolah_id') == $row['sekolah']->id)>
+                                    {{ $row['sekolah']->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b text-left text-xs uppercase tracking-wide" style="border-color:rgba(0,0,0,0.06); color:#9E9790;">
+                                <th class="px-6 py-3 font-semibold">Waktu</th>
+                                <th class="px-4 py-3 font-semibold">Sekolah</th>
+                                <th class="px-4 py-3 font-semibold">Jenis</th>
+                                <th class="px-4 py-3 font-semibold">Jumlah</th>
+                                <th class="px-6 py-3 font-semibold">Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($transactions as $tx)
+                                <tr class="border-b" style="border-color:rgba(0,0,0,0.04);">
+                                    <td class="px-6 py-3 text-xs whitespace-nowrap" style="color:#6B6560;">{{ $tx->created_at->format('d M Y H:i') }}</td>
+                                    <td class="px-4 py-3">{{ $tx->sekolah?->name ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $tx->typeLabel() }}</td>
+                                    <td class="px-4 py-3 font-semibold" style="color:{{ $tx->amount >= 0 ? '#1A6B6B' : '#DC2626' }};">
+                                        {{ $tx->amount >= 0 ? '+' : '' }}{{ number_format($tx->amount) }}
+                                    </td>
+                                    <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->description ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-sm" style="color:#9E9790;">
+                                        Belum ada transaksi token.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                @if($transactions->hasPages())
+                    <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                        {{ $transactions->appends(['tab' => 'tokens'])->links() }}
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 </x-app-layout>

@@ -69,6 +69,8 @@
     @endphp
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+            hasTokens: @js($hasTokens ?? false),
+            tokenFallbackPencapaian: @js($tokenFallbackPencapaian ?? 'Maaf, fitur ini sedang terbatas.'),
             skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
@@ -101,6 +103,7 @@
                 form.submit();
             },
             async fetchAiSuggestions(mode, optId, anakId, kegiatanId, score) {
+                if (!this.hasTokens) { alert(this.tokenFallbackPencapaian); return; }
                 const nilaiMap  = mode === 'create' ? this.createNilai  : this.editNilai;
                 const resolvedScore = score || nilaiMap[String(optId)] || '';
                 if (!resolvedScore) { alert('Pilih skala capaian terlebih dahulu sebelum meminta saran AI.'); return; }
@@ -109,14 +112,23 @@
                 this.aiSuggestions = {};
                 this.aiLoading = { ...this.aiLoading, [key]: true };
                 try {
-                    const res = await fetch('/admin/ai/feedback-suggestions', {
+                    const res = await fetch(@js(route('admin.ai.feedback-suggestions')), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
                         body: JSON.stringify({ anak_id: anakId, kegiatan_id: kegiatanId, matrikulasi_id: optId, score: resolvedScore }),
                         credentials: 'same-origin'
                     });
                     const data = await res.json();
-                    if (!res.ok) { alert(data.error || 'Gagal mendapatkan saran AI.'); return; }
+                    if (!res.ok) {
+                        if (data.token_exhausted) {
+                            this.hasTokens = false;
+                        }
+                        alert(data.error || 'Gagal mendapatkan saran AI.');
+                        return;
+                    }
+                    if (typeof data.token_balance === 'number' && data.token_balance < 1) {
+                        this.hasTokens = false;
+                    }
                     // Hanya set saran untuk aspek ini (aspek lain sudah dikosongkan di atas)
                     this.aiSuggestions = { [key]: data.suggestions || [] };
                 } catch(e) {
@@ -215,6 +227,12 @@
             <div class="alert-danger mb-5">
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
         </div>@endif
+
+        @if(!($hasTokens ?? false))
+            <div class="mb-5 px-5 py-3 text-sm rounded-xl border" style="background:#FEE2E2; color:#DC2626; border-color: rgba(0,0,0,0.06);">
+                {{ $tokenFallbackPencapaian ?? 'Maaf, fitur ini sedang terbatas.' }}
+            </div>
+        @endif
 
         <div class="card overflow-hidden mb-6">
             <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
@@ -479,10 +497,10 @@
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <button type="button"
                                             @click="fetchAiSuggestions('create', opt.id, selectedAnakId, selectedKegiatanId, createNilai[String(opt.id)])"
-                                            :disabled="aiLoading['create_' + opt.id] || !createNilai[String(opt.id)]"
+                                            :disabled="aiLoading['create_' + opt.id] || !createNilai[String(opt.id)] || !hasTokens"
                                             class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all"
                                             style="color:#1A6B6B; background:#D0E8E8; border-color:#1A6B6B33;"
-                                            :class="{ 'opacity-40 cursor-not-allowed': !createNilai[String(opt.id)] }">
+                                            :class="{ 'opacity-40 cursor-not-allowed': !createNilai[String(opt.id)] || !hasTokens }">
                                             <span x-show="!aiLoading['create_' + opt.id]">💡 Saran AI</span>
                                             <span x-show="aiLoading['create_' + opt.id]"
                                                 class="flex items-center gap-1">
@@ -596,10 +614,10 @@
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <button type="button"
                                             @click="fetchAiSuggestions('edit', opt.id, editBundles[editBundleKey]?.anak_id, editBundles[editBundleKey]?.kegiatan_id, editNilai[String(opt.id)])"
-                                            :disabled="aiLoading['edit_' + opt.id] || !editNilai[String(opt.id)]"
+                                            :disabled="aiLoading['edit_' + opt.id] || !editNilai[String(opt.id)] || !hasTokens"
                                             class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all"
                                             style="color:#1A6B6B; background:#D0E8E8; border-color:#1A6B6B33;"
-                                            :class="{ 'opacity-40 cursor-not-allowed': !editNilai[String(opt.id)] }">
+                                            :class="{ 'opacity-40 cursor-not-allowed': !editNilai[String(opt.id)] || !hasTokens }">
                                             <span x-show="!aiLoading['edit_' + opt.id]">💡 Saran AI</span>
                                             <span x-show="aiLoading['edit_' + opt.id]" class="flex items-center gap-1">
                                                 <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">

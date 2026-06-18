@@ -4,7 +4,10 @@
     $months = IndonesianMonths::NAMES;
     $periodeLabel = IndonesianMonths::label($bulan, $tahun);
     $search = $search ?? '';
-    $canBulkSelected = $aiReady && empty($activeGeneration);
+    $hasTokens = $hasTokens ?? false;
+    $tokenBalance = $tokenBalance ?? 0;
+    $tokenFallbackMonev = $tokenFallbackMonev ?? 'Maaf, fitur ini sedang terbatas.';
+    $canBulkSelected = $aiReady && $hasTokens && $tokenBalance > 0 && empty($activeGeneration);
     $tourPrefix = $tourPrefix ?? 'admin-monev';
 @endphp
 
@@ -97,7 +100,7 @@
         </div>
 
         <div class="shrink-0">
-            @if($isCurrentMonth && $canManual && $aiReady)
+            @if($isCurrentMonth && $canManual && $aiReady && $hasTokens)
                 <form method="post" action="{{ $generateRoute }}" onsubmit="return confirm('Generate ringkasan AI untuk semua siswa dalam scope ini? Proses berjalan di background.');">
                     @csrf
                     @if($filterKelasId)
@@ -107,6 +110,10 @@
                         Generate Semua (Bulan Ini)
                     </button>
                 </form>
+            @elseif($isCurrentMonth && $canManual && $aiReady && !$hasTokens)
+                <span class="inline-flex items-center text-xs font-medium px-3 py-2 rounded-lg whitespace-nowrap" style="background:#FEE2E2; color:#DC2626;">
+                    Token AI habis
+                </span>
             @elseif($isCurrentMonth && $activeGeneration && !$activeGeneration->isFinished())
                 <span class="inline-flex items-center text-xs font-medium px-3 py-2 rounded-lg animate-pulse whitespace-nowrap" style="background:#E8F5F5; color:#1A6B6B;">
                     Generate sedang berjalan...
@@ -122,6 +129,10 @@
     @if($isCurrentMonth && !$aiReady)
         <div class="px-5 sm:px-6 py-3 text-sm border-b" style="background:#FFF8E6; color:#8A6D00; border-color: rgba(0,0,0,0.06);">
             Pengaturan AI belum dikonfigurasi. Minta admin lembaga mengisi API Key di menu Pengaturan AI.
+        </div>
+    @elseif($aiReady && !$hasTokens)
+        <div class="px-5 sm:px-6 py-3 text-sm border-b" style="background:#FEE2E2; color:#DC2626; border-color: rgba(0,0,0,0.06);">
+            {{ $tokenFallbackMonev }}
         </div>
     @endif
 </div>
@@ -145,12 +156,14 @@
                 <template x-for="id in selected" :key="'gen-' + id">
                     <input type="hidden" name="anak_ids[]" :value="id">
                 </template>
-                <button type="submit" class="text-xs font-semibold px-3 py-2 rounded-lg text-white" style="background:#1A6B6B;" :disabled="selected.length === 0">
+                <button type="submit" class="text-xs font-semibold px-3 py-2 rounded-lg text-white" style="background:#1A6B6B;" :disabled="selected.length === 0 || selected.length > {{ (int) $tokenBalance }}">
                     Generate Terpilih
                 </button>
             </form>
             @elseif(!$aiReady)
                 <span class="text-xs" style="color:#9E9790;">Generate terpilih membutuhkan pengaturan AI.</span>
+            @elseif(!$hasTokens)
+                <span class="text-xs" style="color:#DC2626;">Token AI habis.</span>
             @endif
             <form method="post" action="{{ $bulkResetRoute }}" class="inline" @submit="submitBulkReset($event)">
                 @csrf
@@ -241,9 +254,11 @@
 <script>
 window.monevBulkTable = function monevBulkTable() {
     const allIds = @json($anaks->pluck('id')->values());
+    const tokenBalance = @json((int) ($tokenBalance ?? 0));
 
     return {
         selected: [],
+        tokenBalance,
         get allSelected() {
             return allIds.length > 0 && this.selected.length === allIds.length;
         },
@@ -268,7 +283,12 @@ window.monevBulkTable = function monevBulkTable() {
             if (!this.prepareSubmit(event)) {
                 return;
             }
-            if (!confirm('Generate ringkasan untuk siswa terpilih? (mode testing)')) {
+            if (this.selected.length > this.tokenBalance) {
+                event.preventDefault();
+                alert('Token AI tidak cukup. Dibutuhkan ' + this.selected.length + ' token, tersedia ' + this.tokenBalance + '.');
+                return;
+            }
+            if (!confirm('Generate ringkasan untuk siswa terpilih? Proses berjalan di background.')) {
                 event.preventDefault();
             }
         },

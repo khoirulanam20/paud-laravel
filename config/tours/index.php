@@ -45,8 +45,9 @@ return [
     ],
 
     'lembaga.ai-setting.index' => [
-        ['element' => '[data-tour="nav-lembaga.ai-setting.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Konfigurasi layanan AI untuk seluruh yayasan dari sini.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan AI', 'description' => 'Atur provider, model, dan kredensial API untuk fitur AI di sistem.', 'side' => 'bottom'],
+        ['element' => '[data-tour="nav-lembaga.ai-setting.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Konfigurasi layanan AI dan token untuk seluruh yayasan dari sini.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan AI', 'description' => 'Atur provider, model, API key, dan saldo token per sekolah.', 'side' => 'bottom'],
+        ['element' => '[data-tour="lembaga-ai-tabs"]', 'title' => 'Tab Pengaturan', 'description' => 'Pilih tab Provider & API atau Token Sekolah.', 'side' => 'bottom'],
         ['element' => '[data-tour="lembaga-ai-status"]', 'title' => 'Status AI', 'description' => 'Banner ini menunjukkan apakah layanan AI aktif atau belum dikonfigurasi.', 'side' => 'bottom'],
         ['element' => '[data-tour="lembaga-ai-form"]', 'title' => 'Form Konfigurasi', 'description' => 'Isi provider, model, dan API key. Gunakan tombol uji koneksi sebelum menyimpan.', 'side' => 'top'],
     ],
@@ -287,8 +288,9 @@ return [
     ],
 
     'admin.ai-persona.index' => [
-        ['element' => '[data-tour="nav-admin.ai-persona.index"]', 'title' => 'Menu Persona AI', 'description' => 'Atur kepribadian dan gaya jawaban chatbot sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Persona AI', 'description' => 'Konfigurasi persona AI untuk chat orang tua dan fitur bantuan lainnya.', 'side' => 'bottom'],
+        ['element' => '[data-tour="nav-admin.ai-persona.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Atur persona, fallback, dan pantau saldo token sekolah.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan AI', 'description' => 'Konfigurasi persona AI, pesan fallback, dan saldo token untuk fitur AI sekolah.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-ai-token-balance"]', 'title' => 'Saldo Token', 'description' => 'Lihat sisa token AI sekolah. Setiap generate memakai 1 token.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-ai-persona-tabs"]', 'title' => 'Tab Persona', 'description' => 'Pilih scope persona: chat orang tua, evaluasi pencapaian, atau monev.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-ai-persona-form"]', 'title' => 'Form Persona', 'description' => 'Tulis instruksi persona atau gunakan tombol Generate AI untuk membuatnya otomatis.', 'side' => 'top'],
     ],

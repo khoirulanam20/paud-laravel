@@ -90,6 +90,7 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
     Route::get('ai-setting', [AiSettingController::class, 'index'])->name('ai-setting.index');
     Route::post('ai-setting', [AiSettingController::class, 'update'])->name('ai-setting.update');
     Route::post('ai-setting/test', [AiSettingController::class, 'testConnection'])->name('ai-setting.test');
+    Route::post('ai-setting/tokens', [AiSettingController::class, 'storeTokens'])->name('ai-setting.tokens.store');
 });
 
 // ─────────────────────────────────────────────
@@ -140,6 +141,7 @@ Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->
     Route::post('ai-persona', [AiPersonaController::class, 'update'])->name('ai-persona.update');
     Route::post('ai-persona/data-access', [AiPersonaController::class, 'updateDataAccess'])->name('ai-persona.data-access.update');
     Route::post('ai-persona/generate', [AiPersonaController::class, 'generate'])->middleware('throttle:10,1')->name('ai-persona.generate');
+    Route::post('ai-persona/fallbacks', [AiPersonaController::class, 'updateFallbacks'])->name('ai-persona.fallbacks.update');
     // Pendaftaran approval
     Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
     Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');

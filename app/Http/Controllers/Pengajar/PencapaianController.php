@@ -8,6 +8,8 @@ use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
+use App\Services\AiTokenService;
+use App\Support\AiTokenFeature;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
 use App\Support\TanggalRentang;
@@ -20,6 +22,10 @@ use App\Http\Traits\CanUploadImage;
 class PencapaianController extends Controller
 {
     use CanUploadImage;
+
+    public function __construct(
+        protected AiTokenService $tokenService
+    ) {}
 
     private function getPengajar()
     {
@@ -150,6 +156,10 @@ class PencapaianController extends Controller
         $filterKelasId = $request->filled('filter_kelas_id') ? (int) $request->input('filter_kelas_id') : null;
         $availableKelas = $pengajar->kelas()->orderBy('name')->get();
 
+        $tokenBalance = $this->tokenService->getBalance((int) $sekolah_id);
+        $hasTokens = $tokenBalance > 0;
+        $tokenFallbackPencapaian = $this->tokenService->resolveFallback((int) $sekolah_id, AiTokenFeature::PENCAPAIAN);
+
         return view('pengajar.pencapaian.index', compact(
             'skalas',
             'groupedPencapaian',
@@ -164,6 +174,8 @@ class PencapaianController extends Controller
             'filterAspek',
             'filterAspekRaw',
             'aspekPilihan',
+            'hasTokens',
+            'tokenFallbackPencapaian',
         ));
     }
 

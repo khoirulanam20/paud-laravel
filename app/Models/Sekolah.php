@@ -33,4 +33,19 @@ class Sekolah extends Model
     {
         return $this->hasOne(SekolahAiChatDataAccess::class);
     }
+
+    public function aiToken(): HasOne
+    {
+        return $this->hasOne(SekolahAiToken::class);
+    }
+
+    public function aiSettings(): HasOne
+    {
+        return $this->hasOne(SekolahAiSetting::class);
+    }
+
+    public function aiTokenTransactions(): HasMany
+    {
+        return $this->hasMany(SekolahAiTokenTransaction::class);
+    }
 }

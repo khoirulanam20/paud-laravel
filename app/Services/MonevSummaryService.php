@@ -10,6 +10,7 @@ use App\Models\MonevGeneration;
 use App\Models\MonevManualTrigger;
 use App\Models\MonevSummary;
 use App\Models\SekolahAiPersona;
+use App\Models\SekolahAiTokenTransaction;
 use App\Models\User;
 use App\Support\AiPersonaScope;
 use App\Support\MonevSummaryPresenter;
@@ -23,7 +24,8 @@ use Illuminate\Support\Facades\DB;
 class MonevSummaryService
 {
     public function __construct(
-        protected MonevDataAggregator $aggregator
+        protected MonevDataAggregator $aggregator,
+        protected AiTokenService $tokenService
     ) {}
 
     public function resolveAiServiceForSekolah(int $sekolahId): ?SumopodAIService
@@ -132,6 +134,76 @@ class MonevSummaryService
         }
 
         return false;
+    }
+
+    public function countAnaksRequiringAiToken(
+        Collection $anaks,
+        int $tahun,
+        int $bulan,
+        string $sumber
+    ): int {
+        $count = 0;
+
+        foreach ($anaks as $anak) {
+            if (! $anak instanceof Anak) {
+                continue;
+            }
+
+            $existing = MonevSummary::query()
+                ->where('anak_id', $anak->id)
+                ->where('tahun', $tahun)
+                ->where('bulan', $bulan)
+                ->first();
+
+            if ($this->shouldSkipExistingSummary($existing, $sumber)) {
+                continue;
+            }
+
+            $stats = $this->aggregator->aggregate($anak, $tahun, $bulan);
+
+            if (($stats['total_entri'] ?? 0) > 0) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    public function assertSufficientTokensForAnaks(
+        Collection $anaks,
+        int $sekolahId,
+        int $tahun,
+        int $bulan,
+        string $sumber
+    ): void {
+        $required = $this->countAnaksRequiringAiToken($anaks, $tahun, $bulan, $sumber);
+
+        if ($required === 0) {
+            return;
+        }
+
+        $balance = $this->tokenService->getBalance($sekolahId);
+
+        if ($balance < $required) {
+            throw new MonevManualGenerationException(
+                "Token AI tidak cukup. Dibutuhkan {$required} token, tersedia {$balance}."
+            );
+        }
+    }
+
+    protected function resolveSekolahIdForTokenCheck(Collection $anaks, ?int $sekolahId): int
+    {
+        if ($sekolahId !== null && $sekolahId > 0) {
+            return $sekolahId;
+        }
+
+        $first = $anaks->first();
+
+        if ($first instanceof Anak) {
+            return (int) $first->sekolah_id;
+        }
+
+        throw new MonevManualGenerationException('Tidak dapat menentukan sekolah untuk pengecekan token.');
     }
 
     public function anakMatchesGenerationScope(Anak $anak, MonevGeneration $generation): bool
@@ -415,46 +487,77 @@ class MonevSummaryService
 
         if ($stats['total_entri'] === 0) {
             $ringkasan = 'Belum ada data pencapaian matrikulasi pada periode ini.';
-        } else {
-            $ai = $ai ?? $this->resolveAiServiceForSekolah((int) $anak->sekolah_id);
 
-            if (! $ai) {
-                throw new \RuntimeException(
-                    'Pengaturan AI belum dikonfigurasi. Minta admin lembaga untuk mengisi API Key di menu Pengaturan AI.'
-                );
-            }
-
-            $sekolahName = $anak->sekolah?->name ?? 'PAUD';
-            $personaPrompt = SekolahAiPersona::resolveActivePrompt(
-                (int) $anak->sekolah_id,
-                AiPersonaScope::MONEV,
-                $sekolahName
+            return MonevSummary::updateOrCreate(
+                [
+                    'anak_id' => $anak->id,
+                    'tahun' => $tahun,
+                    'bulan' => $bulan,
+                ],
+                [
+                    'ringkasan' => $ringkasan,
+                    'data_snapshot' => $stats,
+                    'sumber' => $sumber,
+                    'generated_at' => now(),
+                    'generated_by_user_id' => $by?->id,
+                ]
             );
-
-            $ringkasan = $ai->generateMonevSummary(
-                $stats['anak_name'],
-                $stats['kelas_name'],
-                $stats['periode_label'],
-                $stats,
-                $personaPrompt
-            );
-
-            [$ringkasan, $stats] = $this->applyAspekSummariesToSnapshot($ringkasan, $stats);
         }
 
-        return MonevSummary::updateOrCreate(
+        $ai = $ai ?? $this->resolveAiServiceForSekolah((int) $anak->sekolah_id);
+
+        if (! $ai) {
+            throw new \RuntimeException(
+                'Pengaturan AI belum dikonfigurasi. Minta admin lembaga untuk mengisi API Key di menu Pengaturan AI.'
+            );
+        }
+
+        $sekolahName = $anak->sekolah?->name ?? 'PAUD';
+        $personaPrompt = SekolahAiPersona::resolveActivePrompt(
+            (int) $anak->sekolah_id,
+            AiPersonaScope::MONEV,
+            $sekolahName
+        );
+
+        $aiService = $ai;
+
+        return $this->tokenService->runWithToken(
+            (int) $anak->sekolah_id,
+            SekolahAiTokenTransaction::TYPE_MONEV,
+            $by,
             [
                 'anak_id' => $anak->id,
                 'tahun' => $tahun,
                 'bulan' => $bulan,
-            ],
-            [
-                'ringkasan' => $ringkasan,
-                'data_snapshot' => $stats,
                 'sumber' => $sumber,
-                'generated_at' => now(),
-                'generated_by_user_id' => $by?->id,
-            ]
+            ],
+            'Generate ringkasan monev: ' . $anak->displayName(),
+            function () use ($aiService, $stats, $personaPrompt, $anak, $tahun, $bulan, $sumber, $by) {
+                $ringkasan = $aiService->generateMonevSummary(
+                    $stats['anak_name'],
+                    $stats['kelas_name'],
+                    $stats['periode_label'],
+                    $stats,
+                    $personaPrompt
+                );
+
+                [$ringkasan, $stats] = $this->applyAspekSummariesToSnapshot($ringkasan, $stats);
+
+                return MonevSummary::updateOrCreate(
+                    [
+                        'anak_id' => $anak->id,
+                        'tahun' => $tahun,
+                        'bulan' => $bulan,
+                    ],
+                    [
+                        'ringkasan' => $ringkasan,
+                        'data_snapshot' => $stats,
+                        'sumber' => $sumber,
+                        'generated_at' => now(),
+                        'generated_by_user_id' => $by?->id,
+                    ]
+                );
+            }
         );
     }
 
@@ -539,6 +642,13 @@ class MonevSummaryService
         ?int $kelasId = null
     ): MonevGeneration {
         $this->assertCanStartManualGeneration($by, $tahun, $bulan, $sekolahId, $kelasId);
+        $this->assertSufficientTokensForAnaks(
+            $anaks,
+            $this->resolveSekolahIdForTokenCheck($anaks, $sekolahId),
+            $tahun,
+            $bulan,
+            MonevSummary::SUMBER_MANUAL
+        );
 
         $generation = DB::transaction(function () use ($anaks, $tahun, $bulan, $by, $sekolahId, $kelasId) {
             if ($this->activeGenerationQuery($sekolahId, $kelasId)->lockForUpdate()->exists()) {
@@ -587,6 +697,13 @@ class MonevSummaryService
         ?int $kelasId = null
     ): MonevGeneration {
         $this->assertCanStartSelectedGeneration($by, $sekolahId, $kelasId);
+        $this->assertSufficientTokensForAnaks(
+            $anaks,
+            $this->resolveSekolahIdForTokenCheck($anaks, $sekolahId),
+            $tahun,
+            $bulan,
+            MonevSummary::SUMBER_MANUAL
+        );
 
         $generation = DB::transaction(function () use ($anaks, $tahun, $bulan, $by, $sekolahId, $kelasId) {
             if ($this->activeGenerationQuery($sekolahId, $kelasId)->lockForUpdate()->exists()) {

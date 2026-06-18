@@ -16,11 +16,13 @@ use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Tests\Concerns\SeedsAiTokens;
 use Tests\TestCase;
 
 class ChatTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAiTokens;
 
     protected function setUp(): void
     {
@@ -79,6 +81,8 @@ class ChatTest extends TestCase
             'ai_api_key' => 'test-api-key',
             'ai_model' => 'gpt-4o-mini',
         ]);
+
+        $this->seedAiTokens($sekolah, 10, $admin);
 
         $sekolah2 = Sekolah::create([
             'lembaga_id' => $lembaga->id,
@@ -144,6 +148,23 @@ class ChatTest extends TestCase
             'role' => OrangTuaChatMessage::ROLE_ASSISTANT,
             'content' => 'Anak Chat berkembang dengan baik di PAUD.',
         ]);
+    }
+
+    public function test_chat_returns_token_exhausted_when_balance_zero(): void
+    {
+        $f = $this->createFixtures();
+
+        \App\Models\SekolahAiToken::query()
+            ->where('sekolah_id', $f['sekolah']->id)
+            ->update(['balance' => 0]);
+
+        $response = $this->actingAs($f['ortu'])->postJson(route('orangtua.chat.messages.store'), [
+            'content' => 'Halo',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('token_exhausted', true);
+        $response->assertJsonPath('token_balance', 0);
     }
 
     public function test_ai_reply_is_stored_without_markdown(): void

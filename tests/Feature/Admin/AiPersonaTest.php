@@ -14,11 +14,13 @@ use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Tests\Concerns\SeedsAiTokens;
 use Tests\TestCase;
 
 class AiPersonaTest extends TestCase
 {
     use RefreshDatabase;
+    use SeedsAiTokens;
 
     protected function setUp(): void
     {
@@ -75,6 +77,8 @@ class AiPersonaTest extends TestCase
             'ai_model' => 'gpt-4o-mini',
         ]);
 
+        $this->seedAiTokens($sekolah, 10, $admin);
+
         return compact('lembaga', 'sekolah', 'sekolah2', 'admin', 'adminOther');
     }
 
@@ -86,7 +90,7 @@ class AiPersonaTest extends TestCase
             ->get(route('admin.ai-persona.index'));
 
         $response->assertOk();
-        $response->assertSee('Persona AI');
+        $response->assertSee('Pengaturan AI');
         $response->assertSee('Chat Orang Tua');
         $response->assertSee('Monev');
         $response->assertSee('Feedback Pencapaian');
@@ -178,6 +182,25 @@ class AiPersonaTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonPath('ok', false);
+    }
+
+    public function test_generate_returns_token_exhausted_when_balance_zero(): void
+    {
+        $fixtures = $this->createFixtures();
+
+        \App\Models\SekolahAiToken::query()
+            ->where('sekolah_id', $fixtures['sekolah']->id)
+            ->update(['balance' => 0]);
+
+        $response = $this->actingAs($fixtures['admin'])
+            ->postJson(route('admin.ai-persona.generate'), [
+                'scope' => AiPersonaScope::CHAT_ORANGTUA,
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('ok', false);
+        $response->assertJsonPath('token_exhausted', true);
+        $response->assertJsonPath('token_balance', 0);
     }
 
     public function test_chat_persona_included_in_system_prompt(): void

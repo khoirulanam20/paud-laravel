@@ -39,6 +39,8 @@
             messages: @js($initialMessages),
             storeUrl: @js(route('orangtua.chat.messages.store')),
             destroyUrl: @js(route('orangtua.chat.destroy')),
+            hasTokens: @js($hasTokens ?? false),
+            tokenFallbackChat: @js($tokenFallbackChat ?? 'Maaf, fitur ini sedang terbatas.'),
             sampleQuestions: @js([
                 'Bagaimana perkembangan ' . $sampleName . ' bulan ini?',
                 'Apa kegiatan yang akan dilakukan minggu depan?',
@@ -96,8 +98,9 @@
                         <div class="flex flex-col gap-2 w-full max-w-sm" data-tour="ortu-chat-suggestions">
                             <template x-for="(q, i) in sampleQuestions" :key="i">
                                 <button type="button"
-                                        @click="input = q; sendMessage()"
-                                        class="text-left text-xs px-4 py-3 rounded-2xl transition-colors shadow-sm border border-black/5"
+                                        @click="if (!hasTokens) return; input = q; sendMessage()"
+                                        :disabled="!hasTokens"
+                                        class="text-left text-xs px-4 py-3 rounded-2xl transition-colors shadow-sm border border-black/5 disabled:opacity-40 disabled:cursor-not-allowed"
                                         style="background:#FFFFFF;color:#2C2C2C;"
                                         x-text="q"></button>
                             </template>
@@ -136,6 +139,8 @@
         {{-- Error --}}
         <div x-show="error" x-cloak class="orangtua-chat-error mx-3 px-3 py-2 rounded-xl text-xs alert-danger" x-text="error"></div>
 
+        <div x-show="!hasTokens" x-cloak class="mx-3 mb-2 px-3 py-2 rounded-xl text-xs" style="background:#FEE2E2; color:#DC2626;" x-text="tokenFallbackChat"></div>
+
         {{-- Composer --}}
         <div class="orangtua-chat-composer shrink-0 border-t bg-[#FAF6F0]/95 backdrop-blur-md px-3 md:px-4" data-tour="ortu-chat-input">
             <form @submit.prevent="sendMessage()" class="orangtua-chat-form flex items-center gap-2 min-w-0">
@@ -149,14 +154,14 @@
                            autocomplete="off"
                            autocorrect="on"
                            enterkeyhint="send"
-                           :disabled="loading"
+                           :disabled="loading || !hasTokens"
                            @keydown.enter.prevent="sendMessage()"
                            @focus="onComposerFocus()"
                            @blur="onComposerBlur()"
                            class="orangtua-chat-input w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm">
                 </div>
                 <button type="submit"
-                        :disabled="loading || !input.trim()"
+                        :disabled="loading || !input.trim() || !hasTokens"
                         class="orangtua-chat-send shrink-0 rounded-full flex items-center justify-center text-white shadow-md transition-all disabled:opacity-40 disabled:shadow-none hover:brightness-110 active:scale-95"
                         style="background:#1A6B6B;"
                         aria-label="Kirim pesan">
@@ -306,6 +311,8 @@
                 showClearModal: false,
                 storeUrl: config.storeUrl,
                 destroyUrl: config.destroyUrl,
+                hasTokens: config.hasTokens === true,
+                tokenFallbackChat: config.tokenFallbackChat || 'Maaf, fitur ini sedang terbatas.',
                 sampleQuestions: config.sampleQuestions || [],
 
                 plainText(content) {
@@ -398,7 +405,7 @@
 
                 async sendMessage() {
                     const content = this.input.trim();
-                    if (!content || this.loading) return;
+                    if (!content || this.loading || !this.hasTokens) return;
 
                     this.error = '';
                     const tempId = 'temp-' + Date.now();
@@ -427,6 +434,22 @@
                         });
                         const data = await res.json();
                         if (!res.ok) {
+                            if (data.token_exhausted && Array.isArray(data.messages) && data.messages.length) {
+                                this.messages = this.messages.filter((m) => m.id !== tempId);
+                                data.messages.forEach((m) => {
+                                    this.messages.push({
+                                        id: m.id,
+                                        role: m.role,
+                                        content: m.role === 'assistant' ? this.plainText(m.content) : m.content,
+                                        created_at: m.created_at
+                                            ? new Date(m.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                                            : new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                                    });
+                                });
+                                this.hasTokens = false;
+                                this.scrollToBottom('smooth');
+                                return;
+                            }
                             this.messages = this.messages.filter((m) => m.id !== tempId);
                             this.error = data.error || 'Gagal mengirim pesan.';
                             this.input = content;

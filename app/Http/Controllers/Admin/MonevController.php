@@ -9,7 +9,9 @@ use App\Models\Anak;
 use App\Models\Kelas;
 use App\Models\MonevGeneration;
 use App\Models\MonevSummary;
+use App\Services\AiTokenService;
 use App\Services\MonevSummaryService;
+use App\Support\AiTokenFeature;
 use Illuminate\Http\Request;
 
 class MonevController extends Controller
@@ -18,7 +20,8 @@ class MonevController extends Controller
     use HandlesMonevPdfExport;
 
     public function __construct(
-        protected MonevSummaryService $monevService
+        protected MonevSummaryService $monevService,
+        protected AiTokenService $tokenService
     ) {}
 
     public function index(Request $request)
@@ -48,6 +51,10 @@ class MonevController extends Controller
         $activeGeneration = $this->monevService->findActiveGeneration($sekolahId)
             ?? $this->resolveSessionGeneration($request);
 
+        $tokenBalance = $this->tokenService->getBalance($sekolahId);
+        $hasTokens = $tokenBalance > 0;
+        $tokenFallbackMonev = $this->tokenService->resolveFallback($sekolahId, AiTokenFeature::MONEV);
+
         return view('admin.monev.index', compact(
             'anaks',
             'summaries',
@@ -59,7 +66,10 @@ class MonevController extends Controller
             'aiReady',
             'isCurrentMonth',
             'activeGeneration',
-            'search'
+            'search',
+            'tokenBalance',
+            'hasTokens',
+            'tokenFallbackMonev'
         ));
     }
 

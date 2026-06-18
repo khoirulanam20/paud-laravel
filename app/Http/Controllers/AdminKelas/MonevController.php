@@ -10,7 +10,9 @@ use App\Models\Kelas;
 use App\Models\MonevGeneration;
 use App\Models\MonevSummary;
 use App\Models\Pengajar;
+use App\Services\AiTokenService;
 use App\Services\MonevSummaryService;
+use App\Support\AiTokenFeature;
 use Illuminate\Http\Request;
 
 class MonevController extends Controller
@@ -19,7 +21,8 @@ class MonevController extends Controller
     use HandlesMonevPdfExport;
 
     public function __construct(
-        protected MonevSummaryService $monevService
+        protected MonevSummaryService $monevService,
+        protected AiTokenService $tokenService
     ) {}
 
     protected function waliKelasIds(): array
@@ -67,6 +70,11 @@ class MonevController extends Controller
                 ?? $this->resolveSessionGeneration($request);
         }
 
+        $sekolahId = (int) $user->sekolah_id;
+        $tokenBalance = $this->tokenService->getBalance($sekolahId);
+        $hasTokens = $tokenBalance > 0;
+        $tokenFallbackMonev = $this->tokenService->resolveFallback($sekolahId, AiTokenFeature::MONEV);
+
         return view('adminkelas.monev.index', compact(
             'anaks',
             'summaries',
@@ -79,7 +87,10 @@ class MonevController extends Controller
             'aiReady',
             'isCurrentMonth',
             'activeGeneration',
-            'search'
+            'search',
+            'tokenBalance',
+            'hasTokens',
+            'tokenFallbackMonev'
         ));
     }
 

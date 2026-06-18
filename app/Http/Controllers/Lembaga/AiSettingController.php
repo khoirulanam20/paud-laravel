@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Lembaga;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiSetting;
+use App\Services\AiTokenService;
 use App\Support\AiProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -11,13 +12,29 @@ use Illuminate\Validation\Rule;
 
 class AiSettingController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected AiTokenService $tokenService
+    ) {}
+
+    public function index(Request $request)
     {
         $lembaga_id = auth()->user()->lembaga_id;
         $aiSetting  = AiSetting::where('lembaga_id', $lembaga_id)->first();
         $providers  = AiProvider::all();
+        $schoolsWithBalances = $this->tokenService->schoolsWithBalances((int) $lembaga_id);
+        $transactions = $this->tokenService->paginateTransactions(
+            (int) $lembaga_id,
+            $request->integer('sekolah_id') ?: null
+        );
+        $activeTab = $request->query('tab', 'provider');
 
-        return view('lembaga.ai_setting.index', compact('aiSetting', 'providers'));
+        return view('lembaga.ai_setting.index', compact(
+            'aiSetting',
+            'providers',
+            'schoolsWithBalances',
+            'transactions',
+            'activeTab'
+        ));
     }
 
     public function testConnection(Request $request)
@@ -105,7 +122,34 @@ class AiSettingController extends Controller
             $data
         );
 
-        return redirect()->route('lembaga.ai-setting.index')
+        return redirect()->route('lembaga.ai-setting.index', ['tab' => 'provider'])
             ->with('success', 'Pengaturan AI berhasil disimpan.');
+    }
+
+    public function storeTokens(Request $request)
+    {
+        $lembaga_id = auth()->user()->lembaga_id;
+        abort_if($lembaga_id === null, 403, 'Akun tidak terikat lembaga.');
+
+        $lembaga_id = (int) $lembaga_id;
+
+        $validated = $request->validate([
+            'sekolah_id' => ['required', 'integer', 'exists:sekolahs,id'],
+            'amount' => ['required', 'integer', 'min:1', 'max:100000'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $this->tokenService->assertSekolahBelongsToLembaga((int) $validated['sekolah_id'], $lembaga_id);
+
+        $this->tokenService->topUp(
+            (int) $validated['sekolah_id'],
+            (int) $validated['amount'],
+            auth()->user(),
+            $validated['description'] ?? null
+        );
+
+        return redirect()
+            ->route('lembaga.ai-setting.index', ['tab' => 'tokens'])
+            ->with('success', 'Token berhasil ditambahkan.');
     }
 }
