@@ -5,6 +5,7 @@ namespace App\Http\Controllers\OrangTua;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\PembayaranBulanan;
+use App\Services\PembayaranInvoicePdfService;
 use App\Services\RekapBiayaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -46,12 +47,17 @@ class PembayaranController extends Controller
         return view('orangtua.pembayaran.show', compact('pembayaran'));
     }
 
+    public function exportInvoice(PembayaranBulanan $pembayaran)
+    {
+        $this->authorizePembayaran($pembayaran);
+        abort_unless($pembayaran->isApproved(), 403, 'Invoice hanya tersedia untuk pembayaran yang sudah disetujui.');
+
+        return app(PembayaranInvoicePdfService::class)->download($pembayaran);
+    }
+
     public function bayar(Request $request, PembayaranBulanan $pembayaran)
     {
-        $user = auth()->user();
-        $anakIds = Anak::where('user_id', $user->id)->pluck('id');
-
-        abort_if(!$anakIds->contains($pembayaran->anak_id), 403);
+        $this->authorizePembayaran($pembayaran);
         abort_if(!$pembayaran->isPending() && !$pembayaran->isRejected(), 403, 'Pembayaran ini sudah diproses.');
 
         $request->validate([
@@ -74,5 +80,11 @@ class PembayaranController extends Controller
         return redirect()
             ->route('orangtua.pembayaran.show', $pembayaran)
             ->with('success', 'Bukti transfer berhasil diupload. Menunggu approval admin.');
+    }
+
+    private function authorizePembayaran(PembayaranBulanan $pembayaran): void
+    {
+        $anakIds = Anak::where('user_id', auth()->id())->pluck('id');
+        abort_if(!$anakIds->contains($pembayaran->anak_id), 403);
     }
 }

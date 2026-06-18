@@ -9,6 +9,13 @@ const MODAL_STATE_KEYS = [
     'showDetailModal',
     'showInputModal',
     'showHistoryModal',
+    'showAddSiswaModal',
+    'showGenerateModal',
+    'showApproveModal',
+    'showRejectModal',
+    'showBayarModal',
+    'showHariHadirModal',
+    'showDiskonModal',
 ];
 
 let activeDriver = null;
@@ -33,11 +40,16 @@ const MODAL_SCROLL_SELECTOR = '.modal-body, .modal-scroll';
 
 function getHttpClient() {
     if (window.axios) {
-        return window.axios;
+        return Promise.resolve(window.axios);
     }
 
     return import('axios').then((module) => {
         window.axios = module.default;
+        window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+        const csrfToken = document.head.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken.content;
+        }
         return window.axios;
     });
 }
@@ -312,13 +324,31 @@ function isReplayActive() {
     return session.hub === ctx.hubRoute;
 }
 
-function shouldRunTour(completeKey) {
-    if (isReplayActive()) {
-        return !isSessionTourComplete(completeKey);
+function isTourComplete(completeKey) {
+    const ctx = getContext();
+    if (ctx?.completed?.[completeKey]) {
+        return true;
     }
 
+    if (isReplayActive() && isSessionTourComplete(completeKey)) {
+        return true;
+    }
+
+    return false;
+}
+
+function shouldRunTour(completeKey) {
+    return !isTourComplete(completeKey);
+}
+
+function modalCompleteKey(type) {
     const ctx = getContext();
-    return !ctx?.completed?.[completeKey];
+    const hubRoute = ctx?.hubRoute ?? ctx?.route;
+    if (!hubRoute || !type) {
+        return null;
+    }
+
+    return modalRouteKey(hubRoute, type);
 }
 
 function resetAlpineModalState() {
@@ -744,20 +774,19 @@ async function markTourComplete(route) {
         return;
     }
 
+    if (!ctx.completed) {
+        ctx.completed = {};
+    }
+    ctx.completed[route] = new Date().toISOString();
+
     if (isReplayActive()) {
         markSessionTourComplete(route);
-        return;
     }
 
     const client = await getHttpClient();
 
     try {
         await client.post(ctx.completeUrl, { route });
-
-        if (!ctx.completed) {
-            ctx.completed = {};
-        }
-        ctx.completed[route] = new Date().toISOString();
     } catch (error) {
         console.warn('Gagal menyimpan status tour selesai.', error);
     }
@@ -765,7 +794,6 @@ async function markTourComplete(route) {
 
 function runDriver(steps, { completeRoute, closeModalsOnDestroy = false, generation = tourGeneration }) {
     let markedComplete = false;
-    let tourFinishedNaturally = false;
 
     activeDriver = driver({
         showProgress: true,
@@ -783,7 +811,6 @@ function runDriver(steps, { completeRoute, closeModalsOnDestroy = false, generat
             const isLastStep = activeTour.getActiveIndex() === steps.length - 1;
 
             if (isLastStep) {
-                tourFinishedNaturally = true;
                 activeTour.destroy();
                 return;
             }
@@ -796,9 +823,9 @@ function runDriver(steps, { completeRoute, closeModalsOnDestroy = false, generat
             if (closeModalsOnDestroy && !suppressCloseModalsOnDestroy) {
                 closeAllModals();
             }
+            // ponytail: dismiss (X) = selesai; suppressMarkCompleteOnDestroy saat ganti tour
             if (
-                tourFinishedNaturally
-                && !suppressMarkCompleteOnDestroy
+                !suppressMarkCompleteOnDestroy
                 && !markedComplete
                 && generation === tourGeneration
             ) {
@@ -948,6 +975,11 @@ document.addEventListener('click', (event) => {
     const type = openTrigger?.dataset.tourOpenModal ?? demoAction?.dataset.tourDemoAction;
 
     if (type) {
+        const completeKey = modalCompleteKey(type);
+        if (completeKey && !shouldRunTour(completeKey)) {
+            return;
+        }
+
         event.preventDefault();
         event.stopPropagation();
         scheduleModalTour(type);

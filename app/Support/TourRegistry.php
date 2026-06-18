@@ -4,6 +4,9 @@ namespace App\Support;
 
 class TourRegistry
 {
+    /** @see modalRouteKey() — camelCase types e.g. addSiswa */
+    private const MODAL_TYPE_PATTERN = '[a-zA-Z][a-zA-Z0-9]*';
+
     private static ?array $routes = null;
 
     private static ?array $sessionOverrides = null;
@@ -75,7 +78,7 @@ class TourRegistry
             return true;
         }
 
-        if (preg_match('/^(.+)\.modal\.([a-z]+)$/', $route, $matches)) {
+        if (preg_match('/^(.+)\.modal\.('.self::MODAL_TYPE_PATTERN.')$/', $route, $matches)) {
             [, $baseRoute, $type] = $matches;
             $modalSteps = self::modalStepsByType($baseRoute);
 
@@ -107,7 +110,7 @@ class TourRegistry
             }
         }
 
-        if (preg_match('/^(.+)\.modal\.[a-z]+$/', $route, $matches)) {
+        if (preg_match('/^(.+)\.modal\.'.self::MODAL_TYPE_PATTERN.'$/', $route, $matches)) {
             return self::hubFor($matches[1]);
         }
 

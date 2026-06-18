@@ -63,7 +63,15 @@
                                     <span class="badge badge-{{ $p->status_badge }}">{{ $p->status_label }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a @if($loop->first) data-tour="ortu-pembayaran-action-detail" @endif href="{{ route('orangtua.pembayaran.show', $p) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
+                                    <div class="flex justify-end gap-2">
+                                        <a @if($loop->first) data-tour="ortu-pembayaran-action-detail" @endif href="{{ route('orangtua.pembayaran.show', $p) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
+                                        @if($p->isApproved())
+                                            <a href="{{ route('orangtua.pembayaran.invoice', $p) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg inline-flex items-center gap-1" style="color:#1A6B6B;background:#E8F5F5;border:1px solid #D0E8E8;" target="_blank" rel="noopener" title="Download Invoice">
+                                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                Invoice
+                                            </a>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
