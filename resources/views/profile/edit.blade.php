@@ -61,8 +61,8 @@
         </div>
         @endif
 
-        {{-- SECTION: Profil Pengajar / Admin Kelas --}}
-        @if(($user->hasRole('Pengajar') || $user->hasRole('Admin Kelas')) && $pengajar)
+        {{-- SECTION: Profil Pengajar / Wali Kelas --}}
+        @if(($user->hasRole('Pengajar') || $user->hasRole('Wali Kelas')) && $pengajar)
         <div class="card" data-tour="profile-role">
             <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
                 <div>

@@ -58,7 +58,7 @@ class MonevTest extends TestCase
             'password' => Hash::make('password'),
             'sekolah_id' => $sekolah->id,
         ]);
-        $wali->assignRole('Admin Kelas');
+        $wali->assignRole('Wali Kelas');
 
         $pengajar = Pengajar::create([
             'user_id' => $wali->id,

@@ -43,7 +43,7 @@ use Illuminate\Support\Facades\Hash;
  *   |-----------------|------------------------|
  *   | Lembaga         | lembaga@example.com    |
  *   | Admin Sekolah   | admin@example.com      |
- *   | Admin Kelas     | wali@example.com       |
+ *   | Wali Kelas     | wali@example.com       |
  *   | Pengajar        | pengajar@example.com   |
  *   | Orang Tua       | ortu@example.com       |
  *
@@ -123,7 +123,7 @@ class DemoSeeder extends Seeder
         );
         $admin->assignRole('Admin Sekolah');
 
-        // Admin Kelas (wali kelas)
+        // Wali Kelas (wali kelas)
         $wali = User::firstOrCreate(
             ['email' => 'wali@example.com'],
             [
@@ -132,7 +132,7 @@ class DemoSeeder extends Seeder
                 'sekolah_id' => $sekolah->id,
             ]
         );
-        $wali->assignRole('Admin Kelas');
+        $wali->assignRole('Wali Kelas');
 
         // Pengajar (guru biasa)
         $pengajar = User::firstOrCreate(

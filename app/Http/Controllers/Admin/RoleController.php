@@ -9,7 +9,7 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    protected array $defaultRoles = ['Lembaga', 'Admin Sekolah', 'Admin Kelas', 'Pengajar', 'Orang Tua'];
+    protected array $defaultRoles = ['Lembaga', 'Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Orang Tua'];
 
     protected array $permissionGroups = [
         'Manajemen Siswa' => [

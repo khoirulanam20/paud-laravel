@@ -14,7 +14,7 @@ class AiFeedbackScopeValidator
 {
     public function assertAllowedRole(User $user): void
     {
-        if ($user->hasAnyRole(['Admin Sekolah', 'Admin Kelas', 'Pengajar'])) {
+        if ($user->hasAnyRole(['Admin Sekolah', 'Wali Kelas', 'Pengajar'])) {
             return;
         }
 
@@ -42,7 +42,7 @@ class AiFeedbackScopeValidator
             ]);
         }
 
-        if ($user->hasRole('Pengajar') && ! $user->hasRole('Admin Sekolah') && ! $user->hasRole('Admin Kelas')) {
+        if ($user->hasRole('Pengajar') && ! $user->hasRole('Admin Sekolah') && ! $user->hasRole('Wali Kelas')) {
             $this->assertPengajarScope($anak, $user);
         }
 

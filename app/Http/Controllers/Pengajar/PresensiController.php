@@ -12,7 +12,7 @@ class PresensiController extends Controller
 {
     public function index(Request $request)
     {
-        if (auth()->user()->hasRole('Admin Kelas')) {
+        if (auth()->user()->hasRole('Wali Kelas')) {
             return redirect()->route('adminkelas.presensi.index', $request->only('tanggal'));
         }
 

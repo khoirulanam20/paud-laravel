@@ -107,7 +107,7 @@
         });
         $roleNavItems = array_values($roleNavItems); // re-index
     }
-    if ($user && $user->hasRole('Admin Kelas')) {
+    if ($user && $user->hasRole('Wali Kelas')) {
         $roleNavItems = array_merge($roleNavItems, [
             [
                 'group' => 'Kelas saya',
@@ -164,7 +164,7 @@
         $roleLabel = 'Yayasan';
     elseif ($user && $user->hasRole('Admin Sekolah'))
         $roleLabel = 'Admin Sekolah';
-    elseif ($user && $user->hasRole('Admin Kelas') && !$user->hasRole('Admin Sekolah'))
+    elseif ($user && $user->hasRole('Wali Kelas') && !$user->hasRole('Admin Sekolah'))
         $roleLabel = 'Wali Kelas';
     elseif ($user && $user->hasRole('Pengajar'))
         $roleLabel = 'Guru';

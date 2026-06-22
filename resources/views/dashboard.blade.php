@@ -120,7 +120,7 @@
         @endhasrole
 
         <!-- ═══ ADMIN KELAS / WALI KELAS ═══ -->
-        @hasrole('Admin Kelas')
+        @hasrole('Wali Kelas')
         <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-2" data-tour="dashboard-welcome"
              style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);
                     box-shadow: 0 8px 32px rgba(26,107,107,0.25);">

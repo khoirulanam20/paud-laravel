@@ -75,7 +75,7 @@ class PermissionSeeder extends Seeder
         $rolePermissions = [
             'Lembaga' => $allPermissionNames, // Super admin: akses semua
             'Admin Sekolah' => $allPermissionNames, // Full akses semua menu admin
-            'Admin Kelas' => $allPermissionNames, // Share route dgn Admin Sekolah via middleware role:Admin Sekolah|Admin Kelas
+            'Wali Kelas' => $allPermissionNames, // Share route dgn Admin Sekolah via middleware role:Admin Sekolah|Wali Kelas
             'Pengajar' => [
                 'menu.kegiatan-rutin',
                 'menu.agenda-belajar',

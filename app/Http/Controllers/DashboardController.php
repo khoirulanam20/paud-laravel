@@ -49,7 +49,7 @@ class DashboardController extends Controller
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
         }
 
-        if ($user->hasRole('Admin Kelas')) {
+        if ($user->hasRole('Wali Kelas')) {
             $pengajar = Pengajar::where('user_id', $user->id)->first();
             if ($pengajar) {
                 $kelasIds = $pengajar->kelas->pluck('id')->toArray();

@@ -163,7 +163,7 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('pengguna', \App\Http\Controllers\Admin\PenggunaController::class)->except(['create', 'edit', 'show']);
 });
 
-Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:Admin Sekolah|Wali Kelas'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
     Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
     Route::resource('kegiatan', KegiatanController::class)->except(['create', 'edit', 'show']);
@@ -206,7 +206,7 @@ Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->
 // ─────────────────────────────────────────────
 // ADMIN KELAS
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
+Route::middleware(['auth', 'role:Wali Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
     Route::resource('anak', AdminKelasAnakController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
@@ -225,7 +225,7 @@ Route::middleware(['auth', 'role:Admin Kelas'])->prefix('adminkelas')->name('adm
 // ─────────────────────────────────────────────
 // PENGAJAR
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Pengajar|Admin Kelas'])->prefix('pengajar')->name('pengajar.')->group(function () {
+Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->name('pengajar.')->group(function () {
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);

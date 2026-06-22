@@ -142,7 +142,7 @@ class KelasController extends Controller
             $sekolah_id = $user->sekolah_id;
             abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah. Hubungi lembaga.');
             abort_if((int) $kelas->sekolah_id !== (int) $sekolah_id, 403, 'Kelas ini bukan bagian dari sekolah Anda.');
-        } elseif ($user->hasRole('Admin Kelas')) {
+        } elseif ($user->hasRole('Wali Kelas')) {
             $pengajar = Pengajar::where('user_id', $user->id)->first();
             abort_if(! $pengajar, 403, 'Profil pengajar tidak ditemukan.');
             abort_if((int) $kelas->sekolah_id !== (int) $pengajar->sekolah_id, 403, 'Kelas ini bukan bagian dari sekolah Anda.');
@@ -157,7 +157,7 @@ class KelasController extends Controller
     private function ensureAdminKelasRoleExists(): void
     {
         Role::firstOrCreate(
-            ['name' => 'Admin Kelas', 'guard_name' => 'web'],
+            ['name' => 'Wali Kelas', 'guard_name' => 'web'],
         );
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
@@ -165,7 +165,7 @@ class KelasController extends Controller
     /** Pastikan peran yang dipakai halaman kelas ada (deploy tanpa seeder). */
     private function ensureKelasPageRolesExist(): void
     {
-        foreach (['Pengajar', 'Admin Kelas'] as $name) {
+        foreach (['Pengajar', 'Wali Kelas'] as $name) {
             Role::firstOrCreate(
                 ['name' => $name, 'guard_name' => 'web'],
             );
@@ -177,7 +177,7 @@ class KelasController extends Controller
     {
         $pengajar = Pengajar::find($pengajarId);
         if ($pengajar && $pengajar->user) {
-            $pengajar->user->assignRole('Admin Kelas');
+            $pengajar->user->assignRole('Wali Kelas');
         }
     }
 
@@ -187,7 +187,7 @@ class KelasController extends Controller
         if (!$isStillWali) {
             $pengajar = Pengajar::find($pengajarId);
             if ($pengajar && $pengajar->user) {
-                $pengajar->user->removeRole('Admin Kelas');
+                $pengajar->user->removeRole('Wali Kelas');
             }
         }
     }

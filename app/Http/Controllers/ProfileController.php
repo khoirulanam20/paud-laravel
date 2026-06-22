@@ -38,7 +38,7 @@ class ProfileController extends Controller
         if ($user->hasRole('Admin Sekolah')) {
             $sekolah = Sekolah::find($user->sekolah_id);
         }
-        if ($user->hasRole('Pengajar') || $user->hasRole('Admin Kelas')) {
+        if ($user->hasRole('Pengajar') || $user->hasRole('Wali Kelas')) {
             $pengajar = Pengajar::where('user_id', $user->id)->first();
         }
         if ($user->hasRole('Orang Tua')) {
