@@ -85,7 +85,7 @@
              formatRp(n) {
                  return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
              }
-         }" @tour-close-modals.window="showItemModal=false; showGenerateModal=false">
+         }" @tour-close-modals.window="showGenerateModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -202,7 +202,7 @@
 
         <!-- GENERATE MODAL dengan diskon per siswa + biaya tambahan -->
         <div x-show="showGenerateModal" data-tour="modal-generate" class="modal-overlay" style="display:none;">
-            <div x-show="showGenerateModal" x-transition class="modal-box max-w-5xl" @click.away="if (!showItemModal) showGenerateModal = false">
+            <div x-show="showGenerateModal" x-transition class="modal-box max-w-5xl" @click.away="showGenerateModal=false">
                 <form action="{{ route('admin.pembayaran-bulanan.generate') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Generate Tagihan Bulanan</h3></div>
@@ -314,8 +314,8 @@
         <!-- END GENERATE MODAL -->
 
         <!-- MODAL TAMBAH BIAYA LAIN -->
-        <div x-show="showItemModal" class="modal-overlay modal-overlay--elevated" style="display:none;" @click.self="showItemModal=false">
-            <div x-show="showItemModal" x-transition class="modal-box max-w-sm" @click.stop>
+        <div x-show="showItemModal" class="modal-overlay" style="display:none;">
+            <div x-show="showItemModal" x-transition class="modal-box max-w-sm" @click.away="showItemModal=false">
                 <div class="modal-header"><h3 class="section-title" x-text="itemModalEditIdx !== null ? 'Edit Biaya Lain' : 'Tambah Biaya Lain'"></h3></div>
                 <div class="modal-body space-y-3">
                     <div>
