@@ -360,6 +360,31 @@
         box-shadow: 2px 0 8px rgba(0,0,0,0.04);
     }
 
+    /* ─── Sidebar Collapse Transition ─── */
+    .sidebar-transition {
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Alpine fade transition for sidebar labels */
+    .fade-enter {
+        transition: opacity 0.15s ease 0.15s;
+    }
+    .fade-enter-start {
+        opacity: 0;
+    }
+    .fade-enter-end {
+        opacity: 1;
+    }
+    .fade-leave {
+        transition: opacity 0.1s ease;
+    }
+    .fade-leave-start {
+        opacity: 1;
+    }
+    .fade-leave-end {
+        opacity: 0;
+    }
+
     /* ─── FullCalendar (jurnal kegiatan) ─── */
     .jurnal-fc .fc .fc-button-primary {
         background-color: var(--teal);

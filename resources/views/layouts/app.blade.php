@@ -168,7 +168,7 @@
 </head>
 
 <body class="font-sans antialiased text-[#2C2C2C] bg-[#F5F0E8]">
-    <div x-data="{ sidebarOpen: false, moreMenuOpen: false }" class="flex h-screen overflow-hidden">
+    <div x-data="{ sidebarOpen: false, moreMenuOpen: false, sidebarCollapsed: JSON.parse(localStorage.getItem('sidebarCollapsed') || 'false') }" x-init="$watch('sidebarCollapsed', v => localStorage.setItem('sidebarCollapsed', JSON.stringify(v)))" class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         @include('layouts.sidebar')
 

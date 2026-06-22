@@ -14,11 +14,11 @@
             </button>
         </x-slot>
         <x-slot name="content">
-            @if($hasPageTour)
+            <!-- @if($hasPageTour)
             <button type="button" data-tour-trigger class="block w-full px-4 py-2 text-start text-sm leading-5 text-[#2C2C2C] hover:bg-black/5 focus:outline-none focus:bg-black/5 transition duration-150 ease-in-out">
                 Ulangi panduan halaman
             </button>
-            @endif
+            @endif -->
             <x-dropdown-link :href="route('profile.edit')">
                 Profil Saya
             </x-dropdown-link>
