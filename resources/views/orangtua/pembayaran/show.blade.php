@@ -17,6 +17,8 @@
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
+        @php $totalTambahan = $pembayaran->getTotalBiayaTambahan(); $items = $pembayaran->items; @endphp
+
         <div class="card p-6 mb-6">
             <div class="flex items-center justify-between">
                 <h3 class="section-title">Status</h3>
@@ -33,7 +35,19 @@
             <div class="card p-6" data-tour="ortu-pembayaran-rincian">
                 <h3 class="section-title mb-4">Rincian Biaya</h3>
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between py-2 border-b"><span style="color:#9E9790;">Biaya Harian</span><span class="font-semibold">{{ $pembayaran->getBiayaPerHariFormatted() }}</span></div>
+                    <div class="flex justify-between py-2 border-b"><span style="color:#9E9790;">Biaya Bulanan</span><span class="font-semibold">{{ $pembayaran->getBiayaPerHariFormatted() }}</span></div>
+                    @if($items && $items->count() > 0)
+                        <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
+                            <span style="color:#9E9790;">Biaya Lain</span>
+                            <span></span>
+                        </div>
+                        @foreach($items as $item)
+                            <div class="flex justify-between pl-4 py-1 text-sm" style="color:#6B6560;">
+                                <span>{{ $item->nama_item }}</span>
+                                <span>+ Rp {{ number_format($item->jumlah, 0, ',', '.') }}</span>
+                            </div>
+                        @endforeach
+                    @endif
                     <div class="flex justify-between py-2 border-b"><span style="color:#9E9790;">Hari Hadir</span><span class="font-semibold" style="color:#1A6B6B;">{{ $pembayaran->hari_hadir }} hari</span></div>
                     <div class="flex justify-between py-2 border-b"><span style="color:#9E9790;">Subtotal</span><span class="font-semibold">{{ $pembayaran->getSubtotalFormatted() }}</span></div>
                     @if($pembayaran->diskon)

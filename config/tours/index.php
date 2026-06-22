@@ -274,13 +274,13 @@ return [
     ),
 
     'admin.biaya-bulanan.index' => [
-        ['element' => '[data-tour="nav-admin.biaya-bulanan.index"]', 'title' => 'Menu Biaya Harian', 'description' => 'Atur jenis biaya dan biaya harian per siswa sebelum generate tagihan.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Biaya Harian Siswa', 'description' => 'Tambahkan siswa ke jenis biaya lalu tentukan tarif harian masing-masing.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-biaya-jenis"]', 'title' => 'Jenis Biaya', 'description' => 'Pilih atau buat jenis biaya seperti SPP Harian. Setiap jenis punya tarif default.', 'side' => 'right'],
+        ['element' => '[data-tour="nav-admin.biaya-bulanan.index"]', 'title' => 'Menu Biaya Bulanan', 'description' => 'Atur jenis biaya dan biaya bulanan per siswa sebelum generate tagihan.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Biaya Bulanan Siswa', 'description' => 'Tambahkan siswa ke jenis biaya lalu tentukan tarif bulanan masing-masing.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-biaya-jenis"]', 'title' => 'Jenis Biaya', 'description' => 'Pilih atau buat jenis biaya seperti SPP Bulanan. Setiap jenis punya tarif default.', 'side' => 'right'],
         ['element' => '[data-tour="admin-biaya-add-jenis-btn"]', 'title' => 'Tambah Jenis Biaya', 'description' => 'Buat jenis biaya baru jika belum ada di daftar.', 'side' => 'left'],
-        ['element' => '[data-tour="admin-biaya-siswa"]', 'title' => 'Daftar Siswa', 'description' => 'Siswa yang dikenakan biaya ini. Edit kolom biaya harian per baris.', 'side' => 'top'],
+        ['element' => '[data-tour="admin-biaya-siswa"]', 'title' => 'Daftar Siswa', 'description' => 'Siswa yang dikenakan biaya ini. Edit kolom biaya bulanan per baris.', 'side' => 'top'],
         ['element' => '[data-tour="admin-biaya-add-siswa-btn"]', 'title' => 'Tambah Siswa', 'description' => 'Pilih siswa dari daftar yang belum ditambahkan ke jenis biaya ini.', 'side' => 'left'],
-        ['element' => '[data-tour="admin-biaya-save-btn"]', 'title' => 'Simpan Biaya Harian', 'description' => 'Simpan perubahan tarif harian setelah selesai mengedit.', 'side' => 'top'],
+        ['element' => '[data-tour="admin-biaya-save-btn"]', 'title' => 'Simpan Biaya Bulanan', 'description' => 'Simpan perubahan tarif bulanan setelah selesai mengedit.', 'side' => 'top'],
     ],
 
     'admin.diskon.index' => array_merge(
@@ -301,12 +301,12 @@ return [
 
     'admin.pembayaran-bulanan.index' => [
         ['element' => '[data-tour="nav-admin.pembayaran-bulanan.index"]', 'title' => 'Menu Rekap Pembayaran', 'description' => 'Generate dan kelola tagihan bulanan berdasarkan kehadiran siswa.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Rekap Pembayaran Bulanan', 'description' => 'Total tagihan = biaya harian × hari hadir − diskon.', 'side' => 'bottom'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Rekap Pembayaran Bulanan', 'description' => 'Total tagihan = biaya bulanan + biaya lain − diskon.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-pembayaran-stats"]', 'title' => 'Ringkasan Tagihan', 'description' => 'Statistik total, menunggu, disetujui, dan nominal yang sudah disetujui.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-pembayaran-filter"]', 'title' => 'Filter', 'description' => 'Saring tagihan berdasarkan bulan, tahun, kelas, atau status.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-pembayaran-generate-btn"]', 'title' => 'Generate Tagihan', 'description' => 'Buat tagihan bulanan untuk siswa yang sudah ada di Biaya Harian.', 'side' => 'left'],
+        ['element' => '[data-tour="admin-pembayaran-generate-btn"]', 'title' => 'Generate Tagihan', 'description' => 'Buat tagihan bulanan untuk siswa yang sudah ada di Biaya Bulanan.', 'side' => 'left'],
         ['element' => '[data-tour="admin-pembayaran-table"]', 'title' => 'Daftar Tagihan', 'description' => 'Semua tagihan periode terpilih beserta status pembayarannya.', 'side' => 'top'],
-        ['element' => '[data-tour="admin-pembayaran-action-edit"]', 'title' => 'Edit', 'description' => 'Buka detail untuk ubah hari hadir, diskon, atau setujui/tolak pembayaran.', 'side' => 'left'],
+        ['element' => '[data-tour="admin-pembayaran-action-edit"]', 'title' => 'Edit', 'description' => 'Buka detail untuk edit diskon atau setujui/tolak pembayaran.', 'side' => 'left'],
         ['element' => '[data-tour="admin-pembayaran-action-delete"]', 'title' => 'Hapus', 'description' => 'Hapus tagihan berstatus Menunggu yang salah generate.', 'side' => 'left'],
     ],
 

@@ -29,7 +29,7 @@ class PembayaranBulananController extends Controller
         $query = PembayaranBulanan::where('sekolah_id', $sekolah_id)
             ->where('periode_bulan', $bulan)
             ->where('periode_tahun', $tahun)
-            ->with(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy']);
+            ->with(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy', 'items']);
 
         if ($kelasId) {
             $query->whereHas('anak', function ($q) use ($kelasId) {
@@ -67,7 +67,7 @@ class PembayaranBulananController extends Controller
     {
         abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
 
-        $pembayaran->load(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy', 'details.editedBy']);
+        $pembayaran->load(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy', 'details.editedBy', 'items']);
 
         return view('admin.pembayaran-bulanan.show', compact('pembayaran'));
     }
@@ -84,14 +84,14 @@ class PembayaranBulananController extends Controller
             ->get();
 
         $preview = [];
-        foreach ($this->rekapBiayaService->getSiswaDenganBiayaHarian($sekolahId) as $assignment) {
+        foreach ($this->rekapBiayaService->getSiswaDenganBiayaBulanan($sekolahId) as $assignment) {
             $anak = $assignment->anak;
             $biaya = $assignment->biayaBulananSekolah;
             if (! $anak || ! $biaya) {
                 continue;
             }
 
-            $biayaPerHari = (float) $assignment->biaya_harian;
+            $biayaBulanan = (float) $assignment->biaya_bulanan;
             $hariHadir = $this->rekapBiayaService->hitungHariHadir($anak->id, $bulan, $tahun);
             $preview[] = [
                 'key' => $anak->id . '_' . $biaya->id,
@@ -101,8 +101,8 @@ class PembayaranBulananController extends Controller
                 'biaya_id' => $biaya->id,
                 'biaya_name' => $biaya->nama_biaya,
                 'hari_hadir' => $hariHadir,
-                'biaya_per_hari' => $biayaPerHari,
-                'subtotal' => $biayaPerHari * $hariHadir,
+                'biaya_bulanan' => $biayaBulanan,
+                'subtotal' => $biayaBulanan,
             ];
         }
 
@@ -125,6 +125,7 @@ class PembayaranBulananController extends Controller
             'tagihan.*' => 'required|string|regex:/^\d+_\d+$/',
             'diskon' => 'nullable|array',
             'diskon.*' => 'nullable|exists:diskons,id',
+            'biaya_tambahan' => 'nullable|array',
         ]);
 
         $sekolah_id = auth()->user()->sekolah_id;
@@ -145,12 +146,32 @@ class PembayaranBulananController extends Controller
             }
         }
 
+        $biayaTambahan = [];
+        if ($request->filled('biaya_tambahan')) {
+            foreach ($request->biaya_tambahan as $key => $items) {
+                if (in_array((string) $key, $selectedKeys, true) && is_array($items)) {
+                    $filtered = [];
+                    foreach ($items as $item) {
+                        $nama = trim($item['nama_item'] ?? '');
+                        $jumlah = (float) ($item['jumlah'] ?? 0);
+                        if ($nama !== '' && $jumlah > 0) {
+                            $filtered[] = ['nama_item' => $nama, 'jumlah' => $jumlah];
+                        }
+                    }
+                    if ($filtered !== []) {
+                        $biayaTambahan[(string) $key] = $filtered;
+                    }
+                }
+            }
+        }
+
         $pembayarans = $this->rekapBiayaService->generateTagihan(
             $sekolah_id,
             $request->bulan,
             $request->tahun,
             $diskonPerTagihan,
-            $selectedKeys
+            $selectedKeys,
+            $biayaTambahan
         );
 
         return redirect()
@@ -187,51 +208,13 @@ class PembayaranBulananController extends Controller
     private function validTagihanKeys(int $sekolahId): array
     {
         $keys = [];
-        foreach ($this->rekapBiayaService->getSiswaDenganBiayaHarian($sekolahId) as $assignment) {
+        foreach ($this->rekapBiayaService->getSiswaDenganBiayaBulanan($sekolahId) as $assignment) {
             if ($assignment->anak && $assignment->biayaBulananSekolah) {
                 $keys[] = $assignment->anak_id . '_' . $assignment->biaya_bulanan_sekolah_id;
             }
         }
 
         return $keys;
-    }
-
-    public function updateHariHadir(Request $request, PembayaranBulanan $pembayaran)
-    {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
-
-        $request->validate([
-            'hari_hadir' => 'required|integer|min:0',
-        ]);
-
-        $this->rekapBiayaService->updateHariHadir(
-            $pembayaran,
-            $request->hari_hadir,
-            auth()->id()
-        );
-
-        return redirect()
-            ->route('admin.pembayaran-bulanan.show', $pembayaran)
-            ->with('success', 'Jumlah hari hadir berhasil diperbarui.');
-    }
-
-    public function updateHariEfektif(Request $request, PembayaranBulanan $pembayaran)
-    {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
-
-        $request->validate([
-            'hari_efektif' => 'required|integer|min:1',
-        ]);
-
-        $this->rekapBiayaService->updateHariEfektif(
-            $pembayaran,
-            $request->hari_efektif,
-            auth()->id()
-        );
-
-        return redirect()
-            ->route('admin.pembayaran-bulanan.show', $pembayaran)
-            ->with('success', 'Jumlah hari efektif berhasil diperbarui.');
     }
 
     public function updateDiskon(Request $request, PembayaranBulanan $pembayaran)

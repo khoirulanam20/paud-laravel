@@ -14,10 +14,12 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showHariHadirModal: false, showDiskonModal: false, showApproveModal: false, showRejectModal: false }" @tour-close-modals.window="showHariHadirModal=false; showDiskonModal=false; showApproveModal=false; showRejectModal=false">
+         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
+
+        @php $totalTambahan = $pembayaran->getTotalBiayaTambahan(); @endphp
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 space-y-6">
@@ -38,18 +40,30 @@
                     <h3 class="section-title mb-4">Rincian Perhitungan</h3>
                     <div class="space-y-3">
                         <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
-                            <span class="text-sm" style="color:#9E9790;">Biaya Harian</span>
+                            <span class="text-sm" style="color:#9E9790;">Biaya Bulanan</span>
                             <span class="font-semibold">{{ $pembayaran->getBiayaPerHariFormatted() }}</span>
                         </div>
+                        @php $items = $pembayaran->items; @endphp
+                        @if($items && $items->count() > 0)
+                            <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
+                                <span class="text-sm" style="color:#9E9790;">Biaya Lain</span>
+                                <span></span>
+                            </div>
+                            @foreach($items as $item)
+                                <div class="flex justify-between pl-4 py-1 text-sm" style="color:#6B6560;">
+                                    <span>{{ $item->nama_item }}</span>
+                                    <span>+ Rp {{ number_format($item->jumlah, 0, ',', '.') }}</span>
+                                </div>
+                            @endforeach
+                        @endif
                         <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
                             <div class="flex items-center gap-2">
                                 <span class="text-sm" style="color:#9E9790;">Hari Hadir</span>
-                                <button @click="showHariHadirModal=true" class="text-xs px-2 py-0.5 rounded" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                             </div>
                             <span class="font-semibold" style="color:#1A6B6B;">{{ $pembayaran->hari_hadir }} hari</span>
                         </div>
                         <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
-                            <span class="text-sm" style="color:#9E9790;">Subtotal (biaya/hari x hadir)</span>
+                            <span class="text-sm" style="color:#9E9790;">Subtotal</span>
                             <span class="font-semibold">{{ $pembayaran->getSubtotalFormatted() }}</span>
                         </div>
                         <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
@@ -61,6 +75,12 @@
                                 {{ $pembayaran->diskon ? $pembayaran->diskon->nama_diskon.' (-'.$pembayaran->getNilaiDiskonFormatted().')' : '-' }}
                             </span>
                         </div>
+                        @if($totalTambahan > 0 && $pembayaran->nilai_diskon > 0)
+                            <div class="flex justify-between py-2 text-xs" style="color:#6B6560;">
+                                <span>Total sebelum diskon</span>
+                                <span>Rp {{ number_format($pembayaran->subtotal + $totalTambahan, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between py-3 px-4 rounded-lg" style="background:#D0E8E8;">
                             <span class="font-bold text-lg" style="color:#1A6B6B;">Total Bayar</span>
                             <span class="font-bold text-2xl" style="color:#1A6B6B;">{{ $pembayaran->getTotalFormatted() }}</span>
@@ -97,21 +117,6 @@
                 @endif
 
                 <a href="{{ route('admin.pembayaran-bulanan.index', ['bulan' => $pembayaran->periode_bulan, 'tahun' => $pembayaran->periode_tahun]) }}" class="btn-secondary w-full justify-center">Kembali</a>
-            </div>
-        </div>
-
-        <!-- HARI HADIR -->
-        <div x-show="showHariHadirModal" class="modal-overlay" style="display:none;">
-            <div x-show="showHariHadirModal" x-transition class="modal-box max-w-sm" @click.away="showHariHadirModal=false">
-                <form action="{{ route('admin.pembayaran-bulanan.update-hari-hadir', $pembayaran) }}" method="POST">
-                    @csrf @method('PATCH')
-                    <div class="modal-header"><h3 class="section-title">Edit Hari Hadir</h3></div>
-                    <div class="modal-body">
-                        <label class="input-label">Jumlah Hari Hadir</label>
-                        <input type="number" name="hari_hadir" value="{{ $pembayaran->hari_hadir }}" min="0" required class="input-field">
-                    </div>
-                    <div class="modal-footer"><button type="button" @click="showHariHadirModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
-                </form>
             </div>
         </div>
 

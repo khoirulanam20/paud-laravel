@@ -121,12 +121,12 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
     Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
 
-    // Biaya Harian & Pembayaran
+    // Biaya Bulanan & Pembayaran
     Route::get('biaya-bulanan', [BiayaBulananController::class, 'index'])->name('biaya-bulanan.index');
     Route::post('biaya-bulanan', [BiayaBulananController::class, 'store'])->name('biaya-bulanan.store');
     Route::put('biaya-bulanan/{biayaBulanan}', [BiayaBulananController::class, 'update'])->name('biaya-bulanan.update');
     Route::delete('biaya-bulanan/{biayaBulanan}', [BiayaBulananController::class, 'destroy'])->name('biaya-bulanan.destroy');
-    Route::patch('biaya-bulanan/{biayaBulanan}/siswa', [BiayaBulananController::class, 'updateSiswaBiayaHarian'])->name('biaya-bulanan.update-siswa');
+    Route::patch('biaya-bulanan/{biayaBulanan}/siswa', [BiayaBulananController::class, 'updateSiswaBiayaBulanan'])->name('biaya-bulanan.update-siswa');
     Route::post('biaya-bulanan/{biayaBulanan}/siswa', [BiayaBulananController::class, 'addSiswa'])->name('biaya-bulanan.add-siswa');
     Route::delete('biaya-bulanan/{biayaBulanan}/siswa/{anak}', [BiayaBulananController::class, 'removeSiswa'])->name('biaya-bulanan.remove-siswa');
 
@@ -137,7 +137,6 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::get('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'show'])->name('pembayaran-bulanan.show');
     Route::post('pembayaran-bulanan/generate', [PembayaranBulananController::class, 'generate'])->name('pembayaran-bulanan.generate');
     Route::delete('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'destroy'])->name('pembayaran-bulanan.destroy');
-    Route::patch('pembayaran-bulanan/{pembayaran}/hari-hadir', [PembayaranBulananController::class, 'updateHariHadir'])->name('pembayaran-bulanan.update-hari-hadir');
     Route::patch('pembayaran-bulanan/{pembayaran}/diskon', [PembayaranBulananController::class, 'updateDiskon'])->name('pembayaran-bulanan.update-diskon');
     Route::patch('pembayaran-bulanan/{pembayaran}/approve', [PembayaranBulananController::class, 'approve'])->name('pembayaran-bulanan.approve');
     Route::patch('pembayaran-bulanan/{pembayaran}/reject', [PembayaranBulananController::class, 'reject'])->name('pembayaran-bulanan.reject');

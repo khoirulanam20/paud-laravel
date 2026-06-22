@@ -145,7 +145,7 @@ return [
 
     'admin.biaya-bulanan.index' => array_merge(
         tour_modal_create_sections([
-            ['element' => '[data-tour="modal-create-section-form"]', 'title' => 'Data Jenis Biaya', 'description' => 'Isi nama biaya, tarif harian default, dan keterangan.'],
+            ['element' => '[data-tour="modal-create-section-form"]', 'title' => 'Data Jenis Biaya', 'description' => 'Isi nama biaya, tarif bulanan default, dan keterangan.'],
             ['element' => '[data-tour="modal-create-submit"]', 'title' => 'Simpan', 'description' => 'Simpan jenis biaya baru.', 'side' => 'top'],
         ]),
         [
@@ -167,7 +167,7 @@ return [
                 'element' => '[data-tour="modal-add-siswa-submit"]',
                 'openModal' => 'addSiswa',
                 'title' => 'Simpan',
-                'description' => 'Tambahkan siswa terpilih ke daftar biaya harian.',
+                'description' => 'Tambahkan siswa terpilih ke daftar biaya bulanan.',
                 'side' => 'top',
             ],
         ],
@@ -197,7 +197,7 @@ return [
             'element' => '[data-tour="modal-generate-checklist"]',
             'openModal' => 'generate',
             'title' => 'Pilih Siswa',
-            'description' => 'Centang siswa yang akan digenerate. Bisa atur diskon per baris.',
+            'description' => 'Centang siswa yang akan digenerate. Bisa atur diskon dan biaya lain per baris.',
             'side' => 'top',
         ],
         [

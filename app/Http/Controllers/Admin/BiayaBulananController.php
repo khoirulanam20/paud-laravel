@@ -74,14 +74,13 @@ class BiayaBulananController extends Controller
     {
         $request->validate([
             'nama_biaya' => 'required|string|max:255',
-            'nominal_default' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
         BiayaBulananSekolah::create([
             'sekolah_id' => auth()->user()->sekolah_id,
             'nama_biaya' => $request->nama_biaya,
-            'nominal_default' => $request->nominal_default,
+            'nominal_default' => $request->nominal_default ?? 0,
             'keterangan' => $request->keterangan,
         ]);
 
@@ -95,14 +94,14 @@ class BiayaBulananController extends Controller
 
         $request->validate([
             'nama_biaya' => 'required|string|max:255',
-            'nominal_default' => 'required|numeric|min:0',
+            'nominal_default' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
             'is_aktif' => 'boolean',
         ]);
 
         $biayaBulanan->update([
             'nama_biaya' => $request->nama_biaya,
-            'nominal_default' => $request->nominal_default,
+            'nominal_default' => $request->nominal_default ?? 0,
             'keterangan' => $request->keterangan,
             'is_aktif' => $request->boolean('is_aktif'),
         ]);
@@ -144,7 +143,7 @@ class BiayaBulananController extends Controller
                 ],
                 [
                     'sekolah_id' => $sekolahId,
-                    'biaya_harian' => $biayaBulanan->nominal_default,
+                    'biaya_bulanan' => 0,
                 ]
             );
 
@@ -178,13 +177,13 @@ class BiayaBulananController extends Controller
         ])->with('success', 'Siswa berhasil dihapus dari daftar.');
     }
 
-    public function updateSiswaBiayaHarian(Request $request, BiayaBulananSekolah $biayaBulanan)
+    public function updateSiswaBiayaBulanan(Request $request, BiayaBulananSekolah $biayaBulanan)
     {
         abort_if($biayaBulanan->sekolah_id !== auth()->user()->sekolah_id, 403);
 
         $request->validate([
-            'biaya_harian' => 'required|array',
-            'biaya_harian.*' => 'nullable|numeric|min:0',
+            'biaya_bulanan' => 'required|array',
+            'biaya_bulanan.*' => 'nullable|numeric|min:0',
         ]);
 
         $sekolahId = auth()->user()->sekolah_id;
@@ -193,7 +192,7 @@ class BiayaBulananController extends Controller
             ->pluck('id')
             ->all();
 
-        foreach ($request->biaya_harian as $anakId => $biayaHarian) {
+        foreach ($request->biaya_bulanan as $anakId => $biayaBulananVal) {
             $anakId = (int) $anakId;
             if (! in_array($anakId, $anakIds, true)) {
                 continue;
@@ -207,17 +206,17 @@ class BiayaBulananController extends Controller
                 continue;
             }
 
-            if ($biayaHarian === null || $biayaHarian === '') {
-                $siswaBiaya->update(['biaya_harian' => $biayaBulanan->nominal_default]);
+            if ($biayaBulananVal === null || $biayaBulananVal === '') {
+                $siswaBiaya->update(['biaya_bulanan' => 0]);
                 continue;
             }
 
-            $siswaBiaya->update(['biaya_harian' => $biayaHarian]);
+            $siswaBiaya->update(['biaya_bulanan' => $biayaBulananVal]);
         }
 
         return redirect()->route('admin.biaya-bulanan.index', [
             'biaya_id' => $biayaBulanan->id,
             'kelas_id' => $request->kelas_id,
-        ])->with('success', 'Biaya harian siswa berhasil disimpan.');
+        ])->with('success', 'Biaya bulanan siswa berhasil disimpan.');
     }
 }

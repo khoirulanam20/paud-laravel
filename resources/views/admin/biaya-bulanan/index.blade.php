@@ -6,7 +6,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
-            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Biaya Harian Siswa</h2>
+            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Biaya Bulanan Siswa</h2>
         </div>
     </x-slot>
 
@@ -56,7 +56,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="font-semibold text-sm" style="color:#2C2C2C;">{{ $biaya->nama_biaya }}</p>
-                                    <p class="text-xs mt-0.5" style="color:#9E9790;">Default: {{ $biaya->getNominalDefaultFormatted() }}/hari</p>
+                                    <p class="text-xs mt-0.5" style="color:#9E9790;">Default: {{ $biaya->getNominalDefaultFormatted() }}</p>
                                 </div>
                                 @if($biaya->is_aktif)
                                     <span class="badge badge-green text-[10px]">Aktif</span>
@@ -77,7 +77,7 @@
                     <div class="px-6 py-4 border-b flex flex-col md:flex-row md:items-center justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
                         <div>
                             <h3 class="section-title">{{ $biayaTerpilih->nama_biaya }}</h3>
-                            <p class="section-subtitle">Tambahkan siswa lalu atur biaya harian. Default: {{ $biayaTerpilih->getNominalDefaultFormatted() }}/hari</p>
+                            <p class="section-subtitle">Tambahkan siswa lalu atur biaya bulanan masing-masing.</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             <form method="GET" action="{{ route('admin.biaya-bulanan.index') }}" class="flex items-center gap-2">
@@ -103,7 +103,7 @@
                                 <tr>
                                     <th>Siswa</th>
                                     <th>Kelas</th>
-                                    <th class="text-right">Biaya Harian (Rp)</th>
+                                    <th class="text-right">Biaya Bulanan (Rp)</th>
                                     <th class="text-center w-20">Aksi</th>
                                 </tr>
                             </thead>
@@ -113,10 +113,9 @@
                                         <td class="font-medium" style="color:#2C2C2C;">{{ $siswaBiaya->anak->name }}</td>
                                         <td>{{ $siswaBiaya->anak->kelas->name ?? '-' }}</td>
                                         <td class="text-right">
-                                            <input type="number" form="form-update-biaya" name="biaya_harian[{{ $siswaBiaya->anak_id }}]"
-                                                   value="{{ $siswaBiaya->biaya_harian }}"
+                                            <input type="number" form="form-update-biaya" name="biaya_bulanan[{{ $siswaBiaya->anak_id }}]"
+                                                   value="{{ (float) $siswaBiaya->biaya_bulanan > 0 ? $siswaBiaya->biaya_bulanan : '' }}"
                                                    min="0" step="100"
-                                                   placeholder="{{ $biayaTerpilih->nominal_default }}"
                                                    class="input-field w-32 text-right text-sm ml-auto">
                                         </td>
                                         <td class="text-center">
@@ -140,12 +139,12 @@
                     </div>
                     @if($siswaTerassign->count() > 0)
                         <div class="px-6 py-4 border-t flex justify-end" style="border-color:rgba(0,0,0,0.06);">
-                            <button type="submit" form="form-update-biaya" data-tour="admin-biaya-save-btn" class="btn-primary">Simpan Biaya Harian</button>
+                            <button type="submit" form="form-update-biaya" data-tour="admin-biaya-save-btn" class="btn-primary">Simpan Biaya Bulanan</button>
                         </div>
                     @endif
                 @else
                     <div class="px-6 py-12 text-center" style="color:#9E9790;">
-                        <p>Tambah jenis biaya terlebih dahulu untuk mulai mengatur biaya harian siswa.</p>
+                        <p>Tambah jenis biaya terlebih dahulu untuk mulai mengatur biaya bulanan siswa.</p>
                     </div>
                 @endif
             </div>
@@ -160,12 +159,7 @@
                     <div class="modal-body space-y-4" data-tour="modal-create-section-form">
                         <div>
                             <label class="input-label">Nama Biaya</label>
-                            <input type="text" name="nama_biaya" required placeholder="Contoh: SPP Harian" class="input-field">
-                        </div>
-                        <div>
-                            <label class="input-label">Biaya Harian Default (Rp)</label>
-                            <input type="number" name="nominal_default" min="0" required placeholder="Contoh: 50000" class="input-field">
-                            <p class="text-xs mt-1" style="color:#9E9790;">Digunakan saat siswa baru ditambahkan ke daftar</p>
+                            <input type="text" name="nama_biaya" required placeholder="Contoh: SPP Bulanan" class="input-field">
                         </div>
                         <div>
                             <label class="input-label">Keterangan (Opsional)</label>

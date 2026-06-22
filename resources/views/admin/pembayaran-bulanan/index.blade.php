@@ -13,6 +13,11 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
              showGenerateModal: false,
+             showItemModal: false,
+             itemModalRow: null,
+             itemModalNama: '',
+             itemModalJumlah: 0,
+             itemModalEditIdx: null,
              previewData: [],
              selectedKeys: [],
              diskons: @js(\App\Models\Diskon::where('sekolah_id', auth()->user()->sekolah_id)->where('is_aktif', true)->get(['id','nama_diskon','tipe','nilai'])),
@@ -28,12 +33,47 @@
              toggleAll(checked) {
                  this.selectedKeys = checked ? this.previewData.map(r => this.rowKey(r)) : [];
              },
+             sumTambahan(row) {
+                 return (row.biaya_tambahan || []).reduce((s, i) => s + (parseFloat(i.jumlah) || 0), 0);
+             },
+             totalBaris(row) {
+                 return (parseFloat(row.subtotal) || 0) + this.sumTambahan(row);
+             },
+             openItemModal(row, idx) {
+                 this.itemModalRow = row;
+                 if (idx !== undefined && row.biaya_tambahan && row.biaya_tambahan[idx]) {
+                     this.itemModalNama = row.biaya_tambahan[idx].nama_item;
+                     this.itemModalJumlah = row.biaya_tambahan[idx].jumlah;
+                     this.itemModalEditIdx = idx;
+                 } else {
+                     this.itemModalNama = '';
+                     this.itemModalJumlah = 0;
+                     this.itemModalEditIdx = null;
+                 }
+                 this.showItemModal = true;
+             },
+             saveItemModal() {
+                 const nama = this.itemModalNama.trim();
+                 const jumlah = parseFloat(this.itemModalJumlah) || 0;
+                 if (!nama || jumlah <= 0) return;
+                 if (!this.itemModalRow.biaya_tambahan) this.itemModalRow.biaya_tambahan = [];
+                 if (this.itemModalEditIdx !== null) {
+                     this.itemModalRow.biaya_tambahan[this.itemModalEditIdx] = { nama_item: nama, jumlah: jumlah };
+                 } else {
+                     this.itemModalRow.biaya_tambahan.push({ nama_item: nama, jumlah: jumlah });
+                 }
+                 this.showItemModal = false;
+                 this.itemModalRow = null;
+             },
+             removeItem(row, idx) {
+                 row.biaya_tambahan.splice(idx, 1);
+             },
              async loadPreview() {
                  this.loading = true;
                  try {
                      const res = await fetch(`{{ route('admin.pembayaran-bulanan.generate-preview') }}?bulan=${this.bulan}&tahun=${this.tahun}`);
                      const data = await res.json();
-                     this.previewData = data.preview;
+                     this.previewData = (data.preview || []).map(r => ({ ...r, biaya_tambahan: [] }));
                      this.selectedKeys = this.previewData.map(r => this.rowKey(r));
                  } catch(e) { console.error(e); }
                  this.loading = false;
@@ -45,7 +85,7 @@
              formatRp(n) {
                  return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
              }
-         }" @tour-close-modals.window="showGenerateModal=false">
+         }" @tour-close-modals.window="showItemModal=false; showGenerateModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -79,7 +119,7 @@
 
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div><h3 class="section-title">Daftar Tagihan</h3><p class="section-subtitle">Total = biaya harian x hari hadir - diskon</p></div>
+                <div><h3 class="section-title">Daftar Tagihan</h3><p class="section-subtitle">Total = biaya bulanan + biaya lain - diskon</p></div>
                 <div class="flex flex-wrap items-center gap-3">
                     <form action="{{ route('admin.pembayaran-bulanan.index') }}" method="GET" class="flex items-center gap-2" data-tour="admin-pembayaran-filter">
                         <select name="bulan" class="input-field w-auto">
@@ -108,8 +148,9 @@
                     <thead>
                         <tr>
                             <th>Siswa</th><th>Kelas</th><th>Biaya</th>
-                            <th class="text-center">Hari Hadir</th>
-                            <th class="text-right">Biaya/Hari</th>
+                            <th class="text-center">Hadir</th>
+                            <th class="text-right">Biaya/Bln</th>
+                            <th class="text-right">Biaya Lain</th>
                             <th class="text-right">Subtotal</th>
                             <th class="text-right">Diskon</th>
                             <th class="text-right">Total</th>
@@ -125,6 +166,14 @@
                                 <td class="text-xs" style="color:#9E9790;">{{ $p->biayaBulananSekolah->nama_biaya ?? '-' }}</td>
                                 <td class="text-center font-semibold" style="color:#1A6B6B;">{{ $p->hari_hadir }}</td>
                                 <td class="text-right text-xs">{{ $p->getBiayaPerHariFormatted() }}</td>
+                                <td class="text-right text-xs" style="color:#9E9790;">
+                                    @php $totalTambahan = $p->getTotalBiayaTambahan(); @endphp
+                                    @if($totalTambahan > 0)
+                                        {{ $p->getTotalBiayaTambahanFormatted() }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="text-right text-xs">{{ $p->getSubtotalFormatted() }}</td>
                                 <td class="text-right text-xs" style="color:#C0392B;">{{ $p->nilai_diskon > 0 ? '-'.$p->getNilaiDiskonFormatted() : '-' }}</td>
                                 <td class="text-right font-semibold" style="color:#1A6B6B;">{{ $p->getTotalFormatted() }}</td>
@@ -143,7 +192,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="10" class="py-12 text-center" style="color:#9E9790;">Belum ada tagihan. Klik Generate Tagihan.</td></tr>
+                            <tr><td colspan="11" class="py-12 text-center" style="color:#9E9790;">Belum ada tagihan. Klik Generate Tagihan.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -151,9 +200,9 @@
             @if($pembayarans->hasPages())<div class="px-6 py-4 border-t">{{ $pembayarans->withQueryString()->links() }}</div>@endif
         </div>
 
-        <!-- GENERATE MODAL dengan diskon per siswa -->
+        <!-- GENERATE MODAL dengan diskon per siswa + biaya tambahan -->
         <div x-show="showGenerateModal" data-tour="modal-generate" class="modal-overlay" style="display:none;">
-            <div x-show="showGenerateModal" x-transition class="modal-box max-w-4xl" @click.away="showGenerateModal=false">
+            <div x-show="showGenerateModal" x-transition class="modal-box max-w-5xl" @click.away="if (!showItemModal) showGenerateModal = false">
                 <form action="{{ route('admin.pembayaran-bulanan.generate') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Generate Tagihan Bulanan</h3></div>
@@ -192,13 +241,14 @@
                                         <th class="w-10"></th>
                                         <th>Siswa</th><th>Kelas</th><th>Biaya</th>
                                         <th class="text-center">Hadir</th>
-                                        <th class="text-right">Biaya/Hari</th>
+                                        <th class="text-right">Biaya/Bln</th>
                                         <th class="text-right">Subtotal</th>
                                         <th>Diskon</th>
+                                        <th>Biaya Lain</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <template x-for="row in previewData" :key="rowKey(row)">
+                                    <template x-for="(row, idx) in previewData" :key="rowKey(row)">
                                         <tr>
                                             <td class="text-center">
                                                 <input type="checkbox" name="tagihan[]" :value="rowKey(row)"
@@ -209,8 +259,8 @@
                                             <td x-text="row.kelas_name"></td>
                                             <td x-text="row.biaya_name" class="text-xs" style="color:#9E9790;"></td>
                                             <td class="text-center" x-text="row.hari_hadir"></td>
-                                            <td class="text-right" x-text="formatRp(row.biaya_per_hari)"></td>
-                                            <td class="text-right" x-text="formatRp(row.subtotal)"></td>
+                                            <td class="text-right" x-text="formatRp(row.biaya_bulanan)"></td>
+                                            <td class="text-right" x-text="formatRp(totalBaris(row))"></td>
                                             <td>
                                                 <select :name="'diskon[' + rowKey(row) + ']'" class="input-field text-xs py-1"
                                                         :disabled="!selectedKeys.includes(rowKey(row))">
@@ -220,6 +270,29 @@
                                                     </template>
                                                 </select>
                                             </td>
+                                            <td>
+                                                <div class="flex flex-wrap items-center gap-1 min-w-[160px]">
+                                                    <template x-for="(item, i) in (row.biaya_tambahan || [])" :key="i">
+                                                        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded"
+                                                              style="background:#D0E8E8;color:#1A6B6B;">
+                                                            <span x-text="item.nama_item + ' ' + formatRp(item.jumlah)" class="cursor-pointer"
+                                                                  @click="openItemModal(row, i)"></span>
+                                                            <button type="button" @click="removeItem(row, i)"
+                                                                    class="font-bold leading-none hover:opacity-70">&times;</button>
+                                                            <input type="hidden" :name="'biaya_tambahan[' + rowKey(row) + '][' + i + '][nama_item]'"
+                                                                   :value="item.nama_item">
+                                                            <input type="hidden" :name="'biaya_tambahan[' + rowKey(row) + '][' + i + '][jumlah]'"
+                                                                   :value="item.jumlah">
+                                                        </span>
+                                                    </template>
+                                                    <button type="button" @click="openItemModal(row)"
+                                                            class="text-xs px-2 py-0.5 rounded"
+                                                            style="color:#1A6B6B;background:#D0E8E8;"
+                                                            :disabled="!selectedKeys.includes(rowKey(row))">
+                                                        + Tambah
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </template>
                                 </tbody>
@@ -228,7 +301,7 @@
                         </div>
 
                         <div x-show="!loading && previewData.length === 0" class="text-center py-4 text-sm" style="color:#9E9790;">
-                            Belum ada siswa di menu Biaya Harian Siswa. Tambahkan siswa terlebih dahulu.
+                            Belum ada siswa di menu Biaya Bulanan. Tambahkan siswa terlebih dahulu.
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -236,6 +309,28 @@
                         <button type="submit" data-tour="modal-generate-submit" class="btn-primary" :disabled="selectedKeys.length === 0">Generate</button>
                     </div>
                 </form>
+            </div>
+        </div>
+        <!-- END GENERATE MODAL -->
+
+        <!-- MODAL TAMBAH BIAYA LAIN -->
+        <div x-show="showItemModal" class="modal-overlay modal-overlay--elevated" style="display:none;" @click.self="showItemModal=false">
+            <div x-show="showItemModal" x-transition class="modal-box max-w-sm" @click.stop>
+                <div class="modal-header"><h3 class="section-title" x-text="itemModalEditIdx !== null ? 'Edit Biaya Lain' : 'Tambah Biaya Lain'"></h3></div>
+                <div class="modal-body space-y-3">
+                    <div>
+                        <label class="input-label">Nama Biaya</label>
+                        <input type="text" x-model="itemModalNama" placeholder="Contoh: Popok, Ekstra" class="input-field" @keydown.enter="saveItemModal()">
+                    </div>
+                    <div>
+                        <label class="input-label">Jumlah (Rp)</label>
+                        <input type="number" x-model="itemModalJumlah" min="0" placeholder="0" class="input-field" @keydown.enter="saveItemModal()">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" @click="showItemModal=false" class="btn-secondary">Batal</button>
+                    <button type="button" @click="saveItemModal()" class="btn-primary">Simpan</button>
+                </div>
             </div>
         </div>
     </div>

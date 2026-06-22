@@ -39,7 +39,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
             ],
             'Biaya & Pembayaran' => [
-                ['name' => 'menu.biaya-harian', 'label' => 'Biaya Harian'],
+                ['name' => 'menu.biaya-harian', 'label' => 'Biaya Bulanan'],
                 ['name' => 'menu.diskon', 'label' => 'Diskon'],
                 ['name' => 'menu.rekap-pembayaran', 'label' => 'Rekap Pembayaran'],
             ],

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\BiayaBulananSiswa;
 use App\Models\Diskon;
 use App\Models\PembayaranBulanan;
+use App\Models\PembayaranBulananItem;
 use App\Models\Presensi;
 use App\Models\AkuntansiSetting;
 use Carbon\Carbon;
@@ -39,21 +40,21 @@ class RekapBiayaService
             ->count();
     }
 
-    public function getBiayaHarian(int $anakId, int $biayaBulananSekolahId): ?float
+    public function getBiayaBulanan(int $anakId, int $biayaBulananSekolahId): ?float
     {
         $siswaBiaya = BiayaBulananSiswa::where('anak_id', $anakId)
             ->where('biaya_bulanan_sekolah_id', $biayaBulananSekolahId)
             ->first();
 
         if ($siswaBiaya) {
-            return (float) $siswaBiaya->biaya_harian;
+            return (float) $siswaBiaya->biaya_bulanan;
         }
 
         return null;
     }
 
-    /** Siswa yang sudah ditambahkan di menu Biaya Harian (jenis biaya aktif). */
-    public function getSiswaDenganBiayaHarian(int $sekolahId): Collection
+    /** Siswa yang sudah ditambahkan di menu Biaya Bulanan (jenis biaya aktif). */
+    public function getSiswaDenganBiayaBulanan(int $sekolahId): Collection
     {
         return BiayaBulananSiswa::where('sekolah_id', $sekolahId)
             ->whereHas('biayaBulananSekolah', fn ($q) => $q->where('is_aktif', true))
@@ -64,16 +65,17 @@ class RekapBiayaService
 
     public function hitungBiaya(PembayaranBulanan $pembayaran): PembayaranBulanan
     {
-        $biayaPerHari = $this->getBiayaHarian(
+        $biaya = $this->getBiayaBulanan(
             $pembayaran->anak_id,
             $pembayaran->biaya_bulanan_sekolah_id
         );
 
-        if ($biayaPerHari === null) {
-            $biayaPerHari = (float) $pembayaran->biaya_per_hari;
+        if ($biaya === null) {
+            $biaya = (float) $pembayaran->biaya_per_hari;
         }
 
-        $subtotal = $biayaPerHari * $pembayaran->hari_hadir;
+        $subtotal = $biaya;
+        $totalBiayaTambahan = (float) $pembayaran->items()->sum('jumlah');
 
         $nilaiDiskon = 0;
         if ($pembayaran->diskon_id) {
@@ -83,10 +85,10 @@ class RekapBiayaService
             }
         }
 
-        $total = max(0, $subtotal - $nilaiDiskon);
+        $total = max(0, $subtotal + $totalBiayaTambahan - $nilaiDiskon);
 
         $pembayaran->update([
-            'biaya_per_hari' => round($biayaPerHari, 2),
+            'biaya_per_hari' => round($biaya, 2),
             'subtotal' => round($subtotal, 2),
             'nilai_diskon' => round($nilaiDiskon, 2),
             'total_bayar' => round($total, 2),
@@ -98,15 +100,17 @@ class RekapBiayaService
     /**
      * @param  array<string, int|null>  $diskonPerTagihan  "{anak_id}_{biaya_id}" => diskon_id
      * @param  list<string>  $selectedKeys  "{anak_id}_{biaya_id}" — kosong = generate semua + cleanup
+     * @param  array<string, list<array{nama_item: string, jumlah: float}>>  $biayaTambahan  "{anak_id}_{biaya_id}" => [{nama_item, jumlah}]
      */
     public function generateTagihan(
         int $sekolahId,
         int $bulan,
         int $tahun,
         array $diskonPerTagihan = [],
-        array $selectedKeys = []
+        array $selectedKeys = [],
+        array $biayaTambahan = []
     ): Collection {
-        $assignments = $this->getSiswaDenganBiayaHarian($sekolahId);
+        $assignments = $this->getSiswaDenganBiayaBulanan($sekolahId);
         $hariEfektif = $this->hitungHariEfektif($bulan, $tahun);
         $pembayarans = collect();
         $validKeys = [];
@@ -126,10 +130,9 @@ class RekapBiayaService
                 continue;
             }
 
-            $biayaPerHari = (float) $assignment->biaya_harian;
-
+            $biayaBulanan = (float) $assignment->biaya_bulanan;
+            $subtotal = $biayaBulanan;
             $hariHadir = $this->hitungHariHadir($anak->id, $bulan, $tahun);
-            $subtotal = $biayaPerHari * $hariHadir;
 
             $diskonId = $diskonPerTagihan[$key] ?? null;
             $nilaiDiskon = 0;
@@ -140,7 +143,13 @@ class RekapBiayaService
                 }
             }
 
-            $total = max(0, $subtotal - $nilaiDiskon);
+            $totalTambahan = 0;
+            $items = $biayaTambahan[$key] ?? [];
+            foreach ($items as $item) {
+                $totalTambahan += (float) ($item['jumlah'] ?? 0);
+            }
+
+            $total = max(0, $subtotal + $totalTambahan - $nilaiDiskon);
 
             $pembayaran = PembayaranBulanan::updateOrCreate(
                 [
@@ -153,7 +162,7 @@ class RekapBiayaService
                     'sekolah_id' => $sekolahId,
                     'hari_efektif' => $hariEfektif,
                     'hari_hadir' => $hariHadir,
-                    'biaya_per_hari' => round($biayaPerHari, 2),
+                    'biaya_per_hari' => round($biayaBulanan, 2),
                     'subtotal' => round($subtotal, 2),
                     'diskon_id' => $diskonId,
                     'nilai_diskon' => round($nilaiDiskon, 2),
@@ -161,6 +170,19 @@ class RekapBiayaService
                     'status' => 'pending',
                 ]
             );
+
+            // Simpan biaya tambahan
+            $pembayaran->items()->delete();
+            foreach ($items as $item) {
+                $namaItem = trim($item['nama_item'] ?? '');
+                $jumlahItem = (float) ($item['jumlah'] ?? 0);
+                if ($namaItem !== '' && $jumlahItem > 0) {
+                    $pembayaran->items()->create([
+                        'nama_item' => $namaItem,
+                        'jumlah' => $jumlahItem,
+                    ]);
+                }
+            }
 
             // Accrual: buat jurnal saat generate (Piutang / Pendapatan)
             $setting = AkuntansiSetting::forSekolah($sekolahId);
@@ -187,38 +209,6 @@ class RekapBiayaService
         }
 
         return $pembayarans;
-    }
-
-    public function updateHariHadir(PembayaranBulanan $pembayaran, int $hariHadir, ?int $editedBy = null): PembayaranBulanan
-    {
-        $oldValue = $pembayaran->hari_hadir;
-        $pembayaran->update(['hari_hadir' => $hariHadir]);
-
-        $pembayaran->details()->create([
-            'field_name' => 'hari_hadir',
-            'old_value' => (string) $oldValue,
-            'new_value' => (string) $hariHadir,
-            'edited_by' => $editedBy,
-            'edited_at' => now(),
-        ]);
-
-        return $this->hitungBiaya($pembayaran);
-    }
-
-    public function updateHariEfektif(PembayaranBulanan $pembayaran, int $hariEfektif, ?int $editedBy = null): PembayaranBulanan
-    {
-        $oldValue = $pembayaran->hari_efektif;
-        $pembayaran->update(['hari_efektif' => $hariEfektif]);
-
-        $pembayaran->details()->create([
-            'field_name' => 'hari_efektif',
-            'old_value' => (string) $oldValue,
-            'new_value' => (string) $hariEfektif,
-            'edited_by' => $editedBy,
-            'edited_at' => now(),
-        ]);
-
-        return $pembayaran->fresh();
     }
 
     public function approvePembayaran(PembayaranBulanan $pembayaran, int $approvedBy, ?string $catatan = null): PembayaranBulanan

@@ -11,13 +11,13 @@ class BiayaBulananSiswa extends Model
         'sekolah_id',
         'anak_id',
         'biaya_bulanan_sekolah_id',
-        'biaya_harian',
+        'biaya_bulanan',
     ];
 
     protected function casts(): array
     {
         return [
-            'biaya_harian' => 'decimal:2',
+            'biaya_bulanan' => 'decimal:2',
         ];
     }
 
@@ -36,8 +36,8 @@ class BiayaBulananSiswa extends Model
         return $this->belongsTo(BiayaBulananSekolah::class);
     }
 
-    public function getBiayaHarianFormatted(): string
+    public function getBiayaBulananFormatted(): string
     {
-        return 'Rp ' . number_format($this->biaya_harian, 0, ',', '.');
+        return 'Rp ' . number_format($this->biaya_bulanan, 0, ',', '.');
     }
 }

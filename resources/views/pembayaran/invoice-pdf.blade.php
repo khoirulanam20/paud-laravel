@@ -167,11 +167,22 @@
         </thead>
         <tbody>
             <tr>
-                <td>Biaya harian × hari hadir</td>
-                <td style="text-align: center;">{{ $pembayaran->hari_hadir }} hari</td>
+                <td>Biaya Bulanan</td>
+                <td style="text-align: center;">1</td>
                 <td class="amount">{{ $pembayaran->getBiayaPerHariFormatted() }}</td>
                 <td class="amount">{{ $pembayaran->getSubtotalFormatted() }}</td>
             </tr>
+            @php $items = $pembayaran->items; @endphp
+            @if($items && $items->count() > 0)
+                @foreach($items as $item)
+                    <tr>
+                        <td>{{ $item->nama_item }}</td>
+                        <td style="text-align: center;">1</td>
+                        <td class="amount">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                        <td class="amount">Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            @endif
             @if($pembayaran->diskon && $pembayaran->nilai_diskon > 0)
                 <tr>
                     <td>Diskon ({{ $pembayaran->diskon->nama_diskon }})</td>
@@ -183,11 +194,19 @@
         </tbody>
     </table>
 
+    <p style="font-size: 10px; color: #6B6560; margin-bottom: 12px;">Hari Hadir: {{ $pembayaran->hari_hadir }} hari</p>
+
     <div class="total-box">
         <div class="total-row">
             <span>Subtotal</span>
             <span>{{ $pembayaran->getSubtotalFormatted() }}</span>
         </div>
+        @if($items && $items->count() > 0)
+            <div class="total-row">
+                <span>Total Biaya Lain</span>
+                <span>{{ $pembayaran->getTotalBiayaTambahanFormatted() }}</span>
+            </div>
+        @endif
         @if($pembayaran->nilai_diskon > 0)
             <div class="total-row">
                 <span>Diskon</span>

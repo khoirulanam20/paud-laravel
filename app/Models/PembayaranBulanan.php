@@ -79,6 +79,11 @@ class PembayaranBulanan extends Model
         return $this->belongsTo(Jurnal::class);
     }
 
+    public function items(): HasMany
+    {
+        return $this->hasMany(PembayaranBulananItem::class);
+    }
+
     public function getPeriodeLabel(): string
     {
         $bulan = [
@@ -87,6 +92,16 @@ class PembayaranBulanan extends Model
         ];
 
         return ($bulan[$this->periode_bulan] ?? '') . ' ' . $this->periode_tahun;
+    }
+
+    public function getTotalBiayaTambahan(): float
+    {
+        return (float) $this->items()->sum('jumlah');
+    }
+
+    public function getTotalBiayaTambahanFormatted(): string
+    {
+        return 'Rp ' . number_format($this->getTotalBiayaTambahan(), 0, ',', '.');
     }
 
     public function getTotalFormatted(): string
