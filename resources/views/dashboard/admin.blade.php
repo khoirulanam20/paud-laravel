@@ -8,29 +8,55 @@
     <div class="py-6 md:py-12 bg-slate-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                <!-- Summary Cards -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
                     <div class="p-6 text-slate-900">
                         <h3 class="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Siswa</h3>
-                        <p class="mt-2 text-3xl font-semibold">120</p>
+                        <p class="mt-2 text-3xl font-semibold">{{ $totalAnak ?? 0 }}</p>
                     </div>
                 </div>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
                     <div class="p-6 text-slate-900">
                         <h3 class="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Pengajar</h3>
-                        <p class="mt-2 text-3xl font-semibold">15</p>
+                        <p class="mt-2 text-3xl font-semibold">{{ $totalPengajar ?? 0 }}</p>
                     </div>
                 </div>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
                     <div class="p-6 text-slate-900">
                         <h3 class="text-sm font-medium text-slate-500 uppercase tracking-wider">Sarana</h3>
-                        <p class="mt-2 text-3xl font-semibold">45</p>
+                        <p class="mt-2 text-3xl font-semibold">{{ $totalSarana ?? 0 }}</p>
                     </div>
                 </div>
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200">
                     <div class="p-6 text-slate-900">
-                        <h3 class="text-sm font-medium text-slate-500 uppercase tracking-wider">Saldo Cashflow</h3>
-                        <p class="mt-2 text-xl font-semibold">Rp 15.000.000</p>
+                        <h3 class="text-sm font-medium text-slate-500 uppercase tracking-wider">Saldo Kas</h3>
+                        <p class="mt-2 text-xl font-semibold {{ ($saldoKas ?? 0) >= 0 ? 'text-green-700' : 'text-red-700' }}">
+                            Rp {{ number_format($saldoKas ?? 0, 0, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keuangan Section -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-slate-200 mb-6">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium mb-4">Keuangan & Akuntansi</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <a href="{{ route('admin.akun.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
+                            <span class="font-medium">Chart of Accounts</span>
+                            <span class="text-xs text-slate-400 mt-1">Kelola Akun</span>
+                        </a>
+                        <a href="{{ route('admin.jurnal.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
+                            <span class="font-medium">Jurnal Umum</span>
+                            <span class="text-xs text-slate-400 mt-1">Double Entry</span>
+                        </a>
+                        <a href="{{ route('admin.laporan.arus-kas') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
+                            <span class="font-medium">Arus Kas PSAK 2</span>
+                            <span class="text-xs text-slate-400 mt-1">Laporan</span>
+                        </a>
+                        <a href="{{ route('admin.akuntansi-setting.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
+                            <span class="font-medium">Setting Akuntansi</span>
+                            <span class="text-xs text-slate-400 mt-1">Konfigurasi</span>
+                        </a>
                     </div>
                 </div>
             </div>

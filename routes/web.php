@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\Admin\AnakController;
+use App\Http\Controllers\Admin\AkunController;
+use App\Http\Controllers\Admin\AkuntansiSettingController;
 use App\Http\Controllers\Admin\BiayaBulananController;
 use App\Http\Controllers\Admin\CashflowController;
 use App\Http\Controllers\Admin\DiskonController;
+use App\Http\Controllers\Admin\JurnalController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
+use App\Http\Controllers\Admin\LaporanController;
 // Lembaga Controllers
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
 use App\Http\Controllers\Admin\PembayaranBulananController;
@@ -137,6 +141,21 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::patch('pembayaran-bulanan/{pembayaran}/diskon', [PembayaranBulananController::class, 'updateDiskon'])->name('pembayaran-bulanan.update-diskon');
     Route::patch('pembayaran-bulanan/{pembayaran}/approve', [PembayaranBulananController::class, 'approve'])->name('pembayaran-bulanan.approve');
     Route::patch('pembayaran-bulanan/{pembayaran}/reject', [PembayaranBulananController::class, 'reject'])->name('pembayaran-bulanan.reject');
+
+    // Akuntansi PSAK
+    Route::resource('akun', AkunController::class)->except(['create', 'edit', 'show']);
+
+    Route::get('akuntansi-setting', [AkuntansiSettingController::class, 'index'])->name('akuntansi-setting.index');
+    Route::put('akuntansi-setting', [AkuntansiSettingController::class, 'update'])->name('akuntansi-setting.update');
+
+    Route::get('jurnal/create', [JurnalController::class, 'create'])->name('jurnal.create');
+    Route::resource('jurnal', JurnalController::class)->except(['create', 'edit']);
+
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('arus-kas', [LaporanController::class, 'arusKas'])->name('arus-kas');
+        Route::get('neraca', [LaporanController::class, 'neraca'])->name('neraca');
+        Route::get('laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
+    });
 });
 
 Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {

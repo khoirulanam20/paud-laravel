@@ -26,6 +26,7 @@ class PembayaranBulanan extends Model
         'catatan_admin',
         'approved_by',
         'approved_at',
+        'jurnal_id',
     ];
 
     protected function casts(): array
@@ -71,6 +72,11 @@ class PembayaranBulanan extends Model
     public function details(): HasMany
     {
         return $this->hasMany(PembayaranBulananDetail::class);
+    }
+
+    public function jurnal(): BelongsTo
+    {
+        return $this->belongsTo(Jurnal::class);
     }
 
     public function getPeriodeLabel(): string

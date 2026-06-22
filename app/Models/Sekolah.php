@@ -48,4 +48,19 @@ class Sekolah extends Model
     {
         return $this->hasMany(SekolahAiTokenTransaction::class);
     }
+
+    public function akuns(): HasMany
+    {
+        return $this->hasMany(Akun::class);
+    }
+
+    public function jurnals(): HasMany
+    {
+        return $this->hasMany(Jurnal::class);
+    }
+
+    public function akuntansiSetting(): HasOne
+    {
+        return $this->hasOne(AkuntansiSetting::class);
+    }
 }

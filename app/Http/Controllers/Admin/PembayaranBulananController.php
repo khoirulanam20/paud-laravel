@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Diskon;
 use App\Models\Kelas;
 use App\Models\PembayaranBulanan;
+use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
 use Illuminate\Http\Request;
 
 class PembayaranBulananController extends Controller
 {
     public function __construct(
-        private RekapBiayaService $rekapBiayaService
+        private RekapBiayaService $rekapBiayaService,
+        private AkuntansiService $akuntansiService
     ) {}
 
     public function index(Request $request)
@@ -251,6 +253,9 @@ class PembayaranBulananController extends Controller
     public function approve(Request $request, PembayaranBulanan $pembayaran)
     {
         abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        // Buat jurnal double-entry
+        $jurnal = $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
 
         $this->rekapBiayaService->approvePembayaran(
             $pembayaran,

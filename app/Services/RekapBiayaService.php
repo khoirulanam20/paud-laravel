@@ -6,6 +6,7 @@ use App\Models\BiayaBulananSiswa;
 use App\Models\Diskon;
 use App\Models\PembayaranBulanan;
 use App\Models\Presensi;
+use App\Models\AkuntansiSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -160,6 +161,13 @@ class RekapBiayaService
                     'status' => 'pending',
                 ]
             );
+
+            // Accrual: buat jurnal saat generate (Piutang / Pendapatan)
+            $setting = AkuntansiSetting::forSekolah($sekolahId);
+            if ($setting->isAccrual() && $total > 0 && $pembayaran->wasRecentlyCreated) {
+                $akuntansiService = app(\App\Services\AkuntansiService::class);
+                $akuntansiService->buatJurnalSaatGenerate($pembayaran, auth()->id() ?? 1);
+            }
 
             $pembayarans->push($pembayaran);
         }
