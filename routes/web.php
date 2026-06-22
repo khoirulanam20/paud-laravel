@@ -156,6 +156,11 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
         Route::get('neraca', [LaporanController::class, 'neraca'])->name('neraca');
         Route::get('laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
     });
+
+    // Manajemen Role & Pengguna
+    Route::resource('role', \App\Http\Controllers\Admin\RoleController::class)->except(['create', 'edit', 'show']);
+    Route::post('role/{role}/update-permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updatePermissions'])->name('role.update-permissions');
+    Route::resource('pengguna', \App\Http\Controllers\Admin\PenggunaController::class)->except(['create', 'edit', 'show']);
 });
 
 Route::middleware(['auth', 'role:Admin Sekolah|Admin Kelas'])->prefix('admin')->name('admin.')->group(function () {
