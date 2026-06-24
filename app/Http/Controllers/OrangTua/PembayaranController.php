@@ -50,7 +50,7 @@ class PembayaranController extends Controller
     public function exportInvoice(PembayaranBulanan $pembayaran)
     {
         $this->authorizePembayaran($pembayaran);
-        abort_unless($pembayaran->isApproved(), 403, 'Invoice hanya tersedia untuk pembayaran yang sudah disetujui.');
+        abort_unless($pembayaran->isApproved(), 403, 'Invoice hanya tersedia untuk pembayaran yang sudah lunas.');
 
         return app(PembayaranInvoicePdfService::class)->download($pembayaran);
     }

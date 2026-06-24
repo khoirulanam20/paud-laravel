@@ -69,7 +69,7 @@ return [
         ['element' => '[data-tour="page-header"]', 'title' => 'Detail Pembayaran', 'description' => 'Rincian tagihan siswa untuk periode ini.', 'side' => 'bottom'],
         ['element' => '[data-tour="pembayaran-rincian"]', 'title' => 'Rincian Perhitungan', 'description' => 'Biaya bulanan + biaya lain − diskon. Edit diskon di sini.', 'side' => 'bottom'],
         ['element' => '[data-tour="pembayaran-bukti"]', 'title' => 'Bukti Transfer', 'description' => 'Foto bukti yang diunggah orang tua (jika ada).', 'side' => 'top'],
-        ['element' => '[data-tour="pembayaran-approve-btn"]', 'title' => 'Setujui', 'description' => 'Setujui pembayaran setelah bukti diverifikasi.', 'side' => 'left'],
+        ['element' => '[data-tour="pembayaran-approve-btn"]', 'title' => 'Lunas', 'description' => 'Tandai pembayaran lunas setelah bukti diverifikasi.', 'side' => 'left'],
         ['element' => '[data-tour="pembayaran-reject-btn"]', 'title' => 'Tolak', 'description' => 'Tolak pembayaran dengan catatan alasan.', 'side' => 'left'],
     ],
 

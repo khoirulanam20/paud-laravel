@@ -210,4 +210,20 @@ class AiPersonaController extends Controller
             ->route('admin.ai-persona.index', ['tab' => $tab])
             ->with('success', 'Pesan fallback berhasil disimpan.');
     }
+
+    public function updateChatEnabled(Request $request): RedirectResponse
+    {
+        $sekolahId = $this->sekolahId();
+        abort_if($sekolahId === null, 403, 'Akun tidak terikat sekolah.');
+
+        $request->validate([
+            'chat_orangtua_enabled' => ['sometimes', 'boolean'],
+        ]);
+
+        $this->tokenService->updateChatOrangTuaEnabled($sekolahId, $request->boolean('chat_orangtua_enabled'));
+
+        return redirect()
+            ->route('admin.ai-persona.index', ['tab' => AiPersonaScope::CHAT_ORANGTUA])
+            ->with('success', 'Pengaturan chat orang tua berhasil disimpan.');
+    }
 }

@@ -7,8 +7,10 @@ use App\Models\Diskon;
 use App\Models\Kelas;
 use App\Models\PembayaranBulanan;
 use App\Models\PembayaranBulananItem;
+use App\Models\Pengajar;
 use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class PembayaranBulananController extends Controller
@@ -18,19 +20,61 @@ class PembayaranBulananController extends Controller
         private AkuntansiService $akuntansiService
     ) {}
 
+    /** @return list<int>|null null = akses semua kelas sekolah */
+    private function waliKelasIds(): ?array
+    {
+        if (! auth()->user()->hasRole('Wali Kelas')) {
+            return null;
+        }
+
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
+
+        return Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->all();
+    }
+
+    private function assertPembayaranAccessible(PembayaranBulanan $pembayaran): void
+    {
+        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $kelasIds = $this->waliKelasIds();
+        if ($kelasIds === null) {
+            return;
+        }
+
+        $pembayaran->loadMissing('anak');
+        abort_unless(in_array((int) $pembayaran->anak->kelas_id, $kelasIds, true), 403);
+    }
+
+    private function scopeToWaliKelas(Builder $query): Builder
+    {
+        $kelasIds = $this->waliKelasIds();
+        if ($kelasIds !== null) {
+            $query->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
+        }
+
+        return $query;
+    }
+
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
+        $waliKelasIds = $this->waliKelasIds();
 
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
         $kelasId = $request->input('kelas_id');
         $status = $request->input('status');
 
+        if ($kelasId && $waliKelasIds !== null && ! in_array((int) $kelasId, $waliKelasIds, true)) {
+            abort(403);
+        }
+
         $query = PembayaranBulanan::where('sekolah_id', $sekolah_id)
             ->where('periode_bulan', $bulan)
             ->where('periode_tahun', $tahun)
             ->with(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy', 'items']);
+
+        $this->scopeToWaliKelas($query);
 
         if ($kelasId) {
             $query->whereHas('anak', function ($q) use ($kelasId) {
@@ -44,11 +88,18 @@ class PembayaranBulananController extends Controller
 
         $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $kelasQuery = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name');
+        if ($waliKelasIds !== null) {
+            $kelasQuery->whereIn('id', $waliKelasIds);
+        }
+        $kelas = $kelasQuery->get();
 
-        $summary = PembayaranBulanan::where('sekolah_id', $sekolah_id)
+        $summaryQuery = PembayaranBulanan::where('sekolah_id', $sekolah_id)
             ->where('periode_bulan', $bulan)
-            ->where('periode_tahun', $tahun)
+            ->where('periode_tahun', $tahun);
+        $this->scopeToWaliKelas($summaryQuery);
+
+        $summary = $summaryQuery
             ->selectRaw('
                 COUNT(*) as total_tagihan,
                 SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending,
@@ -66,7 +117,7 @@ class PembayaranBulananController extends Controller
 
     public function show(PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
         $pembayaran->load(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy', 'details.editedBy', 'items']);
 
@@ -76,6 +127,7 @@ class PembayaranBulananController extends Controller
     public function generatePreview(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
+        $waliKelasIds = $this->waliKelasIds();
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
@@ -89,6 +141,10 @@ class PembayaranBulananController extends Controller
             $anak = $assignment->anak;
             $biaya = $assignment->biayaBulananSekolah;
             if (! $anak || ! $biaya) {
+                continue;
+            }
+
+            if ($waliKelasIds !== null && ! in_array((int) $anak->kelas_id, $waliKelasIds, true)) {
                 continue;
             }
 
@@ -185,7 +241,7 @@ class PembayaranBulananController extends Controller
 
     public function destroy(PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
         if ($pembayaran->status !== 'pending') {
             return redirect()
@@ -208,9 +264,13 @@ class PembayaranBulananController extends Controller
     /** @return list<string> */
     private function validTagihanKeys(int $sekolahId): array
     {
+        $waliKelasIds = $this->waliKelasIds();
         $keys = [];
         foreach ($this->rekapBiayaService->getSiswaDenganBiayaBulanan($sekolahId) as $assignment) {
             if ($assignment->anak && $assignment->biayaBulananSekolah) {
+                if ($waliKelasIds !== null && ! in_array((int) $assignment->anak->kelas_id, $waliKelasIds, true)) {
+                    continue;
+                }
                 $keys[] = $assignment->anak_id . '_' . $assignment->biaya_bulanan_sekolah_id;
             }
         }
@@ -220,7 +280,7 @@ class PembayaranBulananController extends Controller
 
     public function updateDiskon(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
         $request->validate([
             'diskon_id' => 'nullable|exists:diskons,id',
@@ -236,10 +296,9 @@ class PembayaranBulananController extends Controller
 
     public function approve(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
-        // Buat jurnal double-entry
-        $jurnal = $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
+        $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
 
         $this->rekapBiayaService->approvePembayaran(
             $pembayaran,
@@ -249,12 +308,12 @@ class PembayaranBulananController extends Controller
 
         return redirect()
             ->route('admin.pembayaran-bulanan.show', $pembayaran)
-            ->with('success', 'Pembayaran berhasil disetujui.');
+            ->with('success', 'Pembayaran berhasil ditandai lunas.');
     }
 
     public function reject(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
         $request->validate([
             'catatan_admin' => 'required|string',
@@ -273,7 +332,7 @@ class PembayaranBulananController extends Controller
 
     public function storeItem(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
         abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
 
         $request->validate([
@@ -295,7 +354,7 @@ class PembayaranBulananController extends Controller
 
     public function updateItem(Request $request, PembayaranBulanan $pembayaran, PembayaranBulananItem $item)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
         abort_if($item->pembayaran_bulanan_id !== $pembayaran->id, 404);
         abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
 
@@ -318,7 +377,7 @@ class PembayaranBulananController extends Controller
 
     public function destroyItem(Request $request, PembayaranBulanan $pembayaran, PembayaranBulananItem $item)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
         abort_if($item->pembayaran_bulanan_id !== $pembayaran->id, 404);
         abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
 

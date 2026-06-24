@@ -93,4 +93,49 @@ class User extends Authenticatable
     {
         return $this->hasOne(OrangTuaChat::class);
     }
+
+    public function hasAnyMenuPermission(): bool
+    {
+        return $this->getAllPermissions()->contains(
+            fn ($permission) => str_starts_with($permission->name, 'menu.')
+        );
+    }
+
+    public function canAccessAdminPanel(): bool
+    {
+        if (!$this->sekolah_id || $this->hasRole(['Lembaga', 'Orang Tua'])) {
+            return false;
+        }
+
+        if ($this->hasRole('Admin Sekolah')) {
+            return true;
+        }
+
+        // Role kustom (mis. Bendahara) — bukan role operasional default
+        $builtinRoles = ['Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Lembaga', 'Orang Tua'];
+        $hasCustomRole = $this->roles->contains(
+            fn ($role) => !in_array($role->name, $builtinRoles, true)
+        );
+
+        return $hasCustomRole && $this->hasAnyMenuPermission();
+    }
+
+    public function firstAccessibleAdminRoute(?bool $chatOrangTuaEnabled = null): ?string
+    {
+        if ($this->sekolah_id && $chatOrangTuaEnabled === null) {
+            $chatOrangTuaEnabled = app(\App\Services\AiTokenService::class)
+                ->isChatOrangTuaEnabled((int) $this->sekolah_id);
+        }
+
+        foreach (config('admin-menu.menu_order', []) as $item) {
+            if (($item['perm'] ?? '') === 'menu.chat-orangtua' && !$chatOrangTuaEnabled) {
+                continue;
+            }
+            if ($this->can($item['perm'])) {
+                return $item['route'];
+            }
+        }
+
+        return null;
+    }
 }

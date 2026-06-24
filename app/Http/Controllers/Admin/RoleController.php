@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends Controller
 {
     protected array $defaultRoles = ['Lembaga', 'Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Orang Tua'];
+
+    protected array $hiddenRoles = ['Lembaga'];
 
     protected array $permissionGroups = [
         'Manajemen Siswa' => [
@@ -37,7 +40,6 @@ class RoleController extends Controller
             ['name' => 'menu.akun-coa', 'label' => 'Akun (COA)'],
             ['name' => 'menu.cashflow', 'label' => 'Cashflow'],
             ['name' => 'menu.jurnal-umum', 'label' => 'Jurnal Umum'],
-            ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
         ],
         'Biaya & Pembayaran' => [
             ['name' => 'menu.biaya-harian', 'label' => 'Biaya Bulanan'],
@@ -52,17 +54,22 @@ class RoleController extends Controller
         'Masukan & Komunikasi' => [
             ['name' => 'menu.kritik-saran', 'label' => 'Kritik & Saran'],
             ['name' => 'menu.chat-orangtua', 'label' => 'Chat Orang Tua'],
-            ['name' => 'menu.pengaturan-ai', 'label' => 'Pengaturan AI'],
         ],
-        'Manajemen Akses' => [
+        'Pengaturan' => [
             ['name' => 'menu.role', 'label' => 'Role'],
             ['name' => 'menu.pengguna', 'label' => 'Pengguna'],
+        ],
+        'Pengaturan Akuntansi' => [
+            ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
+        ],
+        'Pengaturan AI' => [
+            ['name' => 'menu.pengaturan-ai', 'label' => 'Pengaturan AI'],
         ],
     ];
 
     public function index()
     {
-        $roles = Role::with('permissions')->get();
+        $roles = Role::with('permissions')->whereNotIn('name', $this->hiddenRoles)->get();
         $permissionGroups = $this->permissionGroups;
         return view('admin.role.index', compact('roles', 'permissionGroups'));
     }
@@ -104,6 +111,7 @@ class RoleController extends Controller
 
         $permissions = $request->input('permissions', []);
         $role->syncPermissions($permissions);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return redirect()->route('admin.role.index')
             ->with('success', 'Akses menu untuk role "' . e($role->name) . '" berhasil diperbarui.');

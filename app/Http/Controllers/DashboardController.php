@@ -25,6 +25,14 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+
+        if ($user->canAccessAdminPanel() && !$user->hasRole('Admin Sekolah')) {
+            $route = $user->firstAccessibleAdminRoute();
+            if ($route) {
+                return redirect()->route($route);
+            }
+        }
+
         $data = [];
 
         if ($user->hasRole('Lembaga')) {

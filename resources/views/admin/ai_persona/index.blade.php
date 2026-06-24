@@ -243,7 +243,7 @@
                             :disabled="generateLoading['{{ $scope }}'] || {{ $aiConfigured ? 'false' : 'true' }} || tokenBalance < 1"
                             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50"
                             style="color:#1A6B6B; background:#D0E8E8; border-color:#1A6B6B33;">
-                            <span x-show="!generateLoading['{{ $scope }}']">Generate dengan AI (1 token)</span>
+                            <span x-show="!generateLoading['{{ $scope }}']">Generate dengan AI</span>
                             <span x-show="generateLoading['{{ $scope }}']">Men-generate...</span>
                         </button>
                         <p class="text-xs" style="color:#DC2626;" x-show="tokenBalance < 1" x-cloak>Token habis. Minta lembaga untuk menambah token.</p>
@@ -287,6 +287,25 @@
                 </div>
 
                 @if($scope === AiPersonaScope::CHAT_ORANGTUA)
+                    <div class="card overflow-hidden mb-6">
+                        <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                            <h3 class="section-title">Aktifkan Chat Orang Tua</h3>
+                            <p class="section-subtitle mt-1">Nonaktifkan untuk menyembunyikan menu chat wali murid dan memblokir pengiriman pesan baru.</p>
+                        </div>
+                        <form action="{{ route('admin.ai-persona.chat-enabled.update') }}" method="POST">
+                            @csrf
+                            <div class="px-6 py-6 flex items-center gap-3">
+                                <input type="hidden" name="chat_orangtua_enabled" value="0">
+                                <input type="checkbox" name="chat_orangtua_enabled" value="1" id="chat_orangtua_enabled"
+                                    class="rounded border-gray-300 text-[#1A6B6B] focus:ring-[#1A6B6B]"
+                                    {{ old('chat_orangtua_enabled', $aiSettings->chat_orangtua_enabled ?? true) ? 'checked' : '' }}>
+                                <label for="chat_orangtua_enabled" class="text-sm font-medium" style="color:#2C2C2C;">Chat orang tua aktif</label>
+                            </div>
+                            <div class="px-6 pb-6 flex justify-end border-t pt-5" style="border-color:rgba(0,0,0,0.06);">
+                                <button type="submit" class="btn-primary">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
                     <div class="card overflow-hidden mb-6">
                         <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                             <h3 class="section-title">Akses Data Chat</h3>

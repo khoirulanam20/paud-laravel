@@ -127,7 +127,7 @@
         </tr>
         <tr>
             <td>
-                <p class="label">Tanggal Disetujui</p>
+                <p class="label">Tanggal Lunas</p>
                 <p class="value">{{ $pembayaran->approved_at?->translatedFormat('d F Y H:i') ?? '-' }}</p>
             </td>
             <td style="text-align: right;">
@@ -221,12 +221,12 @@
 
     @if($pembayaran->approvedBy)
         <p style="margin-top: 24px; font-size: 10px; color: #6B6560;">
-            Disetujui oleh: <strong>{{ $pembayaran->approvedBy->name }}</strong>
+            Ditandai lunas oleh: <strong>{{ $pembayaran->approvedBy->name }}</strong>
         </p>
     @endif
 
     <div class="footer">
-        Dokumen ini dibuat otomatis oleh sistem SIPP. Invoice berlaku sebagai bukti pembayaran yang telah disetujui sekolah.
+        Dokumen ini dibuat otomatis oleh sistem SIPP. Invoice berlaku sebagai bukti pembayaran yang telah lunas.
     </div>
 </body>
 </html>

@@ -135,7 +135,7 @@
 
                 @if($pembayaran->isPending())
                     <div class="card p-6 space-y-3">
-                        <button data-tour="pembayaran-approve-btn" data-tour-open-modal="approve" @click="showApproveModal=true" class="btn-primary w-full justify-center">Setujui</button>
+                        <button data-tour="pembayaran-approve-btn" data-tour-open-modal="approve" @click="showApproveModal=true" class="btn-primary w-full justify-center">Lunas</button>
                         <button data-tour="pembayaran-reject-btn" data-tour-open-modal="reject" @click="showRejectModal=true" class="btn-danger w-full justify-center">Tolak</button>
                     </div>
                 @endif
@@ -169,11 +169,11 @@
                 <form action="{{ route('admin.pembayaran-bulanan.approve', $pembayaran) }}" method="POST">
                     @csrf @method('PATCH')
                     <div class="modal-body text-center py-6">
-                        <h3 class="section-title">Setujui Pembayaran?</h3>
+                        <h3 class="section-title">Tandai Lunas?</h3>
                         <p class="section-subtitle mt-1">Total: {{ $pembayaran->getTotalFormatted() }}</p>
                         <textarea name="catatan_admin" rows="2" placeholder="Catatan (opsional)" class="input-field mt-4"></textarea>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showApproveModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Ya, Setujui</button></div>
+                    <div class="modal-footer"><button type="button" @click="showApproveModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Ya, Lunas</button></div>
                 </form>
             </div>
         </div>

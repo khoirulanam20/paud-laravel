@@ -36,7 +36,6 @@ class PermissionSeeder extends Seeder
                 ['name' => 'menu.akun-coa', 'label' => 'Akun (COA)'],
                 ['name' => 'menu.cashflow', 'label' => 'Cashflow'],
                 ['name' => 'menu.jurnal-umum', 'label' => 'Jurnal Umum'],
-                ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
             ],
             'Biaya & Pembayaran' => [
                 ['name' => 'menu.biaya-harian', 'label' => 'Biaya Bulanan'],
@@ -51,11 +50,16 @@ class PermissionSeeder extends Seeder
             'Masukan & Komunikasi' => [
                 ['name' => 'menu.kritik-saran', 'label' => 'Kritik & Saran'],
                 ['name' => 'menu.chat-orangtua', 'label' => 'Chat Orang Tua'],
-                ['name' => 'menu.pengaturan-ai', 'label' => 'Pengaturan AI'],
             ],
-            'Manajemen Akses' => [
+            'Pengaturan' => [
                 ['name' => 'menu.role', 'label' => 'Role'],
                 ['name' => 'menu.pengguna', 'label' => 'Pengguna'],
+            ],
+            'Pengaturan Akuntansi' => [
+                ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
+            ],
+            'Pengaturan AI' => [
+                ['name' => 'menu.pengaturan-ai', 'label' => 'Pengaturan AI'],
             ],
         ];
 
@@ -75,7 +79,19 @@ class PermissionSeeder extends Seeder
         $rolePermissions = [
             'Lembaga' => $allPermissionNames, // Super admin: akses semua
             'Admin Sekolah' => $allPermissionNames, // Full akses semua menu admin
-            'Wali Kelas' => $allPermissionNames, // Share route dgn Admin Sekolah via middleware role:Admin Sekolah|Wali Kelas
+            'Wali Kelas' => [
+                'menu.matrikulasi',
+                'menu.agenda-belajar',
+                'menu.kegiatan-rutin',
+                'menu.pencapaian-siswa',
+                'menu.presensi-siswa',
+                'menu.kesehatan-siswa',
+                'menu.monev',
+                'menu.kritik-saran',
+                'menu.chat-orangtua',
+                'menu.pengaturan-ai',
+                'menu.rekap-pembayaran',
+            ],
             'Pengajar' => [
                 'menu.kegiatan-rutin',
                 'menu.agenda-belajar',

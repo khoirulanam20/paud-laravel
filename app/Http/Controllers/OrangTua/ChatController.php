@@ -23,10 +23,12 @@ class ChatController extends Controller
     public function index(): View
     {
         $user = auth()->user();
+        $sekolahId = (int) $user->sekolah_id;
+        abort_unless($this->tokenService->isChatOrangTuaEnabled($sekolahId), 403, 'Fitur chat sedang dinonaktifkan oleh sekolah.');
+
         $chat = $this->chatService->getOrCreateChat($user);
         $messages = $this->chatService->messagesForUser($chat);
         $anaks = $this->contextBuilder->approvedAnaks($user);
-        $sekolahId = (int) $user->sekolah_id;
         $hasTokens = $this->tokenService->getBalance($sekolahId) > 0;
         $tokenFallbackChat = $this->tokenService->resolveFallback($sekolahId, AiTokenFeature::CHAT);
 
@@ -35,6 +37,11 @@ class ChatController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $sekolahId = (int) auth()->user()->sekolah_id;
+        if (! $this->tokenService->isChatOrangTuaEnabled($sekolahId)) {
+            return response()->json(['error' => 'Fitur chat sedang dinonaktifkan oleh sekolah.'], 403);
+        }
+
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:1000'],
         ]);
@@ -89,6 +96,11 @@ class ChatController extends Controller
 
     public function destroy(): JsonResponse
     {
+        $sekolahId = (int) auth()->user()->sekolah_id;
+        if (! $this->tokenService->isChatOrangTuaEnabled($sekolahId)) {
+            return response()->json(['error' => 'Fitur chat sedang dinonaktifkan oleh sekolah.'], 403);
+        }
+
         $this->chatService->clearHistory(auth()->user());
 
         return response()->json(['success' => true]);

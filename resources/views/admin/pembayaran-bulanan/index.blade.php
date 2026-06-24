@@ -107,13 +107,13 @@
                 <div class="stat-icon" style="background:#D0E8E8;color:#1A6B6B;">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Disetujui</p><p class="text-2xl font-bold" style="color:#1A6B6B;">{{ $summary->approved ?? 0 }}</p></div>
+                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Lunas</p><p class="text-2xl font-bold" style="color:#1A6B6B;">{{ $summary->approved ?? 0 }}</p></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background:#D0E8E8;color:#1A6B6B;">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Total Disetujui</p><p class="text-2xl font-bold" style="color:#1A6B6B;">Rp {{ number_format($summary->nominal_approved ?? 0, 0, ',', '.') }}</p></div>
+                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Total Lunas</p><p class="text-2xl font-bold" style="color:#1A6B6B;">Rp {{ number_format($summary->nominal_approved ?? 0, 0, ',', '.') }}</p></div>
             </div>
         </div>
 
@@ -135,7 +135,7 @@
                         <select name="status" class="input-field w-auto">
                             <option value="">Semua Status</option>
                             <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Menunggu</option>
-                            <option value="approved" {{ $status === 'approved' ? 'selected' : '' }}>Disetujui</option>
+                            <option value="approved" {{ $status === 'approved' ? 'selected' : '' }}>Lunas</option>
                             <option value="rejected" {{ $status === 'rejected' ? 'selected' : '' }}>Ditolak</option>
                         </select>
                         <button type="submit" class="btn-secondary">Filter</button>

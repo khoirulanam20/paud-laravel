@@ -1,22 +1,39 @@
 @php
     $user = auth()->user();
-    // Badge: pending enrollments for Admin Sekolah
+    // Badge: pending enrollments untuk staf yang punya akses pendaftaran
     $pendingCount = 0;
-    if ($user && $user->hasRole('Admin Sekolah') && $user->sekolah_id) {
+    if ($user && $user->sekolah_id && $user->can('menu.pendaftaran')) {
         $pendingCount = \App\Models\Anak::where('sekolah_id', $user->sekolah_id)->where('status', 'pending')->count();
     }
     $roleNavItems = [];
     $orangTuaBottomNavItems = null;
     $orangTuaMoreNavItems = null;
+    $chatOrangTuaEnabled = true;
+    if ($user && $user->sekolah_id) {
+        $chatOrangTuaEnabled = app(\App\Services\AiTokenService::class)->isChatOrangTuaEnabled((int) $user->sekolah_id);
+    }
     if ($user && $user->hasRole('Lembaga')) {
         $roleNavItems = array_merge($roleNavItems, [
             ['route' => 'lembaga.sekolah.index', 'label' => 'Sekolah', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'pattern' => 'lembaga.sekolah.*'],
             ['route' => 'lembaga.admin-sekolah.index', 'label' => 'Admin Sekolah', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'pattern' => 'lembaga.admin-sekolah.*'],
             ['route' => 'lembaga.kritik-saran.index', 'label' => 'Kritik & Saran', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'lembaga.kritik-saran.*'],
-            ['route' => 'lembaga.ai-setting.index', 'label' => 'Pengaturan AI', 'icon' => 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'pattern' => 'lembaga.ai-setting.*'],
+            [
+                'group' => 'Pengaturan',
+                'collapsible' => true,
+                'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z',
+                'pattern' => ['lembaga.ai-setting.*'],
+                'sections' => [
+                    [
+                        'label' => 'AI',
+                        'items' => [
+                            ['route' => 'lembaga.ai-setting.index', 'label' => 'Pengaturan AI', 'icon' => 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'pattern' => 'lembaga.ai-setting.*'],
+                        ],
+                    ],
+                ],
+            ],
         ]);
     }
-    if ($user && $user->hasRole('Admin Sekolah')) {
+    if ($user && $user->canAccessAdminPanel()) {
         $roleNavItems = array_merge($roleNavItems, [
             [
                 'group' => 'Manajemen Siswa',
@@ -54,7 +71,6 @@
                     ['route' => 'admin.akun.index', 'label' => 'Akun (COA)', 'perm' => 'menu.akun-coa', 'icon' => 'M4 6h16M4 10h16M4 14h16M4 18h16', 'pattern' => 'admin.akun.*'],
                     ['route' => 'admin.cashflow.index', 'label' => 'Cashflow', 'perm' => 'menu.cashflow', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.cashflow.*'],
                     ['route' => 'admin.jurnal.index', 'label' => 'Jurnal Umum', 'perm' => 'menu.jurnal-umum', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.jurnal.*'],
-                    ['route' => 'admin.akuntansi-setting.index', 'label' => 'Setting Akuntansi', 'perm' => 'menu.setting-akuntansi', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z', 'pattern' => 'admin.akuntansi-setting.*'],
                 ]
             ],
             [
@@ -77,21 +93,51 @@
                 'group' => 'Masukan & Komunikasi',
                 'items' => [
                     ['route' => 'admin.kritik-saran.index', 'label' => 'Kritik & Saran', 'perm' => 'menu.kritik-saran', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'admin.kritik-saran.*'],
-                    ['route' => 'admin.orangtua-chat.index', 'label' => 'Chat Orang Tua', 'perm' => 'menu.chat-orangtua', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', 'pattern' => 'admin.orangtua-chat.*'],
-                    ['route' => 'admin.ai-persona.index', 'label' => 'Pengaturan AI', 'perm' => 'menu.pengaturan-ai', 'icon' => 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'pattern' => 'admin.ai-persona.*'],
+                    ...($chatOrangTuaEnabled ? [['route' => 'admin.orangtua-chat.index', 'label' => 'Chat Orang Tua', 'perm' => 'menu.chat-orangtua', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', 'pattern' => 'admin.orangtua-chat.*']] : []),
                 ]
             ],
             [
-                'group' => 'Manajemen Akses',
-                'items' => [
-                    ['route' => 'admin.role.index', 'label' => 'Role', 'perm' => 'menu.role', 'icon' => 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', 'pattern' => 'admin.role.*'],
-                    ['route' => 'admin.pengguna.index', 'label' => 'Pengguna', 'perm' => 'menu.pengguna', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'admin.pengguna.*'],
-                ]
+                'group' => 'Pengaturan',
+                'collapsible' => true,
+                'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z',
+                'pattern' => ['admin.role.*', 'admin.pengguna.*', 'admin.akuntansi-setting.*', 'admin.ai-persona.*'],
+                'sections' => [
+                    [
+                        'label' => 'Umum',
+                        'items' => [
+                            ['route' => 'admin.role.index', 'label' => 'Role', 'perm' => 'menu.role', 'icon' => 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z', 'pattern' => 'admin.role.*'],
+                            ['route' => 'admin.pengguna.index', 'label' => 'Pengguna', 'perm' => 'menu.pengguna', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'admin.pengguna.*'],
+                        ],
+                    ],
+                    [
+                        'label' => 'Akuntansi',
+                        'items' => [
+                            ['route' => 'admin.akuntansi-setting.index', 'label' => 'Setting Akuntansi', 'perm' => 'menu.setting-akuntansi', 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z', 'pattern' => 'admin.akuntansi-setting.*'],
+                        ],
+                    ],
+                    [
+                        'label' => 'AI',
+                        'items' => [
+                            ['route' => 'admin.ai-persona.index', 'label' => 'Pengaturan AI', 'perm' => 'menu.pengaturan-ai', 'icon' => 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'pattern' => 'admin.ai-persona.*'],
+                        ],
+                    ],
+                ],
             ],
         ]);
 
         // Filter by permission: hanya tampilkan menu yang user punya akses
         $roleNavItems = array_map(function ($group) use ($user) {
+            if (!empty($group['collapsible']) && isset($group['sections'])) {
+                $group['sections'] = array_map(function ($section) use ($user) {
+                    $section['items'] = array_values(array_filter($section['items'], function ($item) use ($user) {
+                        if (!isset($item['perm'])) return true;
+                        return $user->can($item['perm']);
+                    }));
+                    return $section;
+                }, $group['sections']);
+                $group['sections'] = array_values(array_filter($group['sections'], fn ($section) => count($section['items']) > 0));
+                return $group;
+            }
             if (!isset($group['items'])) return $group;
             $group['items'] = array_filter($group['items'], function ($item) use ($user) {
                 if (!isset($item['perm'])) return true;
@@ -102,6 +148,9 @@
         }, $roleNavItems);
         // Hapus grup yang kosong
         $roleNavItems = array_filter($roleNavItems, function ($group) {
+            if (!empty($group['collapsible'])) {
+                return !empty($group['sections']);
+            }
             if (!isset($group['items'])) return true;
             return count($group['items']) > 0;
         });
@@ -118,23 +167,36 @@
                     ['route' => 'adminkelas.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'adminkelas.monev.*'],
                 ]
             ],
+            [
+                'group' => 'Keuangan',
+                'items' => [
+                    ['route' => 'admin.pembayaran-bulanan.index', 'label' => 'Rekap Pembayaran', 'perm' => 'menu.rekap-pembayaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'pattern' => 'admin.pembayaran-bulanan.*'],
+                ]
+            ],
         ]);
     }
     if ($user && $user->hasRole('Pengajar')) {
-        $pengajarNav = [];
-        $pengajarNav = array_merge($pengajarNav, [
-            ['route' => 'pengajar.master-kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'pengajar.master-kegiatan-rutin.*'],
-            ['route' => 'pengajar.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'pattern' => 'pengajar.kegiatan.*'],
-            ['route' => 'pengajar.matrikulasi.index', 'label' => 'Matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.matrikulasi.*'],
-            ['route' => 'pengajar.pencapaian.index', 'label' => 'Pencapaian Siswa', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.pencapaian.*'],
+        $roleNavItems = array_merge($roleNavItems, [
+            [
+                'group' => 'Kurikulum',
+                'items' => [
+                    ['route' => 'pengajar.master-kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'pengajar.master-kegiatan-rutin.*'],
+                    ['route' => 'pengajar.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'pattern' => 'pengajar.kegiatan.*'],
+                    ['route' => 'pengajar.matrikulasi.index', 'label' => 'Matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.matrikulasi.*'],
+                    ['route' => 'pengajar.pencapaian.index', 'label' => 'Pencapaian Siswa', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.pencapaian.*'],
+                ]
+            ],
         ]);
-        $roleNavItems = array_merge($roleNavItems, $pengajarNav);
     }
     if ($user && $user->hasRole('Orang Tua')) {
         $chatIcon = 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z';
-        $roleNavItems = array_merge($roleNavItems, [
+        $orangTuaNav = [
             ['route' => 'orangtua.pencapaian.index', 'label' => 'Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.pencapaian.*'],
-            ['route' => 'orangtua.chat.index', 'label' => 'Chat', 'icon' => $chatIcon, 'pattern' => 'orangtua.chat.*'],
+        ];
+        if ($chatOrangTuaEnabled) {
+            $orangTuaNav[] = ['route' => 'orangtua.chat.index', 'label' => 'Chat', 'icon' => $chatIcon, 'pattern' => 'orangtua.chat.*'];
+        }
+        $orangTuaNav = array_merge($orangTuaNav, [
             ['route' => 'orangtua.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'orangtua.monev.*'],
             ['route' => 'orangtua.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'],
             ['route' => 'orangtua.kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'orangtua.kegiatan-rutin.*'],
@@ -144,11 +206,17 @@
             ['route' => 'orangtua.kritik-saran.index', 'label' => 'Saran & Kritik', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'orangtua.kritik-saran.*'],
             ['route' => 'orangtua.kesehatan.index', 'label' => 'Kesehatan Anak', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'orangtua.kesehatan.*'],
         ]);
+        $roleNavItems = array_merge($roleNavItems, $orangTuaNav);
         $orangTuaBottomNavItems = [
             ['route' => 'orangtua.pencapaian.index', 'label' => 'Pencapaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.pencapaian.*'],
-            ['route' => 'orangtua.chat.index', 'label' => 'Chat', 'icon' => $chatIcon, 'pattern' => 'orangtua.chat.*', 'center' => true],
-            ['route' => 'orangtua.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'],
         ];
+        if ($chatOrangTuaEnabled) {
+            $orangTuaBottomNavItems[] = ['route' => 'orangtua.chat.index', 'label' => 'Chat', 'icon' => $chatIcon, 'pattern' => 'orangtua.chat.*', 'center' => true];
+            $orangTuaBottomNavItems[] = ['route' => 'orangtua.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'];
+        } else {
+            $orangTuaBottomNavItems[] = ['route' => 'orangtua.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'orangtua.monev.*'];
+            $orangTuaBottomNavItems[] = ['route' => 'orangtua.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'orangtua.kegiatan.*'];
+        }
         $orangTuaMoreNavItems = [
             ['route' => 'orangtua.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'orangtua.monev.*'],
             ['route' => 'orangtua.kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'orangtua.kegiatan-rutin.*'],
@@ -164,7 +232,9 @@
         $roleLabel = 'Yayasan';
     elseif ($user && $user->hasRole('Admin Sekolah'))
         $roleLabel = 'Admin Sekolah';
-    elseif ($user && $user->hasRole('Wali Kelas') && !$user->hasRole('Admin Sekolah'))
+    elseif ($user && $user->canAccessAdminPanel())
+        $roleLabel = $user->getRoleNames()->first() ?: 'Staf';
+    elseif ($user && $user->hasRole('Wali Kelas'))
         $roleLabel = 'Wali Kelas';
     elseif ($user && $user->hasRole('Pengajar'))
         $roleLabel = 'Guru';
@@ -172,6 +242,9 @@
         $roleLabel = 'Wali Murid';
 
     $isOrangTua = $user && $user->hasRole('Orang Tua');
+
+    $showDashboardNav = !($user && $user->canAccessAdminPanel() && !$user->hasRole('Admin Sekolah'));
+    $homeRoute = (!$showDashboardNav && ($first = $user?->firstAccessibleAdminRoute())) ? $first : 'dashboard';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">

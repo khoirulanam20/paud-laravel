@@ -302,7 +302,7 @@ return [
     'admin.pembayaran-bulanan.index' => [
         ['element' => '[data-tour="nav-admin.pembayaran-bulanan.index"]', 'title' => 'Menu Rekap Pembayaran', 'description' => 'Generate dan kelola tagihan bulanan berdasarkan kehadiran siswa.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Rekap Pembayaran Bulanan', 'description' => 'Total tagihan = biaya bulanan + biaya lain − diskon.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-pembayaran-stats"]', 'title' => 'Ringkasan Tagihan', 'description' => 'Statistik total, menunggu, disetujui, dan nominal yang sudah disetujui.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-pembayaran-stats"]', 'title' => 'Ringkasan Tagihan', 'description' => 'Statistik total, menunggu, lunas, dan nominal yang sudah lunas.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-pembayaran-filter"]', 'title' => 'Filter', 'description' => 'Saring tagihan berdasarkan bulan, tahun, kelas, atau status.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-pembayaran-generate-btn"]', 'title' => 'Generate Tagihan', 'description' => 'Buat tagihan bulanan untuk siswa yang sudah ada di Biaya Bulanan.', 'side' => 'left'],
         ['element' => '[data-tour="admin-pembayaran-table"]', 'title' => 'Daftar Tagihan', 'description' => 'Semua tagihan periode terpilih beserta status pembayarannya.', 'side' => 'top'],

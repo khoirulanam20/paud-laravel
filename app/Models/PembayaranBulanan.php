@@ -153,7 +153,7 @@ class PembayaranBulanan extends Model
     {
         return match ($this->status) {
             'pending' => 'Menunggu',
-            'approved' => 'Disetujui',
+            'approved' => 'Lunas',
             'rejected' => 'Ditolak',
             default => ucfirst($this->status),
         };

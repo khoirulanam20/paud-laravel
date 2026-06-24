@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Spatie\Permission\Models\Role;
 
 class PenggunaController extends Controller
 {
+    private const HIDDEN_ROLES = ['Lembaga'];
     public function index()
     {
         $sekolahId = auth()->user()->sekolah_id;
@@ -18,7 +20,7 @@ class PenggunaController extends Controller
             ->with('roles')
             ->latest()
             ->paginate(10);
-        $roles = Role::all();
+        $roles = Role::whereNotIn('name', self::HIDDEN_ROLES)->get();
 
         return view('admin.pengguna.index', compact('penggunas', 'roles'));
     }
@@ -29,7 +31,7 @@ class PenggunaController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'exists:' . Role::class . ',name'],
+            'role' => ['required', 'string', 'exists:' . Role::class . ',name', Rule::notIn(self::HIDDEN_ROLES)],
         ]);
 
         $user = User::create([
@@ -53,7 +55,7 @@ class PenggunaController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $pengguna->id],
             'password' => ['nullable', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'exists:' . Role::class . ',name'],
+            'role' => ['required', 'string', 'exists:' . Role::class . ',name', Rule::notIn(self::HIDDEN_ROLES)],
         ]);
 
         $data = [

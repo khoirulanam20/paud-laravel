@@ -213,7 +213,7 @@ return [
         [
             'element' => '[data-tour="modal-approve"]',
             'openModal' => 'approve',
-            'title' => 'Setujui Pembayaran',
+            'title' => 'Tandai Lunas',
             'description' => 'Konfirmasi pembayaran setelah bukti transfer diverifikasi.',
             'side' => 'left',
         ],

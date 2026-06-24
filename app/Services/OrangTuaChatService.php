@@ -33,6 +33,10 @@ class OrangTuaChatService
      */
     public function sendMessage(User $user, string $content): array
     {
+        if (! $this->tokenService->isChatOrangTuaEnabled((int) $user->sekolah_id)) {
+            throw new \RuntimeException('Fitur chat orang tua sedang dinonaktifkan oleh admin sekolah.');
+        }
+
         $ai = $this->monevService->resolveAiServiceForUser($user);
         if (! $ai) {
             throw new \RuntimeException(

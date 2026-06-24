@@ -11,11 +11,19 @@ class SekolahAiSetting extends Model
 
     protected $fillable = [
         'sekolah_id',
+        'chat_orangtua_enabled',
         'fallback_monev',
         'fallback_pencapaian',
         'fallback_chat',
         'fallback_persona',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'chat_orangtua_enabled' => 'boolean',
+        ];
+    }
 
     public function sekolah(): BelongsTo
     {

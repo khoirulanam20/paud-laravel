@@ -104,7 +104,7 @@ Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')
 // ─────────────────────────────────────────────
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin.menu'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('monev', [AdminMonevController::class, 'index'])->name('monev.index');
     Route::post('monev/generate', [AdminMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
     Route::post('monev/bulk-generate', [AdminMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');
@@ -132,20 +132,6 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
 
     Route::resource('diskon', DiskonController::class)->except(['create', 'edit', 'show']);
 
-    Route::get('pembayaran-bulanan', [PembayaranBulananController::class, 'index'])->name('pembayaran-bulanan.index');
-    Route::get('pembayaran-bulanan/generate-preview', [PembayaranBulananController::class, 'generatePreview'])->name('pembayaran-bulanan.generate-preview');
-    Route::get('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'show'])->name('pembayaran-bulanan.show');
-    Route::post('pembayaran-bulanan/generate', [PembayaranBulananController::class, 'generate'])->name('pembayaran-bulanan.generate');
-    Route::delete('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'destroy'])->name('pembayaran-bulanan.destroy');
-    Route::patch('pembayaran-bulanan/{pembayaran}/diskon', [PembayaranBulananController::class, 'updateDiskon'])->name('pembayaran-bulanan.update-diskon');
-    Route::patch('pembayaran-bulanan/{pembayaran}/approve', [PembayaranBulananController::class, 'approve'])->name('pembayaran-bulanan.approve');
-    Route::patch('pembayaran-bulanan/{pembayaran}/reject', [PembayaranBulananController::class, 'reject'])->name('pembayaran-bulanan.reject');
-
-    // Biaya tambahan (biaya lain)
-    Route::post('pembayaran-bulanan/{pembayaran}/items', [PembayaranBulananController::class, 'storeItem'])->name('pembayaran-bulanan.items.store');
-    Route::patch('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'updateItem'])->name('pembayaran-bulanan.items.update');
-    Route::delete('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'destroyItem'])->name('pembayaran-bulanan.items.destroy');
-
     // Akuntansi PSAK
     Route::resource('akun', AkunController::class)->except(['create', 'edit', 'show']);
 
@@ -165,9 +151,19 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::resource('role', \App\Http\Controllers\Admin\RoleController::class)->except(['create', 'edit', 'show']);
     Route::post('role/{role}/update-permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updatePermissions'])->name('role.update-permissions');
     Route::resource('pengguna', \App\Http\Controllers\Admin\PenggunaController::class)->except(['create', 'edit', 'show']);
-});
 
-Route::middleware(['auth', 'role:Admin Sekolah|Wali Kelas'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('pembayaran-bulanan', [PembayaranBulananController::class, 'index'])->name('pembayaran-bulanan.index');
+    Route::get('pembayaran-bulanan/generate-preview', [PembayaranBulananController::class, 'generatePreview'])->name('pembayaran-bulanan.generate-preview');
+    Route::get('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'show'])->name('pembayaran-bulanan.show');
+    Route::post('pembayaran-bulanan/generate', [PembayaranBulananController::class, 'generate'])->name('pembayaran-bulanan.generate');
+    Route::delete('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'destroy'])->name('pembayaran-bulanan.destroy');
+    Route::patch('pembayaran-bulanan/{pembayaran}/diskon', [PembayaranBulananController::class, 'updateDiskon'])->name('pembayaran-bulanan.update-diskon');
+    Route::patch('pembayaran-bulanan/{pembayaran}/approve', [PembayaranBulananController::class, 'approve'])->name('pembayaran-bulanan.approve');
+    Route::patch('pembayaran-bulanan/{pembayaran}/reject', [PembayaranBulananController::class, 'reject'])->name('pembayaran-bulanan.reject');
+    Route::post('pembayaran-bulanan/{pembayaran}/items', [PembayaranBulananController::class, 'storeItem'])->name('pembayaran-bulanan.items.store');
+    Route::patch('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'updateItem'])->name('pembayaran-bulanan.items.update');
+    Route::delete('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'destroyItem'])->name('pembayaran-bulanan.items.destroy');
+
     Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
     Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
     Route::resource('kegiatan', KegiatanController::class)->except(['create', 'edit', 'show']);
@@ -195,6 +191,7 @@ Route::middleware(['auth', 'role:Admin Sekolah|Wali Kelas'])->prefix('admin')->n
     Route::post('ai-persona/data-access', [AiPersonaController::class, 'updateDataAccess'])->name('ai-persona.data-access.update');
     Route::post('ai-persona/generate', [AiPersonaController::class, 'generate'])->middleware('throttle:10,1')->name('ai-persona.generate');
     Route::post('ai-persona/fallbacks', [AiPersonaController::class, 'updateFallbacks'])->name('ai-persona.fallbacks.update');
+    Route::post('ai-persona/chat-enabled', [AiPersonaController::class, 'updateChatEnabled'])->name('ai-persona.chat-enabled.update');
     // Pendaftaran approval
     Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
     Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');
