@@ -57,11 +57,11 @@ class ProfileController extends Controller
         $sekolah = Sekolah::findOrFail($request->user()->sekolah_id);
         $request->validate([
             'name' => 'required|string',
-            'alamat' => 'nullable|string',
+            'address' => 'nullable|string',
             'nisn' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
-        $sekolah->update($request->only('name', 'alamat', 'nisn', 'phone'));
+        $sekolah->update($request->only('name', 'address', 'nisn', 'phone'));
 
         return Redirect::route('profile.edit')->with('status', 'profile-sekolah-updated');
     }

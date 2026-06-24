@@ -54,7 +54,7 @@
                     <div class="col-span-2"><label class="input-label">Nama Sekolah</label><input type="text" name="name" value="{{ $sekolah->name }}" required class="input-field"></div>
                     <div><label class="input-label">NISN</label><input type="text" name="nisn" value="{{ $sekolah->nisn }}" class="input-field"></div>
                     <div><label class="input-label">Kontak / HP</label><input type="text" name="phone" value="{{ $sekolah->phone }}" class="input-field"></div>
-                    <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="alamat" class="input-field" rows="3">{{ $sekolah->alamat }}</textarea></div>
+                    <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="address" class="input-field" rows="3">{{ old('address', $sekolah->address) }}</textarea></div>
                 </div>
                 <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Profil Sekolah</button></div>
             </form>
