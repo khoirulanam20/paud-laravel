@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Diskon;
 use App\Models\Kelas;
 use App\Models\PembayaranBulanan;
+use App\Models\PembayaranBulananItem;
 use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
 use Illuminate\Http\Request;
@@ -268,5 +269,65 @@ class PembayaranBulananController extends Controller
         return redirect()
             ->route('admin.pembayaran-bulanan.show', $pembayaran)
             ->with('success', 'Pembayaran berhasil ditolak.');
+    }
+
+    public function storeItem(Request $request, PembayaranBulanan $pembayaran)
+    {
+        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
+
+        $request->validate([
+            'nama_item' => 'required|string|max:255',
+            'jumlah' => 'required|numeric|min:1',
+        ]);
+
+        $pembayaran->items()->create([
+            'nama_item' => $request->nama_item,
+            'jumlah' => $request->jumlah,
+        ]);
+
+        $this->rekapBiayaService->hitungBiaya($pembayaran);
+
+        return redirect()
+            ->route('admin.pembayaran-bulanan.show', $pembayaran)
+            ->with('success', 'Biaya tambahan berhasil ditambahkan.');
+    }
+
+    public function updateItem(Request $request, PembayaranBulanan $pembayaran, PembayaranBulananItem $item)
+    {
+        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($item->pembayaran_bulanan_id !== $pembayaran->id, 404);
+        abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
+
+        $request->validate([
+            'nama_item' => 'required|string|max:255',
+            'jumlah' => 'required|numeric|min:1',
+        ]);
+
+        $item->update([
+            'nama_item' => $request->nama_item,
+            'jumlah' => $request->jumlah,
+        ]);
+
+        $this->rekapBiayaService->hitungBiaya($pembayaran);
+
+        return redirect()
+            ->route('admin.pembayaran-bulanan.show', $pembayaran)
+            ->with('success', 'Biaya tambahan berhasil diperbarui.');
+    }
+
+    public function destroyItem(Request $request, PembayaranBulanan $pembayaran, PembayaranBulananItem $item)
+    {
+        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($item->pembayaran_bulanan_id !== $pembayaran->id, 404);
+        abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
+
+        $item->delete();
+
+        $this->rekapBiayaService->hitungBiaya($pembayaran);
+
+        return redirect()
+            ->route('admin.pembayaran-bulanan.show', $pembayaran)
+            ->with('success', 'Biaya tambahan berhasil dihapus.');
     }
 }

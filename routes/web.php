@@ -141,6 +141,11 @@ Route::middleware(['auth', 'role:Admin Sekolah'])->prefix('admin')->name('admin.
     Route::patch('pembayaran-bulanan/{pembayaran}/approve', [PembayaranBulananController::class, 'approve'])->name('pembayaran-bulanan.approve');
     Route::patch('pembayaran-bulanan/{pembayaran}/reject', [PembayaranBulananController::class, 'reject'])->name('pembayaran-bulanan.reject');
 
+    // Biaya tambahan (biaya lain)
+    Route::post('pembayaran-bulanan/{pembayaran}/items', [PembayaranBulananController::class, 'storeItem'])->name('pembayaran-bulanan.items.store');
+    Route::patch('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'updateItem'])->name('pembayaran-bulanan.items.update');
+    Route::delete('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'destroyItem'])->name('pembayaran-bulanan.items.destroy');
+
     // Akuntansi PSAK
     Route::resource('akun', AkunController::class)->except(['create', 'edit', 'show']);
 

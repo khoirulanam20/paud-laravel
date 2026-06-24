@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class JurnalLine extends Model
 {
+    public $timestamps = false;
     protected $fillable = [
         'jurnal_id',
         'akun_id',

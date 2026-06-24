@@ -309,29 +309,29 @@
                         <button type="submit" data-tour="modal-generate-submit" class="btn-primary" :disabled="selectedKeys.length === 0">Generate</button>
                     </div>
                 </form>
+
+                <!-- MODAL TAMBAH BIAYA LAIN (nested di dalam generate modal-box) -->
+                <div x-show="showItemModal" class="modal-overlay" style="display:none; z-index:60;">
+                    <div x-show="showItemModal" x-transition class="modal-box max-w-sm" @click.away="showItemModal=false">
+                        <div class="modal-header"><h3 class="section-title" x-text="itemModalEditIdx !== null ? 'Edit Biaya Lain' : 'Tambah Biaya Lain'"></h3></div>
+                        <div class="modal-body space-y-3">
+                            <div>
+                                <label class="input-label">Nama Biaya</label>
+                                <input type="text" x-model="itemModalNama" placeholder="Contoh: Popok, Ekstra" class="input-field" @keydown.enter="saveItemModal()">
+                            </div>
+                            <div>
+                                <label class="input-label">Jumlah (Rp)</label>
+                                <input type="number" x-model="itemModalJumlah" min="0" placeholder="0" class="input-field" @keydown.enter="saveItemModal()">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" @click.stop="showItemModal=false" class="btn-secondary">Batal</button>
+                            <button type="button" @click.stop="saveItemModal()" class="btn-primary">Simpan</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- END GENERATE MODAL -->
-
-        <!-- MODAL TAMBAH BIAYA LAIN -->
-        <div x-show="showItemModal" class="modal-overlay" style="display:none;">
-            <div x-show="showItemModal" x-transition class="modal-box max-w-sm" @click.away="showItemModal=false">
-                <div class="modal-header"><h3 class="section-title" x-text="itemModalEditIdx !== null ? 'Edit Biaya Lain' : 'Tambah Biaya Lain'"></h3></div>
-                <div class="modal-body space-y-3">
-                    <div>
-                        <label class="input-label">Nama Biaya</label>
-                        <input type="text" x-model="itemModalNama" placeholder="Contoh: Popok, Ekstra" class="input-field" @keydown.enter="saveItemModal()">
-                    </div>
-                    <div>
-                        <label class="input-label">Jumlah (Rp)</label>
-                        <input type="number" x-model="itemModalJumlah" min="0" placeholder="0" class="input-field" @keydown.enter="saveItemModal()">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" @click="showItemModal=false" class="btn-secondary">Batal</button>
-                    <button type="button" @click="saveItemModal()" class="btn-primary">Simpan</button>
-                </div>
-            </div>
-        </div>
     </div>
 </x-app-layout>

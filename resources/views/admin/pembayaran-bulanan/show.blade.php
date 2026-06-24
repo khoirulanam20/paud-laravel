@@ -14,7 +14,7 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false">
+         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false, showItemModal: false, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showItemModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -44,15 +44,39 @@
                             <span class="font-semibold">{{ $pembayaran->getBiayaPerHariFormatted() }}</span>
                         </div>
                         @php $items = $pembayaran->items; @endphp
-                        @if($items && $items->count() > 0)
-                            <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
+                        <div class="flex justify-between py-2 border-b" style="border-color:rgba(0,0,0,0.06);">
+                            <div class="flex items-center gap-2">
                                 <span class="text-sm" style="color:#9E9790;">Biaya Lain</span>
-                                <span></span>
+                                @if($pembayaran->isPending())
+                                    <button type="button"
+                                            @click="itemModalEditId=null; itemModalNama=''; itemModalJumlah=0; showItemModal=true"
+                                            class="text-xs px-2 py-0.5 rounded" style="color:#1A6B6B;background:#D0E8E8;">+ Tambah</button>
+                                @endif
                             </div>
+                            <span></span>
+                        </div>
+                        @if($items && $items->count() > 0)
                             @foreach($items as $item)
-                                <div class="flex justify-between pl-4 py-1 text-sm" style="color:#6B6560;">
-                                    <span>{{ $item->nama_item }}</span>
-                                    <span>+ Rp {{ number_format($item->jumlah, 0, ',', '.') }}</span>
+                                <div class="flex justify-between pl-4 py-1 text-sm items-center gap-2" style="color:#6B6560;">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ $item->nama_item }}</span>
+                                        @if($pembayaran->isPending())
+                                            <button type="button" class="text-xs px-1.5 py-0.5 rounded hover:opacity-70"
+                                                    style="color:#D97706;background:#FEF3C7;"
+                                                    @click="itemModalEditId={{ $item->id }}; itemModalNama='{{ e($item->nama_item) }}'; itemModalJumlah={{ $item->jumlah }}; showItemModal=true">Edit</button>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span>+ Rp {{ number_format($item->jumlah, 0, ',', '.') }}</span>
+                                        @if($pembayaran->isPending())
+                                            <form action="{{ route('admin.pembayaran-bulanan.items.destroy', [$pembayaran, $item]) }}" method="POST"
+                                                  onsubmit="return confirm('Hapus biaya ini?')" class="inline-flex">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="text-xs font-bold px-1.5 py-0.5 rounded leading-none hover:opacity-70"
+                                                        style="color:#C0392B;background:#FEE2E2;">&times;</button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         @endif
@@ -164,6 +188,33 @@
                         <textarea name="catatan_admin" rows="2" placeholder="Alasan penolakan" required class="input-field mt-4"></textarea>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showRejectModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-danger">Ya, Tolak</button></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL TAMBAH/EDIT BIAYA LAIN -->
+        <div x-show="showItemModal" class="modal-overlay" style="display:none;">
+            <div x-show="showItemModal" x-transition class="modal-box max-w-sm" @click.away="showItemModal=false">
+                <form :action="itemModalEditId
+                    ? '{{ route('admin.pembayaran-bulanan.items.update', ['pembayaran' => $pembayaran->id, 'item' => '__ID__']) }}'.replace('__ID__', itemModalEditId)
+                    : '{{ route('admin.pembayaran-bulanan.items.store', $pembayaran) }}'" method="POST">
+                    @csrf
+                    <template x-if="itemModalEditId"><input type="hidden" name="_method" value="PATCH"></template>
+                    <div class="modal-header"><h3 class="section-title" x-text="itemModalEditId ? 'Edit Biaya Lain' : 'Tambah Biaya Lain'"></h3></div>
+                    <div class="modal-body space-y-3">
+                        <div>
+                            <label class="input-label">Nama Biaya</label>
+                            <input type="text" name="nama_item" x-model="itemModalNama" placeholder="Contoh: Popok, Ekstra" class="input-field" required>
+                        </div>
+                        <div>
+                            <label class="input-label">Jumlah (Rp)</label>
+                            <input type="number" name="jumlah" x-model="itemModalJumlah" min="1" placeholder="0" class="input-field" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" @click="showItemModal=false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary">Simpan</button>
+                    </div>
                 </form>
             </div>
         </div>
