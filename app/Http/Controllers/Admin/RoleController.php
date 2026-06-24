@@ -10,9 +10,9 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends Controller
 {
-    protected array $defaultRoles = ['Lembaga', 'Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Orang Tua'];
+    protected array $defaultRoles = ['Superadmin', 'Lembaga', 'Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Orang Tua'];
 
-    protected array $hiddenRoles = ['Lembaga'];
+    protected array $hiddenRoles = ['Superadmin', 'Lembaga'];
 
     protected array $permissionGroups = [
         'Manajemen Siswa' => [

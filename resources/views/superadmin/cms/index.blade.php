@@ -40,7 +40,7 @@
                 Lihat Website
             </a>
         </div>
-        <form method="POST" action="{{ route('lembaga.cms.update') }}" enctype="multipart/form-data" class="space-y-6 relative" x-ref="cmsForm" @submit.prevent="submitWithCompression()">
+        <form method="POST" action="{{ route('superadmin.cms.update') }}" enctype="multipart/form-data" class="space-y-6 relative" x-ref="cmsForm" @submit.prevent="submitWithCompression()">
             {{-- Compressing Overlay --}}
             <div x-show="isCompressing" class="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6" style="display:none;">
                 <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>

@@ -16,6 +16,18 @@
     </div>
 
     <div class="flex items-center gap-2">
+        @if($lembagaSchools ?? null)
+            <form action="{{ route('lembaga.active-sekolah.update') }}" method="POST" class="hidden md:flex items-center gap-2">
+                @csrf
+                <label class="text-xs font-semibold whitespace-nowrap" style="color:#6B6560;">Cabang aktif:</label>
+                <select name="sekolah_id" class="input-field text-sm py-1.5 min-w-[10rem]" onchange="this.form.submit()">
+                    <option value="">-- Pilih cabang --</option>
+                    @foreach($lembagaSchools as $s)
+                        <option value="{{ $s->id }}" @selected(($activeSekolah?->id ?? null) === $s->id)>{{ $s->name }}</option>
+                    @endforeach
+                </select>
+            </form>
+        @endif
         @if($hasPageTour)
         <button type="button" data-tour-trigger title="Ulangi panduan halaman" class="h-9 w-9 rounded-xl flex items-center justify-center text-[#1A6B6B] bg-[#1A6B6B]/10 hover:bg-[#1A6B6B]/20 transition-colors focus:outline-none focus:ring-2 focus:ring-[#1A6B6B] focus:ring-offset-2 ring-offset-[#FAF6F0]" aria-label="Ulangi panduan halaman">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

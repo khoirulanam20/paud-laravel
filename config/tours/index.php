@@ -44,12 +44,12 @@ return [
         ['element' => '[data-tour="lembaga-kritik-list"]', 'title' => 'Daftar Masukan', 'description' => 'Setiap kartu menampilkan pengirim, isi pesan, dan status tanggapan.', 'side' => 'top'],
     ],
 
-    'lembaga.ai-setting.index' => [
-        ['element' => '[data-tour="nav-lembaga.ai-setting.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Konfigurasi layanan AI dan token untuk seluruh yayasan dari sini.', 'side' => 'right'],
+    'superadmin.ai-setting.index' => [
+        ['element' => '[data-tour="nav-superadmin.ai-setting.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Konfigurasi layanan AI dan token per lembaga dari sini.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan AI', 'description' => 'Atur provider, model, API key, dan saldo token per sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="lembaga-ai-tabs"]', 'title' => 'Tab Pengaturan', 'description' => 'Pilih tab Provider & API atau Token Sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="lembaga-ai-status"]', 'title' => 'Status AI', 'description' => 'Banner ini menunjukkan apakah layanan AI aktif atau belum dikonfigurasi.', 'side' => 'bottom'],
-        ['element' => '[data-tour="lembaga-ai-form"]', 'title' => 'Form Konfigurasi', 'description' => 'Isi provider, model, dan API key. Gunakan tombol uji koneksi sebelum menyimpan.', 'side' => 'top'],
+        ['element' => '[data-tour="superadmin-ai-tabs"]', 'title' => 'Tab Pengaturan', 'description' => 'Pilih tab Provider & API atau Token Sekolah.', 'side' => 'bottom'],
+        ['element' => '[data-tour="superadmin-ai-status"]', 'title' => 'Status AI', 'description' => 'Banner ini menunjukkan apakah layanan AI aktif atau belum dikonfigurasi.', 'side' => 'bottom'],
+        ['element' => '[data-tour="superadmin-ai-form"]', 'title' => 'Form Konfigurasi', 'description' => 'Isi provider, model, dan API key. Gunakan tombol uji koneksi sebelum menyimpan.', 'side' => 'top'],
     ],
 
     // ─── ADMIN SEKOLAH ─────────────────────────────────────────

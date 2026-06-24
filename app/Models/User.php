@@ -101,9 +101,28 @@ class User extends Authenticatable
         );
     }
 
+    public function getSekolahIdAttribute($value): ?int
+    {
+        if ($this->hasRole('Lembaga')) {
+            $active = session('active_sekolah_id');
+
+            return $active ? (int) $active : null;
+        }
+
+        return $value !== null ? (int) $value : null;
+    }
+
     public function canAccessAdminPanel(): bool
     {
-        if (!$this->sekolah_id || $this->hasRole(['Lembaga', 'Orang Tua'])) {
+        if ($this->hasRole('Orang Tua')) {
+            return false;
+        }
+
+        if ($this->hasRole('Lembaga')) {
+            return $this->sekolah_id !== null;
+        }
+
+        if (!$this->getAttributes()['sekolah_id'] ?? null) {
             return false;
         }
 
@@ -112,7 +131,7 @@ class User extends Authenticatable
         }
 
         // Role kustom (mis. Bendahara) — bukan role operasional default
-        $builtinRoles = ['Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Lembaga', 'Orang Tua'];
+        $builtinRoles = ['Superadmin', 'Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Lembaga', 'Orang Tua'];
         $hasCustomRole = $this->roles->contains(
             fn ($role) => !in_array($role->name, $builtinRoles, true)
         );

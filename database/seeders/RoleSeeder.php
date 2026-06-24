@@ -15,6 +15,7 @@ class RoleSeeder extends Seeder
     {
         // Define Roles
         $roles = [
+            'Superadmin',
             'Lembaga',
             'Admin Sekolah',
             'Wali Kelas',
@@ -42,6 +43,14 @@ class RoleSeeder extends Seeder
 
         // Seed 1 User per Role
         $users = [
+            [
+                'name' => 'Super Admin',
+                'email' => 'superadmin@example.com',
+                'password' => Hash::make('password'),
+                'lembaga_id' => null,
+                'sekolah_id' => null,
+                'role' => 'Superadmin'
+            ],
             [
                 'name' => 'Admin Lembaga',
                 'email' => 'lembaga@example.com',

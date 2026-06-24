@@ -77,8 +77,9 @@ class PermissionSeeder extends Seeder
 
         // Mapping hak akses per role default (sesuai akses sebelum RBAC)
         $rolePermissions = [
-            'Lembaga' => $allPermissionNames, // Super admin: akses semua
-            'Admin Sekolah' => $allPermissionNames, // Full akses semua menu admin
+            'Superadmin' => [],
+            'Lembaga' => $allPermissionNames,
+            'Admin Sekolah' => $allPermissionNames,
             'Wali Kelas' => [
                 'menu.matrikulasi',
                 'menu.agenda-belajar',

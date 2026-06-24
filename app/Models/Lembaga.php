@@ -15,4 +15,14 @@ class Lembaga extends Model
         'no_akta',
         'no_pengesahan',
     ];
+
+    public function sekolahs()
+    {
+        return $this->hasMany(Sekolah::class);
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

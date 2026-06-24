@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Lembaga;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiSetting;
+use App\Models\Lembaga;
 use App\Services\AiTokenService;
 use App\Support\AiProvider;
 use Illuminate\Http\Request;
@@ -16,11 +17,34 @@ class AiSettingController extends Controller
         protected AiTokenService $tokenService
     ) {}
 
+    protected function resolveLembagaId(Request $request): int
+    {
+        $lembagaId = $request->integer('lembaga_id');
+
+        abort_if($lembagaId < 1, 404, 'Pilih lembaga terlebih dahulu.');
+
+        return $lembagaId;
+    }
+
     public function index(Request $request)
     {
-        $lembaga_id = auth()->user()->lembaga_id;
-        $aiSetting  = AiSetting::where('lembaga_id', $lembaga_id)->first();
-        $providers  = AiProvider::all();
+        $lembagas = Lembaga::orderBy('name')->get();
+        $lembaga_id = $request->integer('lembaga_id') ?: $lembagas->first()?->id;
+
+        if (!$lembaga_id) {
+            return view('superadmin.ai_setting.index', [
+                'lembagas' => $lembagas,
+                'lembaga_id' => null,
+                'aiSetting' => null,
+                'providers' => AiProvider::all(),
+                'schoolsWithBalances' => collect(),
+                'transactions' => null,
+                'activeTab' => $request->query('tab', 'provider'),
+            ]);
+        }
+
+        $aiSetting = AiSetting::where('lembaga_id', $lembaga_id)->first();
+        $providers = AiProvider::all();
         $schoolsWithBalances = $this->tokenService->schoolsWithBalances((int) $lembaga_id);
         $transactions = $this->tokenService->paginateTransactions(
             (int) $lembaga_id,
@@ -28,7 +52,9 @@ class AiSettingController extends Controller
         );
         $activeTab = $request->query('tab', 'provider');
 
-        return view('lembaga.ai_setting.index', compact(
+        return view('superadmin.ai_setting.index', compact(
+            'lembagas',
+            'lembaga_id',
             'aiSetting',
             'providers',
             'schoolsWithBalances',
@@ -39,12 +65,12 @@ class AiSettingController extends Controller
 
     public function testConnection(Request $request)
     {
-        $lembaga_id = auth()->user()->lembaga_id;
-        $aiSetting  = AiSetting::where('lembaga_id', $lembaga_id)->first();
+        $lembaga_id = $this->resolveLembagaId($request);
+        $aiSetting = AiSetting::where('lembaga_id', $lembaga_id)->first();
 
         if (! $aiSetting || ! $aiSetting->hasValidApiKey()) {
             return response()->json([
-                'ok'    => false,
+                'ok' => false,
                 'error' => $aiSetting?->apiKeyNeedsReentry()
                     ? 'API Key perlu disimpan ulang (enkripsi tidak valid).'
                     : 'API Key belum dikonfigurasi. Simpan pengaturan lebih dulu.',
@@ -52,7 +78,7 @@ class AiSettingController extends Controller
         }
 
         try {
-            $service     = $aiSetting->toAiService();
+            $service = $aiSetting->toAiService();
             $suggestions = $service->generateFeedbackSuggestions(
                 'Anisa',
                 'Mengenal Warna',
@@ -61,18 +87,18 @@ class AiSettingController extends Controller
             );
 
             return response()->json([
-                'ok'          => true,
-                'message'     => 'Koneksi berhasil! Provider: ' . $aiSetting->providerLabel() . ' · Model: ' . ($aiSetting->ai_model ?? '-'),
-                'sample'      => $suggestions[0] ?? '',
+                'ok' => true,
+                'message' => 'Koneksi berhasil! Provider: ' . $aiSetting->providerLabel() . ' · Model: ' . ($aiSetting->ai_model ?? '-'),
+                'sample' => $suggestions[0] ?? '',
             ]);
         } catch (\Throwable $e) {
             Log::warning('AI test connection failed', [
                 'lembaga_id' => $lembaga_id,
-                'message'    => $e->getMessage(),
+                'message' => $e->getMessage(),
             ]);
 
             return response()->json([
-                'ok'    => false,
+                'ok' => false,
                 'error' => 'Koneksi AI gagal. Periksa provider, API Key, dan model.',
             ], 500);
         }
@@ -80,10 +106,12 @@ class AiSettingController extends Controller
 
     public function update(Request $request)
     {
+        $lembaga_id = $this->resolveLembagaId($request);
+
         $request->validate([
             'ai_provider' => ['required', 'string', Rule::in(AiProvider::keys())],
-            'ai_model'    => 'required|string|max:255',
-            'ai_api_key'  => 'nullable|string|max:1000',
+            'ai_model' => 'required|string|max:255',
+            'ai_api_key' => 'nullable|string|max:1000',
             'ai_base_url' => [
                 'nullable',
                 'required_if:ai_provider,' . AiProvider::CUSTOM,
@@ -103,11 +131,9 @@ class AiSettingController extends Controller
             ],
         ]);
 
-        $lembaga_id = auth()->user()->lembaga_id;
-
         $data = [
             'ai_provider' => $request->ai_provider,
-            'ai_model'    => $request->ai_model,
+            'ai_model' => $request->ai_model,
             'ai_base_url' => $request->ai_provider === AiProvider::CUSTOM
                 ? rtrim($request->ai_base_url, '/')
                 : null,
@@ -122,16 +148,15 @@ class AiSettingController extends Controller
             $data
         );
 
-        return redirect()->route('lembaga.ai-setting.index', ['tab' => 'provider'])
-            ->with('success', 'Pengaturan AI berhasil disimpan.');
+        return redirect()->route('superadmin.ai-setting.index', [
+            'lembaga_id' => $lembaga_id,
+            'tab' => 'provider',
+        ])->with('success', 'Pengaturan AI berhasil disimpan.');
     }
 
     public function storeTokens(Request $request)
     {
-        $lembaga_id = auth()->user()->lembaga_id;
-        abort_if($lembaga_id === null, 403, 'Akun tidak terikat lembaga.');
-
-        $lembaga_id = (int) $lembaga_id;
+        $lembaga_id = $this->resolveLembagaId($request);
 
         $validated = $request->validate([
             'sekolah_id' => ['required', 'integer', 'exists:sekolahs,id'],
@@ -149,7 +174,10 @@ class AiSettingController extends Controller
         );
 
         return redirect()
-            ->route('lembaga.ai-setting.index', ['tab' => 'tokens'])
+            ->route('superadmin.ai-setting.index', [
+                'lembaga_id' => $lembaga_id,
+                'tab' => 'tokens',
+            ])
             ->with('success', 'Token berhasil ditambahkan.');
     }
 }

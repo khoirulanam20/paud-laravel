@@ -46,7 +46,7 @@
                 this.testLoading = true;
                 this.testResult = null;
                 try {
-                    const res = await fetch('{{ route('lembaga.ai-setting.test') }}', {
+                    const res = await fetch('{{ route('superadmin.ai-setting.test') }}?lembaga_id={{ $lembaga_id ?? 0 }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -64,6 +64,23 @@
                 }
             }
         }">
+
+        @if($lembagas->isEmpty())
+            <div class="card p-8 text-center text-sm" style="color:#9E9790;">Belum ada lembaga terdaftar. Tambahkan lembaga terlebih dahulu.</div>
+        @else
+        <form method="GET" action="{{ route('superadmin.ai-setting.index') }}" class="mb-6 flex flex-wrap items-end gap-3">
+            <div class="flex-1 min-w-[200px]">
+                <label class="input-label">Lembaga / Yayasan</label>
+                <select name="lembaga_id" class="input-field" onchange="this.form.submit()">
+                    @foreach($lembagas as $l)
+                        <option value="{{ $l->id }}" @selected($lembaga_id == $l->id)>{{ $l->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @if(request('tab'))
+                <input type="hidden" name="tab" value="{{ request('tab') }}">
+            @endif
+        </form>
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -84,7 +101,7 @@
             </div>
         @endif
 
-        <div data-tour="lembaga-ai-tabs" class="flex flex-wrap gap-2 mb-6">
+        <div data-tour="superadmin-ai-tabs" class="flex flex-wrap gap-2 mb-6">
             <button type="button" @click="setTab('provider')"
                 class="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
                 :style="activeTab === 'provider' ? 'background:#1A6B6B; color:#fff;' : 'background:#F5F0E8; color:#6B6560;'">
@@ -99,7 +116,7 @@
 
         <div x-show="activeTab === 'provider'" x-cloak>
         {{-- Status Banner --}}
-        <div data-tour="lembaga-ai-status" class="mb-6 rounded-2xl border p-5 flex items-start gap-4"
+        <div data-tour="superadmin-ai-status" class="mb-6 rounded-2xl border p-5 flex items-start gap-4"
             style="background:{{ $aiSetting?->hasValidApiKey() ? '#D0E8E8' : '#FEF9EC' }}; border-color: {{ $aiSetting?->hasValidApiKey() ? '#1A6B6B33' : '#F0B84233' }};">
             <div class="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
                 style="background:{{ $aiSetting?->hasValidApiKey() ? '#1A6B6B' : '#F0B842' }};">
@@ -166,8 +183,9 @@
                 <h3 class="section-title">Konfigurasi AI Provider</h3>
                 <p class="section-subtitle mt-1">Pilih provider AI dengan API <strong>OpenAI-compatible</strong> (<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">/v1/chat/completions</code>).</p>
             </div>
-            <form data-tour="lembaga-ai-form" action="{{ route('lembaga.ai-setting.update') }}" method="POST">
+            <form data-tour="superadmin-ai-form" action="{{ route('superadmin.ai-setting.update') }}" method="POST">
                 @csrf
+                <input type="hidden" name="lembaga_id" value="{{ $lembaga_id }}">
                 <div class="px-6 py-6 space-y-6">
 
                     {{-- Provider --}}
@@ -286,7 +304,7 @@
         </div>
 
         <div x-show="activeTab === 'tokens'" x-cloak>
-            <div class="card overflow-hidden mb-6" data-tour="lembaga-ai-tokens">
+            <div class="card overflow-hidden mb-6" data-tour="superadmin-ai-tokens">
                 <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                     <h3 class="section-title">Saldo Token per Sekolah</h3>
                     <p class="section-subtitle mt-1">Tambahkan token AI untuk setiap sekolah. Satu token = satu kali generate monev per anak, saran pencapaian, chat, atau generate persona.</p>
@@ -311,8 +329,9 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <form action="{{ route('lembaga.ai-setting.tokens.store') }}" method="POST" class="flex flex-wrap items-center gap-2">
+                                        <form action="{{ route('superadmin.ai-setting.tokens.store') }}" method="POST" class="flex flex-wrap items-center gap-2">
                                             @csrf
+                                            <input type="hidden" name="lembaga_id" value="{{ $lembaga_id }}">
                                             <input type="hidden" name="sekolah_id" value="{{ $row['sekolah']->id }}">
                                             <input type="number" name="amount" min="1" max="100000" required
                                                 class="input-field w-28 text-sm py-2" placeholder="Jumlah">
@@ -338,8 +357,9 @@
                         <h3 class="section-title">Riwayat Transaksi Token</h3>
                         <p class="section-subtitle mt-1">Top-up dan pemakaian token terbaru.</p>
                     </div>
-                    <form method="GET" action="{{ route('lembaga.ai-setting.index') }}" class="flex items-center gap-2">
+                    <form method="GET" action="{{ route('superadmin.ai-setting.index') }}" class="flex items-center gap-2">
                         <input type="hidden" name="tab" value="tokens">
+                        <input type="hidden" name="lembaga_id" value="{{ $lembaga_id }}">
                         <select name="sekolah_id" class="input-field text-sm py-2" onchange="this.form.submit()">
                             <option value="">Semua sekolah</option>
                             @foreach($schoolsWithBalances as $row)
@@ -389,5 +409,6 @@
                 @endif
             </div>
         </div>
+        @endif
     </div>
 </x-app-layout>

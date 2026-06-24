@@ -12,7 +12,7 @@ use Spatie\Permission\Models\Role;
 
 class PenggunaController extends Controller
 {
-    private const HIDDEN_ROLES = ['Lembaga'];
+    private const HIDDEN_ROLES = ['Superadmin', 'Lembaga'];
     public function index()
     {
         $sekolahId = auth()->user()->sekolah_id;

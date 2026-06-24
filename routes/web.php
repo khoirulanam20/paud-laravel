@@ -26,10 +26,16 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Lembaga\AdminSekolahController;
-use App\Http\Controllers\Lembaga\AiSettingController;
-use App\Http\Controllers\Lembaga\CmsController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
+use App\Http\Controllers\Lembaga\SchoolSwitcherController;
 use App\Http\Controllers\Lembaga\SekolahController;
+use App\Http\Controllers\Superadmin\AdminLembagaController as SuperadminAdminLembagaController;
+use App\Http\Controllers\Superadmin\AiSettingController as SuperadminAiSettingController;
+use App\Http\Controllers\Superadmin\CmsController as SuperadminCmsController;
+use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
+use App\Http\Controllers\Superadmin\LembagaController as SuperadminLembagaController;
+use App\Http\Controllers\Superadmin\SekolahController as SuperadminSekolahController;
+use App\Http\Controllers\Superadmin\SuperadminUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
@@ -87,24 +93,36 @@ Route::middleware('auth')->group(function () {
 });
 
 // ─────────────────────────────────────────────
+// SUPERADMIN
+// ─────────────────────────────────────────────
+Route::middleware(['auth', 'role:Superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('dashboard', [SuperadminDashboardController::class, 'index'])->name('dashboard');
+    Route::resource('lembaga', SuperadminLembagaController::class)->except(['create', 'edit', 'show']);
+    Route::resource('admin-lembaga', SuperadminAdminLembagaController::class)->except(['create', 'edit', 'show']);
+    Route::resource('users', SuperadminUserController::class)->except(['create', 'edit', 'show']);
+    Route::get('sekolah', [SuperadminSekolahController::class, 'index'])->name('sekolah.index');
+    Route::get('cms', [SuperadminCmsController::class, 'index'])->name('cms.index');
+    Route::post('cms', [SuperadminCmsController::class, 'update'])->name('cms.update');
+    Route::get('ai-setting', [SuperadminAiSettingController::class, 'index'])->name('ai-setting.index');
+    Route::post('ai-setting', [SuperadminAiSettingController::class, 'update'])->name('ai-setting.update');
+    Route::post('ai-setting/test', [SuperadminAiSettingController::class, 'testConnection'])->name('ai-setting.test');
+    Route::post('ai-setting/tokens', [SuperadminAiSettingController::class, 'storeTokens'])->name('ai-setting.tokens.store');
+});
+
+// ─────────────────────────────────────────────
 // LEMBAGA
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')->group(function () {
+    Route::post('active-sekolah', [SchoolSwitcherController::class, 'update'])->name('active-sekolah.update');
     Route::resource('sekolah', SekolahController::class)->except(['create', 'edit', 'show']);
     Route::resource('admin-sekolah', AdminSekolahController::class)->except(['create', 'edit', 'show']);
     Route::get('kritik-saran', [LembagaKritikSaranController::class, 'index'])->name('kritik-saran.index');
-    Route::get('cms', [CmsController::class, 'index'])->name('cms.index');
-    Route::post('cms', [CmsController::class, 'update'])->name('cms.update');
-    Route::get('ai-setting', [AiSettingController::class, 'index'])->name('ai-setting.index');
-    Route::post('ai-setting', [AiSettingController::class, 'update'])->name('ai-setting.update');
-    Route::post('ai-setting/test', [AiSettingController::class, 'testConnection'])->name('ai-setting.test');
-    Route::post('ai-setting/tokens', [AiSettingController::class, 'storeTokens'])->name('ai-setting.tokens.store');
 });
 
 // ─────────────────────────────────────────────
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'admin.menu'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('monev', [AdminMonevController::class, 'index'])->name('monev.index');
     Route::post('monev/generate', [AdminMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
     Route::post('monev/bulk-generate', [AdminMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');

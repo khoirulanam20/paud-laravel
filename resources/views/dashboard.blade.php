@@ -3,6 +3,15 @@
 
         <!-- ═══ LEMBAGA DASHBOARD ═══ -->
         @hasrole('Lembaga')
+        @if(session('warning'))
+            <div class="alert-danger mb-5">{{ session('warning') }}</div>
+        @endif
+        @if(!session('active_sekolah_id') && empty($activeSekolah))
+            <div class="card p-5 mb-6 border" style="border-color:#F0B84233; background:#FEF9EC;">
+                <p class="text-sm font-semibold" style="color:#2C2C2C;">Pilih cabang sekolah aktif</p>
+                <p class="text-xs mt-1 mb-3" style="color:#6B6560;">Gunakan dropdown <strong>Cabang aktif</strong> di header untuk mengakses menu operasional sekolah (siswa, kurikulum, keuangan, dll).</p>
+            </div>
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5" data-tour="dashboard-stats">
             <div class="stat-card" data-tour="dashboard-welcome">
                 <div class="stat-icon">

@@ -1,64 +1,61 @@
-<x-guest-public :cms="$cms">
-    <x-slot name="title">Kontak</x-slot>
+<x-guest-public :cms="$cms" title="Kontak">
+    @include('guest.partials.page-header', [
+        'badge' => 'Hubungi Kami',
+        'title' => 'Minta Demo & Penawaran SIPP',
+        'subtitle' => 'Isi formulir di bawah atau hubungi langsung — tim kami akan merespons segera.',
+    ])
 
-    <section class="py-20" style="background: linear-gradient(135deg,#FFF3E0,#F0FFF4);">
-        <div class="max-w-6xl mx-auto px-3 md:px-4 sm:px-6">
-            <div class="text-center mb-12">
-                <span class="badge-pill">📞 Kontak</span>
-                <h1 style="font-family:'Baloo 2',sans-serif; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; color:#1F2937; margin-top:.75rem;">Kami Siap Membantu Anda!</h1>
-                <p class="text-gray-500 mt-2">Punya pertanyaan? Jangan ragu untuk menghubungi kami.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <!-- Info Kontak -->
-                <div class="space-y-5">
-                    <div class="card-facility p-6 flex gap-4" style="border-left:4px solid var(--guest-orange);">
-                        <div class="text-4xl">📍</div>
-                        <div><h4 class="font-bold" style="color:#1F2937;">Alamat</h4><p class="text-sm text-gray-600 mt-1">{{ $cms['kontak_alamat'] }}</p></div>
+    <section class="guest-section">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="space-y-4" data-guest-stagger>
+                    @foreach([
+                        ['label' => 'Alamat', 'value' => $cms['kontak_alamat'] ?? '', 'icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z'],
+                        ['label' => 'Telepon', 'value' => $cms['kontak_telepon'] ?? '', 'icon' => 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z'],
+                        ['label' => 'Email', 'value' => $cms['kontak_email'] ?? '', 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
+                        ['label' => 'Jam Operasional', 'value' => $cms['kontak_jam'] ?? '', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
+                    ] as $info)
+                    @if($info['value'])
+                    <div class="guest-card flex gap-4" data-guest-stagger-item>
+                        <div class="guest-icon-wrap">
+                            @include('guest.partials.icon', ['path' => $info['icon']])
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm">{{ $info['label'] }}</h4>
+                            <p class="text-sm text-[var(--guest-text-muted)] mt-0.5">{{ $info['value'] }}</p>
+                        </div>
                     </div>
-                    <div class="card-facility p-6 flex gap-4" style="border-left:4px solid var(--guest-teal);">
-                        <div class="text-4xl">📞</div>
-                        <div><h4 class="font-bold" style="color:#1F2937;">Telepon</h4><p class="text-sm text-gray-600 mt-1">{{ $cms['kontak_telepon'] }}</p></div>
-                    </div>
-                    <div class="card-facility p-6 flex gap-4" style="border-left:4px solid var(--guest-blue);">
-                        <div class="text-4xl">✉️</div>
-                        <div><h4 class="font-bold" style="color:#1F2937;">Email</h4><p class="text-sm text-gray-600 mt-1">{{ $cms['kontak_email'] }}</p></div>
-                    </div>
-                    <div class="card-facility p-6 flex gap-4" style="border-left:4px solid var(--guest-purple);">
-                        <div class="text-4xl">🕐</div>
-                        <div><h4 class="font-bold" style="color:#1F2937;">Jam Operasional</h4><p class="text-sm text-gray-600 mt-1">{{ $cms['kontak_jam'] }}</p></div>
-                    </div>
+                    @endif
+                    @endforeach
                 </div>
 
-                <!-- Form Pesan -->
-                <div class="card-facility p-8">
+                <div class="guest-card" data-guest-animate="fade-up">
                     @if(session('kontak_success'))
-                        <div class="rounded-2xl px-5 py-4 mb-5 flex gap-3" style="background:#D1FAE5; color:#065F46;">
-                            <span class="text-xl">✅</span>
-                            <p class="font-semibold text-sm">{{ session('kontak_success') }}</p>
-                        </div>
+                    <div class="rounded-xl px-4 py-3 mb-5 flex gap-3 text-sm font-semibold" style="background: #D1FAE5; color: #065F46;">
+                        @include('guest.partials.icon', ['path' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'class' => 'h-5 w-5 shrink-0'])
+                        {{ session('kontak_success') }}
+                    </div>
                     @endif
-                    <h3 class="text-lg font-extrabold mb-5" style="color:#1F2937;">Kirim Pesan</h3>
+                    <h3 class="text-lg font-extrabold mb-1">Formulir Permintaan Demo</h3>
+                    <p class="text-sm text-[var(--guest-text-muted)] mb-5">Ceritakan kebutuhan lembaga Anda — jumlah cabang, jumlah siswa, dan modul yang diminati.</p>
                     <form method="POST" action="{{ route('guest.kontak.send') }}" class="space-y-4">
                         @csrf
                         <div>
-                            <label class="input-label">Nama Anda *</label>
-                            <input type="text" name="nama" value="{{ old('nama') }}" required class="input-field" placeholder="Nama Anda">
-                            @error('nama')<p class="text-xs mt-1" style="color:#C0392B;">{{ $message }}</p>@enderror
+                            <label class="guest-label" for="kontak-nama">Nama *</label>
+                            <input id="kontak-nama" type="text" name="nama" value="{{ old('nama') }}" required class="guest-input" placeholder="Nama lengkap">
+                            @error('nama')<p class="text-xs mt-1 text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="input-label">Email *</label>
-                            <input type="email" name="email" value="{{ old('email') }}" required class="input-field" placeholder="email@anda.com">
-                            @error('email')<p class="text-xs mt-1" style="color:#C0392B;">{{ $message }}</p>@enderror
+                            <label class="guest-label" for="kontak-email">Email *</label>
+                            <input id="kontak-email" type="email" name="email" value="{{ old('email') }}" required class="guest-input" placeholder="email@lembaga.com">
+                            @error('email')<p class="text-xs mt-1 text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
-                            <label class="input-label">Pesan *</label>
-                            <textarea name="pesan" required rows="5" class="input-field" placeholder="Tuliskan pertanyaan atau pesan Anda...">{{ old('pesan') }}</textarea>
-                            @error('pesan')<p class="text-xs mt-1" style="color:#C0392B;">{{ $message }}</p>@enderror
+                            <label class="guest-label" for="kontak-pesan">Pesan *</label>
+                            <textarea id="kontak-pesan" name="pesan" required rows="5" class="guest-input" placeholder="Contoh: Lembaga dengan 3 cabang, butuh modul keuangan PSAK dan portal orang tua...">{{ old('pesan') }}</textarea>
+                            @error('pesan')<p class="text-xs mt-1 text-red-600">{{ $message }}</p>@enderror
                         </div>
-                        <button type="submit" class="btn-cta w-full justify-center">
-                            📩 Kirim Pesan
-                        </button>
+                        <button type="submit" class="guest-btn guest-btn-primary w-full cursor-pointer">Kirim Permintaan</button>
                     </form>
                 </div>
             </div>

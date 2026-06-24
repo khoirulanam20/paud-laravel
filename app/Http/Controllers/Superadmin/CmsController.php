@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Lembaga;
+namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\CmsContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Traits\CanUploadImage;
 
 class CmsController extends Controller
 {
     use CanUploadImage;
+
     private array $textKeys = [
         'hero_title', 'hero_subtitle',
         'about_title', 'about_text',
@@ -34,22 +35,23 @@ class CmsController extends Controller
         foreach (array_merge($this->textKeys, $this->photoKeys) as $key) {
             $cms[$key] = CmsContent::get($key, '');
         }
-        return view('lembaga.cms.index', compact('cms'));
+
+        return view('superadmin.cms.index', compact('cms'));
     }
 
     public function update(Request $request)
     {
-        // Validate text fields
         foreach ($this->textKeys as $key) {
             CmsContent::set($key, $request->input($key), null);
         }
 
-        // Handle photo uploads
         foreach ($this->photoKeys as $key) {
             if ($request->hasFile($key)) {
                 $request->validate([$key => 'image|max:3072']);
                 $old = CmsContent::get($key, '');
-                if ($old) Storage::disk('public')->delete($old);
+                if ($old) {
+                    Storage::disk('public')->delete($old);
+                }
                 $path = $this->uploadImage($request->file($key), 'cms');
                 CmsContent::set($key, $path, null);
             }

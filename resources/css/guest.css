@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --guest-bg: #F8FAFC;
+        --guest-surface: #FFFFFF;
+        --guest-text: #0F172A;
+        --guest-text-muted: #64748B;
+        --guest-border: rgba(15, 23, 42, 0.08);
+        --guest-teal: #1A6B6B;
+        --guest-teal-dark: #14504F;
+        --guest-teal-light: #D0E8E8;
+        --guest-cta: #0369A1;
+        --guest-cta-hover: #075985;
+    }
+
+    html.guest-site {
+        scroll-behavior: smooth;
+    }
+
+    body.guest-body {
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        background: var(--guest-bg);
+        color: var(--guest-text);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    [data-guest-animate],
+    [data-guest-stagger-item] {
+        opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        [data-guest-animate],
+        [data-guest-stagger-item] {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+}
+
+@layer components {
+    .guest-nav {
+        @apply sticky top-0 z-50 border-b backdrop-blur-md;
+        background: rgba(255, 255, 255, 0.92);
+        border-color: var(--guest-border);
+    }
+
+    .guest-nav-link {
+        @apply inline-flex items-center px-3 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 cursor-pointer;
+        color: var(--guest-text-muted);
+    }
+
+    .guest-nav-link:hover,
+    .guest-nav-link.active {
+        color: var(--guest-teal);
+        background: var(--guest-teal-light);
+    }
+
+    .guest-btn {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 cursor-pointer;
+    }
+
+    .guest-btn-primary {
+        background: var(--guest-teal);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(26, 107, 107, 0.3);
+    }
+
+    .guest-btn-primary:hover {
+        background: var(--guest-teal-dark);
+        transform: translateY(-1px);
+    }
+
+    .guest-btn-secondary {
+        @apply border-2 bg-white;
+        border-color: var(--guest-teal);
+        color: var(--guest-teal);
+    }
+
+    .guest-btn-secondary:hover {
+        background: var(--guest-teal-light);
+    }
+
+    .guest-btn-ghost {
+        color: var(--guest-text-muted);
+    }
+
+    .guest-btn-ghost:hover {
+        color: var(--guest-teal);
+        background: var(--guest-teal-light);
+    }
+
+    .guest-card {
+        @apply rounded-2xl border bg-white p-6 transition-all duration-200;
+        border-color: var(--guest-border);
+    }
+
+    .guest-card[data-guest-hover]:hover {
+        border-color: rgba(26, 107, 107, 0.25);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .guest-badge {
+        @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wide rounded-full;
+        background: var(--guest-teal-light);
+        color: var(--guest-teal-dark);
+    }
+
+    .guest-section {
+        @apply py-16 md:py-24;
+    }
+
+    .guest-section-alt {
+        background: #fff;
+    }
+
+    .guest-icon-wrap {
+        @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl;
+        background: var(--guest-teal-light);
+        color: var(--guest-teal);
+    }
+
+    .guest-input {
+        @apply w-full rounded-xl border px-4 py-3 text-sm transition-colors duration-200;
+        border-color: var(--guest-border);
+        background: #fff;
+    }
+
+    .guest-input:focus {
+        @apply outline-none ring-2 ring-teal/30;
+        border-color: var(--guest-teal);
+    }
+
+    .guest-label {
+        @apply block text-sm font-semibold mb-1.5;
+        color: var(--guest-text);
+    }
+
+    .guest-stat-value {
+        @apply text-3xl md:text-4xl font-extrabold tracking-tight;
+        color: var(--guest-teal);
+    }
+
+    .guest-role-tab {
+        @apply px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors duration-200 cursor-pointer border;
+        border-color: transparent;
+        color: var(--guest-text-muted);
+    }
+
+    .guest-role-tab.active {
+        background: var(--guest-teal);
+        color: #fff;
+        border-color: var(--guest-teal);
+    }
+
+    .guest-role-tab:not(.active):hover {
+        background: var(--guest-teal-light);
+        color: var(--guest-teal-dark);
+    }
+}

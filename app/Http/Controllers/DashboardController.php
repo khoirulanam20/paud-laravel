@@ -26,7 +26,11 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->canAccessAdminPanel() && !$user->hasRole('Admin Sekolah')) {
+        if ($user->hasRole('Superadmin')) {
+            return redirect()->route('superadmin.dashboard');
+        }
+
+        if ($user->canAccessAdminPanel() && !$user->hasRole(['Admin Sekolah', 'Lembaga'])) {
             $route = $user->firstAccessibleAdminRoute();
             if ($route) {
                 return redirect()->route($route);

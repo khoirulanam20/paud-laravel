@@ -13,7 +13,19 @@ class EnsureAdminMenuAccess
     {
         $user = $request->user();
 
-        if (!$user?->sekolah_id || $user->hasRole(['Lembaga', 'Orang Tua'])) {
+        if ($user?->hasRole('Orang Tua')) {
+            abort(403);
+        }
+
+        if ($user?->hasRole('Lembaga')) {
+            if (!$user->sekolah_id) {
+                abort(403, 'Pilih cabang sekolah aktif terlebih dahulu.');
+            }
+
+            return $next($request);
+        }
+
+        if (! ($user?->getAttributes()['sekolah_id'] ?? null)) {
             abort(403);
         }
 
