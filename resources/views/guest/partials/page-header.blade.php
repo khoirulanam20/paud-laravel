@@ -1,10 +1,11 @@
 @props(['badge' => '', 'title', 'subtitle' => ''])
-<section class="guest-section border-b" style="border-color: var(--guest-border); background: linear-gradient(180deg, #fff 0%, var(--guest-bg) 100%);">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+<section class="relative overflow-hidden pt-12 pb-16 md:pb-20" style="background: var(--guest-sage-light);">
+    @include('guest.partials.doodles', ['variant' => 'hero'])
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center relative z-10">
         @if($badge)
             <span class="guest-badge mb-4" data-guest-animate="fade-up">{{ $badge }}</span>
         @endif
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--guest-text)]" data-guest-animate="fade-up">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl guest-heading text-[var(--guest-text)]" data-guest-animate="fade-up">
             {{ $title }}
         </h1>
         @if($subtitle)
@@ -14,3 +15,4 @@
         @endif
     </div>
 </section>
+@include('guest.partials.wave-divider', ['fill' => 'var(--guest-bg)'])

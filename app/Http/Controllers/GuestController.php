@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KritikSaran;
 use App\Models\Sekolah;
 use App\Support\GuestCms;
+use App\Support\GuestWhatsApp;
 use Illuminate\Http\Request;
 
 class GuestController extends Controller
@@ -54,20 +54,14 @@ class GuestController extends Controller
 
     public function kontakSend(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'pesan' => 'required|string|min:10',
         ]);
 
-        // Store as kritik_saran (guest, no user_id)
-        KritikSaran::create([
-            'sekolah_id' => null,
-            'user_id' => null,
-            'message' => "[{$request->nama} – {$request->email}]: {$request->pesan}",
-            'status' => 'Terkirim',
-        ]);
-
-        return back()->with('kontak_success', 'Pesan Anda berhasil terkirim! Kami akan segera menghubungi Anda. 😊');
+        return redirect()->away(GuestWhatsApp::url(
+            GuestWhatsApp::demoRequest($validated['nama'], $validated['email'], $validated['pesan'])
+        ));
     }
 }

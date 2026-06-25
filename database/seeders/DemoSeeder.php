@@ -639,9 +639,9 @@ class DemoSeeder extends Seeder
             'hero_subtitle' => 'Tempat terbaik untuk tumbuh, belajar, dan bermain bersama teman-teman baru!',
             'about_title' => 'Tentang PAUD Bintang Kecil',
             'about_text' => 'PAUD Bintang Kecil adalah lembaga pendidikan anak usia dini yang berdiri sejak tahun 2020. Kami mengutamakan perkembangan optimal anak melalui pendidikan yang menyenangkan, aman, dan penuh kasih sayang.',
-            'kontak_alamat' => 'Jl. Merdeka No. 10, Jakarta Selatan',
-            'kontak_telepon' => '021-87654321',
-            'kontak_email' => 'info@paudbintangkecil.sch.id',
+            'kontak_alamat' => 'Jl. Taman Lembayung No.47, Sendangguwo, Kec. Tembalang, Kota Semarang, Jawa Tengah (50273)',
+            'kontak_telepon' => '085117494221',
+            'kontak_email' => 'admin@firstudio.id',
             'kontak_jam' => 'Senin-Jumat: 07.00-16.00 WIB',
             'footer_text' => 'Tumbuh bersama, bahagia bersama. 💛',
         ];

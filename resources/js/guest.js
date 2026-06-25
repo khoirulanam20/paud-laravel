@@ -7,7 +7,7 @@ Alpine.start();
 const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function reveal(el, props = {}, options = {}) {
-    animate(el, { opacity: [0, 1], y: [24, 0], ...props }, {
+    animate(el, { opacity: [0, 1], y: [16, 0], ...props }, {
         duration: 0.45,
         easing: 'ease-out',
         ...options,
@@ -28,7 +28,7 @@ function initGuestAnimations() {
     });
 
     inView('[data-guest-animate="fade-up"]', (el) => {
-        reveal(el, { y: [32, 0] });
+        reveal(el, { y: [20, 0] });
     }, { margin: '-60px 0px -60px 0px', amount: 0.15 });
 
     inView('[data-guest-stagger]', (container) => {
@@ -51,4 +51,11 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initGuestAnimations);
 } else {
     initGuestAnimations();
+}
+
+const guestNav = document.getElementById('guest-nav');
+if (guestNav) {
+    const onScroll = () => guestNav.classList.toggle('scrolled', window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
 }
