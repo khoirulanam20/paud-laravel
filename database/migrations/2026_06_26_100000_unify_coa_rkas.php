@@ -161,8 +161,16 @@ return new class extends Migration
             }
 
             if (Schema::hasTable('kode_rekenings')) {
-                foreach (DB::table('kode_rekenings')->where('jenis', 'belanja')->get() as $kr) {
-                    $this->upsertRkasAkun($sekolah->id, $kr->kode, $kr->snp, $kr->komponen, $kr->uraian, 'beban');
+                $belanjaFromKr = DB::table('kode_rekenings')->where('jenis', 'belanja')->get();
+                if ($belanjaFromKr->isNotEmpty()) {
+                    foreach ($belanjaFromKr as $kr) {
+                        $this->upsertRkasAkun($sekolah->id, $kr->kode, $kr->snp, $kr->komponen, $kr->uraian, 'beban');
+                    }
+                } else {
+                    foreach ($belanjaRows as $row) {
+                        $nama = Str::limit($row['uraian'], 80, '');
+                        $this->upsertRkasAkun($sekolah->id, $row['kode'], $row['snp'], $row['komponen'], $row['uraian'], 'beban', $nama);
+                    }
                 }
                 foreach (DB::table('kode_rekenings')->where('jenis', 'pendapatan')->get() as $kr) {
                     $this->upsertRkasAkun($sekolah->id, $kr->kode, $kr->snp, $kr->komponen, $kr->uraian, 'pendapatan', $kr->uraian);
@@ -172,9 +180,10 @@ return new class extends Migration
                     $nama = Str::limit($row['uraian'], 80, '');
                     $this->upsertRkasAkun($sekolah->id, $row['kode'], $row['snp'], $row['komponen'], $row['uraian'], 'beban', $nama);
                 }
-                foreach ($pendapatan as $row) {
-                    $this->upsertRkasAkun($sekolah->id, $row['kode'], null, 'Pendapatan', $row['uraian'], 'pendapatan', $row['nama']);
-                }
+            }
+
+            foreach ($pendapatan as $row) {
+                $this->upsertRkasAkun($sekolah->id, $row['kode'], null, 'Pendapatan', $row['uraian'], 'pendapatan', $row['nama']);
             }
         }
     }

@@ -67,26 +67,28 @@ class AkuntansiSetting extends Model
         $piutang = Akun::where('sekolah_id', $sekolahId)->where('kode', 'SYS.PIUTANG')->first();
         $pendapatanSpp = Akun::where('sekolah_id', $sekolahId)->where('kode', 'P.01')->first();
 
+        $attrs = array_filter([
+            'metode_pencatatan' => 'cash',
+            'akun_kas_id' => $kas?->id,
+            'akun_piutang_id' => $piutang?->id,
+            'akun_pendapatan_id' => $pendapatanSpp?->id,
+            'akun_untuk_in' => $pendapatanLain?->id,
+            'akun_untuk_out' => $bebanDefault?->id,
+        ], fn ($v) => $v !== null);
+
         $setting = static::firstOrCreate(
             ['sekolah_id' => $sekolahId],
-            [
-                'metode_pencatatan' => 'cash',
-                'akun_kas_id' => $kas?->id,
-                'akun_piutang_id' => $piutang?->id,
-                'akun_pendapatan_id' => $pendapatanSpp?->id,
-                'akun_untuk_in' => $pendapatanLain?->id,
-                'akun_untuk_out' => $bebanDefault?->id,
-            ],
+            $attrs + ['metode_pencatatan' => 'cash'],
         );
 
         if ($kas && $setting->akun_kas_id !== $kas->id) {
-            $setting->update([
+            $setting->update(array_filter([
                 'akun_kas_id' => $kas->id,
                 'akun_piutang_id' => $piutang?->id,
                 'akun_pendapatan_id' => $pendapatanSpp?->id,
                 'akun_untuk_in' => $pendapatanLain?->id,
                 'akun_untuk_out' => $bebanDefault?->id,
-            ]);
+            ], fn ($v) => $v !== null));
         }
 
         return $setting->fresh();
