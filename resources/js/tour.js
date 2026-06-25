@@ -975,6 +975,11 @@ document.addEventListener('click', (event) => {
     const type = openTrigger?.dataset.tourOpenModal ?? demoAction?.dataset.tourDemoAction;
 
     if (type) {
+        const ctx = getContext();
+        if (!ctx?.modalSteps?.[type]?.length) {
+            return;
+        }
+
         const completeKey = modalCompleteKey(type);
         if (completeKey && !shouldRunTour(completeKey)) {
             return;

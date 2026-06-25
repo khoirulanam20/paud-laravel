@@ -8,7 +8,7 @@
             </div>
             <div class="flex gap-2 flex-wrap">
                 @if(!$rka->isFinal())
-                    <form action="{{ route('admin.rkas.finalize', $rka) }}" method="POST" onsubmit="return confirm('Finalkan RKAS?')">@csrf<button class="btn-secondary text-sm">Finalkan</button></form>
+                    <button type="button" @click="showFinalizeModal = true" class="btn-secondary text-sm">Finalkan</button>
                 @else
                     <form action="{{ route('admin.rkas.reopen', $rka) }}" method="POST">@csrf<button class="btn-secondary text-sm">Buka Kembali</button></form>
                 @endif
@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-full mx-auto">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-full mx-auto" x-data="{ showFinalizeModal: false }">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         <div class="card p-4 mb-5 text-sm" style="color:#9E9790;">Periode: {{ $rka->tanggal_mulai->format('d M Y') }} – {{ $rka->tanggal_akhir->format('d M Y') }}</div>
 
@@ -59,5 +59,15 @@
             @endforeach
             @if(!$rka->isFinal())<div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Anggaran</button></div>@endif
         </form>
+
+        <x-confirm-modal
+            show="showFinalizeModal"
+            :action="route('admin.rkas.finalize', $rka)"
+            title="Finalkan RKAS?"
+            message="Anggaran akan dikunci dan tidak bisa diubah lagi. Realisasi tetap bisa disync."
+            submit="Ya, Finalkan"
+            submit-class="btn-primary"
+            icon="warning"
+        />
     </div>
 </x-app-layout>

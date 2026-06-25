@@ -71,15 +71,12 @@
             </div>
         </div>
 
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
-            <div x-show="showDeleteModal" x-transition class="modal-box max-w-md" @click.away="showDeleteModal=false">
-                <div class="modal-header"><h3 class="section-title">Hapus Sumber Dana?</h3></div>
-                <div class="modal-body"><p style="color:#9E9790;">Data yang sudah dipakai di RKAS mungkin terpengaruh.</p></div>
-                <div class="modal-footer">
-                    <button type="button" @click="showDeleteModal=false" class="btn-secondary">Batal</button>
-                    <form :action="deleteRoute" method="POST">@csrf @method('DELETE')<button type="submit" class="btn-danger">Hapus</button></form>
-                </div>
-            </div>
-        </div>
+        <x-confirm-modal
+            show="showDeleteModal"
+            action-binding="deleteRoute"
+            method="DELETE"
+            title="Hapus Sumber Dana?"
+            message="Data yang sudah dipakai di RKAS mungkin terpengaruh."
+        />
     </div>
 </x-app-layout>

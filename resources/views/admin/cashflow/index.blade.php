@@ -209,15 +209,12 @@
                 </form>
             </div>
         </div>
-        <!-- DELETE MODAL -->
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
-            <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
-                <form :action="deleteRoute" method="POST">
-                    @csrf @method('DELETE')
-                    <div class="modal-body text-center py-6"><div class="h-14 w-14 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background:#FAD7D2;"><svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:#C0392B;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></div><h3 class="section-title">Hapus Transaksi?</h3><p class="section-subtitle mt-1">Ini akan mengubah hitungan saldo kas secara permanen.</p></div>
-                    <div class="modal-footer"><button type="button" @click="showDeleteModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-danger">Ya, Hapus</button></div>
-                </form>
-            </div>
-        </div>
+        <x-confirm-modal
+            show="showDeleteModal"
+            action-binding="deleteRoute"
+            method="DELETE"
+            title="Hapus Transaksi?"
+            message="Ini akan mengubah hitungan saldo kas secara permanen."
+        />
     </div>
 </x-app-layout>

@@ -115,14 +115,12 @@
             </div>
         </div>
 
-        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;">
-            <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
-                <div class="modal-header"><h3 class="section-title">Hapus Akun?</h3></div>
-                <div class="modal-footer">
-                    <button type="button" @click="showDeleteModal=false" class="btn-secondary">Batal</button>
-                    <form :action="deleteRoute" method="POST">@csrf @method('DELETE')<button type="submit" class="btn-danger">Hapus</button></form>
-                </div>
-            </div>
-        </div>
+        <x-confirm-modal
+            show="showDeleteModal"
+            action-binding="deleteRoute"
+            method="DELETE"
+            title="Hapus Akun?"
+            message="Akun yang sudah dipakai di transaksi tidak disarankan dihapus."
+        />
     </div>
 </x-app-layout>

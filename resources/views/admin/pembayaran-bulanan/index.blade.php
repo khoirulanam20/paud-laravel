@@ -14,6 +14,8 @@
          x-data="{
              showGenerateModal: false,
              showItemModal: false,
+             showDeleteModal: false,
+             deleteRoute: '',
              itemModalRow: null,
              itemModalNama: '',
              itemModalJumlah: 0,
@@ -84,8 +86,12 @@
              },
              formatRp(n) {
                  return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
+             },
+             openDelete(url) {
+                 this.deleteRoute = url;
+                 this.showDeleteModal = true;
              }
-         }" @tour-close-modals.window="showGenerateModal=false">
+         }" @tour-close-modals.window="showGenerateModal=false; showDeleteModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -182,11 +188,11 @@
                                     <div class="flex items-center justify-end gap-2">
                                         <a @if($loop->first) data-tour="admin-pembayaran-action-edit" @endif href="{{ route('admin.pembayaran-bulanan.show', $p) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</a>
                                         @if($p->status === 'pending')
-                                            <form action="{{ route('admin.pembayaran-bulanan.destroy', $p) }}" method="POST"
-                                                  onsubmit="return confirm('Hapus tagihan ini?')">
-                                                @csrf @method('DELETE')
-                                                <button @if($loop->first) data-tour="admin-pembayaran-action-delete" data-tour-demo-action="delete" @endif type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FEE2E2;">Hapus</button>
-                                            </form>
+                                            <button type="button"
+                                                @if($loop->first) data-tour="admin-pembayaran-action-delete" @endif
+                                                @click="openDelete('{{ route('admin.pembayaran-bulanan.destroy', $p) }}')"
+                                                class="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                                                style="color:#C0392B;background:#FEE2E2;">Hapus</button>
                                         @endif
                                     </div>
                                 </td>
@@ -333,5 +339,13 @@
             </div>
         </div>
         <!-- END GENERATE MODAL -->
+
+        <x-confirm-modal
+            show="showDeleteModal"
+            action-binding="deleteRoute"
+            method="DELETE"
+            title="Hapus Tagihan?"
+            message="Tagihan yang dihapus tidak bisa dikembalikan."
+        />
     </div>
 </x-app-layout>
