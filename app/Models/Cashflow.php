@@ -11,6 +11,7 @@ class Cashflow extends Model
     protected $fillable = [
         'sekolah_id',
         'akun_id',
+        'akun_lawan_id',
         'jurnal_id',
         'type',
         'amount',
@@ -31,6 +32,11 @@ class Cashflow extends Model
     public function akun(): BelongsTo
     {
         return $this->belongsTo(Akun::class);
+    }
+
+    public function akunLawan(): BelongsTo
+    {
+        return $this->belongsTo(Akun::class, 'akun_lawan_id');
     }
 
     public function jurnal(): BelongsTo

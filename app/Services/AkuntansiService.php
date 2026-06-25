@@ -6,6 +6,7 @@ use App\Models\Akun;
 use App\Models\AkuntansiSetting;
 use App\Models\Cashflow;
 use App\Models\Jurnal;
+use App\Models\JurnalLine;
 use App\Models\PembayaranBulanan;
 use Illuminate\Support\Facades\DB;
 
@@ -19,17 +20,19 @@ class AkuntansiService
     public function buatJurnalDariCashflow(Cashflow $cashflow): Jurnal
     {
         $setting = AkuntansiSetting::forSekolah($cashflow->sekolah_id);
-        $kas = $setting->akunKas;
-        $counter = $cashflow->type === 'in'
-            ? $setting->akunUntukIn
-            : $setting->akunUntukOut;
+        $kas = $cashflow->akun_id
+            ? Akun::find($cashflow->akun_id)
+            : $setting->akunKas;
+        $counter = $cashflow->akun_lawan_id
+            ? Akun::find($cashflow->akun_lawan_id)
+            : ($cashflow->type === 'in' ? $setting->akunUntukIn : $setting->akunUntukOut);
 
         $jurnal = DB::transaction(function () use ($cashflow, $kas, $counter) {
             $jurnal = Jurnal::create([
                 'sekolah_id' => $cashflow->sekolah_id,
                 'no_jurnal' => $this->generateNoJurnal($cashflow->sekolah_id),
                 'tanggal' => $cashflow->date,
-                'deskripsi' => 'Auto: Cashflow ' . $cashflow->type . ' - ' . ($cashflow->description),
+                'deskripsi' => 'Auto: Cashflow '.$cashflow->type.' - '.($cashflow->description),
                 'created_by' => auth()->id(),
                 'source' => 'auto-cashflow',
             ]);
@@ -60,7 +63,7 @@ class AkuntansiService
                 'sekolah_id' => $pembayaran->sekolah_id,
                 'no_jurnal' => $this->generateNoJurnal($pembayaran->sekolah_id),
                 'tanggal' => now(),
-                'deskripsi' => 'Auto: Tagihan ' . $pembayaran->getPeriodeLabel() . ' - ' . ($pembayaran->anak->name ?? 'Siswa'),
+                'deskripsi' => 'Auto: Tagihan '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa'),
                 'created_by' => $userId,
                 'source' => 'auto-pembayaran',
                 'sourceable_type' => PembayaranBulanan::class,
@@ -90,7 +93,7 @@ class AkuntansiService
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
 
         $jurnal = DB::transaction(function () use ($pembayaran, $setting, $userId) {
-            $deskripsi = 'Auto: Pembayaran ' . $pembayaran->getPeriodeLabel() . ' - ' . ($pembayaran->anak->name ?? 'Siswa');
+            $deskripsi = 'Auto: Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa');
 
             if ($setting->isAccrual()) {
                 // Debit Kas / Kredit Piutang SPP
@@ -131,7 +134,7 @@ class AkuntansiService
             'jurnal_id' => $jurnal->id,
             'type' => 'in',
             'amount' => $pembayaran->total_bayar,
-            'description' => 'Pembayaran ' . $pembayaran->getPeriodeLabel() . ' - ' . ($pembayaran->anak->name ?? 'Siswa'),
+            'description' => 'Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa'),
             'date' => now(),
         ]);
 
@@ -159,9 +162,9 @@ class AkuntansiService
 
     public function generateNoJurnal(int $sekolahId): string
     {
-        $prefix = 'JNL-' . now()->format('Ym') . '-';
+        $prefix = 'JNL-'.now()->format('Ym').'-';
         $last = Jurnal::where('sekolah_id', $sekolahId)
-            ->where('no_jurnal', 'like', $prefix . '%')
+            ->where('no_jurnal', 'like', $prefix.'%')
             ->orderBy('no_jurnal', 'desc')
             ->first();
 
@@ -171,7 +174,7 @@ class AkuntansiService
             $num = 1;
         }
 
-        return $prefix . str_pad((string) $num, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $num, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -183,7 +186,7 @@ class AkuntansiService
     {
         $akun = Akun::findOrFail($akunId);
 
-        $query = \App\Models\JurnalLine::where('akun_id', $akunId)
+        $query = JurnalLine::where('akun_id', $akunId)
             ->whereHas('jurnal', function ($q) use ($sampaiTanggal) {
                 if ($sampaiTanggal) {
                     $q->where('tanggal', '<=', $sampaiTanggal);

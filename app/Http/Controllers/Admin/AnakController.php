@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\AnakTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAnakPendaftaranRequest;
+use App\Http\Traits\CanUploadImage;
+use App\Imports\AnakImport;
 use App\Models\Anak;
 use App\Models\Kelas;
 use App\Models\User;
 use App\Services\AnakRegistrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Traits\CanUploadImage;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AnakController extends Controller
 {
@@ -37,8 +42,8 @@ class AnakController extends Controller
         if ($request->filled('search')) {
             $term = $request->search;
             $query->where(function ($q) use ($term) {
-                $q->where('name', 'like', '%' . $term . '%')
-                    ->orWhere('nickname', 'like', '%' . $term . '%');
+                $q->where('name', 'like', '%'.$term.'%')
+                    ->orWhere('nickname', 'like', '%'.$term.'%');
             });
         }
 
@@ -55,8 +60,8 @@ class AnakController extends Controller
         $anak->load([
             'user',
             'kelas',
-            'kesehatans' => fn($q) => $q->orderBy('tanggal_pemeriksaan', 'desc'),
-            'pencapaians' => fn($q) => $q->with(['kegiatan', 'matrikulasi'])->latest()
+            'kesehatans' => fn ($q) => $q->orderBy('tanggal_pemeriksaan', 'desc'),
+            'pencapaians' => fn ($q) => $q->with(['kegiatan', 'matrikulasi'])->latest(),
         ]);
 
         return view('admin.anak.show', compact('anak'));
@@ -186,7 +191,7 @@ class AnakController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($anak->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+                Storage::disk('public')->delete($anak->photo);
             }
             $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'anak');
         }
@@ -196,13 +201,120 @@ class AnakController extends Controller
         return redirect()->route('admin.anak.index')->with('success', 'Data Anak berhasil diperbarui.');
     }
 
+    public function downloadTemplate(): BinaryFileResponse
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+
+        return Excel::download(
+            new AnakTemplateExport($sekolahId),
+            'template-import-siswa.xlsx'
+        );
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:5120'],
+        ]);
+
+        $import = $this->runImport($request, dryRun: false);
+
+        $successCount = $import->successCount;
+        $failedRows = $import->failedRows;
+        $failedCount = count($failedRows);
+
+        if ($successCount === 0 && $failedCount === 0) {
+            return redirect()
+                ->route('admin.anak.index')
+                ->with('warning', 'Tidak ada data yang diimport. Pastikan file berisi baris data selain header.');
+        }
+
+        $message = "Import selesai: {$successCount} berhasil";
+        if ($failedCount > 0) {
+            $message .= ", {$failedCount} gagal.";
+        } else {
+            $message .= '.';
+        }
+
+        return redirect()
+            ->route('admin.anak.index')
+            ->with('success', $message)
+            ->with('import_errors', $failedRows);
+    }
+
+    public function testImport(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:5120'],
+        ]);
+
+        $import = $this->runImport($request, dryRun: true);
+        $payload = $this->buildImportTestPayload($import);
+
+        if ($request->expectsJson()) {
+            return response()->json($payload);
+        }
+
+        return redirect()
+            ->route('admin.anak.index')
+            ->with('import_test', $payload);
+    }
+
+    /**
+     * @return array{
+     *     valid_count: int,
+     *     invalid_count: int,
+     *     valid_rows: array<int, string>,
+     *     invalid_rows: array<int, string>,
+     *     can_import: bool,
+     *     message: string
+     * }
+     */
+    protected function buildImportTestPayload(AnakImport $import): array
+    {
+        $validCount = $import->successCount;
+        $invalidCount = count($import->failedRows);
+
+        if ($validCount === 0 && $invalidCount === 0) {
+            return [
+                'valid_count' => 0,
+                'invalid_count' => 0,
+                'valid_rows' => [],
+                'invalid_rows' => [],
+                'can_import' => false,
+                'message' => 'Tidak ada data yang dites. Pastikan file berisi baris data selain header.',
+            ];
+        }
+
+        return [
+            'valid_count' => $validCount,
+            'invalid_count' => $invalidCount,
+            'valid_rows' => $import->validRows,
+            'invalid_rows' => $import->failedRows,
+            'can_import' => $invalidCount === 0 && $validCount > 0,
+            'message' => $invalidCount === 0
+                ? "File siap diimport. {$validCount} baris valid."
+                : "Ditemukan {$invalidCount} baris bermasalah dari ".($validCount + $invalidCount).' baris.',
+        ];
+    }
+
+    protected function runImport(Request $request, bool $dryRun): AnakImport
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $import = new AnakImport($sekolahId, $this->anakRegistration, $dryRun);
+
+        Excel::import($import, $request->file('file'));
+
+        return $import;
+    }
+
     public function destroy(Anak $anak)
     {
         abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
 
         $user = $anak->user;
         if ($anak->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+            Storage::disk('public')->delete($anak->photo);
         }
         $anak->delete();
 

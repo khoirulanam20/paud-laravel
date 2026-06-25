@@ -12,11 +12,15 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
-            showCreateModal: @js($errors->any()),
+            showCreateModal: @js($errors->any() && ! $errors->has('file')),
+            showImportModal: @js($errors->has('file')),
             showEditModal: false,
             showDeleteModal: false,
             editData: {},
             deleteRoute: '',
+            importTesting: false,
+            importTest: null,
+            importTestError: null,
             parentMode: @js(old('parent_mode', 'new')),
             parentSearch: '',
             parentResults: [],
@@ -33,6 +37,49 @@
                 this.showEditModal = true; 
             },
             openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true; },
+            openImportModal() {
+                this.importTest = null;
+                this.importTestError = null;
+                this.importTesting = false;
+                this.showImportModal = true;
+            },
+            resetImportTest() {
+                this.importTest = null;
+                this.importTestError = null;
+            },
+            async runImportTest() {
+                this.importTestError = null;
+                const form = this.$refs.importForm;
+                const fileInput = form?.querySelector('input[type=file]');
+                if (!fileInput?.files?.length) {
+                    this.importTestError = 'Pilih file Excel terlebih dahulu.';
+                    return;
+                }
+                this.importTesting = true;
+                try {
+                    const res = await fetch('{{ route('admin.anak.import.test') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: new FormData(form),
+                    });
+                    const json = await res.json();
+                    if (!res.ok) {
+                        this.importTest = null;
+                        this.importTestError = json.errors?.file?.[0] ?? json.message ?? 'Gagal mengetes file.';
+                        return;
+                    }
+                    this.importTest = json;
+                } catch (e) {
+                    this.importTest = null;
+                    this.importTestError = 'Gagal mengetes file. Coba lagi.';
+                } finally {
+                    this.importTesting = false;
+                }
+            },
             resetParentSearch() {
                 this.parentSearch = '';
                 this.parentResults = [];
@@ -64,7 +111,7 @@
                 this.parentResults = [];
                 this.parentSearch = `${parent.name} (${parent.email})`;
             }
-         }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
+         }" @tour-close-modals.window="showCreateModal=false; showImportModal=false; showEditModal=false; showDeleteModal=false">
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -73,6 +120,21 @@
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {{ session('success') }}
+            </div>
+        @endif
+        @if(session('warning'))
+            <div class="alert-error mb-5">
+                {{ session('warning') }}
+            </div>
+        @endif
+        @if(session('import_errors') && count(session('import_errors')) > 0)
+            <div class="alert-error mb-5">
+                <p class="font-semibold text-sm mb-2">Detail baris gagal:</p>
+                <ul class="list-disc pl-5 text-sm max-h-48 overflow-y-auto">
+                    @foreach(session('import_errors') as $row => $error)
+                        <li>Baris {{ $row }}: {{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
         @if($errors->any())
@@ -109,6 +171,15 @@
                                 class="btn-secondary text-xs h-11 flex items-center">Reset</a>
                         @endif
                     </form>
+                    <button type="button" @click="openImportModal()"
+                        class="h-11 w-11 shrink-0 rounded-lg flex items-center justify-center transition border"
+                        style="color: #1A6B6B; background: #E8F5F5; border-color: #D0E8E8;"
+                        title="Import Excel">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </button>
                     <button type="button" data-tour="admin-anak-add-btn" data-tour-open-modal="create" @click="showCreateModal = true" class="btn-primary">
                         <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="2">
@@ -197,6 +268,141 @@
                     {{ $anaks->links() }}
                 </div>
             @endif
+        </div>
+
+        <!-- IMPORT MODAL -->
+        <div x-show="showImportModal" class="modal-overlay" style="display:none;">
+            <div x-show="showImportModal" x-transition class="modal-box max-w-lg" @click.away="showImportModal = false">
+                <form x-ref="importForm" action="{{ route('admin.anak.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-lg flex items-center justify-center shrink-0"
+                                style="background: #E8F5F5;">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="2" style="color: #1A6B6B;">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="section-title">Import Data Siswa</h3>
+                                <p class="section-subtitle">Unduh template, isi data, lalu upload file Excel.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body space-y-4">
+                        <div class="rounded-xl border p-4" style="border-color: rgba(0,0,0,0.08); background: #FAFAF8;">
+                            <div class="flex items-start gap-3">
+                                <span
+                                    class="h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                    style="background: #1A6B6B;">1</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold" style="color: #2C2C2C;">Unduh template Excel</p>
+                                    <p class="text-xs mt-1" style="color: #6B6560;">Template sudah berisi kolom yang
+                                        benar dan daftar kelas sekolah Anda.</p>
+                                    <a href="{{ route('admin.anak.import.template') }}"
+                                        class="btn-secondary mt-3 inline-flex items-center text-sm">
+                                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        Unduh Template
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-xl border p-4" style="border-color: rgba(0,0,0,0.08); background: #FAFAF8;">
+                            <div class="flex items-start gap-3">
+                                <span
+                                    class="h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                    style="background: #1A6B6B;">2</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold" style="color: #2C2C2C;">Upload &amp; tes file</p>
+                                    <p class="text-xs mt-1" style="color: #6B6560;">Hapus baris contoh. Tes dulu untuk
+                                        cek error sebelum import. Format: .xlsx atau .xls (maks. 5 MB).</p>
+                                    <div class="mt-3">
+                                        <label class="input-label">File Excel</label>
+                                        <input type="file" name="file" accept=".xlsx,.xls" required
+                                            @change="resetImportTest()"
+                                            class="input-field py-1.5">
+                                        @error('file')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                                        <p x-show="importTestError" x-text="importTestError"
+                                            class="text-[10px] text-red-500 mt-1" style="display:none;"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="importTest" class="rounded-xl border p-4" style="display:none;"
+                            :style="{ background: importTest?.can_import ? '#E8F5F5' : '#FAD7D2' }">
+                            <p class="text-sm font-semibold" style="color: #2C2C2C;">Hasil tes file</p>
+                            <p class="text-xs mt-1" style="color: #6B6560;" x-text="importTest?.message"></p>
+
+                            <template x-if="importTest && importTest.valid_count > 0">
+                                <div>
+                                    <p class="text-xs font-semibold mt-3" style="color: #1A6B6B;"
+                                        x-text="`${importTest.valid_count} baris valid`"></p>
+                                    <ul class="list-disc pl-5 text-xs mt-1 max-h-28 overflow-y-auto" style="color: #6B6560;">
+                                        <template x-for="[row, label] in Object.entries(importTest.valid_rows || {})" :key="`valid-${row}`">
+                                            <li x-text="`Baris ${row}: ${label}`"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="importTest && importTest.invalid_count > 0">
+                                <div>
+                                    <p class="text-xs font-semibold mt-3" style="color: #C0392B;"
+                                        x-text="`${importTest.invalid_count} baris bermasalah`"></p>
+                                    <ul class="list-disc pl-5 text-xs mt-1 max-h-28 overflow-y-auto" style="color: #6B6560;">
+                                        <template x-for="[row, error] in Object.entries(importTest.invalid_rows || {})" :key="`invalid-${row}`">
+                                            <li x-text="`Baris ${row}: ${error}`"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <p x-show="importTest?.can_import" class="text-xs mt-3 font-medium" style="color: #1A6B6B;">
+                                File valid. Klik Import Excel untuk menyimpan data.
+                            </p>
+                        </div>
+
+                        <div class="px-1 text-xs text-[#6B6560] space-y-1">
+                            <p>
+                                Email wali yang sudah terdaftar akan otomatis ditautkan.
+                                Akun baru memakai password <code>password123</code>.
+                            </p>
+                            <p>
+                                Kolom NIK sudah diformat teks, jangan ubah format kolom tersebut.
+                            </p>
+                        </div>
+                   
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" @click="showImportModal = false" class="btn-secondary">Batal</button>
+                        <button type="button" @click="runImportTest()" :disabled="importTesting" class="btn-secondary">
+                            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span x-text="importTesting ? 'Menguji...' : 'Tes File'"></span>
+                        </button>
+                        <button type="submit" class="btn-primary"
+                            :disabled="importTest && !importTest.can_import">
+                            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            Import Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <!-- CREATE MODAL -->

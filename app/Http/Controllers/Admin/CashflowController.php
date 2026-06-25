@@ -23,7 +23,7 @@ class CashflowController extends Controller
         $cashflows = Cashflow::where('sekolah_id', $sekolahId)
             ->whereYear('date', $tahun)
             ->whereMonth('date', $bulan)
-            ->with(['akun', 'jurnal'])
+            ->with(['akun', 'akunLawan', 'jurnal'])
             ->orderBy('date', 'desc')
             ->paginate(15);
 
@@ -44,11 +44,13 @@ class CashflowController extends Controller
             ->where('is_aktif', true)
             ->orderBy('kode')
             ->get();
+        $akunPendapatan = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', 'pendapatan')->orderBy('kode')->get();
+        $akunBeban = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', 'beban')->orderBy('kode')->get();
         $setting = $this->akuntansiService->getSetting($sekolahId);
 
         return view('admin.cashflow.index', compact(
             'cashflows', 'totalIn', 'totalOut', 'balance',
-            'summaryArusKas', 'bulan', 'tahun', 'akuns', 'setting'
+            'summaryArusKas', 'bulan', 'tahun', 'akuns', 'akunPendapatan', 'akunBeban', 'setting'
         ));
     }
 
@@ -60,6 +62,7 @@ class CashflowController extends Controller
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string',
             'akun_id' => 'nullable|exists:akuns,id',
+            'akun_lawan_id' => 'nullable|exists:akuns,id',
         ]);
 
         $cashflow = Cashflow::create([
@@ -69,6 +72,7 @@ class CashflowController extends Controller
             'amount' => $request->amount,
             'description' => $request->description,
             'akun_id' => $request->akun_id,
+            'akun_lawan_id' => $request->akun_lawan_id,
         ]);
 
         // Auto-buat jurnal
@@ -87,6 +91,7 @@ class CashflowController extends Controller
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string',
             'akun_id' => 'nullable|exists:akuns,id',
+            'akun_lawan_id' => 'nullable|exists:akuns,id',
         ]);
 
         // Hapus jurnal lama jika ada
@@ -100,6 +105,7 @@ class CashflowController extends Controller
             'amount' => $request->amount,
             'description' => $request->description,
             'akun_id' => $request->akun_id,
+            'akun_lawan_id' => $request->akun_lawan_id,
             'jurnal_id' => null,
         ]);
 

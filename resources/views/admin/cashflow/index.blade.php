@@ -6,7 +6,7 @@
         </div>
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }"
+         x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, createType:'in', editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }"
          @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
 
         @if(session('success'))
@@ -95,7 +95,7 @@
                                 {{ $trx->type === 'in' ? '+' : '-' }} {{ number_format($trx->amount, 0, ',', '.') }}
                             </td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
-                                <button @click="openEdit({{ json_encode($trx->only(['id','type','amount','description','date','akun_id'])) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button @click="openEdit({{ json_encode($trx->only(['id','type','amount','description','date','akun_id','akun_lawan_id'])) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @click="openDelete('{{ route('admin.cashflow.destroy', $trx) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                         </tr>
@@ -116,17 +116,36 @@
                     <div class="modal-header"><h3 class="section-title">Catat Transaksi Kas</h3></div>
                     <div class="modal-body grid grid-cols-2 gap-4">
                         <div><label class="input-label">Tanggal</label><input type="date" name="date" required value="{{ date('Y-m-d') }}" class="input-field"></div>
-                        <div><label class="input-label">Jenis</label><select name="type" required class="input-field"><option value="in">Pemasukan</option><option value="out">Pengeluaran</option></select></div>
+                        <div><label class="input-label">Jenis</label><select name="type" x-model="createType" required class="input-field"><option value="in">Pemasukan</option><option value="out">Pengeluaran</option></select></div>
                         <div class="col-span-2"><label class="input-label">Nominal (Rp)</label><input type="number" name="amount" min="0" required placeholder="Contoh: 500000" class="input-field"></div>
                         <div class="col-span-2">
                             <label class="input-label">Akun Kas</label>
                             <select name="akun_id" class="input-field">
                                 <option value="">— Gunakan Default Setting —</option>
-                                @foreach($akuns as $a)
+                                @foreach($akuns->where('jenis', 'aset') as $a)
                                     <option value="{{ $a->id }}" {{ $setting->akun_kas_id == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">Akun default: {{ $setting->akunKas->nama ?? '-' }}. Jurnal dibuat otomatis.</p>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Akun default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}. Jurnal dibuat otomatis.</p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="input-label">Akun Lawan</label>
+                            <select :name="createType === 'in' ? 'akun_lawan_id' : '_skip'" x-show="createType === 'in'" class="input-field">
+                                <option value="">— Gunakan Default Setting —</option>
+                                @foreach($akunPendapatan as $a)
+                                    <option value="{{ $a->id }}" {{ $setting->akun_untuk_in == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
+                                @endforeach
+                            </select>
+                            <select x-show="createType === 'out'" style="display:none;" :name="createType === 'out' ? 'akun_lawan_id' : '_skip'" class="input-field">
+                                <option value="">— Gunakan Default Setting —</option>
+                                @foreach($akunBeban as $a)
+                                    <option value="{{ $a->id }}" {{ $setting->akun_untuk_out == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-xs mt-1" style="color:#9E9790;">
+                                <span x-show="createType === 'in'">Akun default pemasukan: {{ $setting->akunUntukIn->kode ?? '' }} - {{ $setting->akunUntukIn->nama ?? '-' }}</span>
+                                <span x-show="createType === 'out'" style="display:none;">Akun default pengeluaran: {{ $setting->akunUntukOut->kode ?? '' }} - {{ $setting->akunUntukOut->nama ?? '-' }}</span>
+                            </p>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" required rows="2" placeholder="Pembayaran SPP Bulan Juli..." class="input-field"></textarea></div>
                     </div>
@@ -146,13 +165,33 @@
                         <div><label class="input-label">Jenis</label><select name="type" x-model="editData.type" required class="input-field"><option value="in">Pemasukan</option><option value="out">Pengeluaran</option></select></div>
                         <div class="col-span-2"><label class="input-label">Nominal (Rp)</label><input type="number" name="amount" x-model="editData.amount" min="0" required class="input-field"></div>
                         <div class="col-span-2">
-                            <label class="input-label">Akun</label>
+                            <label class="input-label">Akun Kas</label>
                             <select name="akun_id" x-model="editData.akun_id" class="input-field">
                                 <option value="">— Gunakan Default —</option>
-                                @foreach($akuns as $a)
+                                @foreach($akuns->where('jenis', 'aset') as $a)
                                     <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Akun default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="input-label">Akun Lawan</label>
+                            <select :name="editData.type === 'in' ? 'akun_lawan_id' : '_skip'" x-show="editData.type === 'in'" x-model="editData.akun_lawan_id" class="input-field">
+                                <option value="">— Gunakan Default —</option>
+                                @foreach($akunPendapatan as $a)
+                                    <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
+                                @endforeach
+                            </select>
+                            <select :name="editData.type === 'out' ? 'akun_lawan_id' : '_skip'" x-show="editData.type === 'out'" style="display:none;" x-model="editData.akun_lawan_id" class="input-field">
+                                <option value="">— Gunakan Default —</option>
+                                @foreach($akunBeban as $a)
+                                    <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-xs mt-1" style="color:#9E9790;">
+                                <span x-show="editData.type === 'in'">Akun default pemasukan: {{ $setting->akunUntukIn->kode ?? '' }} - {{ $setting->akunUntukIn->nama ?? '-' }}</span>
+                                <span x-show="editData.type === 'out'" style="display:none;">Akun default pengeluaran: {{ $setting->akunUntukOut->kode ?? '' }} - {{ $setting->akunUntukOut->nama ?? '-' }}</span>
+                            </p>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" x-model="editData.description" required rows="2" class="input-field"></textarea></div>
                     </div>

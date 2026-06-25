@@ -1,27 +1,40 @@
 <?php
 
-use App\Http\Controllers\Admin\AnakController;
+use App\Http\Controllers\Admin\AiPersonaController;
 use App\Http\Controllers\Admin\AkunController;
 use App\Http\Controllers\Admin\AkuntansiSettingController;
+use App\Http\Controllers\Admin\AnakController;
 use App\Http\Controllers\Admin\BiayaBulananController;
 use App\Http\Controllers\Admin\CashflowController;
 use App\Http\Controllers\Admin\DiskonController;
 use App\Http\Controllers\Admin\JurnalController;
 use App\Http\Controllers\Admin\KegiatanController;
+use App\Http\Controllers\Admin\KegiatanRutinController;
 use App\Http\Controllers\Admin\KelasController;
+// Lembaga Controllers
+use App\Http\Controllers\Admin\KesehatanController;
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
 use App\Http\Controllers\Admin\LaporanController;
-// Lembaga Controllers
+use App\Http\Controllers\Admin\MasterKegiatanRutinController;
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
-use App\Http\Controllers\Admin\PembayaranBulananController;
-use App\Http\Controllers\Admin\SkalaPencapaianController;
 use App\Http\Controllers\Admin\MenuMakananController;
 use App\Http\Controllers\Admin\MonevController as AdminMonevController;
+use App\Http\Controllers\Admin\OrangTuaChatController;
+use App\Http\Controllers\Admin\OrangTuaSearchController;
+// Admin Sekolah Controllers
+use App\Http\Controllers\Admin\PembayaranBulananController;
 use App\Http\Controllers\Admin\PendaftaranController;
 use App\Http\Controllers\Admin\PengajarController;
+use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\PresensiController;
+use App\Http\Controllers\Admin\PresensiPengajarController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaranaController;
-// Admin Sekolah Controllers
+use App\Http\Controllers\Admin\SkalaPencapaianController;
+use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
+use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
+use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
+use App\Http\Controllers\Api\AiFeedbackController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestController;
@@ -29,6 +42,20 @@ use App\Http\Controllers\Lembaga\AdminSekolahController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
 use App\Http\Controllers\Lembaga\SchoolSwitcherController;
 use App\Http\Controllers\Lembaga\SekolahController;
+use App\Http\Controllers\OrangTua\AnakController as OrangTuaAnakController;
+use App\Http\Controllers\OrangTua\ChatController;
+use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
+use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
+use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
+use App\Http\Controllers\OrangTua\MenuMakananVoteController;
+use App\Http\Controllers\OrangTua\MonevController;
+use App\Http\Controllers\OrangTua\PembayaranController;
+use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
+use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
+use App\Http\Controllers\Pengajar\MatrikulasiController;
+use App\Http\Controllers\Pengajar\PencapaianController;
+use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Superadmin\AdminLembagaController as SuperadminAdminLembagaController;
 use App\Http\Controllers\Superadmin\AiSettingController as SuperadminAiSettingController;
 use App\Http\Controllers\Superadmin\CmsController as SuperadminCmsController;
@@ -36,24 +63,7 @@ use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardCo
 use App\Http\Controllers\Superadmin\LembagaController as SuperadminLembagaController;
 use App\Http\Controllers\Superadmin\SekolahController as SuperadminSekolahController;
 use App\Http\Controllers\Superadmin\SuperadminUserController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TourController;
-use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
-use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
-use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
-use App\Http\Controllers\Admin\OrangTuaChatController;
-use App\Http\Controllers\Admin\AiPersonaController;
-use App\Http\Controllers\Admin\OrangTuaSearchController;
-use App\Http\Controllers\OrangTua\AnakController as OrangTuaAnakController;
-use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
-use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
-use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananController;
-use App\Http\Controllers\OrangTua\PembayaranController;
-use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
-use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
-use App\Http\Controllers\Pengajar\MatrikulasiController;
-use App\Http\Controllers\Pengajar\PencapaianController;
-use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
@@ -134,6 +144,9 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->n
     Route::resource('matrikulasi', AdminMatrikulasiController::class)->except(['create', 'edit', 'show']);
     Route::resource('skala-pencapaian', SkalaPencapaianController::class)->except(['create', 'edit', 'show']);
     Route::get('orang-tua/search', OrangTuaSearchController::class)->name('orang-tua.search');
+    Route::get('anak/import/template', [AnakController::class, 'downloadTemplate'])->name('anak.import.template');
+    Route::post('anak/import/test', [AnakController::class, 'testImport'])->name('anak.import.test');
+    Route::post('anak/import', [AnakController::class, 'import'])->name('anak.import');
     Route::resource('anak', AnakController::class)->except(['create', 'edit']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
@@ -166,9 +179,9 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->n
     });
 
     // Manajemen Role & Pengguna
-    Route::resource('role', \App\Http\Controllers\Admin\RoleController::class)->except(['create', 'edit', 'show']);
-    Route::post('role/{role}/update-permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updatePermissions'])->name('role.update-permissions');
-    Route::resource('pengguna', \App\Http\Controllers\Admin\PenggunaController::class)->except(['create', 'edit', 'show']);
+    Route::resource('role', RoleController::class)->except(['create', 'edit', 'show']);
+    Route::post('role/{role}/update-permissions', [RoleController::class, 'updatePermissions'])->name('role.update-permissions');
+    Route::resource('pengguna', PenggunaController::class)->except(['create', 'edit', 'show']);
 
     Route::get('pembayaran-bulanan', [PembayaranBulananController::class, 'index'])->name('pembayaran-bulanan.index');
     Route::get('pembayaran-bulanan/generate-preview', [PembayaranBulananController::class, 'generatePreview'])->name('pembayaran-bulanan.generate-preview');
@@ -185,20 +198,20 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->n
     Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
     Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
     Route::resource('kegiatan', KegiatanController::class)->except(['create', 'edit', 'show']);
-    Route::post('pencapaian/sync', [\App\Http\Controllers\Admin\PencapaianController::class, 'sync'])->name('pencapaian.sync');
-    Route::delete('pencapaian/bundle', [\App\Http\Controllers\Admin\PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
-    Route::resource('pencapaian', \App\Http\Controllers\Admin\PencapaianController::class)->only(['index', 'destroy']);
+    Route::post('pencapaian/sync', [App\Http\Controllers\Admin\PencapaianController::class, 'sync'])->name('pencapaian.sync');
+    Route::delete('pencapaian/bundle', [App\Http\Controllers\Admin\PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
+    Route::resource('pencapaian', App\Http\Controllers\Admin\PencapaianController::class)->only(['index', 'destroy']);
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PresensiController::class, 'store'])->name('presensi.store');
     Route::get('presensi/rekap', [PresensiController::class, 'rekap'])->name('presensi.rekap');
-    Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [\App\Http\Controllers\Admin\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
-    Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [\App\Http\Controllers\Admin\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
-    Route::delete('master-kegiatan-rutin/rutin/{kegiatan_rutin}', [\App\Http\Controllers\Admin\MasterKegiatanRutinController::class, 'destroyRutinRecord'])->name('master-kegiatan-rutin.destroy-rutin');
-    Route::resource('master-kegiatan-rutin', \App\Http\Controllers\Admin\MasterKegiatanRutinController::class);
-    Route::get('kegiatan-rutin', [\App\Http\Controllers\Admin\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
-    Route::post('kegiatan-rutin', [\App\Http\Controllers\Admin\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
-    Route::get('kegiatan-rutin/detail/{anak}', [\App\Http\Controllers\Admin\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
+    Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
+    Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
+    Route::delete('master-kegiatan-rutin/rutin/{kegiatan_rutin}', [MasterKegiatanRutinController::class, 'destroyRutinRecord'])->name('master-kegiatan-rutin.destroy-rutin');
+    Route::resource('master-kegiatan-rutin', MasterKegiatanRutinController::class);
+    Route::get('kegiatan-rutin', [KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
+    Route::post('kegiatan-rutin', [KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
+    Route::get('kegiatan-rutin/detail/{anak}', [KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
     Route::get('kritik-saran', [AdminKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'show'])->name('kritik-saran.show');
     Route::patch('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'update'])->name('kritik-saran.update');
@@ -214,12 +227,12 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->n
     Route::get('pendaftaran', [PendaftaranController::class, 'index'])->name('pendaftaran.index');
     Route::post('pendaftaran/{anak}/approve', [PendaftaranController::class, 'approve'])->name('pendaftaran.approve');
     Route::post('pendaftaran/{anak}/reject', [PendaftaranController::class, 'reject'])->name('pendaftaran.reject');
-    Route::get('kesehatan/history/{anak}', [\App\Http\Controllers\Admin\KesehatanController::class, 'history'])->name('kesehatan.history');
-    Route::resource('kesehatan', \App\Http\Controllers\Admin\KesehatanController::class)->only(['index', 'store', 'destroy']);
-    Route::get('presensi-guru', [\App\Http\Controllers\Admin\PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
-    Route::post('presensi-guru', [\App\Http\Controllers\Admin\PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
+    Route::get('kesehatan/history/{anak}', [KesehatanController::class, 'history'])->name('kesehatan.history');
+    Route::resource('kesehatan', KesehatanController::class)->only(['index', 'store', 'destroy']);
+    Route::get('presensi-guru', [PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
+    Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
     // AI Feedback Suggestions (web route, uses web session auth)
-    Route::post('ai/feedback-suggestions', [\App\Http\Controllers\Api\AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
+    Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
 });
 
 // ─────────────────────────────────────────────
@@ -229,8 +242,8 @@ Route::middleware(['auth', 'role:Wali Kelas'])->prefix('adminkelas')->name('admi
     Route::resource('anak', AdminKelasAnakController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
-    Route::get('kesehatan/history/{anak}', [\App\Http\Controllers\AdminKelas\KesehatanController::class, 'history'])->name('kesehatan.history');
-    Route::resource('kesehatan', \App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store', 'destroy']);
+    Route::get('kesehatan/history/{anak}', [App\Http\Controllers\AdminKelas\KesehatanController::class, 'history'])->name('kesehatan.history');
+    Route::resource('kesehatan', App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('matrikulasi', [MatrikulasiController::class, 'index'])->name('matrikulasi.index');
     Route::get('monev', [AdminKelasMonevController::class, 'index'])->name('monev.index');
     Route::post('monev/generate', [AdminKelasMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
@@ -252,15 +265,15 @@ Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->nam
     Route::post('pencapaian/sync', [PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
     Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);
-    Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
-    Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
-    Route::delete('master-kegiatan-rutin/rutin/{kegiatan_rutin}', [\App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'destroyRutinRecord'])->name('master-kegiatan-rutin.destroy-rutin');
-    Route::resource('master-kegiatan-rutin', \App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class);
-    Route::get('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
-    Route::post('kegiatan-rutin', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
-    Route::get('kegiatan-rutin/detail/{anak}', [\App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
+    Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
+    Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
+    Route::delete('master-kegiatan-rutin/rutin/{kegiatan_rutin}', [App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'destroyRutinRecord'])->name('master-kegiatan-rutin.destroy-rutin');
+    Route::resource('master-kegiatan-rutin', App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class);
+    Route::get('kegiatan-rutin', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
+    Route::post('kegiatan-rutin', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
+    Route::get('kegiatan-rutin/detail/{anak}', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
     // AI Feedback Suggestions (web route, uses web session auth)
-    Route::post('ai/feedback-suggestions', [\App\Http\Controllers\Api\AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
+    Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
 });
 
 // ─────────────────────────────────────────────
@@ -270,11 +283,11 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('anak/tambah', [OrangTuaAnakController::class, 'create'])->name('anak.create');
     Route::post('anak', [OrangTuaAnakController::class, 'store'])->name('anak.store');
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');
-    Route::get('kegiatan-rutin', [\App\Http\Controllers\OrangTua\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
+    Route::get('kegiatan-rutin', [App\Http\Controllers\OrangTua\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::get('pencapaian', [OrangTuaPencapaianController::class, 'index'])->name('pencapaian.index');
-    Route::get('monev', [\App\Http\Controllers\OrangTua\MonevController::class, 'index'])->name('monev.index');
-    Route::get('monev/{anak}/pdf', [\App\Http\Controllers\OrangTua\MonevController::class, 'exportPdf'])->name('monev.export-pdf');
-    Route::get('monev/{anak}', [\App\Http\Controllers\OrangTua\MonevController::class, 'show'])->name('monev.show');
+    Route::get('monev', [MonevController::class, 'index'])->name('monev.index');
+    Route::get('monev/{anak}/pdf', [MonevController::class, 'exportPdf'])->name('monev.export-pdf');
+    Route::get('monev/{anak}', [MonevController::class, 'show'])->name('monev.show');
     Route::get('menu-makanan', [OrangTuaMenuMakananController::class, 'index'])->name('menu-makanan.index');
     Route::redirect('kritik-saran/riwayat', '/orangtua/kritik-saran');
     Route::get('kritik-saran', [OrangTuaKritikSaranController::class, 'index'])->name('kritik-saran.index');
@@ -282,12 +295,12 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::post('kritik-saran', [OrangTuaKritikSaranController::class, 'store'])->name('kritik-saran.store');
     Route::patch('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'update'])->name('kritik-saran.update');
     Route::delete('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'destroy'])->name('kritik-saran.destroy');
-    Route::get('kesehatan', [\App\Http\Controllers\OrangTua\KesehatanController::class, 'index'])->name('kesehatan.index');
-    Route::get('presensi', [\App\Http\Controllers\OrangTua\PresensiController::class, 'index'])->name('presensi.index');
-    Route::post('menu-makanan/vote', [\App\Http\Controllers\OrangTua\MenuMakananVoteController::class, 'vote'])->name('menu-makanan.vote');
-    Route::get('chat', [\App\Http\Controllers\OrangTua\ChatController::class, 'index'])->name('chat.index');
-    Route::post('chat/messages', [\App\Http\Controllers\OrangTua\ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.messages.store');
-    Route::delete('chat', [\App\Http\Controllers\OrangTua\ChatController::class, 'destroy'])->name('chat.destroy');
+    Route::get('kesehatan', [App\Http\Controllers\OrangTua\KesehatanController::class, 'index'])->name('kesehatan.index');
+    Route::get('presensi', [App\Http\Controllers\OrangTua\PresensiController::class, 'index'])->name('presensi.index');
+    Route::post('menu-makanan/vote', [MenuMakananVoteController::class, 'vote'])->name('menu-makanan.vote');
+    Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.messages.store');
+    Route::delete('chat', [ChatController::class, 'destroy'])->name('chat.destroy');
 
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('pembayaran/{pembayaran}/invoice', [PembayaranController::class, 'exportInvoice'])->name('pembayaran.invoice');
