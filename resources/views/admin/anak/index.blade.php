@@ -21,6 +21,7 @@
             importTesting: false,
             importTest: null,
             importTestError: null,
+            importFileName: null,
             parentMode: @js(old('parent_mode', 'new')),
             parentSearch: '',
             parentResults: [],
@@ -41,7 +42,28 @@
                 this.importTest = null;
                 this.importTestError = null;
                 this.importTesting = false;
+                this.importFileName = null;
                 this.showImportModal = true;
+                this.$nextTick(() => {
+                    const input = this.$refs.importForm?.querySelector('input[type=file]');
+                    if (input) input.value = '';
+                });
+            },
+            onImportFileSelected(event) {
+                const file = event.target.files?.[0];
+                this.importFileName = file ? file.name : null;
+                this.resetImportTest();
+            },
+            onImportFileDropped(event) {
+                const file = event.dataTransfer?.files?.[0];
+                if (!file) return;
+                const input = this.$refs.importForm?.querySelector('input[type=file]');
+                if (!input) return;
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                this.importFileName = file.name;
+                this.resetImportTest();
             },
             resetImportTest() {
                 this.importTest = null;
@@ -275,7 +297,7 @@
             <div x-show="showImportModal" x-transition class="modal-box max-w-lg" @click.away="showImportModal = false">
                 <form x-ref="importForm" action="{{ route('admin.anak.import') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <div class="modal-header">
+                    <div class="modal-header border-b pb-4" style="border-color: rgba(0,0,0,0.06);">
                         <div class="flex items-center gap-3">
                             <div class="h-10 w-10 rounded-lg flex items-center justify-center shrink-0"
                                 style="background: #E8F5F5;">
@@ -286,119 +308,171 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="section-title">Import Data Siswa</h3>
-                                <p class="section-subtitle">Unduh template, isi data, lalu upload file Excel.</p>
+                                <h3 class="section-title">Import Data Siswa dari Excel</h3>
+                                <p class="section-subtitle">Ikuti 3 langkah di bawah ini secara berurutan.</p>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-body space-y-4">
+
+                    <div class="modal-body space-y-3 py-4">
+                        {{-- Langkah 1 --}}
                         <div class="rounded-xl border p-4" style="border-color: rgba(0,0,0,0.08); background: #FAFAF8;">
                             <div class="flex items-start gap-3">
-                                <span
-                                    class="h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                <span class="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
                                     style="background: #1A6B6B;">1</span>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold" style="color: #2C2C2C;">Unduh template Excel</p>
-                                    <p class="text-xs mt-1" style="color: #6B6560;">Template sudah berisi kolom yang
-                                        benar dan daftar kelas sekolah Anda.</p>
+                                    <p class="text-sm font-semibold" style="color: #2C2C2C;">Unduh formulir Excel</p>
+                                    <p class="text-xs mt-1 leading-relaxed" style="color: #6B6560;">
+                                        Klik tombol di bawah untuk mengunduh file kosong. Isi data siswa di komputer Anda,
+                                        lalu simpan file tersebut.
+                                    </p>
                                     <a href="{{ route('admin.anak.import.template') }}"
-                                        class="btn-secondary mt-3 inline-flex items-center text-sm">
-                                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                        class="btn-secondary mt-3 inline-flex items-center text-sm w-full sm:w-auto justify-center">
+                                        <svg class="h-4 w-4 mr-1.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                             stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>
-                                        Unduh Template
+                                        Unduh Formulir Excel
                                     </a>
                                 </div>
                             </div>
                         </div>
 
+                        {{-- Langkah 2 --}}
                         <div class="rounded-xl border p-4" style="border-color: rgba(0,0,0,0.08); background: #FAFAF8;">
                             <div class="flex items-start gap-3">
-                                <span
-                                    class="h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                <span class="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
                                     style="background: #1A6B6B;">2</span>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold" style="color: #2C2C2C;">Upload &amp; tes file</p>
-                                    <p class="text-xs mt-1" style="color: #6B6560;">Hapus baris contoh. Tes dulu untuk
-                                        cek error sebelum import. Format: .xlsx atau .xls (maks. 5 MB).</p>
-                                    <div class="mt-3">
-                                        <label class="input-label">File Excel</label>
-                                        <input type="file" name="file" accept=".xlsx,.xls" required
-                                            @change="resetImportTest()"
-                                            class="input-field py-1.5">
-                                        @error('file')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                                        <p x-show="importTestError" x-text="importTestError"
-                                            class="text-[10px] text-red-500 mt-1" style="display:none;"></p>
+                                    <p class="text-sm font-semibold" style="color: #2C2C2C;">Pilih file yang sudah diisi</p>
+                                    <p class="text-xs mt-1 leading-relaxed" style="color: #6B6560;">
+                                        Hapus baris contoh di Excel sebelum upload. File harus berformat
+                                        <strong>.xlsx</strong> atau <strong>.xls</strong> (maks. 5 MB).
+                                    </p>
+
+                                    <input type="file" name="file" accept=".xlsx,.xls" required
+                                        @change="onImportFileSelected($event)"
+                                        class="sr-only" id="import-anak-file">
+
+                                    <label for="import-anak-file" x-show="!importFileName"
+                                        @dragover.prevent
+                                        @drop.prevent="onImportFileDropped($event)"
+                                        class="mt-3 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 cursor-pointer transition hover:bg-white"
+                                        style="border-color: #D0E8E8; background: #F5FAFA;">
+                                        <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="1.5" style="color: #1A6B6B;">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        <span class="text-sm font-semibold" style="color: #1A6B6B;">Klik untuk memilih file Excel</span>
+                                        <span class="text-xs" style="color: #9E9790;">atau seret file ke sini</span>
+                                    </label>
+
+                                    <div x-show="importFileName" class="mt-3 space-y-3" style="display:none;">
+                                        <div class="flex items-center gap-3 rounded-xl border px-4 py-3"
+                                            style="border-color: #D0E8E8; background: #E8F5F5;">
+                                            <svg class="h-8 w-8 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                stroke-width="1.5" style="color: #1A6B6B;">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-xs font-medium" style="color: #6B6560;">File terpilih:</p>
+                                                <p class="text-sm font-semibold truncate" style="color: #2C2C2C;" x-text="importFileName"></p>
+                                            </div>
+                                            <label for="import-anak-file"
+                                                class="text-xs font-semibold shrink-0 cursor-pointer px-2 py-1 rounded-lg"
+                                                style="color: #1A6B6B; background: white;">Ganti</label>
+                                        </div>
+
+                                        <button type="button" @click="runImportTest()" :disabled="importTesting"
+                                            class="btn-secondary w-full justify-center">
+                                            <svg class="h-4 w-4 mr-1.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span x-text="importTesting ? 'Sedang memeriksa...' : 'Periksa File'"></span>
+                                        </button>
+                                        <p class="text-xs text-center" style="color: #9E9790;">
+                                            Periksa dulu agar data tidak salah sebelum disimpan.
+                                        </p>
                                     </div>
+
+                                    @error('file')<p class="text-xs text-red-500 mt-2">{{ $message }}</p>@enderror
+                                    <p x-show="importTestError" x-text="importTestError"
+                                        class="text-xs text-red-500 mt-2" style="display:none;"></p>
                                 </div>
                             </div>
                         </div>
 
-                        <div x-show="importTest" class="rounded-xl border p-4" style="display:none;"
+                        {{-- Hasil periksa --}}
+                        <div x-show="importTest" class="rounded-xl border p-4" style="display:none; border-color: rgba(0,0,0,0.08);"
                             :style="{ background: importTest?.can_import ? '#E8F5F5' : '#FAD7D2' }">
-                            <p class="text-sm font-semibold" style="color: #2C2C2C;">Hasil tes file</p>
-                            <p class="text-xs mt-1" style="color: #6B6560;" x-text="importTest?.message"></p>
+                            <div class="flex items-start gap-3">
+                                <span class="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                    :style="{ background: importTest?.can_import ? '#1A6B6B' : '#C0392B' }">!</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold" style="color: #2C2C2C;"
+                                        x-text="importTest?.can_import ? 'File siap disimpan' : 'Ada data yang perlu diperbaiki'"></p>
+                                    <p class="text-xs mt-1 leading-relaxed" style="color: #6B6560;" x-text="importTest?.message"></p>
 
-                            <template x-if="importTest && importTest.valid_count > 0">
-                                <div>
-                                    <p class="text-xs font-semibold mt-3" style="color: #1A6B6B;"
-                                        x-text="`${importTest.valid_count} baris valid`"></p>
-                                    <ul class="list-disc pl-5 text-xs mt-1 max-h-28 overflow-y-auto" style="color: #6B6560;">
-                                        <template x-for="[row, label] in Object.entries(importTest.valid_rows || {})" :key="`valid-${row}`">
-                                            <li x-text="`Baris ${row}: ${label}`"></li>
-                                        </template>
-                                    </ul>
+                                    <template x-if="importTest && importTest.valid_count > 0">
+                                        <div class="mt-3">
+                                            <p class="text-xs font-semibold" style="color: #1A6B6B;"
+                                                x-text="`${importTest.valid_count} data siswa siap diimport`"></p>
+                                            <ul class="list-none text-xs mt-1 max-h-24 overflow-y-auto space-y-1" style="color: #6B6560;">
+                                                <template x-for="[row, label] in Object.entries(importTest.valid_rows || {})" :key="`valid-${row}`">
+                                                    <li class="flex gap-1.5">
+                                                        <span class="shrink-0 font-medium" x-text="`Baris ${row}:`"></span>
+                                                        <span x-text="label"></span>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="importTest && importTest.invalid_count > 0">
+                                        <div class="mt-3">
+                                            <p class="text-xs font-semibold" style="color: #C0392B;"
+                                                x-text="`${importTest.invalid_count} baris bermasalah`"></p>
+                                            <ul class="list-none text-xs mt-1 max-h-24 overflow-y-auto space-y-1" style="color: #6B6560;">
+                                                <template x-for="[row, error] in Object.entries(importTest.invalid_rows || {})" :key="`invalid-${row}`">
+                                                    <li class="flex gap-1.5">
+                                                        <span class="shrink-0 font-medium text-red-600" x-text="`Baris ${row}:`"></span>
+                                                        <span x-text="error"></span>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                            <p class="text-xs mt-2" style="color: #C0392B;">
+                                                Perbaiki file Excel, lalu pilih ulang file dan periksa kembali.
+                                            </p>
+                                        </div>
+                                    </template>
                                 </div>
-                            </template>
-
-                            <template x-if="importTest && importTest.invalid_count > 0">
-                                <div>
-                                    <p class="text-xs font-semibold mt-3" style="color: #C0392B;"
-                                        x-text="`${importTest.invalid_count} baris bermasalah`"></p>
-                                    <ul class="list-disc pl-5 text-xs mt-1 max-h-28 overflow-y-auto" style="color: #6B6560;">
-                                        <template x-for="[row, error] in Object.entries(importTest.invalid_rows || {})" :key="`invalid-${row}`">
-                                            <li x-text="`Baris ${row}: ${error}`"></li>
-                                        </template>
-                                    </ul>
-                                </div>
-                            </template>
-
-                            <p x-show="importTest?.can_import" class="text-xs mt-3 font-medium" style="color: #1A6B6B;">
-                                File valid. Klik Import Excel untuk menyimpan data.
-                            </p>
+                            </div>
                         </div>
 
-                        <div class="px-1 text-xs text-[#6B6560] space-y-1">
-                            <p>
-                                Email wali yang sudah terdaftar akan otomatis ditautkan.
-                                Akun baru memakai password <code>password123</code>.
-                            </p>
-                            <p>
-                                Kolom NIK sudah diformat teks, jangan ubah format kolom tersebut.
-                            </p>
-                        </div>
-                   
+                        <details class="rounded-xl border px-4 py-3 text-xs" style="border-color: rgba(0,0,0,0.08); color: #6B6560;">
+                            <summary class="cursor-pointer font-semibold" style="color: #2C2C2C;">Tips penting</summary>
+                            <ul class="mt-2 space-y-1.5 list-disc pl-4 leading-relaxed">
+                                <li>Email wali yang sudah terdaftar akan otomatis ditautkan ke akun yang ada.</li>
+                                <li>Akun wali baru memakai password awal: <code>password123</code></li>
+                                <li>Jangan ubah format kolom NIK — biarkan sebagai teks agar tidak rusak.</li>
+                            </ul>
+                        </details>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" @click="showImportModal = false" class="btn-secondary">Batal</button>
-                        <button type="button" @click="runImportTest()" :disabled="importTesting" class="btn-secondary">
-                            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span x-text="importTesting ? 'Menguji...' : 'Tes File'"></span>
-                        </button>
-                        <button type="submit" class="btn-primary"
-                            :disabled="importTest && !importTest.can_import">
-                            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+
+                    <div class="modal-footer border-t pt-4" style="border-color: rgba(0,0,0,0.06);">
+                        <button type="button" @click="showImportModal = false" class="btn-secondary">Tutup</button>
+                        <button type="submit" x-show="importTest?.can_import" class="btn-primary" style="display:none;">
+                            <svg class="h-4 w-4 mr-1.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                             </svg>
-                            Import Excel
+                            Simpan Data Siswa
                         </button>
                     </div>
                 </form>
