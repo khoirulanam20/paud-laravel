@@ -11,50 +11,43 @@ class AkunController extends Controller
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
+        $filter = $request->input('filter', 'all');
 
-        $akuns = Akun::where('sekolah_id', $sekolahId)
-            ->with(['induk', 'anak'])
-            ->where('is_aktif', true)
-            ->orderBy('kode')
-            ->get()
-            ->groupBy('jenis');
+        $query = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode');
 
-        $allAkun = Akun::where('sekolah_id', $sekolahId)
-            ->where('is_aktif', true)
-            ->orderBy('kode')
-            ->get();
+        $query = match ($filter) {
+            'sistem' => $query->sistem(),
+            'belanja' => $query->rkas()->where('jenis', 'beban'),
+            'pendapatan' => $query->rkas()->where('jenis', 'pendapatan'),
+            default => $query,
+        };
 
-        return view('admin.akun.index', compact('akuns', 'allAkun'));
+        if ($search = $request->input('q')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('kode', 'like', "%{$search}%")
+                    ->orWhere('nama', 'like', "%{$search}%")
+                    ->orWhere('uraian', 'like', "%{$search}%");
+            });
+        }
+
+        $akunList = $query->paginate(30)->withQueryString();
+
+        return view('admin.akun.index', compact('akunList', 'filter'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'kode' => 'required|string|max:20',
-            'nama' => 'required|string|max:200',
-            'jenis' => 'required|in:aset,liabilitas,ekuitas,pendapatan,beban',
-            'kategori_arus_kas' => 'nullable|in:operasi,investasi,pendanaan',
-            'saldo_normal' => 'required|in:debit,kredit',
-            'induk_id' => 'nullable|exists:akuns,id',
-            'deskripsi' => 'nullable|string',
-        ]);
-
+        $data = $this->validated($request);
         $sekolahId = auth()->user()->sekolah_id;
 
-        if (Akun::where('sekolah_id', $sekolahId)->where('kode', $request->kode)->exists()) {
+        if ($this->kodeExists($sekolahId, $data['kode'], $data['snp'] ?? null, $data['komponen'] ?? null)) {
             return back()->withErrors(['kode' => 'Kode akun sudah ada.']);
         }
 
-        Akun::create([
+        Akun::create($data + [
             'sekolah_id' => $sekolahId,
-            'kode' => $request->kode,
-            'nama' => $request->nama,
-            'jenis' => $request->jenis,
-            'kategori_arus_kas' => $request->kategori_arus_kas,
-            'saldo_normal' => $request->saldo_normal,
-            'induk_id' => $request->induk_id,
+            'tipe' => $request->input('tipe', 'rkas'),
             'is_aktif' => true,
-            'deskripsi' => $request->deskripsi,
         ]);
 
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil ditambahkan.');
@@ -64,30 +57,17 @@ class AkunController extends Controller
     {
         abort_if($akun->sekolah_id !== auth()->user()->sekolah_id, 403);
 
-        $request->validate([
-            'kode' => 'required|string|max:20',
-            'nama' => 'required|string|max:200',
-            'jenis' => 'required|in:aset,liabilitas,ekuitas,pendapatan,beban',
-            'kategori_arus_kas' => 'nullable|in:operasi,investasi,pendanaan',
-            'saldo_normal' => 'required|in:debit,kredit',
-            'induk_id' => 'nullable|exists:akuns,id',
-            'deskripsi' => 'nullable|string',
-        ]);
+        $data = $this->validated($request);
 
-        $sekolahId = auth()->user()->sekolah_id;
-        $exists = Akun::where('sekolah_id', $sekolahId)
-            ->where('kode', $request->kode)
-            ->where('id', '!=', $akun->id)
-            ->exists();
-
-        if ($exists) {
+        if ($this->kodeExists($akun->sekolah_id, $data['kode'], $data['snp'] ?? null, $data['komponen'] ?? null, $akun->id)) {
             return back()->withErrors(['kode' => 'Kode akun sudah ada.']);
         }
 
-        $akun->update($request->only([
-            'kode', 'nama', 'jenis', 'kategori_arus_kas',
-            'saldo_normal', 'induk_id', 'deskripsi',
-        ]));
+        if ($akun->isSistem()) {
+            unset($data['tipe'], $data['jenis']);
+        }
+
+        $akun->update($data);
 
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil diperbarui.');
     }
@@ -96,17 +76,49 @@ class AkunController extends Controller
     {
         abort_if($akun->sekolah_id !== auth()->user()->sekolah_id, 403);
 
-        if ($akun->anak()->count() > 0) {
-            return back()->withErrors(['akun' => 'Akun memiliki sub-akun. Hapus sub-akun terlebih dahulu.']);
+        if ($akun->isSistem()) {
+            return back()->withErrors(['akun' => 'Akun sistem tidak bisa dihapus.']);
         }
 
         if ($akun->jurnalLines()->count() > 0) {
             $akun->update(['is_aktif' => false]);
+
             return redirect()->route('admin.akun.index')->with('success', 'Akun dinonaktifkan karena memiliki riwayat transaksi.');
         }
 
         $akun->delete();
 
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil dihapus.');
+    }
+
+    private function validated(Request $request): array
+    {
+        return $request->validate([
+            'kode' => 'required|string|max:20',
+            'nama' => 'required|string|max:200',
+            'snp' => 'nullable|string|max:255',
+            'komponen' => 'nullable|string|max:255',
+            'uraian' => 'nullable|string',
+            'tipe' => 'nullable|in:sistem,rkas',
+            'jenis' => 'required|in:aset,liabilitas,ekuitas,pendapatan,beban',
+            'kategori_arus_kas' => 'nullable|in:operasi,investasi,pendanaan',
+            'saldo_normal' => 'required|in:debit,kredit',
+            'induk_id' => 'nullable|exists:akuns,id',
+            'deskripsi' => 'nullable|string',
+        ]);
+    }
+
+    private function kodeExists(int $sekolahId, string $kode, ?string $snp, ?string $komponen, ?int $exceptId = null): bool
+    {
+        $q = Akun::where('sekolah_id', $sekolahId)
+            ->where('kode', $kode)
+            ->where('snp', $snp)
+            ->where('komponen', $komponen);
+
+        if ($exceptId) {
+            $q->where('id', '!=', $exceptId);
+        }
+
+        return $q->exists();
     }
 }

@@ -95,7 +95,7 @@
                                 {{ $trx->type === 'in' ? '+' : '-' }} {{ number_format($trx->amount, 0, ',', '.') }}
                             </td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
-                                <button @click="openEdit({{ json_encode($trx->only(['id','type','amount','description','date','akun_id','akun_lawan_id'])) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button @click="openEdit({{ json_encode($trx->only(['id','type','amount','description','date','akun_id','akun_lawan_id','sumber_dana_id'])) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @click="openDelete('{{ route('admin.cashflow.destroy', $trx) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
                         </tr>
@@ -122,32 +122,37 @@
                             <label class="input-label">Akun Kas</label>
                             <select name="akun_id" class="input-field">
                                 <option value="">— Gunakan Default Setting —</option>
-                                @foreach($akuns->where('jenis', 'aset') as $a)
+                                @foreach($akunKas as $a)
                                     <option value="{{ $a->id }}" {{ $setting->akun_kas_id == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
                             <p class="text-xs mt-1" style="color:#9E9790;">Akun default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}. Jurnal dibuat otomatis.</p>
                         </div>
                         <div class="col-span-2">
-                            <label class="input-label">Akun Lawan</label>
+                            <label class="input-label">Kode Rekening (Akun Lawan)</label>
                             <select :name="createType === 'in' ? 'akun_lawan_id' : '_skip'" x-show="createType === 'in'" class="input-field">
-                                <option value="">— Gunakan Default Setting —</option>
+                                <option value="">— Pilih kode rekening —</option>
                                 @foreach($akunPendapatan as $a)
-                                    <option value="{{ $a->id }}" {{ $setting->akun_untuk_in == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
+                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 50) }}</option>
                                 @endforeach
                             </select>
                             <select x-show="createType === 'out'" style="display:none;" :name="createType === 'out' ? 'akun_lawan_id' : '_skip'" class="input-field">
-                                <option value="">— Gunakan Default Setting —</option>
+                                <option value="">— Pilih kode rekening —</option>
                                 @foreach($akunBeban as $a)
-                                    <option value="{{ $a->id }}" {{ $setting->akun_untuk_out == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
+                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 50) }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">
-                                <span x-show="createType === 'in'">Akun default pemasukan: {{ $setting->akunUntukIn->kode ?? '' }} - {{ $setting->akunUntukIn->nama ?? '-' }}</span>
-                                <span x-show="createType === 'out'" style="display:none;">Akun default pengeluaran: {{ $setting->akunUntukOut->kode ?? '' }} - {{ $setting->akunUntukOut->nama ?? '-' }}</span>
-                            </p>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" required rows="2" placeholder="Pembayaran SPP Bulan Juli..." class="input-field"></textarea></div>
+                        <div class="col-span-2">
+                            <label class="input-label">Sumber Dana <span class="text-xs font-normal" style="color:#9E9790;">(untuk RKAS)</span></label>
+                            <select name="sumber_dana_id" class="input-field">
+                                <option value="">— Belum dialokasikan —</option>
+                                @foreach($sumberDanas as $sd)
+                                    <option value="{{ $sd->id }}">{{ $sd->kode }} — {{ $sd->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Transaksi</button></div>
                 </form>
@@ -168,32 +173,37 @@
                             <label class="input-label">Akun Kas</label>
                             <select name="akun_id" x-model="editData.akun_id" class="input-field">
                                 <option value="">— Gunakan Default —</option>
-                                @foreach($akuns->where('jenis', 'aset') as $a)
+                                @foreach($akunKas as $a)
                                     <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
                             <p class="text-xs mt-1" style="color:#9E9790;">Akun default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}</p>
                         </div>
                         <div class="col-span-2">
-                            <label class="input-label">Akun Lawan</label>
+                            <label class="input-label">Kode Rekening (Akun Lawan)</label>
                             <select :name="editData.type === 'in' ? 'akun_lawan_id' : '_skip'" x-show="editData.type === 'in'" x-model="editData.akun_lawan_id" class="input-field">
-                                <option value="">— Gunakan Default —</option>
+                                <option value="">— Pilih —</option>
                                 @foreach($akunPendapatan as $a)
-                                    <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
+                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 40) }}</option>
                                 @endforeach
                             </select>
                             <select :name="editData.type === 'out' ? 'akun_lawan_id' : '_skip'" x-show="editData.type === 'out'" style="display:none;" x-model="editData.akun_lawan_id" class="input-field">
-                                <option value="">— Gunakan Default —</option>
+                                <option value="">— Pilih —</option>
                                 @foreach($akunBeban as $a)
-                                    <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
+                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 40) }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">
-                                <span x-show="editData.type === 'in'">Akun default pemasukan: {{ $setting->akunUntukIn->kode ?? '' }} - {{ $setting->akunUntukIn->nama ?? '-' }}</span>
-                                <span x-show="editData.type === 'out'" style="display:none;">Akun default pengeluaran: {{ $setting->akunUntukOut->kode ?? '' }} - {{ $setting->akunUntukOut->nama ?? '-' }}</span>
-                            </p>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" x-model="editData.description" required rows="2" class="input-field"></textarea></div>
+                        <div class="col-span-2">
+                            <label class="input-label">Sumber Dana</label>
+                            <select name="sumber_dana_id" x-model="editData.sumber_dana_id" class="input-field">
+                                <option value="">— Belum dialokasikan —</option>
+                                @foreach($sumberDanas as $sd)
+                                    <option value="{{ $sd->id }}">{{ $sd->kode }} — {{ $sd->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
                 </form>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
+use App\Models\Cashflow;
 use App\Models\Jurnal;
 use App\Services\AkuntansiService;
 use Illuminate\Http\Request;
@@ -127,6 +128,7 @@ class JurnalController extends Controller
     {
         abort_if($jurnal->sekolah_id !== auth()->user()->sekolah_id, 403);
 
+        Cashflow::where('jurnal_id', $jurnal->id)->delete();
         $this->akuntansiService->hapusJurnal($jurnal);
 
         return redirect()->route('admin.jurnal.index')->with('success', 'Jurnal berhasil dihapus.');

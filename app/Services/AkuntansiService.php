@@ -144,7 +144,7 @@ class AkuntansiService
     public function hapusJurnal(Jurnal $jurnal): void
     {
         DB::transaction(function () use ($jurnal) {
-            Cashflow::where('jurnal_id', $jurnal->id)->delete();
+            Cashflow::where('jurnal_id', $jurnal->id)->update(['jurnal_id' => null]);
             PembayaranBulanan::where('jurnal_id', $jurnal->id)->update(['jurnal_id' => null]);
             $jurnal->lines()->delete();
             $jurnal->delete();

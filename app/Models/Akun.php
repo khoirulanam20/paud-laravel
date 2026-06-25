@@ -10,8 +10,12 @@ class Akun extends Model
 {
     protected $fillable = [
         'sekolah_id',
+        'tipe',
         'kode',
         'nama',
+        'snp',
+        'komponen',
+        'uraian',
         'jenis',
         'kategori_arus_kas',
         'saldo_normal',
@@ -57,5 +61,25 @@ class Akun extends Model
     public function scopeByJenis($q, string $jenis)
     {
         $q->where('jenis', $jenis);
+    }
+
+    public function scopeSistem($q)
+    {
+        $q->where('tipe', 'sistem');
+    }
+
+    public function scopeRkas($q)
+    {
+        $q->where('tipe', 'rkas');
+    }
+
+    public function isSistem(): bool
+    {
+        return $this->tipe === 'sistem';
+    }
+
+    public function getLabelAttribute(): string
+    {
+        return "{$this->kode} — ".($this->uraian ?? $this->nama);
     }
 }

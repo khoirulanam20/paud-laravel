@@ -42,16 +42,16 @@
                     <h3 class="text-lg font-medium mb-4">Keuangan & Akuntansi</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <a href="{{ route('admin.akun.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
-                            <span class="font-medium">Chart of Accounts</span>
+                            <span class="font-medium">Kode Rekening & Akun</span>
                             <span class="text-xs text-slate-400 mt-1">Kelola Akun</span>
                         </a>
                         <a href="{{ route('admin.jurnal.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
                             <span class="font-medium">Jurnal Umum</span>
                             <span class="text-xs text-slate-400 mt-1">Double Entry</span>
                         </a>
-                        <a href="{{ route('admin.laporan.arus-kas') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
-                            <span class="font-medium">Arus Kas PSAK 2</span>
-                            <span class="text-xs text-slate-400 mt-1">Laporan</span>
+                        <a href="{{ route('admin.rkas.laporan') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
+                            <span class="font-medium">Laporan RKAS</span>
+                            <span class="text-xs text-slate-400 mt-1">Anggaran vs Realisasi</span>
                         </a>
                         <a href="{{ route('admin.akuntansi-setting.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
                             <span class="font-medium">Setting Akuntansi</span>

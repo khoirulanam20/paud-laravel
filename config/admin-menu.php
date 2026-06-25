@@ -1,7 +1,6 @@
 <?php
 
 return [
-  // Urutan menu admin (sinkron dengan sidebar) — untuk redirect dashboard role kustom
   'menu_order' => [
     ['route' => 'admin.anak.index', 'perm' => 'menu.siswa'],
     ['route' => 'admin.pendaftaran.index', 'perm' => 'menu.pendaftaran'],
@@ -21,12 +20,12 @@ return [
     ['route' => 'admin.akun.index', 'perm' => 'menu.akun-coa'],
     ['route' => 'admin.cashflow.index', 'perm' => 'menu.cashflow'],
     ['route' => 'admin.jurnal.index', 'perm' => 'menu.jurnal-umum'],
+    ['route' => 'admin.sumber-dana.index', 'perm' => 'menu.sumber-dana'],
+    ['route' => 'admin.rkas.index', 'perm' => 'menu.rkas'],
+    ['route' => 'admin.rkas.laporan', 'perm' => 'menu.laporan-rkas'],
     ['route' => 'admin.biaya-bulanan.index', 'perm' => 'menu.biaya-harian'],
     ['route' => 'admin.diskon.index', 'perm' => 'menu.diskon'],
     ['route' => 'admin.pembayaran-bulanan.index', 'perm' => 'menu.rekap-pembayaran'],
-    ['route' => 'admin.laporan.arus-kas', 'perm' => 'menu.arus-kas'],
-    ['route' => 'admin.laporan.neraca', 'perm' => 'menu.neraca'],
-    ['route' => 'admin.laporan.laba-rugi', 'perm' => 'menu.laba-rugi'],
     ['route' => 'admin.kritik-saran.index', 'perm' => 'menu.kritik-saran'],
     ['route' => 'admin.orangtua-chat.index', 'perm' => 'menu.chat-orangtua'],
     ['route' => 'admin.role.index', 'perm' => 'menu.role'],
@@ -35,7 +34,6 @@ return [
     ['route' => 'admin.ai-persona.index', 'perm' => 'menu.pengaturan-ai'],
   ],
 
-  // Route name pattern => permission name (sumber: sidebar admin)
   'route_permissions' => [
     'admin.anak.*' => 'menu.siswa',
     'admin.orang-tua.search' => 'menu.siswa',
@@ -57,12 +55,13 @@ return [
     'admin.akun.*' => 'menu.akun-coa',
     'admin.cashflow.*' => 'menu.cashflow',
     'admin.jurnal.*' => 'menu.jurnal-umum',
+    'admin.sumber-dana.*' => 'menu.sumber-dana',
+    'admin.rkas.laporan' => 'menu.laporan-rkas',
+    'admin.rkas.export-pdf' => 'menu.laporan-rkas',
+    'admin.rkas.*' => 'menu.rkas',
     'admin.biaya-bulanan.*' => 'menu.biaya-harian',
     'admin.diskon.*' => 'menu.diskon',
     'admin.pembayaran-bulanan.*' => 'menu.rekap-pembayaran',
-    'admin.laporan.arus-kas' => 'menu.arus-kas',
-    'admin.laporan.neraca' => 'menu.neraca',
-    'admin.laporan.laba-rugi' => 'menu.laba-rugi',
     'admin.kritik-saran.*' => 'menu.kritik-saran',
     'admin.orangtua-chat.*' => 'menu.chat-orangtua',
     'admin.role.*' => 'menu.role',

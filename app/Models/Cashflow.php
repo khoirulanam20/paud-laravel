@@ -12,6 +12,7 @@ class Cashflow extends Model
         'sekolah_id',
         'akun_id',
         'akun_lawan_id',
+        'sumber_dana_id',
         'jurnal_id',
         'type',
         'amount',
@@ -37,6 +38,11 @@ class Cashflow extends Model
     public function akunLawan(): BelongsTo
     {
         return $this->belongsTo(Akun::class, 'akun_lawan_id');
+    }
+
+    public function sumberDana(): BelongsTo
+    {
+        return $this->belongsTo(SumberDana::class);
     }
 
     public function jurnal(): BelongsTo

@@ -14,7 +14,6 @@ use App\Http\Controllers\Admin\KelasController;
 // Lembaga Controllers
 use App\Http\Controllers\Admin\KesehatanController;
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
-use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\MasterKegiatanRutinController;
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
 use App\Http\Controllers\Admin\MenuMakananController;
@@ -29,6 +28,8 @@ use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\PresensiController;
 use App\Http\Controllers\Admin\PresensiPengajarController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\RkasController;
+use App\Http\Controllers\Admin\SumberDanaController;
 use App\Http\Controllers\Admin\SaranaController;
 use App\Http\Controllers\Admin\SkalaPencapaianController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
@@ -172,11 +173,15 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->n
     Route::get('jurnal/create', [JurnalController::class, 'create'])->name('jurnal.create');
     Route::resource('jurnal', JurnalController::class)->except(['create', 'edit']);
 
-    Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::get('arus-kas', [LaporanController::class, 'arusKas'])->name('arus-kas');
-        Route::get('neraca', [LaporanController::class, 'neraca'])->name('neraca');
-        Route::get('laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
-    });
+    // RKAS
+    Route::resource('sumber-dana', SumberDanaController::class)->except(['create', 'edit', 'show']);
+    Route::get('rkas/laporan', [RkasController::class, 'laporan'])->name('rkas.laporan');
+    Route::get('rkas/export-pdf', [RkasController::class, 'exportPdf'])->name('rkas.export-pdf');
+    Route::post('rkas/{rka}/finalize', [RkasController::class, 'finalize'])->name('rkas.finalize');
+    Route::post('rkas/{rka}/reopen', [RkasController::class, 'reopen'])->name('rkas.reopen');
+    Route::post('rkas/{rka}/sync', [RkasController::class, 'sync'])->name('rkas.sync');
+    Route::put('rkas/{rka}/realisasi', [RkasController::class, 'updateRealisasi'])->name('rkas.update-realisasi');
+    Route::resource('rkas', RkasController::class)->except(['create', 'show']);
 
     // Manajemen Role & Pengguna
     Route::resource('role', RoleController::class)->except(['create', 'edit', 'show']);

@@ -33,19 +33,19 @@ class PermissionSeeder extends Seeder
                 ['name' => 'menu.menu-makanan', 'label' => 'Menu Makanan'],
             ],
             'Akuntansi' => [
-                ['name' => 'menu.akun-coa', 'label' => 'Akun (COA)'],
+                ['name' => 'menu.akun-coa', 'label' => 'Kode Rekening & Akun'],
                 ['name' => 'menu.cashflow', 'label' => 'Cashflow'],
                 ['name' => 'menu.jurnal-umum', 'label' => 'Jurnal Umum'],
+            ],
+            'RKAS' => [
+                ['name' => 'menu.sumber-dana', 'label' => 'Sumber Dana'],
+                ['name' => 'menu.rkas', 'label' => 'RKAS'],
+                ['name' => 'menu.laporan-rkas', 'label' => 'Laporan RKAS'],
             ],
             'Biaya & Pembayaran' => [
                 ['name' => 'menu.biaya-harian', 'label' => 'Biaya Bulanan'],
                 ['name' => 'menu.diskon', 'label' => 'Diskon'],
                 ['name' => 'menu.rekap-pembayaran', 'label' => 'Rekap Pembayaran'],
-            ],
-            'Laporan Keuangan' => [
-                ['name' => 'menu.arus-kas', 'label' => 'Arus Kas (PSAK 2)'],
-                ['name' => 'menu.neraca', 'label' => 'Neraca'],
-                ['name' => 'menu.laba-rugi', 'label' => 'Laba Rugi'],
             ],
             'Masukan & Komunikasi' => [
                 ['name' => 'menu.kritik-saran', 'label' => 'Kritik & Saran'],

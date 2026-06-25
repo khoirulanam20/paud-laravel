@@ -61,13 +61,13 @@ class AkuntansiSetting extends Model
 
     public static function forSekolah(int $sekolahId): self
     {
-        $kas = Akun::where('sekolah_id', $sekolahId)->where('kode', '1-1000')->first();
-        $pendapatanLain = Akun::where('sekolah_id', $sekolahId)->where('kode', '4-1200')->first();
-        $bebanLain = Akun::where('sekolah_id', $sekolahId)->where('kode', '5-1600')->first();
-        $piutang = Akun::where('sekolah_id', $sekolahId)->where('kode', '1-1200')->first();
-        $pendapatanSpp = Akun::where('sekolah_id', $sekolahId)->where('kode', '4-1000')->first();
+        $kas = Akun::where('sekolah_id', $sekolahId)->where('kode', 'SYS.KAS')->first();
+        $pendapatanLain = Akun::where('sekolah_id', $sekolahId)->where('kode', 'P.99')->first();
+        $bebanDefault = Akun::where('sekolah_id', $sekolahId)->where('tipe', 'rkas')->where('jenis', 'beban')->orderBy('kode')->first();
+        $piutang = Akun::where('sekolah_id', $sekolahId)->where('kode', 'SYS.PIUTANG')->first();
+        $pendapatanSpp = Akun::where('sekolah_id', $sekolahId)->where('kode', 'P.01')->first();
 
-        return static::firstOrCreate(
+        $setting = static::firstOrCreate(
             ['sekolah_id' => $sekolahId],
             [
                 'metode_pencatatan' => 'cash',
@@ -75,8 +75,20 @@ class AkuntansiSetting extends Model
                 'akun_piutang_id' => $piutang?->id,
                 'akun_pendapatan_id' => $pendapatanSpp?->id,
                 'akun_untuk_in' => $pendapatanLain?->id,
-                'akun_untuk_out' => $bebanLain?->id,
+                'akun_untuk_out' => $bebanDefault?->id,
             ],
         );
+
+        if ($kas && $setting->akun_kas_id !== $kas->id) {
+            $setting->update([
+                'akun_kas_id' => $kas->id,
+                'akun_piutang_id' => $piutang?->id,
+                'akun_pendapatan_id' => $pendapatanSpp?->id,
+                'akun_untuk_in' => $pendapatanLain?->id,
+                'akun_untuk_out' => $bebanDefault?->id,
+            ]);
+        }
+
+        return $setting->fresh();
     }
 }

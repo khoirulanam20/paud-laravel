@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use App\Models\Cashflow;
+use App\Models\SumberDana;
 use App\Services\AkuntansiService;
 use Illuminate\Http\Request;
 
@@ -23,7 +24,7 @@ class CashflowController extends Controller
         $cashflows = Cashflow::where('sekolah_id', $sekolahId)
             ->whereYear('date', $tahun)
             ->whereMonth('date', $bulan)
-            ->with(['akun', 'akunLawan', 'jurnal'])
+            ->with(['akun', 'akunLawan', 'sumberDana', 'jurnal'])
             ->orderBy('date', 'desc')
             ->paginate(15);
 
@@ -31,7 +32,6 @@ class CashflowController extends Controller
         $totalOut = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
         $balance = $totalIn - $totalOut;
 
-        // Summary per kategori arus kas
         $summaryArusKas = Cashflow::where('sekolah_id', $sekolahId)
             ->whereYear('date', $tahun)
             ->whereMonth('date', $bulan)
@@ -40,17 +40,15 @@ class CashflowController extends Controller
             ->get()
             ->groupBy(fn ($c) => $c->akun?->kategori_arus_kas ?? 'tidak_diketahui');
 
-        $akuns = Akun::where('sekolah_id', $sekolahId)
-            ->where('is_aktif', true)
-            ->orderBy('kode')
-            ->get();
-        $akunPendapatan = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', 'pendapatan')->orderBy('kode')->get();
-        $akunBeban = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', 'beban')->orderBy('kode')->get();
+        $akunKas = Akun::where('sekolah_id', $sekolahId)->aktif()->sistem()->where('jenis', 'aset')->orderBy('kode')->get();
+        $akunPendapatan = Akun::where('sekolah_id', $sekolahId)->aktif()->rkas()->where('jenis', 'pendapatan')->orderBy('kode')->get();
+        $akunBeban = Akun::where('sekolah_id', $sekolahId)->aktif()->rkas()->where('jenis', 'beban')->orderBy('kode')->get();
         $setting = $this->akuntansiService->getSetting($sekolahId);
+        $sumberDanas = SumberDana::where('sekolah_id', $sekolahId)->aktif()->orderBy('urutan')->get();
 
         return view('admin.cashflow.index', compact(
             'cashflows', 'totalIn', 'totalOut', 'balance',
-            'summaryArusKas', 'bulan', 'tahun', 'akuns', 'akunPendapatan', 'akunBeban', 'setting'
+            'summaryArusKas', 'bulan', 'tahun', 'akunKas', 'akunPendapatan', 'akunBeban', 'setting', 'sumberDanas',
         ));
     }
 
@@ -63,6 +61,7 @@ class CashflowController extends Controller
             'description' => 'required|string',
             'akun_id' => 'nullable|exists:akuns,id',
             'akun_lawan_id' => 'nullable|exists:akuns,id',
+            'sumber_dana_id' => 'nullable|exists:sumber_danas,id',
         ]);
 
         $cashflow = Cashflow::create([
@@ -73,9 +72,9 @@ class CashflowController extends Controller
             'description' => $request->description,
             'akun_id' => $request->akun_id,
             'akun_lawan_id' => $request->akun_lawan_id,
+            'sumber_dana_id' => $request->sumber_dana_id,
         ]);
 
-        // Auto-buat jurnal
         $this->akuntansiService->buatJurnalDariCashflow($cashflow);
 
         return redirect()->route('admin.cashflow.index')->with('success', 'Transaksi berhasil ditambahkan.');
@@ -92,9 +91,9 @@ class CashflowController extends Controller
             'description' => 'required|string',
             'akun_id' => 'nullable|exists:akuns,id',
             'akun_lawan_id' => 'nullable|exists:akuns,id',
+            'sumber_dana_id' => 'nullable|exists:sumber_danas,id',
         ]);
 
-        // Hapus jurnal lama jika ada
         if ($cashflow->jurnal_id) {
             $this->akuntansiService->hapusJurnal($cashflow->jurnal);
         }
@@ -106,25 +105,33 @@ class CashflowController extends Controller
             'description' => $request->description,
             'akun_id' => $request->akun_id,
             'akun_lawan_id' => $request->akun_lawan_id,
+            'sumber_dana_id' => $request->sumber_dana_id,
             'jurnal_id' => null,
         ]);
 
-        // Buat jurnal baru
-        $this->akuntansiService->buatJurnalDariCashflow($cashflow);
+        $this->akuntansiService->buatJurnalDariCashflow($cashflow->fresh());
 
-        return redirect()->route('admin.cashflow.index')->with('success', 'Transaksi berhasil diperbarui.');
+        $date = \Carbon\Carbon::parse($request->date);
+
+        return redirect()->route('admin.cashflow.index', [
+            'bulan' => $date->month,
+            'tahun' => $date->year,
+        ])->with('success', 'Transaksi berhasil diperbarui.');
     }
 
-    public function destroy(Cashflow $cashflow)
+    public function destroy(Cashflow $cashflow, Request $request)
     {
         abort_if($cashflow->sekolah_id !== auth()->user()->sekolah_id, 403);
 
         if ($cashflow->jurnal_id) {
             $this->akuntansiService->hapusJurnal($cashflow->jurnal);
-        } else {
-            $cashflow->delete();
         }
 
-        return redirect()->route('admin.cashflow.index')->with('success', 'Transaksi berhasil dihapus.');
+        $cashflow->delete();
+
+        return redirect()->route('admin.cashflow.index', [
+            'bulan' => $request->input('bulan', now()->month),
+            'tahun' => $request->input('tahun', now()->year),
+        ])->with('success', 'Transaksi berhasil dihapus.');
     }
 }
