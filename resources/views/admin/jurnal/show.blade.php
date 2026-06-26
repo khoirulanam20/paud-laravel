@@ -10,7 +10,9 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+         x-data="{ showDeleteModal: false }"
+         @tour-close-modals.window="showDeleteModal = false">
         <div class="card mb-6">
             <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color:rgba(0,0,0,0.06);">
                 <div>
@@ -19,10 +21,7 @@
                 </div>
                 <div class="flex gap-3">
                     <a href="{{ route('admin.jurnal.index') }}" class="btn-secondary text-xs">Kembali</a>
-                    <form action="{{ route('admin.jurnal.destroy', $jurnal) }}" method="POST" onsubmit="return confirm('Hapus jurnal ini?')">
-                        @csrf @method('DELETE')
-                        <button class="btn-danger text-xs">Hapus</button>
-                    </form>
+                    <button type="button" @click="showDeleteModal = true" class="btn-danger text-xs">Hapus</button>
                 </div>
             </div>
             <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -90,5 +89,13 @@
                 </table>
             </div>
         </div>
+
+        <x-confirm-modal
+            show="showDeleteModal"
+            :action="route('admin.jurnal.destroy', $jurnal)"
+            method="DELETE"
+            title="Hapus Jurnal?"
+            message="Jurnal dan entri terkait akan dihapus permanen. Cashflow terkait juga akan terlepas."
+        />
     </div>
 </x-app-layout>

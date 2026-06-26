@@ -7,12 +7,15 @@ use App\Models\Akun;
 use App\Models\Cashflow;
 use App\Models\SumberDana;
 use App\Services\AkuntansiService;
+use App\Services\KwitansiService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CashflowController extends Controller
 {
     public function __construct(
-        private AkuntansiService $akuntansiService
+        private AkuntansiService $akuntansiService,
+        private KwitansiService $kwitansiService,
     ) {}
 
     public function index(Request $request)
@@ -72,12 +75,17 @@ class CashflowController extends Controller
             'description' => $request->description,
             'akun_id' => $request->akun_id,
             'akun_lawan_id' => $request->akun_lawan_id,
-            'sumber_dana_id' => $request->sumber_dana_id,
+            'sumber_dana_id' => $request->type === 'out' ? $request->sumber_dana_id : null,
         ]);
 
         $this->akuntansiService->buatJurnalDariCashflow($cashflow);
 
-        return redirect()->route('admin.cashflow.index')->with('success', 'Transaksi berhasil ditambahkan.');
+        $date = \Carbon\Carbon::parse($request->date);
+
+        return redirect()->route('admin.cashflow.index', [
+            'bulan' => $date->month,
+            'tahun' => $date->year,
+        ])->with('success', 'Transaksi berhasil ditambahkan.');
     }
 
     public function update(Request $request, Cashflow $cashflow)
@@ -105,7 +113,7 @@ class CashflowController extends Controller
             'description' => $request->description,
             'akun_id' => $request->akun_id,
             'akun_lawan_id' => $request->akun_lawan_id,
-            'sumber_dana_id' => $request->sumber_dana_id,
+            'sumber_dana_id' => $request->type === 'out' ? $request->sumber_dana_id : null,
             'jurnal_id' => null,
         ]);
 
@@ -133,5 +141,24 @@ class CashflowController extends Controller
             'bulan' => $request->input('bulan', now()->month),
             'tahun' => $request->input('tahun', now()->year),
         ])->with('success', 'Transaksi berhasil dihapus.');
+    }
+
+    public function kwitansiDefaults(Cashflow $cashflow): JsonResponse
+    {
+        abort_if($cashflow->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        return response()->json($this->kwitansiService->defaultsFromCashflow($cashflow));
+    }
+
+    public function kwitansiPdf(Request $request, Cashflow $cashflow)
+    {
+        abort_if($cashflow->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $data = $request->validate($this->kwitansiService->validationRules());
+
+        return $this->kwitansiService->download(
+            $data,
+            $this->kwitansiService->jenisForCashflow($cashflow)
+        );
     }
 }

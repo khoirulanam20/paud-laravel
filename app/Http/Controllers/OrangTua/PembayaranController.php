@@ -5,15 +5,18 @@ namespace App\Http\Controllers\OrangTua;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\PembayaranBulanan;
+use App\Services\KwitansiService;
 use App\Services\PembayaranInvoicePdfService;
 use App\Services\RekapBiayaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class PembayaranController extends Controller
 {
     public function __construct(
-        private RekapBiayaService $rekapBiayaService
+        private RekapBiayaService $rekapBiayaService,
+        private KwitansiService $kwitansiService,
     ) {}
 
     public function index()
@@ -53,6 +56,24 @@ class PembayaranController extends Controller
         abort_unless($pembayaran->isApproved(), 403, 'Invoice hanya tersedia untuk pembayaran yang sudah lunas.');
 
         return app(PembayaranInvoicePdfService::class)->download($pembayaran);
+    }
+
+    public function kwitansiDefaults(PembayaranBulanan $pembayaran): JsonResponse
+    {
+        $this->authorizePembayaran($pembayaran);
+        abort_unless($pembayaran->isApproved(), 403, 'Kuitansi hanya tersedia untuk pembayaran yang sudah lunas.');
+
+        return response()->json($this->kwitansiService->defaultsFromPembayaran($pembayaran));
+    }
+
+    public function kwitansiPdf(Request $request, PembayaranBulanan $pembayaran)
+    {
+        $this->authorizePembayaran($pembayaran);
+        abort_unless($pembayaran->isApproved(), 403, 'Kuitansi hanya tersedia untuk pembayaran yang sudah lunas.');
+
+        $data = $request->validate($this->kwitansiService->validationRules());
+
+        return $this->kwitansiService->download($data, 'penerimaan');
     }
 
     public function bayar(Request $request, PembayaranBulanan $pembayaran)

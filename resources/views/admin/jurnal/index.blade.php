@@ -10,7 +10,9 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+         x-data="{ showDeleteModal: false, deleteRoute: '', openDelete(r) { this.deleteRoute = r; this.showDeleteModal = true } }"
+         @tour-close-modals.window="showDeleteModal = false">
         @if(session('success'))
             <div class="alert-success mb-5">
                 <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -83,10 +85,10 @@
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('admin.jurnal.show', $jurnal) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
-                                        <form action="{{ route('admin.jurnal.destroy', $jurnal) }}" method="POST" onsubmit="return confirm('Hapus jurnal ini?')">
-                                            @csrf @method('DELETE')
-                                            <button class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
-                                        </form>
+                                        <button type="button"
+                                            @click="openDelete('{{ route('admin.jurnal.destroy', $jurnal) }}')"
+                                            class="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                                            style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -101,5 +103,13 @@
                 <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $jurnals->links() }}</div>
             @endif
         </div>
+
+        <x-confirm-modal
+            show="showDeleteModal"
+            action-binding="deleteRoute"
+            method="DELETE"
+            title="Hapus Jurnal?"
+            message="Jurnal dan entri terkait akan dihapus permanen. Cashflow terkait juga akan terlepas."
+        />
     </div>
 </x-app-layout>

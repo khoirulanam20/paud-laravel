@@ -206,6 +206,8 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->n
     Route::post('pencapaian/sync', [App\Http\Controllers\Admin\PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [App\Http\Controllers\Admin\PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
     Route::resource('pencapaian', App\Http\Controllers\Admin\PencapaianController::class)->only(['index', 'destroy']);
+    Route::get('cashflow/{cashflow}/kwitansi/defaults', [CashflowController::class, 'kwitansiDefaults'])->name('cashflow.kwitansi.defaults');
+    Route::post('cashflow/{cashflow}/kwitansi/pdf', [CashflowController::class, 'kwitansiPdf'])->name('cashflow.kwitansi.pdf');
     Route::resource('cashflow', CashflowController::class)->except(['create', 'edit', 'show']);
     Route::get('presensi', [PresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PresensiController::class, 'store'])->name('presensi.store');
@@ -309,6 +311,8 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
 
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('pembayaran/{pembayaran}/invoice', [PembayaranController::class, 'exportInvoice'])->name('pembayaran.invoice');
+    Route::get('pembayaran/{pembayaran}/kwitansi/defaults', [PembayaranController::class, 'kwitansiDefaults'])->name('pembayaran.kwitansi.defaults');
+    Route::post('pembayaran/{pembayaran}/kwitansi/pdf', [PembayaranController::class, 'kwitansiPdf'])->name('pembayaran.kwitansi.pdf');
     Route::get('pembayaran/{pembayaran}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::post('pembayaran/{pembayaran}/bayar', [PembayaranController::class, 'bayar'])->name('pembayaran.bayar');
 });
