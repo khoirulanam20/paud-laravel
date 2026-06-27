@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Lembaga;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -36,6 +37,8 @@ class AdminLembagaController extends Controller
         ]);
 
         $user->assignRole('Lembaga');
+
+        ActivityLogger::log('Role Lembaga ditetapkan', $user, ['lembaga_id' => $user->lembaga_id]);
 
         return redirect()->route('superadmin.admin-lembaga.index')
             ->with('success', 'Admin Lembaga berhasil ditambahkan.');

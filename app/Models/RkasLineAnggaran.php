@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RkasLineAnggaran extends Model
 {
+    use LogsScopedActivity;
+
     protected $fillable = [
         'rkas_line_id',
         'sumber_dana_id',

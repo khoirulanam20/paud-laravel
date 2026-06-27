@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -43,6 +44,8 @@ class PenggunaController extends Controller
 
         $user->assignRole($request->role);
 
+        ActivityLogger::log('Role ditetapkan ke pengguna', $user, ['role' => $request->role]);
+
         return redirect()->route('admin.pengguna.index')
             ->with('success', 'Pengguna "' . e($request->name) . '" berhasil ditambahkan.');
     }
@@ -71,6 +74,8 @@ class PenggunaController extends Controller
 
         // Sync role: hapus semua role lama, assign role baru
         $pengguna->syncRoles([$request->role]);
+
+        ActivityLogger::log('Role pengguna diperbarui', $pengguna, ['role' => $request->role]);
 
         return redirect()->route('admin.pengguna.index')
             ->with('success', 'Data pengguna "' . e($request->name) . '" berhasil diperbarui.');

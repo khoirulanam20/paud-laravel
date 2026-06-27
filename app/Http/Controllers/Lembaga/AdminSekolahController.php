@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Lembaga;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Sekolah;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -40,6 +41,8 @@ class AdminSekolahController extends Controller
         ]);
 
         $user->assignRole('Admin Sekolah');
+
+        ActivityLogger::log('Role Admin Sekolah ditetapkan', $user, ['sekolah_id' => $user->sekolah_id]);
 
         return redirect()->route('lembaga.admin-sekolah.index')->with('success', 'Admin Sekolah berhasil ditambahkan.');
     }

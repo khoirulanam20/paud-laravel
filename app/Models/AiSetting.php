@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use App\Services\SumopodAIService;
 use App\Support\AiProvider;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -11,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AiSetting extends Model
 {
+    use LogsScopedActivity;
+
+    protected array $activityLogExcept = ['ai_api_key'];
+
     protected $fillable = [
         'lembaga_id',
         'ai_provider',

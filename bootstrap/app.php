@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'admin.menu' => \App\Http\Middleware\EnsureAdminMenuAccess::class,
             'lembaga.sekolah' => \App\Http\Middleware\EnsureLembagaSekolahContext::class,
+            'admin.activity' => \App\Http\Middleware\EnableAdminActivityLogging::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

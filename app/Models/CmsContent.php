@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CmsContent extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsScopedActivity;
 
     protected $fillable = ['sekolah_id', 'key', 'value'];
 

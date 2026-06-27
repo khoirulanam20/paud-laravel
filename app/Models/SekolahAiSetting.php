@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SekolahAiSetting extends Model
 {
+    use LogsScopedActivity;
+
     public const DEFAULT_FALLBACK = 'Maaf, fitur ini sedang terbatas.';
 
     protected $fillable = [

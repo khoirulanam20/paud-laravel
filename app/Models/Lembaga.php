@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Lembaga extends Model
 {
+    use LogsScopedActivity;
+
     protected $fillable = [
         'name',
         'address',

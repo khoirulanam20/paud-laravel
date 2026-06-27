@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Lembaga;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sekolah;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -22,6 +23,8 @@ class SchoolSwitcherController extends Controller
         abort_if($sekolah->lembaga_id !== $user->lembaga_id, 403);
 
         session(['active_sekolah_id' => $sekolah->id]);
+
+        ActivityLogger::log('Cabang aktif diubah', $sekolah, ['sekolah_id' => $sekolah->id]);
 
         return back()->with('success', 'Cabang aktif: ' . $sekolah->name);
     }

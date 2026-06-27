@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pencapaian extends Model
 {
+    use LogsScopedActivity;
+
     protected $guarded = [];
 
     public function anak(): BelongsTo

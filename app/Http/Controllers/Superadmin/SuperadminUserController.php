@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Superadmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -33,6 +34,8 @@ class SuperadminUserController extends Controller
         ]);
 
         $user->assignRole('Superadmin');
+
+        ActivityLogger::log('Role Superadmin ditetapkan', $user);
 
         return redirect()->route('superadmin.users.index')
             ->with('success', 'Superadmin berhasil ditambahkan.');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -58,6 +59,7 @@ class RoleController extends Controller
         'Pengaturan' => [
             ['name' => 'menu.role', 'label' => 'Role'],
             ['name' => 'menu.pengguna', 'label' => 'Pengguna'],
+            ['name' => 'menu.log-aktivitas', 'label' => 'Log Aktivitas'],
         ],
         'Pengaturan Akuntansi' => [
             ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
@@ -80,7 +82,9 @@ class RoleController extends Controller
             'name' => ['required', 'string', 'max:255', 'unique:' . Role::class . ',name'],
         ]);
 
-        Role::create(['name' => $request->name]);
+        $role = Role::create(['name' => $request->name]);
+
+        ActivityLogger::log('Role dibuat', null, ['role' => $role->name]);
 
         return redirect()->route('admin.role.index')
             ->with('success', 'Role "' . e($request->name) . '" berhasil ditambahkan.');
@@ -98,6 +102,8 @@ class RoleController extends Controller
 
         $role->update(['name' => $request->name]);
 
+        ActivityLogger::log('Role diperbarui', null, ['role' => $role->name]);
+
         return redirect()->route('admin.role.index')
             ->with('success', 'Role berhasil diperbarui.');
     }
@@ -113,6 +119,11 @@ class RoleController extends Controller
         $role->syncPermissions($permissions);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
+        ActivityLogger::log('Permission role diperbarui', null, [
+            'role' => $role->name,
+            'permissions' => $permissions,
+        ]);
+
         return redirect()->route('admin.role.index')
             ->with('success', 'Akses menu untuk role "' . e($role->name) . '" berhasil diperbarui.');
     }
@@ -123,7 +134,10 @@ class RoleController extends Controller
             return back()->withErrors(['role' => 'Role default tidak dapat dihapus.']);
         }
 
+        $roleName = $role->name;
         $role->delete();
+
+        ActivityLogger::log('Role dihapus', null, ['role' => $roleName]);
 
         return redirect()->route('admin.role.index')
             ->with('success', 'Role "' . e($role->name) . '" berhasil dihapus.');

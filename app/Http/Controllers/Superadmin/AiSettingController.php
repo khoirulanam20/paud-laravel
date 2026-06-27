@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AiSetting;
 use App\Models\Lembaga;
 use App\Services\AiTokenService;
+use App\Support\ActivityLogger;
 use App\Support\AiProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -172,6 +173,13 @@ class AiSettingController extends Controller
             auth()->user(),
             $validated['description'] ?? null
         );
+
+        ActivityLogger::log('Token AI ditambahkan', null, [
+            'lembaga_id' => $lembaga_id,
+            'sekolah_id' => (int) $validated['sekolah_id'],
+            'amount' => (int) $validated['amount'],
+            'description' => $validated['description'] ?? null,
+        ]);
 
         return redirect()
             ->route('superadmin.ai-setting.index', [

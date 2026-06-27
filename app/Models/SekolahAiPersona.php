@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use App\Support\AiPersonaScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SekolahAiPersona extends Model
 {
+    use LogsScopedActivity;
+
     public const GENDER_PEREMPUAN = 'perempuan';
 
     public const GENDER_LAKI_LAKI = 'laki_laki';

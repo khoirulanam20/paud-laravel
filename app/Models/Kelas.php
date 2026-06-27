@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Kelas extends Model
 {
+    use LogsScopedActivity;
+
     protected $fillable = ['sekolah_id', 'name', 'description', 'wali_kelas_id'];
 
     public function sekolah()

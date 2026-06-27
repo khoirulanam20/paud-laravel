@@ -54,6 +54,7 @@ class PermissionSeeder extends Seeder
             'Pengaturan' => [
                 ['name' => 'menu.role', 'label' => 'Role'],
                 ['name' => 'menu.pengguna', 'label' => 'Pengguna'],
+                ['name' => 'menu.log-aktivitas', 'label' => 'Log Aktivitas'],
             ],
             'Pengaturan Akuntansi' => [
                 ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],

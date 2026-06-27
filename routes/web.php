@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Admin\AiPersonaController;
 use App\Http\Controllers\Admin\AkunController;
 use App\Http\Controllers\Admin\AkuntansiSettingController;
@@ -106,7 +107,7 @@ Route::middleware('auth')->group(function () {
 // ─────────────────────────────────────────────
 // SUPERADMIN
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+Route::middleware(['auth', 'role:Superadmin', 'admin.activity'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('dashboard', [SuperadminDashboardController::class, 'index'])->name('dashboard');
     Route::resource('lembaga', SuperadminLembagaController::class)->except(['create', 'edit', 'show']);
     Route::resource('admin-lembaga', SuperadminAdminLembagaController::class)->except(['create', 'edit', 'show']);
@@ -118,22 +119,24 @@ Route::middleware(['auth', 'role:Superadmin'])->prefix('superadmin')->name('supe
     Route::post('ai-setting', [SuperadminAiSettingController::class, 'update'])->name('ai-setting.update');
     Route::post('ai-setting/test', [SuperadminAiSettingController::class, 'testConnection'])->name('ai-setting.test');
     Route::post('ai-setting/tokens', [SuperadminAiSettingController::class, 'storeTokens'])->name('ai-setting.tokens.store');
+    Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 
 // ─────────────────────────────────────────────
 // LEMBAGA
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Lembaga'])->prefix('lembaga')->name('lembaga.')->group(function () {
+Route::middleware(['auth', 'role:Lembaga', 'admin.activity'])->prefix('lembaga')->name('lembaga.')->group(function () {
     Route::post('active-sekolah', [SchoolSwitcherController::class, 'update'])->name('active-sekolah.update');
     Route::resource('sekolah', SekolahController::class)->except(['create', 'edit', 'show']);
     Route::resource('admin-sekolah', AdminSekolahController::class)->except(['create', 'edit', 'show']);
     Route::get('kritik-saran', [LembagaKritikSaranController::class, 'index'])->name('kritik-saran.index');
+    Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 
 // ─────────────────────────────────────────────
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('monev', [AdminMonevController::class, 'index'])->name('monev.index');
     Route::post('monev/generate', [AdminMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
     Route::post('monev/bulk-generate', [AdminMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');
@@ -240,6 +243,7 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah'])->prefix('admin')->n
     Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
+    Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 
 // ─────────────────────────────────────────────

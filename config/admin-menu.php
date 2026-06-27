@@ -32,6 +32,7 @@ return [
     ['route' => 'admin.pengguna.index', 'perm' => 'menu.pengguna'],
     ['route' => 'admin.akuntansi-setting.index', 'perm' => 'menu.setting-akuntansi'],
     ['route' => 'admin.ai-persona.index', 'perm' => 'menu.pengaturan-ai'],
+    ['route' => 'admin.activity-log.index', 'perm' => 'menu.log-aktivitas'],
   ],
 
   'route_permissions' => [
@@ -69,5 +70,6 @@ return [
     'admin.akuntansi-setting.*' => 'menu.setting-akuntansi',
     'admin.ai-persona.*' => 'menu.pengaturan-ai',
     'admin.ai.feedback-suggestions' => 'menu.pengaturan-ai',
+    'admin.activity-log.*' => 'menu.log-aktivitas',
   ],
 ];

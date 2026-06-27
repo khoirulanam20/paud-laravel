@@ -33,8 +33,7 @@
                             <td><span class="font-mono font-bold" style="color:#2C2C2C;">{{ $s->code }}</span></td>
                             <td>{{ $s->label }}</td>
                             <td>
-                                <span class="inline-block w-8 h-5 rounded border" style="background:{{ $s->color }}; border-color:rgba(0,0,0,0.1);"></span>
-                                <span class="text-xs text-gray-500 ml-1">{{ $s->color }}</span>
+                                <span class="inline-block w-8 h-5 rounded border" style="background:{{ $s->color }}; border-color:rgba(0,0,0,0.1);" title="{{ $s->color }}"></span>
                             </td>
                             <td>{{ $s->sort_order }}</td>
                             <td>
