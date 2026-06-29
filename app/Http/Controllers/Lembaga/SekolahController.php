@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Sekolah;
 use App\Models\SkalaPencapaian;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class SekolahController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $lembaga_id = auth()->user()->lembaga_id;
-        $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->latest()->paginate(10);
+        $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         return view('lembaga.sekolah.index', compact('sekolahs'));
     }
 

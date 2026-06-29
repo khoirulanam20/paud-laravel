@@ -241,11 +241,10 @@
             </table>
         </div>
 
-        @if($anaks->hasPages())
-            <div class="px-6 py-4 border-t" style="border-color: rgba(0,0,0,0.06);">
+        <div class="px-6 py-4 border-t" style="border-color: rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$anaks" />
                 {{ $anaks->links() }}
             </div>
-        @endif
     @endif
 </div>
 

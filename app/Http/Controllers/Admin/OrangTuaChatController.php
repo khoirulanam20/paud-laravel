@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\OrangTuaChat;
 use App\Services\OrangTuaChatService;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class OrangTuaChatController extends Controller
 {
@@ -13,7 +15,7 @@ class OrangTuaChatController extends Controller
         protected OrangTuaChatService $chatService
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
 
@@ -23,7 +25,7 @@ class OrangTuaChatController extends Controller
             ->withCount('messages')
             ->with(['messages' => fn ($q) => $q->latest()->limit(1)])
             ->orderByDesc('updated_at')
-            ->paginate(15);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.orangtua_chat.index', compact('chats'));
     }

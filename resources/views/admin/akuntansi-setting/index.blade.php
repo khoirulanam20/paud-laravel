@@ -29,47 +29,6 @@
         <form action="{{ route('admin.akuntansi-setting.update') }}" method="POST">
             @csrf @method('PUT')
 
-            <!-- Section 1: Metode Pencatatan -->
-            <div class="card mb-6">
-                <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                    <h3 class="section-title">Metode Pencatatan</h3>
-                    <p class="section-subtitle">Tentukan kapan pendapatan diakui dalam jurnal.</p>
-                </div>
-                <div x-data="{ metode: '{{ $setting->metode_pencatatan }}' }" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label @click="metode = 'cash'"
-                        class="p-4 border-2 rounded-xl cursor-pointer transition"
-                        :class="metode === 'cash' ? 'border-[#1A6B6B] bg-[#D0E8E8]' : 'border-[#E0D6C8]'">
-                        <input type="radio" name="metode_pencatatan" value="cash" class="sr-only" {{ $setting->isCash() ? 'checked' : '' }}>
-                        <div class="flex items-start gap-3">
-                            <div class="mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center"
-                                :class="metode === 'cash' ? 'border-[#1A6B6B]' : 'border-[#C4B89A]'">
-                                <div x-show="metode === 'cash'" class="h-2.5 w-2.5 rounded-full" style="background:#1A6B6B;"></div>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-sm" style="color:#2C2C2C;">Cash Basis</p>
-                                <p class="text-xs mt-1" style="color:#9E9790;">Pendapatan diakui saat pembayaran diterima. Sederhana, cocok untuk PAUD kecil.</p>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label @click="metode = 'accrual'"
-                        class="p-4 border-2 rounded-xl cursor-pointer transition"
-                        :class="metode === 'accrual' ? 'border-[#1A6B6B] bg-[#D0E8E8]' : 'border-[#E0D6C8]'">
-                        <input type="radio" name="metode_pencatatan" value="accrual" class="sr-only" {{ $setting->isAccrual() ? 'checked' : '' }}>
-                        <div class="flex items-start gap-3">
-                            <div class="mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center"
-                                :class="metode === 'accrual' ? 'border-[#1A6B6B]' : 'border-[#C4B89A]'">
-                                <div x-show="metode === 'accrual'" class="h-2.5 w-2.5 rounded-full" style="background:#1A6B6B;"></div>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-sm" style="color:#2C2C2C;">Accrual Basis (PSAK)</p>
-                                <p class="text-xs mt-1" style="color:#9E9790;">Pendapatan diakui saat tagihan diterbitkan. Jurnal piutang dibuat otomatis. Lebih akurat, sesuai PSAK.</p>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
             <!-- Section 2: Default Akun Cashflow -->
             <div class="card mb-6">
                 <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">

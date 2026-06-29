@@ -66,7 +66,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($skalas->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $skalas->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$skalas" />
+                {{ $skalas->links() }}
+            </div>
         </div>
 
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;">

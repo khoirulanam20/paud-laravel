@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class MatrikulasiController extends Controller
 {
@@ -14,10 +15,10 @@ class MatrikulasiController extends Controller
         return Pengajar::where('user_id', auth()->id())->value('sekolah_id');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = $this->getSekolahId();
-        $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->latest()->paginate(10);
+        $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         
         return view('pengajar.matrikulasi.index', compact('matrikulasis'));
     }

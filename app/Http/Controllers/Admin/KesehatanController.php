@@ -7,6 +7,7 @@ use App\Models\Anak;
 use App\Models\Kelas;
 use App\Models\Kesehatan;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class KesehatanController extends Controller
 {
@@ -25,7 +26,7 @@ class KesehatanController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $anaks = $query->orderBy('name')->paginate(20);
+        $anaks = $query->orderBy('name')->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $kelas = Kelas::where('sekolah_id', $user->sekolah_id)->orderBy('name')->get();
 
         return view('admin.kesehatan.index', compact('anaks', 'kelas'));

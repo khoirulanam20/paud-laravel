@@ -9,12 +9,13 @@ use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Support\PaginationPerPage;
 
 class AdminLembagaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $admins = User::role('Lembaga')->with('lembaga')->latest()->paginate(10);
+        $admins = User::role('Lembaga')->with('lembaga')->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $lembagas = Lembaga::orderBy('name')->get();
 
         return view('superadmin.admin_lembaga.index', compact('admins', 'lembagas'));

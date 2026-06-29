@@ -73,7 +73,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($akunList->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $akunList->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$akunList" />
+                {{ $akunList->links() }}
+            </div>
         </div>
 
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;">

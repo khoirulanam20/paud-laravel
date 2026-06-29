@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Lembaga;
 use App\Models\Sekolah;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class SekolahController extends Controller
 {
@@ -17,7 +18,7 @@ class SekolahController extends Controller
             $query->where('lembaga_id', $lembagaId);
         }
 
-        $sekolahs = $query->paginate(15)->withQueryString();
+        $sekolahs = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $lembagas = Lembaga::orderBy('name')->get();
 
         return view('superadmin.sekolah.index', compact('sekolahs', 'lembagas'));

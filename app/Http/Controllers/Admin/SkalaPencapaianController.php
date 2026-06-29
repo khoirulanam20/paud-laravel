@@ -8,6 +8,7 @@ use App\Models\Pencapaian;
 use App\Models\SkalaPencapaian;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Support\PaginationPerPage;
 
 class SkalaPencapaianController extends Controller
 {
@@ -18,7 +19,7 @@ class SkalaPencapaianController extends Controller
         return $id !== null ? (int) $id : null;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = $this->sekolahId();
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah.');
@@ -27,7 +28,7 @@ class SkalaPencapaianController extends Controller
             ->where('sekolah_id', $sekolah_id)
             ->orderBy('sort_order')
             ->orderBy('code')
-            ->paginate(20);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.skala-pencapaian.index', compact('skalas'));
     }

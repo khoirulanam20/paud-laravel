@@ -118,7 +118,10 @@
                 </div>
                 @endforelse
             </div>
-            @if(method_exists($menus, 'hasPages') && $menus->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $menus->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$menus" />
+                {{ $menus->links() }}
+            </div>
         </div>
 
         {{-- Modal Preview Gambar --}}

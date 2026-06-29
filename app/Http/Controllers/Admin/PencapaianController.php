@@ -19,6 +19,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Http\Traits\CanUploadImage;
+use App\Support\PaginationPerPage;
 
 class PencapaianController extends Controller
 {
@@ -76,7 +77,7 @@ class PencapaianController extends Controller
             return FilterAspekPencapaian::groupHasMatch($filterAspek, $groupsAll[$k]);
         })->values();
 
-        $perPage = 15;
+        $perPage = PaginationPerPage::resolve($request);
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $total = $keysFiltered->count();
         $sliceKeys = $keysFiltered->slice(($currentPage - 1) * $perPage, $perPage)->values();

@@ -7,6 +7,7 @@ use App\Models\Anak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Traits\CanUploadImage;
+use App\Support\PaginationPerPage;
 
 class AnakController extends Controller
 {
@@ -22,7 +23,7 @@ class AnakController extends Controller
         if ($request->filled('kelas_id') && in_array($request->kelas_id, $kelasIds)) {
             $query->where('kelas_id', $request->kelas_id);
         }
-        $anaks = $query->paginate(20);
+        $anaks = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
         return view('adminkelas.anak.index', compact('anaks', 'kelas'));
     }
 

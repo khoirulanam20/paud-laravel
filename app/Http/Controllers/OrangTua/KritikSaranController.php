@@ -6,17 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\KritikSaran;
 use Illuminate\Http\Request;
 use App\Http\Traits\CanUploadImage;
+use App\Support\PaginationPerPage;
 
 class KritikSaranController extends Controller
 {
     use CanUploadImage;
-    public function index()
+    public function index(Request $request)
     {
         $feedbacks = KritikSaran::query()
             ->where('user_id', auth()->id())
             ->with('sekolah')
             ->latest()
-            ->paginate(15);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('orangtua.kritik_saran.index', compact('feedbacks'));
     }

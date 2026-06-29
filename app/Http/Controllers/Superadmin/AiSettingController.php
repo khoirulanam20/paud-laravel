@@ -11,6 +11,7 @@ use App\Support\AiProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use App\Support\PaginationPerPage;
 
 class AiSettingController extends Controller
 {
@@ -49,7 +50,8 @@ class AiSettingController extends Controller
         $schoolsWithBalances = $this->tokenService->schoolsWithBalances((int) $lembaga_id);
         $transactions = $this->tokenService->paginateTransactions(
             (int) $lembaga_id,
-            $request->integer('sekolah_id') ?: null
+            $request->integer('sekolah_id') ?: null,
+            PaginationPerPage::resolve($request)
         );
         $activeTab = $request->query('tab', 'provider');
 

@@ -24,7 +24,6 @@ class AkuntansiSettingController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'metode_pencatatan' => 'required|in:cash,accrual',
             'akun_kas_id' => 'required|exists:akuns,id',
             'akun_piutang_id' => 'nullable|exists:akuns,id',
             'akun_pendapatan_id' => 'nullable|exists:akuns,id',
@@ -36,7 +35,7 @@ class AkuntansiSettingController extends Controller
         $setting = AkuntansiSetting::forSekolah($sekolahId);
 
         $setting->update($request->only([
-            'metode_pencatatan', 'akun_kas_id', 'akun_piutang_id',
+            'akun_kas_id', 'akun_piutang_id',
             'akun_pendapatan_id', 'akun_untuk_in', 'akun_untuk_out',
         ]));
 

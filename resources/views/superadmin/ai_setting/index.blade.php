@@ -402,11 +402,10 @@
                         </tbody>
                     </table>
                 </div>
-                @if($transactions->hasPages())
-                    <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
-                        {{ $transactions->appends(['tab' => 'tokens'])->links() }}
-                    </div>
-                @endif
+                <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                    <x-per-page-selector :paginator="$transactions" />
+                    {{ $transactions->appends(['tab' => 'tokens'])->links() }}
+                </div>
             </div>
         </div>
         @endif

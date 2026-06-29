@@ -150,7 +150,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($anaks->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $anaks->appends(request()->only(['kelas_id']))->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$anaks" />
+                {{ $anaks->appends(request()->only(['kelas_id']))->links() }}
+            </div>
         </div>
 
         <!-- CREATE MODAL -->

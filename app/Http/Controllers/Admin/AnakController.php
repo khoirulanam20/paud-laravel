@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Support\PaginationPerPage;
 
 class AnakController extends Controller
 {
@@ -47,7 +48,7 @@ class AnakController extends Controller
             });
         }
 
-        $anaks = $query->paginate(15)->withQueryString();
+        $anaks = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
         return view('admin.anak.index', compact('anaks', 'kelas'));

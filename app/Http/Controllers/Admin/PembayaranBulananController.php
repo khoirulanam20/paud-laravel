@@ -12,6 +12,7 @@ use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class PembayaranBulananController extends Controller
 {
@@ -86,7 +87,7 @@ class PembayaranBulananController extends Controller
             $query->where('status', $status);
         }
 
-        $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20);
+        $pembayarans = $query->orderBy('created_at', 'desc')->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         $kelasQuery = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name');
         if ($waliKelasIds !== null) {

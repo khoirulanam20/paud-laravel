@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Lembaga;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class LembagaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $lembagas = Lembaga::withCount('sekolahs')->latest()->paginate(10);
+        $lembagas = Lembaga::withCount('sekolahs')->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('superadmin.lembaga.index', compact('lembagas'));
     }

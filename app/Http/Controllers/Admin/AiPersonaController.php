@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Support\PaginationPerPage;
 
 class AiPersonaController extends Controller
 {
@@ -51,7 +52,7 @@ class AiPersonaController extends Controller
         }
 
         $tokenTransactions = $activeTab === AiPersonaScope::TAB_LOG_AI
-            ? $this->tokenService->paginateTransactionsForSekolah($sekolahId)
+            ? $this->tokenService->paginateTransactionsForSekolah($sekolahId, PaginationPerPage::resolve($request))
             : null;
 
         return view('admin.ai_persona.index', compact(

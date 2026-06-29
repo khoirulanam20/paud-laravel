@@ -203,7 +203,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($pembayarans->hasPages())<div class="px-6 py-4 border-t">{{ $pembayarans->withQueryString()->links() }}</div>@endif
+            <div class="px-6 py-4 border-t">
+                <x-per-page-selector :paginator="$pembayarans" />
+                {{ $pembayarans->withQueryString()->links() }}
+            </div>
         </div>
 
         <!-- GENERATE MODAL dengan diskon per siswa + biaya tambahan -->

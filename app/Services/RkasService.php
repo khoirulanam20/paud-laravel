@@ -33,10 +33,9 @@ class RkasService
         }
 
         DB::transaction(function () use ($rkas, $lines) {
-            $keepIds = [];
-
             foreach ($lines as $akunId => $data) {
                 if (empty($data['enabled'])) {
+                    RkasLine::where('rkas_id', $rkas->id)->where('akun_id', $akunId)->delete();
                     continue;
                 }
 
@@ -50,8 +49,6 @@ class RkasService
                     ],
                 );
 
-                $keepIds[] = $line->id;
-
                 foreach ($data['anggaran'] ?? [] as $sumberDanaId => $nominal) {
                     RkasLineAnggaran::updateOrCreate(
                         ['rkas_line_id' => $line->id, 'sumber_dana_id' => $sumberDanaId],
@@ -64,8 +61,6 @@ class RkasService
                     );
                 }
             }
-
-            RkasLine::where('rkas_id', $rkas->id)->whereNotIn('id', $keepIds)->delete();
         });
     }
 

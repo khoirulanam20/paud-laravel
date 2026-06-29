@@ -10,17 +10,18 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Spatie\Permission\Models\Role;
+use App\Support\PaginationPerPage;
 
 class PenggunaController extends Controller
 {
     private const HIDDEN_ROLES = ['Superadmin', 'Lembaga'];
-    public function index()
+    public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
         $penggunas = User::where('sekolah_id', $sekolahId)
             ->with('roles')
             ->latest()
-            ->paginate(10);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $roles = Role::whereNotIn('name', self::HIDDEN_ROLES)->get();
 
         return view('admin.pengguna.index', compact('penggunas', 'roles'));

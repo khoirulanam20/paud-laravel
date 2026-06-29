@@ -9,13 +9,14 @@ use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Support\PaginationPerPage;
 
 class AdminSekolahController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $lembaga_id = auth()->user()->lembaga_id;
-        $admins = User::role('Admin Sekolah')->where('lembaga_id', $lembaga_id)->with('sekolah')->latest()->paginate(10);
+        $admins = User::role('Admin Sekolah')->where('lembaga_id', $lembaga_id)->with('sekolah')->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->get();
         return view('lembaga.admin_sekolah.index', compact('admins', 'sekolahs'));
     }

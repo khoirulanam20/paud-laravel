@@ -28,7 +28,10 @@
                     @endforelse
                 </tbody>
             </table>
-            @if($sekolahs->hasPages())<div class="px-6 py-4 border-t">{{ $sekolahs->links() }}</div>@endif
+            <div class="px-6 py-4 border-t">
+                <x-per-page-selector :paginator="$sekolahs" />
+                {{ $sekolahs->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

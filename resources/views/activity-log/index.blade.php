@@ -92,9 +92,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($activities->hasPages())
-                <div class="px-6 py-4 border-t">{{ $activities->links() }}</div>
-            @endif
+            <div class="px-6 py-4 border-t">
+                <x-per-page-selector :paginator="$activities" />
+                {{ $activities->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

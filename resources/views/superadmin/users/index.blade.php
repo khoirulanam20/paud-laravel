@@ -24,7 +24,10 @@
                     @endforelse
                 </tbody>
             </table>
-            @if($users->hasPages())<div class="px-6 py-4 border-t">{{ $users->links() }}</div>@endif
+            <div class="px-6 py-4 border-t">
+                <x-per-page-selector :paginator="$users" />
+                {{ $users->links() }}
+            </div>
         </div>
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;"><div class="modal-box" @click.away="showCreateModal=false">
             <form action="{{ route('superadmin.users.store') }}" method="POST">@csrf

@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KritikSaran;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class KritikSaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
 
@@ -16,7 +17,7 @@ class KritikSaranController extends Controller
             ->where('sekolah_id', $sekolahId)
             ->with(['user.anaks.kelas', 'sekolah'])
             ->latest()
-            ->paginate(15);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.kritik_saran.index', compact('feedbacks'));
     }

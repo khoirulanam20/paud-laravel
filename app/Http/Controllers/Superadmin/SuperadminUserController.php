@@ -8,12 +8,13 @@ use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Support\PaginationPerPage;
 
 class SuperadminUserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::role('Superadmin')->latest()->paginate(10);
+        $users = User::role('Superadmin')->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('superadmin.users.index', compact('users'));
     }

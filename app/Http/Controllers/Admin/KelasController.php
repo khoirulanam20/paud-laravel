@@ -9,10 +9,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
+use App\Support\PaginationPerPage;
 
 class KelasController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah. Hubungi lembaga.');
@@ -25,7 +26,7 @@ class KelasController extends Controller
             ->with(['waliKelas', 'pengajars'])
             ->withCount('anaks')
             ->latest()
-            ->paginate(10);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 

@@ -8,6 +8,7 @@ use App\Models\Cashflow;
 use App\Models\Jurnal;
 use App\Services\AkuntansiService;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class JurnalController extends Controller
 {
@@ -27,7 +28,7 @@ class JurnalController extends Controller
             ->with(['lines.akun', 'createdBy'])
             ->orderBy('tanggal', 'desc')
             ->orderBy('no_jurnal', 'desc')
-            ->paginate(15);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.jurnal.index', compact('jurnals', 'bulan', 'tahun'));
     }

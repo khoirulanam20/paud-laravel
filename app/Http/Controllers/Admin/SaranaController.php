@@ -6,14 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Sarana;
 use Illuminate\Http\Request;
 use App\Http\Traits\CanUploadImage;
+use App\Support\PaginationPerPage;
 
 class SaranaController extends Controller
 {
     use CanUploadImage;
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $saranas = Sarana::where('sekolah_id', $sekolah_id)->latest()->paginate(10);
+        $saranas = Sarana::where('sekolah_id', $sekolah_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         return view('admin.sarana.index', compact('saranas'));
     }
 

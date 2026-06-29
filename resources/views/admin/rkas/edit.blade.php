@@ -25,7 +25,7 @@
             @csrf @method('PUT')
             @foreach(['belanja' => 'Belanja', 'pendapatan' => 'Pendapatan'] as $jenis => $label)
                 @php $items = $jenis === 'belanja' ? $akunBelanja : $akunPendapatan; @endphp
-                @if($items->isEmpty()) @continue @endif
+                @if($items->count() === 0) @continue @endif
                 <div class="card overflow-hidden mb-6">
                     <div class="px-6 py-3 border-b font-bold" style="border-color:rgba(0,0,0,0.06);background:#FAF6F0;">{{ $label }}</div>
                     <div class="overflow-x-auto">
@@ -55,6 +55,12 @@
                             </tbody>
                         </table>
                     </div>
+                    @if(method_exists($items, 'links'))
+                        <div class="px-6 py-3 border-t" style="border-color:rgba(0,0,0,0.06);">
+                            <x-per-page-selector :paginator="$items" param="{{ $jenis }}_per_page" />
+                            {{ $items->withQueryString()->links() }}
+                        </div>
+                    @endif
                 </div>
             @endforeach
             @if(!$rka->isFinal())<div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Anggaran</button></div>@endif

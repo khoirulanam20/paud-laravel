@@ -11,6 +11,7 @@ use App\Support\LabelSkorPencapaian;
 use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Support\PaginationPerPage;
 
 class PencapaianController extends Controller
 {
@@ -50,7 +51,7 @@ class PencapaianController extends Controller
             return FilterAspekPencapaian::groupHasMatch($filterAspek, $groupsAll[$k]);
         })->values();
 
-        $perPage = 15;
+        $perPage = PaginationPerPage::resolve($request);
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $total = $keysFiltered->count();
         $sliceKeys = $keysFiltered->slice(($currentPage - 1) * $perPage, $perPage)->values();

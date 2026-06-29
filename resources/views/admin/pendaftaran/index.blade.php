@@ -101,7 +101,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($approved->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $approved->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$approved" param="approved_per_page" />
+                {{ $approved->links() }}
+            </div>
         </div>
 
         {{-- REJECTED --}}
@@ -131,7 +134,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($rejected->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $rejected->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$rejected" param="rejected_per_page" />
+                {{ $rejected->links() }}
+            </div>
         </div>
 
         {{-- REJECT MODAL --}}

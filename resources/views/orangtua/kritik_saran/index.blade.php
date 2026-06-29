@@ -103,9 +103,10 @@
             @endforelse
         </div>
 
-        @if($feedbacks->hasPages())
-            <div class="mt-6">{{ $feedbacks->links() }}</div>
-        @endif
+        <div class="mt-6">
+                <x-per-page-selector :paginator="$feedbacks" />
+                {{ $feedbacks->links() }}
+            </div>
 
         <!-- Modal kirim/edit masukan -->
         <div x-show="showModal" class="modal-overlay" style="display:none;">

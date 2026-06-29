@@ -46,7 +46,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($admins->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $admins->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$admins" />
+                {{ $admins->links() }}
+            </div>
         </div>
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;">

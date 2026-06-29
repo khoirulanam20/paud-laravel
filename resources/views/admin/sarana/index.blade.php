@@ -48,7 +48,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($saranas->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $saranas->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$saranas" />
+                {{ $saranas->links() }}
+            </div>
         </div>
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;">

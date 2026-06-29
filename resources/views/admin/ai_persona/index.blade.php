@@ -205,11 +205,10 @@
                             </tbody>
                         </table>
                     </div>
-                    @if(isset($tokenTransactions) && $tokenTransactions->hasPages())
-                        <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
-                            {{ $tokenTransactions->appends(['tab' => AiPersonaScope::TAB_LOG_AI])->links() }}
-                        </div>
-                    @endif
+                    <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                        <x-per-page-selector :paginator="$tokenTransactions" />
+                        {{ $tokenTransactions->appends(['tab' => AiPersonaScope::TAB_LOG_AI])->links() }}
+                    </div>
                 </div>
         @endif
 

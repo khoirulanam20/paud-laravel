@@ -10,6 +10,7 @@ use App\Services\AkuntansiService;
 use App\Services\KwitansiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class CashflowController extends Controller
 {
@@ -29,7 +30,7 @@ class CashflowController extends Controller
             ->whereMonth('date', $bulan)
             ->with(['akun', 'akunLawan', 'sumberDana', 'jurnal'])
             ->orderBy('date', 'desc')
-            ->paginate(15);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         $totalIn = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'in')->sum('amount');
         $totalOut = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');

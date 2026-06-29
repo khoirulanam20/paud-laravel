@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class AkunController extends Controller
 {
@@ -30,7 +31,7 @@ class AkunController extends Controller
             });
         }
 
-        $akunList = $query->paginate(30)->withQueryString();
+        $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.akun.index', compact('akunList', 'filter'));
     }

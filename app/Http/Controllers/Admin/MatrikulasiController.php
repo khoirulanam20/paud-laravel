@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Matrikulasi;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class MatrikulasiController extends Controller
 {
@@ -15,7 +16,7 @@ class MatrikulasiController extends Controller
         return $id !== null ? (int) $id : null;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = $this->sekolahId();
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah.');
@@ -23,7 +24,7 @@ class MatrikulasiController extends Controller
         $matrikulasis = Matrikulasi::query()
             ->where('sekolah_id', $sekolah_id)
             ->latest()
-            ->paginate(10);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.matrikulasi.index', compact('matrikulasis'));
     }

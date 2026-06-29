@@ -32,7 +32,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($admins->hasPages())<div class="px-6 py-4 border-t">{{ $admins->links() }}</div>@endif
+            <div class="px-6 py-4 border-t">
+                <x-per-page-selector :paginator="$admins" />
+                {{ $admins->links() }}
+            </div>
         </div>
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;"><div class="modal-box" @click.away="showCreateModal=false">
             <form action="{{ route('superadmin.admin-lembaga.store') }}" method="POST">@csrf

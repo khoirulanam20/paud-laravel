@@ -252,9 +252,10 @@
                     <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada laporan evaluasi.</div>
                 @endforelse
             </div>
-            @if($groupedPencapaian->hasPages())
-                <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $groupedPencapaian->links() }}
-            </div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$groupedPencapaian" />
+                {{ $groupedPencapaian->links() }}
+            </div>
         </div>
 
         {{-- Modal Preview Gambar --}}

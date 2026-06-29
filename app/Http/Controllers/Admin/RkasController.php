@@ -12,6 +12,7 @@ use App\Services\RkasService;
 use App\Support\TahunAjaran;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class RkasController extends Controller
 {
@@ -61,14 +62,14 @@ class RkasController extends Controller
         return redirect()->route('admin.rkas.edit', $rkas)->with('success', 'RKAS berhasil dibuat.');
     }
 
-    public function edit(Rkas $rka)
+    public function edit(Request $request, Rkas $rka)
     {
         abort_if($rka->sekolah_id !== auth()->user()->sekolah_id, 403);
 
         $rka->load(['lines.anggarans', 'lines.akun']);
 
         $sumberDanas = SumberDana::where('sekolah_id', $rka->sekolah_id)->aktif()->orderBy('urutan')->get();
-        $akunBelanja = Akun::where('sekolah_id', $rka->sekolah_id)->aktif()->rkas()->where('jenis', 'beban')->orderBy('kode')->get();
+        $akunBelanja = Akun::where('sekolah_id', $rka->sekolah_id)->aktif()->rkas()->where('jenis', 'beban')->orderBy('kode')->paginate(PaginationPerPage::resolve($request, 'belanja_per_page'), ['*'], 'belanja_page')->withQueryString();
         $akunPendapatan = Akun::where('sekolah_id', $rka->sekolah_id)->aktif()->rkas()->where('jenis', 'pendapatan')->orderBy('kode')->get();
         $selected = $rka->lines->keyBy('akun_id');
 

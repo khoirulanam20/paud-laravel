@@ -378,7 +378,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($groupedPencapaian->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $groupedPencapaian->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$groupedPencapaian" />
+                {{ $groupedPencapaian->links() }}
+            </div>
         </div>
 
         {{-- CREATE MODAL --}}

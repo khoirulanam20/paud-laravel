@@ -87,7 +87,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($kelasList->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $kelasList->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$kelasList" />
+                {{ $kelasList->links() }}
+            </div>
         </div>
 
         <!-- CREATE MODAL -->

@@ -5,16 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use Illuminate\Http\Request;
+use App\Support\PaginationPerPage;
 
 class PendaftaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
 
         $pending  = Anak::with(['user.anaks'])->where('sekolah_id', $sekolahId)->where('status', 'pending')->latest()->get();
-        $approved = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'approved')->latest()->paginate(10, ['*'], 'approved_page');
-        $rejected = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'rejected')->latest()->paginate(10, ['*'], 'rejected_page');
+        $approved = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'approved')->latest()->paginate(PaginationPerPage::resolve($request, 'approved_per_page'), ['*'], 'approved_page')->withQueryString();
+        $rejected = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'rejected')->latest()->paginate(PaginationPerPage::resolve($request, 'rejected_per_page'), ['*'], 'rejected_page')->withQueryString();
 
         return view('admin.pendaftaran.index', compact('pending', 'approved', 'rejected'));
     }

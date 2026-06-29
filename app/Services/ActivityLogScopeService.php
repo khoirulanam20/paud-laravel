@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
+use App\Support\PaginationPerPage;
 
 class ActivityLogScopeService
 {
@@ -42,7 +43,7 @@ class ActivityLogScopeService
             $query->where('subject_type', 'like', '%' . str_replace('\\', '\\\\', $subjectType) . '%');
         }
 
-        return $query->paginate(30)->withQueryString();
+        return $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
     }
 
     public function subjectLabel(Activity $activity): string

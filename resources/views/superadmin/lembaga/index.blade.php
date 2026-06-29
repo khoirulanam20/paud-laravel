@@ -35,7 +35,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($lembagas->hasPages())<div class="px-6 py-4 border-t">{{ $lembagas->links() }}</div>@endif
+            <div class="px-6 py-4 border-t">
+                <x-per-page-selector :paginator="$lembagas" />
+                {{ $lembagas->links() }}
+            </div>
         </div>
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;"><div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
             <form action="{{ route('superadmin.lembaga.store') }}" method="POST">@csrf

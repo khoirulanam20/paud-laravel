@@ -11,14 +11,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Traits\CanUploadImage;
 use Illuminate\Validation\Rule;
+use App\Support\PaginationPerPage;
 
 class PengajarController extends Controller
 {
     use CanUploadImage;
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->latest()->paginate(10);
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
         $pendidikanOptions = PendidikanTerakhir::options();
         foreach ($pengajars as $p) {
