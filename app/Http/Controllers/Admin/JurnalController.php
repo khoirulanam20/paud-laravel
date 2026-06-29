@@ -7,8 +7,8 @@ use App\Models\Akun;
 use App\Models\Cashflow;
 use App\Models\Jurnal;
 use App\Services\AkuntansiService;
-use Illuminate\Http\Request;
 use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
 
 class JurnalController extends Controller
 {
@@ -100,13 +100,13 @@ class JurnalController extends Controller
                 $type = $line['debit'] > 0 ? 'in' : 'out';
                 $amount = max($line['debit'], $line['kredit']);
                 if ($amount > 0) {
-                    \App\Models\Cashflow::create([
+                    Cashflow::create([
                         'sekolah_id' => $sekolahId,
                         'akun_id' => $line['akun_id'],
                         'jurnal_id' => $jurnal->id,
                         'type' => $type,
                         'amount' => $amount,
-                        'description' => 'Jurnal: ' . $request->deskripsi,
+                        'description' => 'Jurnal: '.$request->deskripsi,
                         'date' => $request->tanggal,
                     ]);
                 }

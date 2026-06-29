@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Anak;
 use App\Models\Cashflow;
 use App\Models\Kegiatan;
-use App\Models\Kelas;
+use App\Models\KegiatanRutin;
 use App\Models\KritikSaran;
 use App\Models\MenuMakanan;
+use App\Models\MenuMakananVote;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
 use App\Models\Presensi;
-use App\Models\MenuMakananVote;
 use App\Models\Sarana;
 use App\Models\Sekolah;
 use App\Models\User;
@@ -30,7 +30,7 @@ class DashboardController extends Controller
             return redirect()->route('superadmin.dashboard');
         }
 
-        if ($user->canAccessAdminPanel() && !$user->hasRole(['Admin Sekolah', 'Lembaga'])) {
+        if ($user->canAccessAdminPanel() && ! $user->hasRole(['Admin Sekolah', 'Lembaga'])) {
             $route = $user->firstAccessibleAdminRoute();
             if ($route) {
                 return redirect()->route($route);
@@ -75,14 +75,14 @@ class DashboardController extends Controller
             if ($pengajar) {
                 $sekolahId = $pengajar->sekolah_id;
                 $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-                
-                if (!empty($kelasIds)) {
+
+                if (! empty($kelasIds)) {
                     $data['totalAnakSekolah'] = Anak::whereIn('kelas_id', $kelasIds)->count();
                     $data['dashboardAnakLabel'] = 'Siswa di kelasku';
-                    
+
                     $data['kegiatanSayaHariIni'] = Kegiatan::whereIn('kelas_id', $kelasIds)->whereDate('date', Carbon::today())->count();
                     $data['totalKegiatanSaya'] = Kegiatan::whereIn('kelas_id', $kelasIds)->count();
-                    $data['totalEvaluasiSaya'] = Pencapaian::whereHas('anak', fn($q) => $q->whereIn('kelas_id', $kelasIds))->count();
+                    $data['totalEvaluasiSaya'] = Pencapaian::whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds))->count();
                 } else {
                     $data['totalAnakSekolah'] = Anak::where('sekolah_id', $sekolahId)->count();
                     $data['dashboardAnakLabel'] = 'Siswa di sekolah';
@@ -104,8 +104,8 @@ class DashboardController extends Controller
 
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)
                 ->whereDate('date', Carbon::today())
-                ->withCount(['votes as likes_count' => fn($q) => $q->where('vote_type', 'like')])
-                ->withCount(['votes as dislikes_count' => fn($q) => $q->where('vote_type', 'dislike')])
+                ->withCount(['votes as likes_count' => fn ($q) => $q->where('vote_type', 'like')])
+                ->withCount(['votes as dislikes_count' => fn ($q) => $q->where('vote_type', 'dislike')])
                 ->first();
 
             $data['myVote'] = null;
@@ -124,7 +124,7 @@ class DashboardController extends Controller
                     ->where('sekolah_id', $sekolahId)
                     ->whereIn('kelas_id', $childKelasIds)
                     ->whereDate('date', Carbon::today())
-                    ->with(['pengajar', 'pencapaians' => fn($q) => $q->whereIn('anak_id', $data['anakIds'])->with('matrikulasi')])
+                    ->with(['pengajar', 'pencapaians' => fn ($q) => $q->whereIn('anak_id', $data['anakIds'])->with('matrikulasi')])
                     ->latest('date')
                     ->latest('id');
 
@@ -152,7 +152,7 @@ class DashboardController extends Controller
                         $feeds->push([
                             'type' => 'kegiatan',
                             'time' => $keg->created_at,
-                            'data' => $keg
+                            'data' => $keg,
                         ]);
                     }
                 }
@@ -171,11 +171,11 @@ class DashboardController extends Controller
                     $feeds->push([
                         'type' => 'pencapaian',
                         'time' => $p->created_at,
-                        'data' => $p
+                        'data' => $p,
                     ]);
                 }
 
-                $kegiatansRutin = \App\Models\KegiatanRutin::query()
+                $kegiatansRutin = KegiatanRutin::query()
                     ->whereIn('anak_id', $data['anakIds'])
                     ->whereDate('tanggal', Carbon::today())
                     ->with('anak')
@@ -186,19 +186,21 @@ class DashboardController extends Controller
                     $feeds->push([
                         'type' => 'kegiatan_rutin',
                         'time' => $kr->created_at,
-                        'data' => $kr
+                        'data' => $kr,
                     ]);
                 }
             }
 
-            $data['dashboardFeed'] = $feeds->sort(function($a, $b) {
+            $data['dashboardFeed'] = $feeds->sort(function ($a, $b) {
                 // Primary sort: type weight (rutin = 0, kegiatan = 1, pencapaian = 2)
                 $weights = ['kegiatan_rutin' => 0, 'kegiatan' => 1, 'pencapaian' => 2];
                 $wa = $weights[$a['type']] ?? 99;
                 $wb = $weights[$b['type']] ?? 99;
-                
-                if ($wa !== $wb) return $wa <=> $wb;
-                
+
+                if ($wa !== $wb) {
+                    return $wa <=> $wb;
+                }
+
                 // Secondary sort: time (latest first)
                 return $b['time'] <=> $a['time'];
             });
@@ -209,7 +211,7 @@ class DashboardController extends Controller
             } else {
                 $from = Carbon::parse($data['presensiFilter']['from']);
                 $to = Carbon::parse($data['presensiFilter']['to']);
-                
+
                 // Hitung hari efektif: tidak termasuk Sabtu, Minggu, dan hari libur nasional Indonesia
                 $effectiveDays = HariLiburIndonesia::hitungHariEfektif($from, $to);
                 $data['effectiveDaysCount'] = $effectiveDays;
@@ -228,7 +230,7 @@ class DashboardController extends Controller
                         ->where('hadir', true)
                         ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
                         ->count();
-                    
+
                     $tidakHadir = Presensi::where('anak_id', $anak->id)
                         ->where('hadir', false)
                         ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
@@ -237,7 +239,7 @@ class DashboardController extends Controller
                     return [$anak->id => [
                         'hadir' => $hadir,
                         'tidak_hadir' => $tidakHadir,
-                        'efektif' => $effectiveDays
+                        'efektif' => $effectiveDays,
                     ]];
                 });
             }

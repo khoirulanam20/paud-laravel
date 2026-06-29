@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use App\Models\Cashflow;
+use App\Models\JurnalLine;
 use App\Services\AkuntansiService;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,7 @@ class LaporanController extends Controller
 
         // Hitung saldo awal (sebelum bulan terpilih)
         $saldoAwal = Cashflow::where('sekolah_id', $sekolahId)
-            ->where('date', '<', "$tahun-" . str_pad((string) $bulan, 2, '0', STR_PAD_LEFT) . "-01")
+            ->where('date', '<', "$tahun-".str_pad((string) $bulan, 2, '0', STR_PAD_LEFT).'-01')
             ->selectRaw('SUM(CASE WHEN type = "in" THEN amount ELSE 0 END) as total_in,
                          SUM(CASE WHEN type = "out" THEN amount ELSE 0 END) as total_out')
             ->first();
@@ -107,7 +108,7 @@ class LaporanController extends Controller
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
-        $start = "$tahun-" . str_pad((string) $bulan, 2, '0', STR_PAD_LEFT) . "-01";
+        $start = "$tahun-".str_pad((string) $bulan, 2, '0', STR_PAD_LEFT).'-01';
         $end = date('Y-m-t', strtotime($start));
 
         $pendapatan = Akun::where('sekolah_id', $sekolahId)
@@ -116,7 +117,7 @@ class LaporanController extends Controller
             ->orderBy('kode')
             ->get()
             ->map(function ($akun) use ($start, $end) {
-                $lines = \App\Models\JurnalLine::where('akun_id', $akun->id)
+                $lines = JurnalLine::where('akun_id', $akun->id)
                     ->whereHas('jurnal', fn ($q) => $q->whereBetween('tanggal', [$start, $end]))
                     ->selectRaw('SUM(kredit) as kredit, SUM(debit) as debit')
                     ->first();
@@ -131,7 +132,7 @@ class LaporanController extends Controller
             ->orderBy('kode')
             ->get()
             ->map(function ($akun) use ($start, $end) {
-                $lines = \App\Models\JurnalLine::where('akun_id', $akun->id)
+                $lines = JurnalLine::where('akun_id', $akun->id)
                     ->whereHas('jurnal', fn ($q) => $q->whereBetween('tanggal', [$start, $end]))
                     ->selectRaw('SUM(debit) as debit, SUM(kredit) as kredit')
                     ->first();

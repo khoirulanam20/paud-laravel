@@ -83,6 +83,7 @@ return new class extends Migration
         foreach ($rows as $row) {
             if ($row->scope !== AiPersonaScope::CHAT_ORANGTUA) {
                 DB::table('sekolah_ai_personas')->where('id', $row->id)->delete();
+
                 continue;
             }
 

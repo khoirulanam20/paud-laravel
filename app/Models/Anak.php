@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Anak extends Model
 {
@@ -37,13 +38,19 @@ class Anak extends Model
 
     public function getAgeAttribute()
     {
-        if (!$this->dob) return '-';
-        
+        if (! $this->dob) {
+            return '-';
+        }
+
         $diff = $this->dob->diff(now());
         $parts = [];
-        if ($diff->y > 0) $parts[] = $diff->y . ' thn';
-        if ($diff->m > 0) $parts[] = $diff->m . ' bln';
-        
+        if ($diff->y > 0) {
+            $parts[] = $diff->y.' thn';
+        }
+        if ($diff->m > 0) {
+            $parts[] = $diff->m.' bln';
+        }
+
         return count($parts) > 0 ? implode(' ', $parts) : '0 bln';
     }
 
@@ -61,12 +68,13 @@ class Anak extends Model
     {
         return $this->belongsTo(Kelas::class);
     }
-    public function kesehatans(): \Illuminate\Database\Eloquent\Relations\HasMany
+
+    public function kesehatans(): HasMany
     {
         return $this->hasMany(Kesehatan::class);
     }
 
-    public function pencapaians(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function pencapaians(): HasMany
     {
         return $this->hasMany(Pencapaian::class);
     }

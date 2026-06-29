@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -9,18 +10,18 @@ trait CanUploadImage
 {
     /**
      * Upload and compress image using GD
-     * 
-     * @param \Illuminate\Http\UploadedFile $file
-     * @param string $path
-     * @param int $quality
+     *
+     * @param  UploadedFile  $file
+     * @param  string  $path
+     * @param  int  $quality
      * @return string
      */
     public function uploadImage($file, $path, $quality = 70)
     {
         // Generate unique filename with .jpg extension for uniform compression
-        $filename = Str::random(40) . '.jpg';
-        $fullPath = $path . '/' . $filename;
-        
+        $filename = Str::random(40).'.jpg';
+        $fullPath = $path.'/'.$filename;
+
         $imagePath = $file->getRealPath();
 
         // Deteksi MIME dari konten file (bukan dari header/nama file)

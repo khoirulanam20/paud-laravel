@@ -43,7 +43,7 @@ class PembayaranController extends Controller
         $user = auth()->user();
         $anakIds = Anak::where('user_id', $user->id)->pluck('id');
 
-        abort_if(!$anakIds->contains($pembayaran->anak_id), 403);
+        abort_if(! $anakIds->contains($pembayaran->anak_id), 403);
 
         $pembayaran->load(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy']);
 
@@ -79,7 +79,7 @@ class PembayaranController extends Controller
     public function bayar(Request $request, PembayaranBulanan $pembayaran)
     {
         $this->authorizePembayaran($pembayaran);
-        abort_if(!$pembayaran->isPending() && !$pembayaran->isRejected(), 403, 'Pembayaran ini sudah diproses.');
+        abort_if(! $pembayaran->isPending() && ! $pembayaran->isRejected(), 403, 'Pembayaran ini sudah diproses.');
 
         $request->validate([
             'bukti_transfer' => 'required|image|mimes:jpeg,png,jpg|max:5120',
@@ -106,6 +106,6 @@ class PembayaranController extends Controller
     private function authorizePembayaran(PembayaranBulanan $pembayaran): void
     {
         $anakIds = Anak::where('user_id', auth()->id())->pluck('id');
-        abort_if(!$anakIds->contains($pembayaran->anak_id), 403);
+        abort_if(! $anakIds->contains($pembayaran->anak_id), 403);
     }
 }

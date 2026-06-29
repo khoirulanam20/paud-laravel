@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Lembaga;
 use App\Models\Sekolah;
-use Illuminate\Http\Request;
 use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
 
 class SekolahController extends Controller
 {

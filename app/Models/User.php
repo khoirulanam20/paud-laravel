@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\LogsScopedActivity;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\AiTokenService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -125,7 +126,7 @@ class User extends Authenticatable
             return $this->sekolah_id !== null;
         }
 
-        if (!$this->getAttributes()['sekolah_id'] ?? null) {
+        if (! $this->getAttributes()['sekolah_id'] ?? null) {
             return false;
         }
 
@@ -136,7 +137,7 @@ class User extends Authenticatable
         // Role kustom (mis. Bendahara) — bukan role operasional default
         $builtinRoles = ['Superadmin', 'Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Lembaga', 'Orang Tua'];
         $hasCustomRole = $this->roles->contains(
-            fn ($role) => !in_array($role->name, $builtinRoles, true)
+            fn ($role) => ! in_array($role->name, $builtinRoles, true)
         );
 
         return $hasCustomRole && $this->hasAnyMenuPermission();
@@ -145,12 +146,12 @@ class User extends Authenticatable
     public function firstAccessibleAdminRoute(?bool $chatOrangTuaEnabled = null): ?string
     {
         if ($this->sekolah_id && $chatOrangTuaEnabled === null) {
-            $chatOrangTuaEnabled = app(\App\Services\AiTokenService::class)
+            $chatOrangTuaEnabled = app(AiTokenService::class)
                 ->isChatOrangTuaEnabled((int) $this->sekolah_id);
         }
 
         foreach (config('admin-menu.menu_order', []) as $item) {
-            if (($item['perm'] ?? '') === 'menu.chat-orangtua' && !$chatOrangTuaEnabled) {
+            if (($item['perm'] ?? '') === 'menu.chat-orangtua' && ! $chatOrangTuaEnabled) {
                 continue;
             }
             if ($this->can($item['perm'])) {

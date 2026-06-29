@@ -53,7 +53,7 @@ class GenerateMonevSummaryJob implements ShouldQueue
         }
 
         if (! $service->anakMatchesGenerationScope($anak, $generation)) {
-            $service->incrementGenerationFailed($generation, $anak->displayName() . ': Siswa di luar scope generate.');
+            $service->incrementGenerationFailed($generation, $anak->displayName().': Siswa di luar scope generate.');
 
             return;
         }
@@ -79,7 +79,7 @@ class GenerateMonevSummaryJob implements ShouldQueue
         } catch (\Throwable $e) {
             $service->incrementGenerationFailed(
                 $generation,
-                $anak->displayName() . ': ' . $e->getMessage()
+                $anak->displayName().': '.$e->getMessage()
             );
         }
     }
@@ -94,9 +94,9 @@ class GenerateMonevSummaryJob implements ShouldQueue
 
         $service = app(MonevSummaryService::class);
         $anak = Anak::find($this->anakId);
-        $name = $anak?->displayName() ?? 'Siswa #' . $this->anakId;
+        $name = $anak?->displayName() ?? 'Siswa #'.$this->anakId;
         $reason = $exception?->getMessage() ?? 'Proses generate terhenti.';
 
-        $service->incrementGenerationFailed($generation, $name . ': ' . $reason);
+        $service->incrementGenerationFailed($generation, $name.': '.$reason);
     }
 }

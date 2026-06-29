@@ -3,18 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sarana;
-use Illuminate\Http\Request;
 use App\Http\Traits\CanUploadImage;
+use App\Models\Sarana;
 use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SaranaController extends Controller
 {
     use CanUploadImage;
+
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
         $saranas = Sarana::where('sekolah_id', $sekolah_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
+
         return view('admin.sarana.index', compact('saranas'));
     }
 
@@ -68,7 +71,7 @@ class SaranaController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($sarana->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($sarana->photo);
+                Storage::disk('public')->delete($sarana->photo);
             }
             $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'sarana');
         }
@@ -82,9 +85,10 @@ class SaranaController extends Controller
     {
         abort_if($sarana->sekolah_id !== auth()->user()->sekolah_id, 403);
         if ($sarana->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($sarana->photo);
+            Storage::disk('public')->delete($sarana->photo);
         }
         $sarana->delete();
+
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil dihapus.');
     }
 }

@@ -28,11 +28,11 @@ use App\Http\Controllers\Admin\PengajarController;
 use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\PresensiController;
 use App\Http\Controllers\Admin\PresensiPengajarController;
-use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RkasController;
-use App\Http\Controllers\Admin\SumberDanaController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaranaController;
 use App\Http\Controllers\Admin\SkalaPencapaianController;
+use App\Http\Controllers\Admin\SumberDanaController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
 use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
@@ -66,6 +66,7 @@ use App\Http\Controllers\Superadmin\LembagaController as SuperadminLembagaContro
 use App\Http\Controllers\Superadmin\SekolahController as SuperadminSekolahController;
 use App\Http\Controllers\Superadmin\SuperadminUserController;
 use App\Http\Controllers\TourController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
@@ -138,7 +139,7 @@ Route::middleware(['auth', 'role:Lembaga', 'admin.activity'])->prefix('lembaga')
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('pengaturan', function (\Illuminate\Http\Request $request) {
+    Route::get('pengaturan', function (Request $request) {
         $user = $request->user();
 
         $targets = [

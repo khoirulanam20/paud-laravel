@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\SkalaPencapaian;
 use App\Models\Sekolah;
+use App\Models\SkalaPencapaian;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration

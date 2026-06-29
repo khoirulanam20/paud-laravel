@@ -36,6 +36,7 @@ class RkasService
             foreach ($lines as $akunId => $data) {
                 if (empty($data['enabled'])) {
                     RkasLine::where('rkas_id', $rkas->id)->where('akun_id', $akunId)->delete();
+
                     continue;
                 }
 

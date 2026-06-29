@@ -32,6 +32,7 @@ class TourRegistry
             $element = $steps[0]['element'] ?? null;
             if (is_string($element) && str_contains($element, 'data-tour="nav-')) {
                 array_shift($steps);
+
                 continue;
             }
 

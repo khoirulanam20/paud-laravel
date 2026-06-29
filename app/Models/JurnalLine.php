@@ -11,6 +11,7 @@ class JurnalLine extends Model
     use LogsScopedActivity;
 
     public $timestamps = false;
+
     protected $fillable = [
         'jurnal_id',
         'akun_id',

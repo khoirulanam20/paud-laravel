@@ -5,16 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Spatie\Permission\Models\Role;
-use App\Support\PaginationPerPage;
 
 class PenggunaController extends Controller
 {
     private const HIDDEN_ROLES = ['Superadmin', 'Lembaga'];
+
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
@@ -31,9 +32,9 @@ class PenggunaController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'exists:' . Role::class . ',name', Rule::notIn(self::HIDDEN_ROLES)],
+            'role' => ['required', 'string', 'exists:'.Role::class.',name', Rule::notIn(self::HIDDEN_ROLES)],
         ]);
 
         $user = User::create([
@@ -48,7 +49,7 @@ class PenggunaController extends Controller
         ActivityLogger::log('Role ditetapkan ke pengguna', $user, ['role' => $request->role]);
 
         return redirect()->route('admin.pengguna.index')
-            ->with('success', 'Pengguna "' . e($request->name) . '" berhasil ditambahkan.');
+            ->with('success', 'Pengguna "'.e($request->name).'" berhasil ditambahkan.');
     }
 
     public function update(Request $request, User $pengguna)
@@ -57,9 +58,9 @@ class PenggunaController extends Controller
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $pengguna->id],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$pengguna->id],
             'password' => ['nullable', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'exists:' . Role::class . ',name', Rule::notIn(self::HIDDEN_ROLES)],
+            'role' => ['required', 'string', 'exists:'.Role::class.',name', Rule::notIn(self::HIDDEN_ROLES)],
         ]);
 
         $data = [
@@ -79,7 +80,7 @@ class PenggunaController extends Controller
         ActivityLogger::log('Role pengguna diperbarui', $pengguna, ['role' => $request->role]);
 
         return redirect()->route('admin.pengguna.index')
-            ->with('success', 'Data pengguna "' . e($request->name) . '" berhasil diperbarui.');
+            ->with('success', 'Data pengguna "'.e($request->name).'" berhasil diperbarui.');
     }
 
     public function destroy(User $pengguna)
@@ -93,6 +94,6 @@ class PenggunaController extends Controller
         $pengguna->delete();
 
         return redirect()->route('admin.pengguna.index')
-            ->with('success', 'Pengguna "' . e($pengguna->name) . '" berhasil dihapus.');
+            ->with('success', 'Pengguna "'.e($pengguna->name).'" berhasil dihapus.');
     }
 }

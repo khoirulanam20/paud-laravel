@@ -10,9 +10,9 @@ use App\Models\PembayaranBulananItem;
 use App\Models\Pengajar;
 use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
+use App\Support\PaginationPerPage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use App\Support\PaginationPerPage;
 
 class PembayaranBulananController extends Controller
 {
@@ -152,7 +152,7 @@ class PembayaranBulananController extends Controller
             $biayaBulanan = (float) $assignment->biaya_bulanan;
             $hariHadir = $this->rekapBiayaService->hitungHariHadir($anak->id, $bulan, $tahun);
             $preview[] = [
-                'key' => $anak->id . '_' . $biaya->id,
+                'key' => $anak->id.'_'.$biaya->id,
                 'anak_id' => $anak->id,
                 'anak_name' => $anak->name,
                 'kelas_name' => $anak->kelas->name ?? '-',
@@ -272,7 +272,7 @@ class PembayaranBulananController extends Controller
                 if ($waliKelasIds !== null && ! in_array((int) $assignment->anak->kelas_id, $waliKelasIds, true)) {
                     continue;
                 }
-                $keys[] = $assignment->anak_id . '_' . $assignment->biaya_bulanan_sekolah_id;
+                $keys[] = $assignment->anak_id.'_'.$assignment->biaya_bulanan_sekolah_id;
             }
         }
 

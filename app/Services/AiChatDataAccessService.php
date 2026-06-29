@@ -46,7 +46,7 @@ class AiChatDataAccessService
 
         foreach (AiChatDataSource::toggleKeys() as $key) {
             $status = $access->{$key} ? 'aktif' : 'nonaktif';
-            $line = '- ' . AiChatDataSource::label($key) . ': ' . $status;
+            $line = '- '.AiChatDataSource::label($key).': '.$status;
 
             if ($key === AiChatDataSource::AGENDA && $access->access_agenda) {
                 $line .= " ({$access->agenda_days_back} hari ke belakang, {$access->agenda_days_forward} hari ke depan)";

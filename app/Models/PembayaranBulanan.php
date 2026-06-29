@@ -94,7 +94,7 @@ class PembayaranBulanan extends Model
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
         ];
 
-        return ($bulan[$this->periode_bulan] ?? '') . ' ' . $this->periode_tahun;
+        return ($bulan[$this->periode_bulan] ?? '').' '.$this->periode_tahun;
     }
 
     public function getTotalBiayaTambahan(): float
@@ -104,27 +104,27 @@ class PembayaranBulanan extends Model
 
     public function getTotalBiayaTambahanFormatted(): string
     {
-        return 'Rp ' . number_format($this->getTotalBiayaTambahan(), 0, ',', '.');
+        return 'Rp '.number_format($this->getTotalBiayaTambahan(), 0, ',', '.');
     }
 
     public function getTotalFormatted(): string
     {
-        return 'Rp ' . number_format($this->total_bayar, 0, ',', '.');
+        return 'Rp '.number_format($this->total_bayar, 0, ',', '.');
     }
 
     public function getSubtotalFormatted(): string
     {
-        return 'Rp ' . number_format($this->subtotal, 0, ',', '.');
+        return 'Rp '.number_format($this->subtotal, 0, ',', '.');
     }
 
     public function getNilaiDiskonFormatted(): string
     {
-        return 'Rp ' . number_format($this->nilai_diskon, 0, ',', '.');
+        return 'Rp '.number_format($this->nilai_diskon, 0, ',', '.');
     }
 
     public function getBiayaPerHariFormatted(): string
     {
-        return 'Rp ' . number_format($this->biaya_per_hari, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya_per_hari, 0, ',', '.');
     }
 
     public function isPending(): bool

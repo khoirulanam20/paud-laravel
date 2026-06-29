@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pengajar;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
@@ -10,11 +11,11 @@ use App\Models\Pengajar;
 use App\Support\KegiatanCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Traits\CanUploadImage;
 
 class KegiatanController extends Controller
 {
     use CanUploadImage;
+
     private function getPengajar()
     {
         return Pengajar::where('user_id', auth()->id())->firstOrFail();
@@ -80,7 +81,7 @@ class KegiatanController extends Controller
         ]);
 
         $pengajar = $this->getPengajar();
-        abort_if(!$pengajar->kelas()->where('kelas.id', $request->kelas_id)->exists(), 403);
+        abort_if(! $pengajar->kelas()->where('kelas.id', $request->kelas_id)->exists(), 403);
 
         $data = [
             'sekolah_id' => $pengajar->sekolah_id,
@@ -112,7 +113,7 @@ class KegiatanController extends Controller
     {
         $pengajar = $this->getPengajar();
         $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-        abort_if(!in_array($kegiatan->kelas_id, $kelasIds), 403);
+        abort_if(! in_array($kegiatan->kelas_id, $kelasIds), 403);
 
         $request->validate([
             'date' => 'required|date',
@@ -125,7 +126,7 @@ class KegiatanController extends Controller
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
         ]);
 
-        abort_if(!in_array((int)$request->kelas_id, $kelasIds), 403);
+        abort_if(! in_array((int) $request->kelas_id, $kelasIds), 403);
 
         $data = [
             'date' => $request->date,
@@ -135,12 +136,12 @@ class KegiatanController extends Controller
         ];
 
         $currentPhotos = $kegiatan->photos ?? [];
-        
+
         // Handle deletions first
         if ($request->filled('delete_photos')) {
             foreach ($request->delete_photos as $p) {
                 Storage::disk('public')->delete($p);
-                $currentPhotos = array_values(array_filter($currentPhotos, fn($path) => $path !== $p));
+                $currentPhotos = array_values(array_filter($currentPhotos, fn ($path) => $path !== $p));
             }
         }
 
@@ -163,7 +164,7 @@ class KegiatanController extends Controller
     {
         $pengajar = $this->getPengajar();
         $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-        abort_if(!in_array($kegiatan->kelas_id, $kelasIds), 403);
+        abort_if(! in_array($kegiatan->kelas_id, $kelasIds), 403);
 
         if ($kegiatan->photo) {
             Storage::disk('public')->delete($kegiatan->photo);

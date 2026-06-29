@@ -5,7 +5,9 @@ namespace App\Http\Controllers\OrangTua;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kegiatan;
+use App\Models\Presensi;
 use App\Support\KegiatanCalendar;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class KegiatanController extends Controller
@@ -64,27 +66,27 @@ class KegiatanController extends Controller
         $kegiatans = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
 
         // Fetch attendance records for the selected date range (present only)
-        $presents = \App\Models\Presensi::whereIn('anak_id', $anakIds)
+        $presents = Presensi::whereIn('anak_id', $anakIds)
             ->whereBetween('tanggal', [$from, $to])
             ->where('hadir', true)
             ->get()
-            ->groupBy(function($p) {
-                return \Carbon\Carbon::parse($p->tanggal)->toDateString();
+            ->groupBy(function ($p) {
+                return Carbon::parse($p->tanggal)->toDateString();
             })
-            ->map(fn($rows) => $rows->pluck('anak_id')->values()->all());
+            ->map(fn ($rows) => $rows->pluck('anak_id')->values()->all());
 
         $limitAnakIds = null;
         if ($semuaSekolah) {
             $limitAnakIds = $anakIds !== [] ? $anakIds : [-1];
         }
 
-        $calendarEvents = $kegiatans->filter(function(Kegiatan $k) use ($anakId, $anaks, $presents) {
-            $date = \Carbon\Carbon::parse($k->date);
+        $calendarEvents = $kegiatans->filter(function (Kegiatan $k) use ($anakId, $anaks, $presents) {
+            $date = Carbon::parse($k->date);
             $dateStr = $date->toDateString();
             $presentOnDate = $presents[$dateStr] ?? [];
 
             // If it's a future date (not today), show as plan
-            if ($date->isFuture() && !$date->isToday()) {
+            if ($date->isFuture() && ! $date->isToday()) {
                 return true;
             }
 
@@ -99,6 +101,7 @@ class KegiatanController extends Controller
                         return true;
                     }
                 }
+
                 return false;
             }
         })->map(function (Kegiatan $k) use ($anakId, $limitAnakIds, $semuaSekolah, $anakIds) {

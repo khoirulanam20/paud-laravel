@@ -61,7 +61,7 @@ class OrangTuaChatContextBuilder
         $detailContext = Str::limit($detailContext, 8000, '…');
 
         $dataContext = $scheduleBlock !== ''
-            ? $scheduleBlock . "\n\n---\n\n" . $detailContext
+            ? $scheduleBlock."\n\n---\n\n".$detailContext
             : $detailContext;
 
         $personaPrompt = SekolahAiPersona::resolveActivePrompt(
@@ -112,7 +112,7 @@ PROMPT;
 
         if ($access->include_tanggal) {
             $today = Carbon::today();
-            $lines[] = 'Tanggal hari ini: ' . $today->translatedFormat('l, d F Y');
+            $lines[] = 'Tanggal hari ini: '.$today->translatedFormat('l, d F Y');
         }
 
         $lines[] = $this->dataAccessService->buildAccessSummary($access);
@@ -134,9 +134,9 @@ BLOCK;
     protected function buildAnakContext(Anak $anak, SekolahAiChatDataAccess $access): string
     {
         $lines = [];
-        $lines[] = '=== ANAK: ' . $anak->displayName() . ' ===';
-        $lines[] = 'Kelas: ' . ($anak->kelas?->name ?? 'Belum ada kelas');
-        $lines[] = 'Usia: ' . ($anak->dob ? $anak->age : 'Tidak dicatat');
+        $lines[] = '=== ANAK: '.$anak->displayName().' ===';
+        $lines[] = 'Kelas: '.($anak->kelas?->name ?? 'Belum ada kelas');
+        $lines[] = 'Usia: '.($anak->dob ? $anak->age : 'Tidak dicatat');
 
         $now = Carbon::now();
 
@@ -190,7 +190,7 @@ BLOCK;
         ];
 
         foreach ($anaks as $anak) {
-            $childLines = ['-- ' . $anak->displayName() . ' --'];
+            $childLines = ['-- '.$anak->displayName().' --'];
 
             if ($access->access_agenda) {
                 $agendaBlock = $this->buildAgendaContext($anak, $access);
@@ -240,7 +240,7 @@ BLOCK;
 
         $ringkasan = Str::limit(strip_tags((string) $summary->ringkasan), 1500);
 
-        return 'Monev (' . $summary->periodeLabel() . "):\n" . $ringkasan;
+        return 'Monev ('.$summary->periodeLabel()."):\n".$ringkasan;
     }
 
     protected function buildPencapaianContext(Anak $anak): string
@@ -261,14 +261,14 @@ BLOCK;
 
         foreach ($items as $p) {
             $aspek = $p->matrikulasi
-                ? (($p->matrikulasi->aspek ? $p->matrikulasi->aspek . ': ' : '') . $p->matrikulasi->indicator)
+                ? (($p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '').$p->matrikulasi->indicator)
                 : '—';
             $skor = LabelSkorPencapaian::scoreLabelForAi((string) $p->score, $sekolahId ?: null);
             $kegiatan = $p->kegiatan?->title ?? 'Kegiatan';
             $feedback = trim((string) ($p->feedback ?? ''));
             $line = "- {$kegiatan} | {$aspek} | {$skor}";
             if ($feedback !== '') {
-                $line .= ' | Umpan balik: ' . Str::limit($feedback, 120);
+                $line .= ' | Umpan balik: '.Str::limit($feedback, 120);
             }
             $lines[] = $line;
         }
@@ -319,7 +319,7 @@ BLOCK;
                 $r->tinggi_badan ? "TB {$r->tinggi_badan} cm" : null,
                 $r->alergi ? "Alergi: {$r->alergi}" : null,
             ]);
-            $lines[] = '- ' . $tanggal . ': ' . ($parts !== [] ? implode(', ', $parts) : 'Pemeriksaan rutin');
+            $lines[] = '- '.$tanggal.': '.($parts !== [] ? implode(', ', $parts) : 'Pemeriksaan rutin');
         }
 
         return implode("\n", $lines);
@@ -361,7 +361,7 @@ BLOCK;
         $lines = ["Agenda belajar kelas {$anak->kelas?->name} (jadwal/rencana kelas, belum tentu sudah terlaksana per anak):"];
 
         if ($todayItems->isNotEmpty()) {
-            $lines[] = 'Hari ini (' . $today->translatedFormat('d M Y') . '):';
+            $lines[] = 'Hari ini ('.$today->translatedFormat('d M Y').'):';
             foreach ($todayItems as $k) {
                 $lines[] = $this->formatAgendaLine($k, $anak->id);
             }
@@ -386,7 +386,7 @@ BLOCK;
 
         $line = "- {$date}: {$title} | status: {$status}";
         if ($desc !== '') {
-            $line .= ' | ' . Str::limit($desc, 80);
+            $line .= ' | '.Str::limit($desc, 80);
         }
 
         return $line;
@@ -436,7 +436,7 @@ BLOCK;
         $lines = ['Kegiatan rutin harian (catatan per tanggal, bisa jadwal atau sudah diisi):'];
 
         if ($todayItems->isNotEmpty()) {
-            $lines[] = 'Hari ini (' . $today->translatedFormat('d M Y') . '):';
+            $lines[] = 'Hari ini ('.$today->translatedFormat('d M Y').'):';
             foreach ($todayItems as $r) {
                 $lines[] = $this->formatKegiatanRutinLine($r);
             }
@@ -457,7 +457,7 @@ BLOCK;
         $nama = $r->kegiatan ?? $r->aspek ?? 'Kegiatan rutin';
         $status = filled($r->status_pencapaian) ? $r->status_pencapaian : 'jadwal/rencana';
 
-        return '- ' . $r->tanggal->format('d M') . ': ' . $nama . ' | status: ' . $status;
+        return '- '.$r->tanggal->format('d M').': '.$nama.' | status: '.$status;
     }
 
     protected function buildMasterKegiatanRutinPlanContext(Anak $anak): string
@@ -478,9 +478,9 @@ BLOCK;
 
         $lines = ['Template kegiatan rutin kelas (rencana berulang, belum tentu sudah dicatat per hari):'];
         foreach ($masters as $m) {
-            $line = '- ' . $m->nama_kegiatan;
+            $line = '- '.$m->nama_kegiatan;
             if (filled($m->aspek)) {
-                $line .= ' (' . $m->aspek . ')';
+                $line .= ' ('.$m->aspek.')';
             }
             $lines[] = $line;
         }
@@ -505,7 +505,7 @@ BLOCK;
 
         $lines = ['Menu makanan minggu ini:'];
         foreach ($menus as $m) {
-            $lines[] = '- ' . Carbon::parse($m->date)->format('d M') . ': ' . Str::limit((string) $m->menu, 100);
+            $lines[] = '- '.Carbon::parse($m->date)->format('d M').': '.Str::limit((string) $m->menu, 100);
         }
 
         return implode("\n", $lines);

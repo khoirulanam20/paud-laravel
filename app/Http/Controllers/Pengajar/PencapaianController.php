@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pengajar;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
@@ -12,13 +13,12 @@ use App\Services\AiTokenService;
 use App\Support\AiTokenFeature;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
+use App\Support\PaginationPerPage;
 use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use App\Http\Traits\CanUploadImage;
-use App\Support\PaginationPerPage;
 
 class PencapaianController extends Controller
 {
@@ -37,8 +37,8 @@ class PencapaianController extends Controller
     {
         abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
         $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-        if (!empty($kelasIds)) {
-            abort_if(!in_array((int) $anak->kelas_id, $kelasIds, true), 403);
+        if (! empty($kelasIds)) {
+            abort_if(! in_array((int) $anak->kelas_id, $kelasIds, true), 403);
         }
     }
 
@@ -54,7 +54,7 @@ class PencapaianController extends Controller
 
         $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
         $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-        if (!empty($kelasIds)) {
+        if (! empty($kelasIds)) {
             $anakQuery->whereIn('kelas_id', $kelasIds);
         }
         $anaks = $anakQuery->get();
@@ -73,7 +73,7 @@ class PencapaianController extends Controller
             $hariQuery->whereDate('created_at', '<=', $tanggalSampai);
         }
 
-        if (!empty($kelasIds)) {
+        if (! empty($kelasIds)) {
             $hariQuery->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
         } else {
             // Jika guru belum punya kelas, pastikan dia hanya melihat pencapaian dari sekolahnya
@@ -125,18 +125,18 @@ class PencapaianController extends Controller
                     $nilai[$key] = $r->score;
                     $catatan[$key] = $r->feedback ?? '';
                 }
-                if (filled($r->photo) && !$photoUrl) {
-                    $photoUrl = asset('storage/' . $r->photo);
+                if (filled($r->photo) && ! $photoUrl) {
+                    $photoUrl = asset('storage/'.$r->photo);
                 }
             }
             $editBundles[$k] = [
                 'bundle_key' => $k,
-                'anak_id'    => $first->anak_id,
-                'kegiatan_id'=> $first->kegiatan_id,
-                'nilai'      => $nilai,
-                'catatan'    => $catatan,
-                'has_photo'  => !!$photoUrl,
-                'photo_url'  => $photoUrl,
+                'anak_id' => $first->anak_id,
+                'kegiatan_id' => $first->kegiatan_id,
+                'nilai' => $nilai,
+                'catatan' => $catatan,
+                'has_photo' => (bool) $photoUrl,
+                'photo_url' => $photoUrl,
             ];
         }
 
@@ -337,7 +337,7 @@ class PencapaianController extends Controller
         $kelasIds = $pengajar->kelas->pluck('id')->toArray();
         $anak = Anak::findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
-        
+
         $kegiatan = Kegiatan::query()
             ->where('id', $request->integer('kegiatan_id'))
             ->whereIn('kelas_id', $kelasIds)

@@ -9,6 +9,7 @@ use App\Models\Anak;
 use App\Models\MonevGeneration;
 use App\Models\MonevManualTrigger;
 use App\Models\MonevSummary;
+use App\Models\Sekolah;
 use App\Models\SekolahAiPersona;
 use App\Models\SekolahAiTokenTransaction;
 use App\Models\User;
@@ -30,7 +31,7 @@ class MonevSummaryService
 
     public function resolveAiServiceForSekolah(int $sekolahId): ?SumopodAIService
     {
-        $sekolah = \App\Models\Sekolah::find($sekolahId);
+        $sekolah = Sekolah::find($sekolahId);
         $lembagaId = $sekolah?->lembaga_id;
 
         if (! $lembagaId) {
@@ -408,8 +409,8 @@ class MonevSummaryService
         }
 
         $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', '%' . $search . '%')
-                ->orWhere('nickname', 'like', '%' . $search . '%');
+            $q->where('name', 'like', '%'.$search.'%')
+                ->orWhere('nickname', 'like', '%'.$search.'%');
         });
     }
 
@@ -531,7 +532,7 @@ class MonevSummaryService
                 'bulan' => $bulan,
                 'sumber' => $sumber,
             ],
-            'Generate ringkasan monev: ' . $anak->displayName(),
+            'Generate ringkasan monev: '.$anak->displayName(),
             function () use ($aiService, $stats, $personaPrompt, $anak, $tahun, $bulan, $sumber, $by) {
                 $ringkasan = $aiService->generateMonevSummary(
                     $stats['anak_name'],
@@ -610,7 +611,7 @@ class MonevSummaryService
                 $this->generateForAnak($anak, $tahun, $bulan, $sumber, $by, $ai);
                 $generated++;
             } catch (\Throwable $e) {
-                $errors[] = $anak->displayName() . ': ' . $e->getMessage();
+                $errors[] = $anak->displayName().': '.$e->getMessage();
             }
         }
 

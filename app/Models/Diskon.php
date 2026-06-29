@@ -41,10 +41,10 @@ class Diskon extends Model
     public function getNilaiFormatted(): string
     {
         if ($this->tipe === 'persentase') {
-            return $this->nilai . '%';
+            return $this->nilai.'%';
         }
 
-        return 'Rp ' . number_format($this->nilai, 0, ',', '.');
+        return 'Rp '.number_format($this->nilai, 0, ',', '.');
     }
 
     public function hitungDiskon(float $subtotal): float

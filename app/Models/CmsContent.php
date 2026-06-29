@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsScopedActivity;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class CmsContent extends Model
 {
@@ -20,10 +20,13 @@ class CmsContent extends Model
     {
         if ($sekolahId) {
             $content = static::where('sekolah_id', $sekolahId)->where('key', $key)->first();
-            if ($content) return $content->value ?? $default;
+            if ($content) {
+                return $content->value ?? $default;
+            }
         }
         // Fall back to global (null sekolah_id)
         $content = static::whereNull('sekolah_id')->where('key', $key)->first();
+
         return $content ? ($content->value ?? $default) : $default;
     }
 

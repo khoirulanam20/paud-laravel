@@ -30,7 +30,7 @@ class AuthenticatedSessionController extends Controller
         if ($user && $user->hasRole('Orang Tua')) {
             // A parent must have at least one approved Anak to access the application
             $hasApprovedAnak = $user->anaks()->where('status', 'approved')->exists();
-            if (!$hasApprovedAnak) {
+            if (! $hasApprovedAnak) {
                 Auth::guard('web')->logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();

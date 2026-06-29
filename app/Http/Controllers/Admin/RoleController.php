@@ -73,13 +73,14 @@ class RoleController extends Controller
     {
         $roles = Role::with('permissions')->whereNotIn('name', $this->hiddenRoles)->get();
         $permissionGroups = $this->permissionGroups;
+
         return view('admin.role.index', compact('roles', 'permissionGroups'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:' . Role::class . ',name'],
+            'name' => ['required', 'string', 'max:255', 'unique:'.Role::class.',name'],
         ]);
 
         $role = Role::create(['name' => $request->name]);
@@ -87,7 +88,7 @@ class RoleController extends Controller
         ActivityLogger::log('Role dibuat', null, ['role' => $role->name]);
 
         return redirect()->route('admin.role.index')
-            ->with('success', 'Role "' . e($request->name) . '" berhasil ditambahkan.');
+            ->with('success', 'Role "'.e($request->name).'" berhasil ditambahkan.');
     }
 
     public function update(Request $request, Role $role)
@@ -97,7 +98,7 @@ class RoleController extends Controller
         }
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:' . Role::class . ',name,' . $role->id],
+            'name' => ['required', 'string', 'max:255', 'unique:'.Role::class.',name,'.$role->id],
         ]);
 
         $role->update(['name' => $request->name]);
@@ -112,7 +113,7 @@ class RoleController extends Controller
     {
         $request->validate([
             'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['string', 'exists:' . Permission::class . ',name'],
+            'permissions.*' => ['string', 'exists:'.Permission::class.',name'],
         ]);
 
         $permissions = $request->input('permissions', []);
@@ -125,7 +126,7 @@ class RoleController extends Controller
         ]);
 
         return redirect()->route('admin.role.index')
-            ->with('success', 'Akses menu untuk role "' . e($role->name) . '" berhasil diperbarui.');
+            ->with('success', 'Akses menu untuk role "'.e($role->name).'" berhasil diperbarui.');
     }
 
     public function destroy(Role $role)
@@ -140,6 +141,6 @@ class RoleController extends Controller
         ActivityLogger::log('Role dihapus', null, ['role' => $roleName]);
 
         return redirect()->route('admin.role.index')
-            ->with('success', 'Role "' . e($role->name) . '" berhasil dihapus.');
+            ->with('success', 'Role "'.e($role->name).'" berhasil dihapus.');
     }
 }

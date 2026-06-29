@@ -58,8 +58,8 @@ class MonevDataAggregator
             }
 
             if ($p->matrikulasi) {
-                $label = ($p->matrikulasi->aspek ? $p->matrikulasi->aspek . ': ' : '')
-                    . $p->matrikulasi->indicator;
+                $label = ($p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '')
+                    .$p->matrikulasi->indicator;
                 $indikatorTercatat[$label] = true;
             }
 

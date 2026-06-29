@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Pencapaian;
+use Illuminate\Support\Collection;
 
 final class FilterAspekPencapaian
 {
@@ -27,7 +28,7 @@ final class FilterAspekPencapaian
         return (string) ($p->matrikulasi?->aspek) === $filter;
     }
 
-    public static function groupHasMatch(?string $filter, \Illuminate\Support\Collection $rows): bool
+    public static function groupHasMatch(?string $filter, Collection $rows): bool
     {
         if ($filter === null || $filter === '') {
             return $rows->isNotEmpty();

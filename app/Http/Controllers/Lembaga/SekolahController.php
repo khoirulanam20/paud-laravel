@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Lembaga;
 use App\Http\Controllers\Controller;
 use App\Models\Sekolah;
 use App\Models\SkalaPencapaian;
-use Illuminate\Http\Request;
 use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
 
 class SekolahController extends Controller
 {
@@ -14,6 +14,7 @@ class SekolahController extends Controller
     {
         $lembaga_id = auth()->user()->lembaga_id;
         $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
+
         return view('lembaga.sekolah.index', compact('sekolahs'));
     }
 
@@ -56,6 +57,7 @@ class SekolahController extends Controller
     {
         abort_if($sekolah->lembaga_id !== auth()->user()->lembaga_id, 403);
         $sekolah->delete();
+
         return redirect()->route('lembaga.sekolah.index')->with('success', 'Sekolah berhasil dihapus.');
     }
 }

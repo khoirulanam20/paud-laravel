@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Pencapaian;
 use App\Models\SkalaPencapaian;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Support\PaginationPerPage;
 
 class SkalaPencapaianController extends Controller
 {

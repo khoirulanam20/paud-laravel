@@ -28,15 +28,15 @@ class PresensiPengajarController extends Controller
         // Monthly Summary Filter
         $rekapMonth = $request->input('rekap_month', date('n'));
         $rekapYear = $request->input('rekap_year', date('Y'));
-        
+
         $startOfMonth = Carbon::create($rekapYear, $rekapMonth, 1)->startOfMonth()->toDateString();
         $endOfMonth = Carbon::create($rekapYear, $rekapMonth, 1)->endOfMonth()->toDateString();
-        
+
         $rekapBulanan = PresensiPengajar::where('sekolah_id', $sekolahId)
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->get()
             ->groupBy('pengajar_id')
-            ->map(function($items) {
+            ->map(function ($items) {
                 return [
                     'hadir' => $items->where('hadir', true)->count(),
                     'sakit' => $items->where('status', 'Sakit')->count(),

@@ -3,19 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Kelas;
 use App\Models\Pengajar;
 use App\Models\User;
+use App\Support\PaginationPerPage;
 use App\Support\PendidikanTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Traits\CanUploadImage;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use App\Support\PaginationPerPage;
 
 class PengajarController extends Controller
 {
     use CanUploadImage;
+
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -115,7 +117,7 @@ class PengajarController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($pengajar->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajar->photo);
+                Storage::disk('public')->delete($pengajar->photo);
             }
             $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'pengajar');
         }
@@ -135,13 +137,13 @@ class PengajarController extends Controller
     public function destroy(Pengajar $pengajar)
     {
         abort_if($pengajar->sekolah_id !== auth()->user()->sekolah_id, 403);
-        
+
         $user = $pengajar->user;
         if ($pengajar->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajar->photo);
+            Storage::disk('public')->delete($pengajar->photo);
         }
         $pengajar->delete();
-        
+
         if ($user) {
             $user->delete();
         }

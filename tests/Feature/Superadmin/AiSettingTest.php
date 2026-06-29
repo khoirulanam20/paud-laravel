@@ -7,11 +7,9 @@ use App\Models\Lembaga;
 use App\Models\Sekolah;
 use App\Models\SekolahAiToken;
 use App\Models\User;
-use App\Support\AiProvider;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\SeedsAiTokens;
 use Tests\TestCase;
 

@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Models\SekolahAiTokenTransaction;
+
 class AiTokenFeature
 {
     public const MONEV = 'monev';
@@ -15,10 +17,10 @@ class AiTokenFeature
     public static function transactionType(string $feature): string
     {
         return match ($feature) {
-            self::MONEV => \App\Models\SekolahAiTokenTransaction::TYPE_MONEV,
-            self::PENCAPAIAN => \App\Models\SekolahAiTokenTransaction::TYPE_PENCAPAIAN,
-            self::CHAT => \App\Models\SekolahAiTokenTransaction::TYPE_CHAT,
-            self::PERSONA => \App\Models\SekolahAiTokenTransaction::TYPE_PERSONA,
+            self::MONEV => SekolahAiTokenTransaction::TYPE_MONEV,
+            self::PENCAPAIAN => SekolahAiTokenTransaction::TYPE_PENCAPAIAN,
+            self::CHAT => SekolahAiTokenTransaction::TYPE_CHAT,
+            self::PERSONA => SekolahAiTokenTransaction::TYPE_PERSONA,
             default => $feature,
         };
     }
@@ -26,10 +28,10 @@ class AiTokenFeature
     public static function featureFromTransactionType(string $type): string
     {
         return match ($type) {
-            \App\Models\SekolahAiTokenTransaction::TYPE_MONEV => self::MONEV,
-            \App\Models\SekolahAiTokenTransaction::TYPE_PENCAPAIAN => self::PENCAPAIAN,
-            \App\Models\SekolahAiTokenTransaction::TYPE_CHAT => self::CHAT,
-            \App\Models\SekolahAiTokenTransaction::TYPE_PERSONA => self::PERSONA,
+            SekolahAiTokenTransaction::TYPE_MONEV => self::MONEV,
+            SekolahAiTokenTransaction::TYPE_PENCAPAIAN => self::PENCAPAIAN,
+            SekolahAiTokenTransaction::TYPE_CHAT => self::CHAT,
+            SekolahAiTokenTransaction::TYPE_PERSONA => self::PERSONA,
             default => self::CHAT,
         };
     }

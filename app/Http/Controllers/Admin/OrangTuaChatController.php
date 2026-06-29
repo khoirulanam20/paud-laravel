@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\OrangTuaChat;
 use App\Services\OrangTuaChatService;
-use Illuminate\View\View;
-use Illuminate\Http\Request;
 use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class OrangTuaChatController extends Controller
 {
@@ -38,7 +38,7 @@ class OrangTuaChatController extends Controller
         $messages = $this->chatService->messagesForAdmin($orangtua_chat);
 
         return view('admin.orangtua_chat.show', [
-            'chat'     => $orangtua_chat,
+            'chat' => $orangtua_chat,
             'messages' => $messages,
         ]);
     }

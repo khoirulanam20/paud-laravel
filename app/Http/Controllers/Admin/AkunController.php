@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
-use Illuminate\Http\Request;
 use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
 
 class AkunController extends Controller
 {

@@ -26,6 +26,6 @@ class SchoolSwitcherController extends Controller
 
         ActivityLogger::log('Cabang aktif diubah', $sekolah, ['sekolah_id' => $sekolah->id]);
 
-        return back()->with('success', 'Cabang aktif: ' . $sekolah->name);
+        return back()->with('success', 'Cabang aktif: '.$sekolah->name);
     }
 }

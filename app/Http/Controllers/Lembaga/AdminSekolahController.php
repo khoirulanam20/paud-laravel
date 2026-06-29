@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Lembaga;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Sekolah;
+use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use App\Support\PaginationPerPage;
 
 class AdminSekolahController extends Controller
 {
@@ -18,6 +18,7 @@ class AdminSekolahController extends Controller
         $lembaga_id = auth()->user()->lembaga_id;
         $admins = User::role('Admin Sekolah')->where('lembaga_id', $lembaga_id)->with('sekolah')->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->get();
+
         return view('lembaga.admin_sekolah.index', compact('admins', 'sekolahs'));
     }
 
@@ -81,6 +82,7 @@ class AdminSekolahController extends Controller
     {
         abort_if($admin_sekolah->lembaga_id !== auth()->user()->lembaga_id, 403);
         $admin_sekolah->delete();
+
         return redirect()->route('lembaga.admin-sekolah.index')->with('success', 'Admin Sekolah berhasil dihapus.');
     }
 }

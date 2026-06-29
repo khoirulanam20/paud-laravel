@@ -94,27 +94,27 @@ class SekolahAiPersona extends Model
         $lines[] = 'IDENTITAS:';
 
         if (filled($this->description)) {
-            $lines[] = '- Deskripsi: ' . trim($this->description);
+            $lines[] = '- Deskripsi: '.trim($this->description);
         }
         if (filled($this->gender)) {
-            $lines[] = '- Jenis kelamin: ' . $this->genderLabel();
+            $lines[] = '- Jenis kelamin: '.$this->genderLabel();
         }
         if ($this->age !== null) {
-            $lines[] = '- Usia: ' . $this->age . ' tahun';
+            $lines[] = '- Usia: '.$this->age.' tahun';
         }
-        $lines[] = '- Bahasa dialog: ' . trim($this->dialog_language ?: 'Bahasa Indonesia');
+        $lines[] = '- Bahasa dialog: '.trim($this->dialog_language ?: 'Bahasa Indonesia');
 
         $lines[] = '';
         $lines[] = 'KARAKTER:';
 
         if (filled($this->personality_traits)) {
-            $lines[] = '- Kepribadian: ' . trim($this->personality_traits);
+            $lines[] = '- Kepribadian: '.trim($this->personality_traits);
         }
         if (filled($this->communication_style)) {
-            $lines[] = '- Gaya komunikasi: ' . trim($this->communication_style);
+            $lines[] = '- Gaya komunikasi: '.trim($this->communication_style);
         }
         if (filled($this->behavior_guidelines)) {
-            $lines[] = '- Panduan perilaku: ' . trim($this->behavior_guidelines);
+            $lines[] = '- Panduan perilaku: '.trim($this->behavior_guidelines);
         }
 
         if (filled($this->background)) {

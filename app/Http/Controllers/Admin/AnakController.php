@@ -11,13 +11,13 @@ use App\Models\Anak;
 use App\Models\Kelas;
 use App\Models\User;
 use App\Services\AnakRegistrationService;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Support\PaginationPerPage;
 
 class AnakController extends Controller
 {

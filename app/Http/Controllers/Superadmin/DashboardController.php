@@ -7,7 +7,6 @@ use App\Models\AiSetting;
 use App\Models\Lembaga;
 use App\Models\Sekolah;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {

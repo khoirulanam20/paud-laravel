@@ -102,4 +102,3 @@ return [
     ['kode' => '08.04.12', 'snp' => 'Standar Penilaian', 'komponen' => 'Pelaksanaan kegiatan asesmen dan evaluasi pembelajaran', 'uraian' => 'Penyelenggaraan pembelajaran kelas jauh atau jarak jauh'],
     ['kode' => '08.06.01', 'snp' => 'Standar Penilaian', 'komponen' => 'Pengembangan profesi pendidik dan tenaga kependidikan', 'uraian' => 'Fasilitasi pengembangan kompetensi guru melalui pelatihan dan diseminasi'],
 ];
-

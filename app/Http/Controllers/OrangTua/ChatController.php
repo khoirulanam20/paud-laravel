@@ -52,15 +52,15 @@ class ChatController extends Controller
             return response()->json([
                 'messages' => [
                     [
-                        'id'         => $result['user_message']->id,
-                        'role'       => $result['user_message']->role,
-                        'content'    => $result['user_message']->content,
+                        'id' => $result['user_message']->id,
+                        'role' => $result['user_message']->role,
+                        'content' => $result['user_message']->content,
                         'created_at' => $result['user_message']->created_at->toIso8601String(),
                     ],
                     [
-                        'id'         => $result['assistant_message']->id,
-                        'role'       => $result['assistant_message']->role,
-                        'content'    => $result['assistant_message']->content,
+                        'id' => $result['assistant_message']->id,
+                        'role' => $result['assistant_message']->role,
+                        'content' => $result['assistant_message']->content,
                         'created_at' => $result['assistant_message']->created_at->toIso8601String(),
                     ],
                 ],
@@ -89,7 +89,7 @@ class ChatController extends Controller
             return response()->json(['error' => $e->getMessage()], $status);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Gagal menghubungi layanan AI: ' . $e->getMessage(),
+                'error' => 'Gagal menghubungi layanan AI: '.$e->getMessage(),
             ], 500);
         }
     }

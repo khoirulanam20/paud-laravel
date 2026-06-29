@@ -198,6 +198,7 @@ final class HariLiburIndonesia
     {
         $year = (int) $date->year;
         $holidays = self::getHolidays($year);
+
         return in_array($date->toDateString(), $holidays, true);
     }
 

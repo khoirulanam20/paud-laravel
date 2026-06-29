@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Middleware\EnableAdminActivityLogging;
+use App\Http\Middleware\EnsureAdminMenuAccess;
+use App\Http\Middleware\EnsureLembagaSekolahContext;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -18,11 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('monev:generate')->monthlyOn(1, '02:00')
             ->onFailure(function () {
-                \Illuminate\Support\Facades\Log::error('Scheduled command monev:generate FAILED');
+                Log::error('Scheduled command monev:generate FAILED');
             });
         $schedule->command('monev:finalize-stale')->hourly()
             ->onFailure(function () {
-                \Illuminate\Support\Facades\Log::error('Scheduled command monev:finalize-stale FAILED');
+                Log::error('Scheduled command monev:finalize-stale FAILED');
             });
     })
     ->withMiddleware(function (Middleware $middleware) {
@@ -30,9 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'admin.menu' => \App\Http\Middleware\EnsureAdminMenuAccess::class,
-            'lembaga.sekolah' => \App\Http\Middleware\EnsureLembagaSekolahContext::class,
-            'admin.activity' => \App\Http\Middleware\EnableAdminActivityLogging::class,
+            'admin.menu' => EnsureAdminMenuAccess::class,
+            'lembaga.sekolah' => EnsureLembagaSekolahContext::class,
+            'admin.activity' => EnableAdminActivityLogging::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -40,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($response->getStatusCode() === 419) {
                 return redirect()->route('login')->with('warning', 'Sesi Anda telah berakhir, silakan login kembali.');
             }
+
             return $response;
         });
     })->create();

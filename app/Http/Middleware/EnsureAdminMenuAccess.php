@@ -18,7 +18,7 @@ class EnsureAdminMenuAccess
         }
 
         if ($user?->hasRole('Lembaga')) {
-            if (!$user->sekolah_id) {
+            if (! $user->sekolah_id) {
                 abort(403, 'Pilih cabang sekolah aktif terlebih dahulu.');
             }
 
@@ -34,7 +34,7 @@ class EnsureAdminMenuAccess
         }
 
         $routeName = $request->route()?->getName();
-        if (!$routeName) {
+        if (! $routeName) {
             abort(403);
         }
 

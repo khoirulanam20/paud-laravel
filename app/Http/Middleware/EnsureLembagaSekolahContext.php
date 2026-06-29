@@ -13,13 +13,13 @@ class EnsureLembagaSekolahContext
     {
         $user = $request->user();
 
-        if (!$user?->hasRole('Lembaga')) {
+        if (! $user?->hasRole('Lembaga')) {
             return $next($request);
         }
 
         $activeId = session('active_sekolah_id');
 
-        if (!$activeId) {
+        if (! $activeId) {
             return redirect()
                 ->route('dashboard')
                 ->with('warning', 'Pilih cabang sekolah aktif terlebih dahulu.');
@@ -29,7 +29,7 @@ class EnsureLembagaSekolahContext
             ->where('lembaga_id', $user->lembaga_id)
             ->exists();
 
-        if (!$belongs) {
+        if (! $belongs) {
             session()->forget('active_sekolah_id');
 
             return redirect()

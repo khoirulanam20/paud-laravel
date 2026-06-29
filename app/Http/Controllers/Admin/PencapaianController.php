@@ -3,23 +3,22 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
 use App\Models\Kegiatan;
+use App\Models\Kelas;
 use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
-use App\Models\Pengajar;
-use App\Models\Kelas;
 use App\Services\AiTokenService;
 use App\Support\AiTokenFeature;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
+use App\Support\PaginationPerPage;
 use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use App\Http\Traits\CanUploadImage;
-use App\Support\PaginationPerPage;
 
 class PencapaianController extends Controller
 {
@@ -59,7 +58,7 @@ class PencapaianController extends Controller
             $hariQuery->whereDate('created_at', '<=', $tanggalSampai);
         }
 
-        $hariQuery->whereHas('anak', fn($q) => $q->where('sekolah_id', $sekolah_id));
+        $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
 
         if ($request->filled('filter_anak_id')) {
             $aid = (int) $request->input('filter_anak_id');
@@ -67,11 +66,11 @@ class PencapaianController extends Controller
         }
         if ($request->filled('filter_kelas_id')) {
             $kid = (int) $request->input('filter_kelas_id');
-            $hariQuery->whereHas('anak', fn($q) => $q->where('kelas_id', $kid));
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', $kid));
         }
 
         $hariAll = $hariQuery->get();
-        $groupsAll = $hariAll->groupBy(fn($p) => $p->anak_id . '_' . $p->kegiatan_id);
+        $groupsAll = $hariAll->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
 
         $keysFiltered = $groupsAll->keys()->values()->filter(function ($k) use ($groupsAll, $filterAspek) {
             return FilterAspekPencapaian::groupHasMatch($filterAspek, $groupsAll[$k]);
@@ -81,7 +80,7 @@ class PencapaianController extends Controller
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $total = $keysFiltered->count();
         $sliceKeys = $keysFiltered->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        $pageItems = $sliceKeys->mapWithKeys(fn($k) => [$k => $groupsAll[$k]]);
+        $pageItems = $sliceKeys->mapWithKeys(fn ($k) => [$k => $groupsAll[$k]]);
 
         $groupedPencapaian = new LengthAwarePaginator(
             $pageItems,
@@ -107,8 +106,8 @@ class PencapaianController extends Controller
                     $nilai[$key] = $r->score;
                     $catatan[$key] = $r->feedback ?? '';
                 }
-                if (filled($r->photo) && !$photoUrl) {
-                    $photoUrl = asset('storage/' . $r->photo);
+                if (filled($r->photo) && ! $photoUrl) {
+                    $photoUrl = asset('storage/'.$r->photo);
                 }
             }
             $editBundles[$k] = [
@@ -117,7 +116,7 @@ class PencapaianController extends Controller
                 'kegiatan_id' => $first->kegiatan_id,
                 'nilai' => $nilai,
                 'catatan' => $catatan,
-                'has_photo' => !!$photoUrl,
+                'has_photo' => (bool) $photoUrl,
                 'photo_url' => $photoUrl,
             ];
         }
@@ -212,7 +211,7 @@ class PencapaianController extends Controller
             ->where('kegiatan_id', $kegiatan->id)
             ->count();
         $isEdit = $request->boolean('_is_edit');
-        if (!$isEdit && $existingCount > 0) {
+        if (! $isEdit && $existingCount > 0) {
             return back()
                 ->withInput()
                 ->withErrors(['kegiatan_id' => 'Pencapaian untuk anak dan kegiatan ini sudah pernah diisi. Gunakan tombol Edit untuk mengubahnya.']);
@@ -221,7 +220,7 @@ class PencapaianController extends Controller
         $nilaiInput = $request->input('nilai', []);
         foreach ($matIds as $mid) {
             $sk = (string) $mid;
-            if (!array_key_exists($sk, $nilaiInput) && !array_key_exists($mid, $nilaiInput)) {
+            if (! array_key_exists($sk, $nilaiInput) && ! array_key_exists($mid, $nilaiInput)) {
                 return back()
                     ->withInput()
                     ->withErrors(['nilai' => 'Setiap aspek matrikulasi wajib diberi nilai.']);
@@ -292,7 +291,7 @@ class PencapaianController extends Controller
                 ->where('id', '!=', $pencapaian->id)
                 ->where('photo', $pencapaian->photo)
                 ->exists();
-            if (!$stillUsed) {
+            if (! $stillUsed) {
                 Storage::disk('public')->delete($pencapaian->photo);
             }
         }
@@ -326,7 +325,7 @@ class PencapaianController extends Controller
                     ->where('photo', $pencapaian->photo)
                     ->where('id', '!=', $pencapaian->id)
                     ->exists();
-                if (!$stillUsed) {
+                if (! $stillUsed) {
                     Storage::disk('public')->delete($pencapaian->photo);
                 }
             }

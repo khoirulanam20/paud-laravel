@@ -44,6 +44,6 @@ class BiayaBulananSekolah extends Model
 
     public function getNominalDefaultFormatted(): string
     {
-        return 'Rp ' . number_format($this->nominal_default, 0, ',', '.');
+        return 'Rp '.number_format($this->nominal_default, 0, ',', '.');
     }
 }

@@ -3,23 +3,25 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\MenuMakanan;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Traits\CanUploadImage;
-use App\Support\PaginationPerPage;
 
 class MenuMakananController extends Controller
 {
     use CanUploadImage;
+
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
         $menus = MenuMakanan::where('sekolah_id', $sekolah_id)
-            ->withCount(['votes as likes_count' => fn($q) => $q->where('vote_type', 'like')])
-            ->withCount(['votes as dislikes_count' => fn($q) => $q->where('vote_type', 'dislike')])
+            ->withCount(['votes as likes_count' => fn ($q) => $q->where('vote_type', 'like')])
+            ->withCount(['votes as dislikes_count' => fn ($q) => $q->where('vote_type', 'dislike')])
             ->orderBy('date', 'desc')
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
+
         return view('admin.menu_makanan.index', compact('menus'));
     }
 
@@ -92,7 +94,7 @@ class MenuMakananController extends Controller
     public function destroy(MenuMakanan $menu_makanan)
     {
         abort_if($menu_makanan->sekolah_id !== auth()->user()->sekolah_id, 403);
-        
+
         if ($menu_makanan->photo) {
             Storage::disk('public')->delete($menu_makanan->photo);
         }
@@ -100,7 +102,7 @@ class MenuMakananController extends Controller
             Storage::disk('public')->delete($menu_makanan->photo_kegiatan);
         }
         $menu_makanan->delete();
-        
+
         return redirect()->route('admin.menu-makanan.index')->with('success', 'Menu Makanan berhasil dihapus.');
     }
 }

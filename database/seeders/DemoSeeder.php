@@ -83,6 +83,7 @@ class DemoSeeder extends Seeder
 
         if (! $lembaga || ! $sekolah) {
             $this->command->error('Lembaga atau sekolah tidak ditemukan setelah RoleSeeder. Batalkan DemoSeeder.');
+
             return;
         }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
 use App\Models\Lembaga;
 use App\Models\Pengajar;
@@ -15,11 +16,11 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Traits\CanUploadImage;
 
 class ProfileController extends Controller
 {
     use CanUploadImage;
+
     /**
      * Display the user's profile form.
      */
@@ -123,6 +124,7 @@ class ProfileController extends Controller
                     $parts = explode(',', $raw);
                     if (count($parts) !== 2) {
                         $fail('Koordinat lokasi harus berformat "lat,lng".');
+
                         return;
                     }
 
@@ -130,6 +132,7 @@ class ProfileController extends Controller
                     $lng = filter_var($parts[1], FILTER_VALIDATE_FLOAT);
                     if ($lat === false || $lng === false) {
                         $fail('Koordinat lokasi harus berupa angka desimal.');
+
                         return;
                     }
 
@@ -216,7 +219,7 @@ class ProfileController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($anak->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+                Storage::disk('public')->delete($anak->photo);
             }
             $data['photo'] = $this->uploadImage($request->file('photo'), 'anak');
         }

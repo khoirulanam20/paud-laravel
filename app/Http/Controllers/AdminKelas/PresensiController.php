@@ -4,6 +4,8 @@ namespace App\Http\Controllers\AdminKelas;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
+use App\Models\Kelas;
+use App\Models\Pengajar;
 use App\Models\Presensi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -13,9 +15,9 @@ class PresensiController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
+        $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
         $sekolah_id = $user->sekolah_id;
-        $kelas = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->orderBy('name')->get();
+        $kelas = Kelas::where('wali_kelas_id', $pengajar->id)->orderBy('name')->get();
         $kelasIds = $kelas->pluck('id')->toArray();
 
         $tanggalInput = $request->query('tanggal', now()->format('Y-m-d'));
@@ -28,7 +30,7 @@ class PresensiController extends Controller
         $filterKelasId = $request->query('filter_kelas_id');
         $queryAnak = Anak::query()->where('sekolah_id', $sekolah_id);
 
-        if ($filterKelasId && in_array((int)$filterKelasId, $kelasIds)) {
+        if ($filterKelasId && in_array((int) $filterKelasId, $kelasIds)) {
             $queryAnak->where('kelas_id', $filterKelasId);
         } else {
             $queryAnak->whereIn('kelas_id', $kelasIds);
@@ -61,9 +63,9 @@ class PresensiController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
+        $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
         $sekolah_id = $user->sekolah_id;
-        $kelasIds = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],

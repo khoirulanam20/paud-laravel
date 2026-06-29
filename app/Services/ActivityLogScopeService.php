@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\PaginationPerPage;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
-use App\Support\PaginationPerPage;
 
 class ActivityLogScopeService
 {
@@ -40,7 +40,7 @@ class ActivityLogScopeService
         }
 
         if ($subjectType = $request->query('subject_type')) {
-            $query->where('subject_type', 'like', '%' . str_replace('\\', '\\\\', $subjectType) . '%');
+            $query->where('subject_type', 'like', '%'.str_replace('\\', '\\\\', $subjectType).'%');
         }
 
         return $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
@@ -48,7 +48,7 @@ class ActivityLogScopeService
 
     public function subjectLabel(Activity $activity): string
     {
-        if (!$activity->subject_type) {
+        if (! $activity->subject_type) {
             return $this->humanizeDescription($activity->description);
         }
 
@@ -162,7 +162,7 @@ class ActivityLogScopeService
         if (filled($subject->deskripsi ?? null)) {
             $text = (string) $subject->deskripsi;
 
-            return mb_strlen($text) > 50 ? mb_substr($text, 0, 50) . '…' : $text;
+            return mb_strlen($text) > 50 ? mb_substr($text, 0, 50).'…' : $text;
         }
 
         if (filled($subject->kode ?? null)) {
@@ -176,7 +176,7 @@ class ActivityLogScopeService
 
     private function humanizeDescription(?string $description): string
     {
-        if (!$description) {
+        if (! $description) {
             return '-';
         }
 
@@ -207,7 +207,7 @@ class ActivityLogScopeService
             foreach ($attributes as $key => $value) {
                 $prev = $old[$key] ?? null;
                 if ($prev != $value) {
-                    $parts[] = "{$key}: " . $this->stringify($prev) . ' → ' . $this->stringify($value);
+                    $parts[] = "{$key}: ".$this->stringify($prev).' → '.$this->stringify($value);
                 }
             }
 
@@ -215,7 +215,7 @@ class ActivityLogScopeService
         }
 
         if (is_array($attributes) && $activity->event === 'created') {
-            return 'Data baru: ' . implode(', ', array_slice(array_keys($attributes), 0, 5));
+            return 'Data baru: '.implode(', ', array_slice(array_keys($attributes), 0, 5));
         }
 
         $extra = collect($activity->properties ?? [])
@@ -223,7 +223,7 @@ class ActivityLogScopeService
             ->all();
 
         if ($extra !== []) {
-            return collect($extra)->map(fn ($v, $k) => "{$k}: " . $this->stringify($v))->implode('; ');
+            return collect($extra)->map(fn ($v, $k) => "{$k}: ".$this->stringify($v))->implode('; ');
         }
 
         return $activity->description ?: '-';
@@ -241,6 +241,6 @@ class ActivityLogScopeService
 
         $text = (string) $value;
 
-        return mb_strlen($text) > 40 ? mb_substr($text, 0, 40) . '…' : $text;
+        return mb_strlen($text) > 40 ? mb_substr($text, 0, 40).'…' : $text;
     }
 }

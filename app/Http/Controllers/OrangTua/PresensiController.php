@@ -14,14 +14,14 @@ class PresensiController extends Controller
     {
         $user = auth()->user();
         $sekolahId = $user->sekolah_id;
-        
+
         $anaks = Anak::where('user_id', $user->id)
             ->where('sekolah_id', $sekolahId)
             ->get();
         $anakIds = $anaks->pluck('id');
 
         $filter = PresensiPeriodeFilter::resolve($request);
-        
+
         $presensis = Presensi::whereIn('anak_id', $anakIds)
             ->whereBetween('tanggal', [$filter['from'], $filter['to']])
             ->orderBy('tanggal', 'desc')

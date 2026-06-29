@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Kegiatan;
+use App\Models\Kelas;
+use App\Models\Matrikulasi;
 use App\Models\Pengajar;
 use App\Support\KegiatanCalendar;
 use Illuminate\Http\Request;
-use App\Http\Traits\CanUploadImage;
+use Illuminate\Support\Facades\Storage;
 
 class KegiatanController extends Controller
 {
     use CanUploadImage;
+
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -28,7 +32,7 @@ class KegiatanController extends Controller
             $query->where('pengajar_id', $pid);
         }
 
-        $kelas = \App\Models\Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
         if ($request->filled('kelas_id')) {
             $kid = $request->integer('kelas_id');
@@ -44,7 +48,7 @@ class KegiatanController extends Controller
         $calendarEvents = $kegiatans->map(fn (Kegiatan $k) => KegiatanCalendar::toAdminEvent($k))->values()->all();
 
         $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
-        $matrikulasis = \App\Models\Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();
+        $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();
 
         return view('admin.kegiatan.index', compact('calendarEvents', 'year', 'month', 'pengajars', 'kelas', 'matrikulasis'));
     }
@@ -115,8 +119,8 @@ class KegiatanController extends Controller
         $currentPhotos = $kegiatan->photos ?? [];
         if ($request->filled('delete_photos')) {
             foreach ($request->delete_photos as $p) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($p);
-                $currentPhotos = array_values(array_filter($currentPhotos, fn($path) => $path !== $p));
+                Storage::disk('public')->delete($p);
+                $currentPhotos = array_values(array_filter($currentPhotos, fn ($path) => $path !== $p));
             }
         }
 
@@ -140,7 +144,7 @@ class KegiatanController extends Controller
 
         if ($kegiatan->photos) {
             foreach ($kegiatan->photos as $p) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($p);
+                Storage::disk('public')->delete($p);
             }
         }
         $kegiatan->delete();

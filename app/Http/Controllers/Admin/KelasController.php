@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\Pengajar;
 use App\Models\User;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
-use App\Support\PaginationPerPage;
 
 class KelasController extends Controller
 {
@@ -185,7 +185,7 @@ class KelasController extends Controller
     private function removeWaliKelasRoleIfNecessary($pengajarId)
     {
         $isStillWali = Kelas::where('wali_kelas_id', $pengajarId)->exists();
-        if (!$isStillWali) {
+        if (! $isStillWali) {
             $pengajar = Pengajar::find($pengajarId);
             if ($pengajar && $pengajar->user) {
                 $pengajar->user->removeRole('Wali Kelas');

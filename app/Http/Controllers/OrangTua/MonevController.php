@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\OrangTua;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\HandlesMonevPdfExport;
+use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\MonevSummary;
 use App\Services\MonevSummaryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class MonevController extends Controller
 {
@@ -78,7 +79,7 @@ class MonevController extends Controller
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, Anak>  $anaks
+     * @param  Collection<int, Anak>  $anaks
      */
     protected function resolveSelectedAnak($anaks, ?int $anakId): ?Anak
     {

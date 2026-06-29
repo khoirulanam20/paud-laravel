@@ -8,9 +8,10 @@ use App\Models\Cashflow;
 use App\Models\SumberDana;
 use App\Services\AkuntansiService;
 use App\Services\KwitansiService;
+use App\Support\PaginationPerPage;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Support\PaginationPerPage;
 
 class CashflowController extends Controller
 {
@@ -81,7 +82,7 @@ class CashflowController extends Controller
 
         $this->akuntansiService->buatJurnalDariCashflow($cashflow);
 
-        $date = \Carbon\Carbon::parse($request->date);
+        $date = Carbon::parse($request->date);
 
         return redirect()->route('admin.cashflow.index', [
             'bulan' => $date->month,
@@ -120,7 +121,7 @@ class CashflowController extends Controller
 
         $this->akuntansiService->buatJurnalDariCashflow($cashflow->fresh());
 
-        $date = \Carbon\Carbon::parse($request->date);
+        $date = Carbon::parse($request->date);
 
         return redirect()->route('admin.cashflow.index', [
             'bulan' => $date->month,

@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Lembaga;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use App\Support\PaginationPerPage;
 
 class AdminLembagaController extends Controller
 {

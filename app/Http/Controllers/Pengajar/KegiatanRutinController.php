@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pengajar;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\KegiatanRutin;
+use App\Models\MasterKegiatanRutin;
 use App\Models\Pengajar;
 use Illuminate\Http\Request;
 
@@ -20,13 +21,13 @@ class KegiatanRutinController extends Controller
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $kelasId = $request->input('kelas_id');
 
-        if (!$kelasId && !empty($kelasIds)) {
+        if (! $kelasId && ! empty($kelasIds)) {
             $kelasId = $kelasIds[0];
         }
 
         $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
-        
-        $masters = $kelasId ? \App\Models\MasterKegiatanRutin::whereHas('kelas', function ($query) use ($kelasId) {
+
+        $masters = $kelasId ? MasterKegiatanRutin::whereHas('kelas', function ($query) use ($kelasId) {
             $query->where('kelas.id', $kelasId);
         })->get() : collect();
 
@@ -51,7 +52,9 @@ class KegiatanRutinController extends Controller
 
         foreach ($request->rutin as $anakId => $mastersData) {
             foreach ($mastersData as $masterId => $data) {
-                if (empty($data['status_pencapaian'])) continue;
+                if (empty($data['status_pencapaian'])) {
+                    continue;
+                }
 
                 KegiatanRutin::updateOrCreate(
                     [

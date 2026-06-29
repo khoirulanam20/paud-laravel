@@ -78,7 +78,7 @@ final class LabelSkorPencapaian
 
         $label = self::label($code, $sekolahId);
 
-        return $label . ' (' . $code . ')';
+        return $label.' ('.$code.')';
     }
 
     /** @return array<string, string> kode => warna latar */

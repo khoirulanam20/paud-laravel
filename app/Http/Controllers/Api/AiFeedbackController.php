@@ -75,7 +75,7 @@ class AiFeedbackController extends Controller
             ], 422);
         }
 
-        $matrikulasiLabel = ($matrikulasi->aspek ? $matrikulasi->aspek . ': ' : '') . $matrikulasi->indicator;
+        $matrikulasiLabel = ($matrikulasi->aspek ? $matrikulasi->aspek.': ' : '').$matrikulasi->indicator;
         $scoreLabel = LabelSkorPencapaian::scoreLabelForAi($validated['score'], $sekolahId);
         $sekolahName = $anak->sekolah?->name ?? 'PAUD';
         $personaPrompt = $this->personaService->resolveActivePrompt(
@@ -94,7 +94,7 @@ class AiFeedbackController extends Controller
                     'kegiatan_id' => $kegiatan->id,
                     'matrikulasi_id' => $matrikulasi->id,
                 ],
-                'Saran feedback pencapaian: ' . $anak->displayName(),
+                'Saran feedback pencapaian: '.$anak->displayName(),
                 fn () => $aiSetting->toAiService()->generateFeedbackSuggestions(
                     $anak->displayName(),
                     $kegiatan->title,

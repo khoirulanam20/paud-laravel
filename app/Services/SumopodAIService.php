@@ -11,24 +11,26 @@ use Illuminate\Support\Facades\Log;
 class SumopodAIService
 {
     protected string $apiKey;
+
     protected string $model;
+
     protected string $baseUrl;
 
     public function __construct(string $apiKey, string $model = 'gpt-4o-mini', ?string $baseUrl = null)
     {
-        $this->apiKey  = $apiKey;
-        $this->model   = $model;
+        $this->apiKey = $apiKey;
+        $this->model = $model;
         $this->baseUrl = rtrim($baseUrl ?? 'https://ai.sumopod.com/v1', '/');
     }
 
     /**
      * Generate 3 feedback suggestions for a student achievement entry.
      *
-     * @param  string  $anakName         Student's name
-     * @param  string  $kegiatanTitle    Activity title
-     * @param  string  $matrikulasiLabel Matriculation indicator label (aspek: indicator)
-     * @param  string  $scoreLabel       Human-readable scale label (e.g. "Mulai Berkembang (MB)")
-     * @return array<string>             Exactly 3 suggestion strings
+     * @param  string  $anakName  Student's name
+     * @param  string  $kegiatanTitle  Activity title
+     * @param  string  $matrikulasiLabel  Matriculation indicator label (aspek: indicator)
+     * @param  string  $scoreLabel  Human-readable scale label (e.g. "Mulai Berkembang (MB)")
+     * @return array<string> Exactly 3 suggestion strings
      */
     public function generateFeedbackSuggestions(
         string $anakName,
@@ -66,11 +68,11 @@ PROMPT;
         $response = Http::withToken($this->apiKey)
             ->timeout(30)
             ->post("{$this->baseUrl}/chat/completions", [
-                'model'    => $this->model,
+                'model' => $this->model,
                 'messages' => [
                     ['role' => 'user', 'content' => $prompt],
                 ],
-                'max_tokens'  => 512,
+                'max_tokens' => 512,
                 'temperature' => 0.8,
             ]);
 
@@ -86,12 +88,12 @@ PROMPT;
     protected function throwApiError(Response $response): void
     {
         Log::warning('AI API request failed', [
-            'status'   => $response->status(),
-            'body'     => mb_substr($response->body(), 0, 2000),
+            'status' => $response->status(),
+            'body' => mb_substr($response->body(), 0, 2000),
             'base_url' => $this->baseUrl,
         ]);
 
-        throw new \RuntimeException('AI API error: HTTP ' . $response->status());
+        throw new \RuntimeException('AI API error: HTTP '.$response->status());
     }
 
     /**
@@ -200,11 +202,11 @@ PROMPT;
         $response = Http::withToken($this->apiKey)
             ->timeout(60)
             ->post("{$this->baseUrl}/chat/completions", [
-                'model'    => $this->model,
+                'model' => $this->model,
                 'messages' => [
                     ['role' => 'user', 'content' => $prompt],
                 ],
-                'max_tokens'  => 2048,
+                'max_tokens' => 2048,
                 'temperature' => 0.7,
             ]);
 
@@ -231,9 +233,9 @@ PROMPT;
         $response = Http::withToken($this->apiKey)
             ->timeout(60)
             ->post("{$this->baseUrl}/chat/completions", [
-                'model'       => $this->model,
-                'messages'    => $messages,
-                'max_tokens'  => $maxTokens,
+                'model' => $this->model,
+                'messages' => $messages,
+                'max_tokens' => $maxTokens,
                 'temperature' => 0.7,
             ]);
 
@@ -296,7 +298,7 @@ PROMPT;
         try {
             return $this->parsePersonaFields($content, $scope);
         } catch (\RuntimeException) {
-            $retryPrompt = $prompt . "\n\nPENTING: Balas HANYA JSON valid tanpa teks lain.";
+            $retryPrompt = $prompt."\n\nPENTING: Balas HANYA JSON valid tanpa teks lain.";
             $retryContent = $this->chatCompletion([
                 ['role' => 'user', 'content' => $retryPrompt],
             ], 1536);
@@ -359,6 +361,7 @@ PROMPT;
                     SekolahAiPersona::GENDER_LAKI_LAKI,
                     SekolahAiPersona::GENDER_NETRAL,
                 ], true) ? $gender : null;
+
                 continue;
             }
 
@@ -366,6 +369,7 @@ PROMPT;
                 $age = $decoded['age'] ?? null;
                 $age = is_numeric($age) ? (int) $age : null;
                 $result['age'] = ($age !== null && $age >= 18 && $age <= 80) ? $age : null;
+
                 continue;
             }
 

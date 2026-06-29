@@ -41,6 +41,6 @@ class BiayaBulananSiswa extends Model
 
     public function getBiayaBulananFormatted(): string
     {
-        return 'Rp ' . number_format($this->biaya_bulanan, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya_bulanan, 0, ',', '.');
     }
 }

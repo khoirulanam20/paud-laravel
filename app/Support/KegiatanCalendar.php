@@ -82,7 +82,7 @@ class KegiatanCalendar
             'kelas_name' => $k->kelas->name ?? '-',
             'pengajar_name' => $k->pengajar->name ?? '-',
             'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
-            'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
+            'photo_urls' => collect($k->photos ?? [])->map(fn ($p) => Storage::url($p))->all(),
             'pencapaians' => $k->pencapaians->map(function ($p) use ($k) {
                 $sekolahId = (int) ($k->sekolah_id ?? $p->anak?->sekolah_id ?? 0);
 
@@ -154,7 +154,7 @@ class KegiatanCalendar
             'title' => $k->title,
             'date' => self::formatDate($k),
             'description' => $k->description,
-            'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
+            'photo_urls' => collect($k->photos ?? [])->map(fn ($p) => Storage::url($p))->all(),
             'pengajar_name' => $k->pengajar->name ?? '-',
             'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
             'kelas_name' => $k->kelas->name ?? '-',
@@ -203,7 +203,7 @@ class KegiatanCalendar
             'kelas_name' => $k->kelas->name ?? '-',
             'pengajar_name' => $k->pengajar->name ?? '-',
             'pengajar_photo_url' => filled($k->pengajar?->photo) ? Storage::url($k->pengajar->photo) : null,
-            'photo_urls' => collect($k->photos ?? [])->map(fn($p) => Storage::url($p))->all(),
+            'photo_urls' => collect($k->photos ?? [])->map(fn ($p) => Storage::url($p))->all(),
             'pencapaians' => $k->pencapaians->map(function ($p) use ($k) {
                 $sekolahId = (int) ($k->sekolah_id ?? $p->anak?->sekolah_id ?? 0);
 

@@ -208,6 +208,7 @@ class BiayaBulananController extends Controller
 
             if ($biayaBulananVal === null || $biayaBulananVal === '') {
                 $siswaBiaya->update(['biaya_bulanan' => 0]);
+
                 continue;
             }
 

@@ -6,15 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kelas;
 use App\Models\Kesehatan;
-use Illuminate\Http\Request;
 use App\Support\PaginationPerPage;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class KesehatanController extends Controller
 {
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Anak::where('sekolah_id', $user->sekolah_id)->with(['kelas', 'kesehatans' => function($q) {
+        $query = Anak::where('sekolah_id', $user->sekolah_id)->with(['kelas', 'kesehatans' => function ($q) {
             $q->latest('tanggal_pemeriksaan')->limit(1);
         }]);
 
@@ -23,7 +24,7 @@ class KesehatanController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $anaks = $query->orderBy('name')->paginate(PaginationPerPage::resolve($request))->withQueryString();
@@ -64,8 +65,9 @@ class KesehatanController extends Controller
         $histories = Kesehatan::where('anak_id', $anak->id)
             ->orderBy('tanggal_pemeriksaan', 'desc')
             ->get()
-            ->map(function($q) {
-                $tanggal = \Carbon\Carbon::parse($q->tanggal_pemeriksaan);
+            ->map(function ($q) {
+                $tanggal = Carbon::parse($q->tanggal_pemeriksaan);
+
                 return [
                     'id' => $q->id,
                     'tanggal_pemeriksaan' => $tanggal->format('Y-m-d'),

@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\Cashflow;
 use App\Models\Rkas;
 use App\Models\RkasLine;
-use App\Models\RkasLineAnggaran;
 use App\Models\RkasRealisasi;
 use App\Models\SumberDana;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class RkasRealisasiService
@@ -75,7 +75,7 @@ class RkasRealisasiService
         return ['synced' => $synced, 'unallocated' => $unallocated];
     }
 
-    /** @return array{rows: \Illuminate\Support\Collection, sumberDanas: \Illuminate\Support\Collection, health: array} */
+    /** @return array{rows: Collection, sumberDanas: Collection, health: array} */
     public function buildLaporan(Rkas $rkas): array
     {
         $this->sync($rkas);

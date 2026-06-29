@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MenuMakanan extends Model
 {
@@ -24,7 +25,7 @@ class MenuMakanan extends Model
         return $this->belongsTo(Sekolah::class);
     }
 
-    public function votes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function votes(): HasMany
     {
         return $this->hasMany(MenuMakananVote::class);
     }

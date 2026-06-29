@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\AkuntansiSetting;
 use App\Models\BiayaBulananSiswa;
 use App\Models\Diskon;
 use App\Models\PembayaranBulanan;
-use App\Models\PembayaranBulananItem;
 use App\Models\Presensi;
-use App\Models\AkuntansiSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -123,7 +122,7 @@ class RekapBiayaService
                 continue;
             }
 
-            $key = $anak->id . '_' . $biaya->id;
+            $key = $anak->id.'_'.$biaya->id;
             $validKeys[] = $key;
 
             if (! $generateAll && ! in_array($key, $selectedKeys, true)) {
@@ -187,7 +186,7 @@ class RekapBiayaService
             // Accrual: buat jurnal saat generate (Piutang / Pendapatan)
             $setting = AkuntansiSetting::forSekolah($sekolahId);
             if ($setting->isAccrual() && $total > 0 && $pembayaran->wasRecentlyCreated) {
-                $akuntansiService = app(\App\Services\AkuntansiService::class);
+                $akuntansiService = app(AkuntansiService::class);
                 $akuntansiService->buatJurnalSaatGenerate($pembayaran, auth()->id() ?? 1);
             }
 
@@ -201,7 +200,7 @@ class RekapBiayaService
                 ->where('status', 'pending')
                 ->get()
                 ->each(function (PembayaranBulanan $pembayaran) use ($validKeys) {
-                    $key = $pembayaran->anak_id . '_' . $pembayaran->biaya_bulanan_sekolah_id;
+                    $key = $pembayaran->anak_id.'_'.$pembayaran->biaya_bulanan_sekolah_id;
                     if (! in_array($key, $validKeys, true)) {
                         $pembayaran->delete();
                     }

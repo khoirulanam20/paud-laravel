@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
+use App\View\Composers\TourComposer;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use App\View\Composers\TourComposer;
 
 class AppServiceProvider extends ServiceProvider
 {

@@ -7,6 +7,7 @@ use App\Models\Lembaga;
 use App\Models\Pengajar;
 use App\Models\Sekolah;
 use App\Models\SekolahAiPersona;
+use App\Models\SekolahAiToken;
 use App\Models\User;
 use App\Services\OrangTuaChatContextBuilder;
 use App\Support\AiPersonaScope;
@@ -105,9 +106,9 @@ class AiPersonaTest extends TestCase
             $response = $this->actingAs($fixtures['admin'])
                 ->post(route('admin.ai-persona.update'), [
                     'scope' => $scope,
-                    'name' => 'Persona ' . $scope,
+                    'name' => 'Persona '.$scope,
                     'role_title' => AiPersonaScope::defaultRoleTitle($scope),
-                    'description' => 'Deskripsi ' . $scope,
+                    'description' => 'Deskripsi '.$scope,
                     'gender' => 'perempuan',
                     'age' => 30,
                     'dialog_language' => 'Bahasa Indonesia',
@@ -125,7 +126,7 @@ class AiPersonaTest extends TestCase
         $this->assertDatabaseHas('sekolah_ai_personas', [
             'sekolah_id' => $fixtures['sekolah']->id,
             'scope' => AiPersonaScope::MONEV,
-            'name' => 'Persona ' . AiPersonaScope::MONEV,
+            'name' => 'Persona '.AiPersonaScope::MONEV,
             'is_active' => true,
         ]);
     }
@@ -188,7 +189,7 @@ class AiPersonaTest extends TestCase
     {
         $fixtures = $this->createFixtures();
 
-        \App\Models\SekolahAiToken::query()
+        SekolahAiToken::query()
             ->where('sekolah_id', $fixtures['sekolah']->id)
             ->update(['balance' => 0]);
 

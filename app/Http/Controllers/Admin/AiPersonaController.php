@@ -12,12 +12,12 @@ use App\Services\AiPersonaService;
 use App\Services\AiTokenService;
 use App\Support\AiChatDataSource;
 use App\Support\AiPersonaScope;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Support\PaginationPerPage;
 
 class AiPersonaController extends Controller
 {
@@ -109,7 +109,7 @@ class AiPersonaController extends Controller
 
         return redirect()
             ->route('admin.ai-persona.index', ['tab' => $scope])
-            ->with('success', 'Persona ' . AiPersonaScope::label($scope) . ' berhasil disimpan.');
+            ->with('success', 'Persona '.AiPersonaScope::label($scope).' berhasil disimpan.');
     }
 
     public function updateDataAccess(Request $request): RedirectResponse
@@ -155,7 +155,7 @@ class AiPersonaController extends Controller
                 SekolahAiTokenTransaction::TYPE_PERSONA,
                 auth()->user(),
                 ['scope' => $scope],
-                'Generate persona: ' . AiPersonaScope::label($scope),
+                'Generate persona: '.AiPersonaScope::label($scope),
                 fn () => $this->personaService->generate($sekolah, $scope, $request->input('brief'))
             );
         } catch (InsufficientAiTokensException $e) {

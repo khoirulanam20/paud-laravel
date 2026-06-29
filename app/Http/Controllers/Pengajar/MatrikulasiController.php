@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Pengajar;
 use App\Http\Controllers\Controller;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
-use Illuminate\Http\Request;
 use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
 
 class MatrikulasiController extends Controller
 {
@@ -19,7 +19,7 @@ class MatrikulasiController extends Controller
     {
         $sekolah_id = $this->getSekolahId();
         $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
-        
+
         return view('pengajar.matrikulasi.index', compact('matrikulasis'));
     }
 
@@ -72,7 +72,7 @@ class MatrikulasiController extends Controller
     {
         abort_if($matrikulasi->sekolah_id !== $this->getSekolahId(), 403);
         $matrikulasi->delete();
-        
+
         return redirect()->route('pengajar.matrikulasi.index')->with('success', 'Indikator Matrikulasi berhasil dihapus.');
     }
 }

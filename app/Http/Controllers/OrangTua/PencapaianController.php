@@ -8,10 +8,10 @@ use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
+use App\Support\PaginationPerPage;
 use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Support\PaginationPerPage;
 
 class PencapaianController extends Controller
 {

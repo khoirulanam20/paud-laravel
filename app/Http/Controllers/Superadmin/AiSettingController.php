@@ -8,10 +8,10 @@ use App\Models\Lembaga;
 use App\Services\AiTokenService;
 use App\Support\ActivityLogger;
 use App\Support\AiProvider;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
-use App\Support\PaginationPerPage;
 
 class AiSettingController extends Controller
 {
@@ -33,7 +33,7 @@ class AiSettingController extends Controller
         $lembagas = Lembaga::orderBy('name')->get();
         $lembaga_id = $request->integer('lembaga_id') ?: $lembagas->first()?->id;
 
-        if (!$lembaga_id) {
+        if (! $lembaga_id) {
             return view('superadmin.ai_setting.index', [
                 'lembagas' => $lembagas,
                 'lembaga_id' => null,
@@ -91,7 +91,7 @@ class AiSettingController extends Controller
 
             return response()->json([
                 'ok' => true,
-                'message' => 'Koneksi berhasil! Provider: ' . $aiSetting->providerLabel() . ' · Model: ' . ($aiSetting->ai_model ?? '-'),
+                'message' => 'Koneksi berhasil! Provider: '.$aiSetting->providerLabel().' · Model: '.($aiSetting->ai_model ?? '-'),
                 'sample' => $suggestions[0] ?? '',
             ]);
         } catch (\Throwable $e) {
@@ -117,7 +117,7 @@ class AiSettingController extends Controller
             'ai_api_key' => 'nullable|string|max:1000',
             'ai_base_url' => [
                 'nullable',
-                'required_if:ai_provider,' . AiProvider::CUSTOM,
+                'required_if:ai_provider,'.AiProvider::CUSTOM,
                 'url',
                 'max:500',
                 function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
