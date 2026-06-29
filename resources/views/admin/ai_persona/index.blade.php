@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto"
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
             activeTab: @js($activeTab),
             tokenBalance: @js($tokenBalance),
@@ -151,21 +151,23 @@
             </div>
         </div>
 
-        <div data-tour="admin-ai-persona-tabs" class="flex flex-wrap gap-2 mb-6">
-            @foreach(AiPersonaScope::labels() as $scope => $label)
-                <a href="{{ route('admin.ai-persona.index', ['tab' => $scope]) }}"
-                   class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === $scope ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
-                   @if($activeTab === $scope) style="background:#1A6B6B" @endif>
-                    {{ $label }}
-                </a>
-            @endforeach
-            @if(auth()->user()->hasRole('Admin Sekolah'))
-                <a href="{{ route('admin.ai-persona.index', ['tab' => AiPersonaScope::TAB_LOG_AI]) }}"
-                   class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === AiPersonaScope::TAB_LOG_AI ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
-                   @if($activeTab === AiPersonaScope::TAB_LOG_AI) style="background:#1A6B6B" @endif>
-                    Log AI
-                </a>
-            @endif
+        <div data-tour="admin-ai-persona-tabs" class="card p-4 mb-5">
+            <div class="flex flex-wrap gap-2">
+                @foreach(AiPersonaScope::labels() as $scope => $label)
+                    <a href="{{ route('admin.ai-persona.index', ['tab' => $scope]) }}"
+                       class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === $scope ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
+                       @if($activeTab === $scope) style="background:#1A6B6B" @endif>
+                        {{ $label }}
+                    </a>
+                @endforeach
+                @if(auth()->user()->hasRole('Admin Sekolah'))
+                    <a href="{{ route('admin.ai-persona.index', ['tab' => AiPersonaScope::TAB_LOG_AI]) }}"
+                       class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === AiPersonaScope::TAB_LOG_AI ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
+                       @if($activeTab === AiPersonaScope::TAB_LOG_AI) style="background:#1A6B6B" @endif>
+                        Log AI
+                    </a>
+                @endif
+            </div>
         </div>
 
         @if(auth()->user()->hasRole('Admin Sekolah') && $activeTab === AiPersonaScope::TAB_LOG_AI)
