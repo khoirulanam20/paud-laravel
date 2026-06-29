@@ -85,12 +85,11 @@ class AiSettingTest extends TestCase
         $response->assertSee('Konfigurasi AI Provider');
     }
 
-    public function test_custom_provider_rejects_http_base_url(): void
+    public function test_custom_provider_allows_http_base_url(): void
     {
         $fixtures = $this->createFixtures();
 
         $response = $this->actingAs($fixtures['user'])
-            ->from(route('superadmin.ai-setting.index', ['lembaga_id' => $fixtures['lembaga']->id]))
             ->post(route('superadmin.ai-setting.update'), [
                 'lembaga_id' => $fixtures['lembaga']->id,
                 'ai_provider' => 'custom',
@@ -99,8 +98,13 @@ class AiSettingTest extends TestCase
                 'ai_api_key' => 'secret-key',
             ]);
 
-        $response->assertRedirect(route('superadmin.ai-setting.index', ['lembaga_id' => $fixtures['lembaga']->id]));
-        $response->assertSessionHasErrors('ai_base_url');
+        $response->assertRedirect(route('superadmin.ai-setting.index', ['lembaga_id' => $fixtures['lembaga']->id, 'tab' => 'provider']));
+        $response->assertSessionHas('success');
+
+        $setting = AiSetting::where('lembaga_id', $fixtures['lembaga']->id)->first();
+        $this->assertNotNull($setting);
+        $this->assertSame('custom', $setting->ai_provider);
+        $this->assertSame('http://proxy.example.com/v1', $setting->ai_base_url);
     }
 
     public function test_superadmin_can_save_custom_provider_with_base_url(): void
