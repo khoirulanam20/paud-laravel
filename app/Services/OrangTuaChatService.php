@@ -74,7 +74,7 @@ class OrangTuaChatService
 
         $apiMessages[] = [
             'role'    => OrangTuaChatMessage::ROLE_USER,
-            'content' => $content,
+            'content' => "[USER MESSAGE START]\n" . $content . "\n[USER MESSAGE END]",
         ];
 
         try {

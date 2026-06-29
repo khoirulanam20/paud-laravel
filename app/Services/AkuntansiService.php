@@ -27,6 +27,12 @@ class AkuntansiService
             ? Akun::find($cashflow->akun_lawan_id)
             : ($cashflow->type === 'in' ? $setting->akunUntukIn : $setting->akunUntukOut);
 
+        if (! $kas || ! $counter) {
+            throw new \RuntimeException(
+                'Konfigurasi akuntansi belum lengkap. Pastikan akun kas dan counter telah dipilih.'
+            );
+        }
+
         $jurnal = DB::transaction(function () use ($cashflow, $kas, $counter) {
             $jurnal = Jurnal::create([
                 'sekolah_id' => $cashflow->sekolah_id,

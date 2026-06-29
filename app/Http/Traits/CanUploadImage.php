@@ -22,10 +22,15 @@ trait CanUploadImage
         $fullPath = $path . '/' . $filename;
         
         $imagePath = $file->getRealPath();
-        
-        // Get MIME type
-        $info = getimagesize($imagePath);
-        $mime = $info['mime'] ?? $file->getClientMimeType();
+
+        // Deteksi MIME dari konten file (bukan dari header/nama file)
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($imagePath);
+
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (! in_array($mime, $allowedMimes)) {
+            throw new \InvalidArgumentException('File bukan gambar yang valid.');
+        }
 
         $image = null;
 
@@ -33,7 +38,6 @@ trait CanUploadImage
         try {
             switch ($mime) {
                 case 'image/jpeg':
-                case 'image/jpg':
                     $image = imagecreatefromjpeg($imagePath);
                     break;
                 case 'image/png':
@@ -60,8 +64,8 @@ trait CanUploadImage
             $image = null;
         }
 
-        if (!$image) {
-            // Fallback for unsupported formats or errors
+        if (! $image) {
+            // Fallback untuk format GIF atau format yang tidak dapat diproses GD
             return $file->store($path, 'public');
         }
 
@@ -69,11 +73,16 @@ trait CanUploadImage
         ob_start();
         imagejpeg($image, null, $quality);
         $content = ob_get_clean();
-        
+
         imagedestroy($image);
 
-        // Store to public disk
-        Storage::disk('public')->put($fullPath, $content);
+        // Store to public disk dengan cleanup jika gagal
+        try {
+            Storage::disk('public')->put($fullPath, $content);
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($fullPath);
+            throw $e;
+        }
 
         return $fullPath;
     }

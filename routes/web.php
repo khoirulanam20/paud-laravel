@@ -310,7 +310,7 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('presensi', [App\Http\Controllers\OrangTua\PresensiController::class, 'index'])->name('presensi.index');
     Route::post('menu-makanan/vote', [MenuMakananVoteController::class, 'vote'])->name('menu-makanan.vote');
     Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
-    Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.messages.store');
+    Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:20,1')->name('chat.messages.store');
     Route::delete('chat', [ChatController::class, 'destroy'])->name('chat.destroy');
 
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');

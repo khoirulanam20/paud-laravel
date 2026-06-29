@@ -16,8 +16,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('monev:generate')->monthlyOn(1, '02:00');
-        $schedule->command('monev:finalize-stale')->hourly();
+        $schedule->command('monev:generate')->monthlyOn(1, '02:00')
+            ->onFailure(function () {
+                \Illuminate\Support\Facades\Log::error('Scheduled command monev:generate FAILED');
+            });
+        $schedule->command('monev:finalize-stale')->hourly()
+            ->onFailure(function () {
+                \Illuminate\Support\Facades\Log::error('Scheduled command monev:finalize-stale FAILED');
+            });
     })
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([

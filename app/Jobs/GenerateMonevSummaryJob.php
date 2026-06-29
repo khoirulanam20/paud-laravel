@@ -16,7 +16,9 @@ class GenerateMonevSummaryJob implements ShouldQueue
 
     public int $timeout = 120;
 
-    public int $tries = 1;
+    public int $tries = 3;
+
+    public int $backoff = 30;
 
     public function __construct(
         public string $generationId,

@@ -642,6 +642,12 @@ class MonevSummaryService
         ?int $kelasId = null
     ): MonevGeneration {
         $this->assertCanStartManualGeneration($by, $tahun, $bulan, $sekolahId, $kelasId);
+
+        $aiCheckId = $sekolahId ?? (int) $anaks->first()?->sekolah_id;
+        if ($aiCheckId && ! $this->resolveAiServiceForSekolah($aiCheckId)) {
+            throw new MonevManualGenerationException('API Key AI belum dikonfigurasi. Minta admin lembaga untuk mengisi Pengaturan AI.');
+        }
+
         $this->assertSufficientTokensForAnaks(
             $anaks,
             $this->resolveSekolahIdForTokenCheck($anaks, $sekolahId),
