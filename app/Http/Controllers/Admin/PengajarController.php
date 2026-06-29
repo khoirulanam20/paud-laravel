@@ -79,7 +79,7 @@ class PengajarController extends Controller
             $pengajar->kelas()->sync($request->kelas_id);
         }
 
-        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil ditambahkan. Password default: password123');
+        return redirect()->route('admin.pengajar.index')->with('success', 'Data Guru berhasil ditambahkan. Password default: password123');
     }
 
     public function update(Request $request, Pengajar $pengajar)
@@ -129,7 +129,7 @@ class PengajarController extends Controller
 
         $pengajar->kelas()->sync($request->kelas_id ?? []);
 
-        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil diperbarui.');
+        return redirect()->route('admin.pengajar.index')->with('success', 'Data Guru berhasil diperbarui.');
     }
 
     public function destroy(Pengajar $pengajar)
@@ -146,6 +146,6 @@ class PengajarController extends Controller
             $user->delete();
         }
 
-        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar dan akun login berhasil dihapus.');
+        return redirect()->route('admin.pengajar.index')->with('success', 'Data Guru dan akun login berhasil dihapus.');
     }
 }

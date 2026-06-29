@@ -107,15 +107,15 @@ return [
 
     'admin.pengajar.index' => tour_crud_modal_bundle(
         [
-            ['element' => '[data-tour="modal-create-section-data"]', 'title' => 'Data Pengajar', 'description' => 'Isi identitas, kontak, dan foto pengajar.'],
+            ['element' => '[data-tour="modal-create-section-data"]', 'title' => 'Data Guru', 'description' => 'Isi identitas, kontak, dan foto guru.'],
             ['element' => '[data-tour="modal-create-section-akun"]', 'title' => 'Penugasan Kelas & Akun', 'description' => 'Tentukan email login dan kelas yang diampu.'],
-            ['element' => '[data-tour="modal-create-submit"]', 'title' => 'Simpan', 'description' => 'Daftarkan pengajar setelah data lengkap.', 'side' => 'top'],
+            ['element' => '[data-tour="modal-create-submit"]', 'title' => 'Simpan', 'description' => 'Daftarkan guru setelah data lengkap.', 'side' => 'top'],
         ],
-        'Konfirmasi Hapus Pengajar',
-        'Nonaktifkan atau hapus akun pengajar.',
+        'Konfirmasi Hapus Guru',
+        'Nonaktifkan atau hapus akun guru.',
         [
-            0 => ['title' => 'Ubah Data Pengajar', 'description' => 'Perbarui identitas, kontak, dan foto pengajar.'],
-            1 => ['title' => 'Ubah Penugasan Kelas & Akun', 'description' => 'Ubah data pengajar dan penugasan kelas.'],
+            0 => ['title' => 'Ubah Data Guru', 'description' => 'Perbarui identitas, kontak, dan foto guru.'],
+            1 => ['title' => 'Ubah Penugasan Kelas & Akun', 'description' => 'Ubah data guru dan penugasan kelas.'],
         ],
     ),
 

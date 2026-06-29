@@ -44,6 +44,51 @@ return [
         ['element' => '[data-tour="lembaga-kritik-list"]', 'title' => 'Daftar Masukan', 'description' => 'Setiap kartu menampilkan pengirim, isi pesan, dan status tanggapan.', 'side' => 'top'],
     ],
 
+    'lembaga.activity-log.index' => [
+        ['element' => '[data-tour="nav-lembaga.activity-log.index"]', 'title' => 'Menu Log Aktivitas', 'description' => 'Pantau riwayat perubahan data di seluruh cabang sekolah.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Log Aktivitas', 'description' => 'Riwayat perubahan data berdasarkan scope lembaga Anda.', 'side' => 'bottom'],
+        ['element' => '[data-tour="activity-log-filter"]', 'title' => 'Filter', 'description' => 'Saring berdasarkan tanggal, event, atau kata kunci.', 'side' => 'bottom'],
+    ],
+
+    // ─── SUPERADMIN ────────────────────────────────────────────
+
+    'superadmin.dashboard' => [
+        ['element' => '[data-tour="nav-superadmin.dashboard"]', 'title' => 'Menu Dashboard', 'description' => 'Ringkasan kesehatan platform untuk superadmin.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Dashboard', 'description' => 'Ringkasan total lembaga, sekolah, pengguna, dan konfigurasi AI.', 'side' => 'bottom'],
+        ['element' => '[data-tour="superadmin-dashboard-stats"]', 'title' => 'Ringkasan', 'description' => 'Kartu ringkasan metrik utama platform.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.lembaga.index' => [
+        ['element' => '[data-tour="nav-superadmin.lembaga.index"]', 'title' => 'Menu Lembaga', 'description' => 'Kelola data lembaga/yayasan di platform.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Kelola Lembaga', 'description' => 'Tambah, edit, dan hapus lembaga.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.admin-lembaga.index' => [
+        ['element' => '[data-tour="nav-superadmin.admin-lembaga.index"]', 'title' => 'Menu Admin Lembaga', 'description' => 'Kelola akun admin lembaga.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Admin Lembaga', 'description' => 'Tambah, edit, dan hapus akun admin lembaga.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.sekolah.index' => [
+        ['element' => '[data-tour="nav-superadmin.sekolah.index"]', 'title' => 'Menu Sekolah', 'description' => 'Monitoring sekolah di seluruh platform.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Monitoring Sekolah', 'description' => 'Lihat daftar sekolah dan filter berdasarkan lembaga.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.cms.index' => [
+        ['element' => '[data-tour="nav-superadmin.cms.index"]', 'title' => 'Menu CMS Website', 'description' => 'Kelola konten website (banner, teks, gambar).', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'CMS Website', 'description' => 'Perbarui konten website dan simpan perubahan.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.users.index' => [
+        ['element' => '[data-tour="nav-superadmin.users.index"]', 'title' => 'Menu Superadmin', 'description' => 'Kelola akun superadmin.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Kelola Superadmin', 'description' => 'Tambah, edit, dan hapus akun superadmin.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.activity-log.index' => [
+        ['element' => '[data-tour="nav-superadmin.activity-log.index"]', 'title' => 'Menu Log Aktivitas', 'description' => 'Pantau audit log seluruh platform.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Log Aktivitas', 'description' => 'Riwayat perubahan data di seluruh scope.', 'side' => 'bottom'],
+        ['element' => '[data-tour="activity-log-filter"]', 'title' => 'Filter', 'description' => 'Saring berdasarkan tanggal, event, atau kata kunci.', 'side' => 'bottom'],
+    ],
+
     'superadmin.ai-setting.index' => [
         ['element' => '[data-tour="nav-superadmin.ai-setting.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Konfigurasi layanan AI dan token per lembaga dari sini.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan AI', 'description' => 'Atur provider, model, API key, dan saldo token per sekolah.', 'side' => 'bottom'],
@@ -203,17 +248,17 @@ return [
 
     'admin.pengajar.index' => array_merge(
         [
-            ['element' => '[data-tour="nav-admin.pengajar.index"]', 'title' => 'Menu Data Pengajar', 'description' => 'Kelola akun dan data guru/pengajar di sekolah.', 'side' => 'right'],
-            ['element' => '[data-tour="page-header"]', 'title' => 'Data Pengajar', 'description' => 'Daftar pengajar beserta jabatan, kelas, dan kontak.', 'side' => 'bottom'],
+            ['element' => '[data-tour="nav-admin.pengajar.index"]', 'title' => 'Menu Data Guru', 'description' => 'Kelola akun dan data guru di sekolah.', 'side' => 'right'],
+            ['element' => '[data-tour="page-header"]', 'title' => 'Data Guru', 'description' => 'Daftar guru beserta jabatan, kelas, dan kontak.', 'side' => 'bottom'],
         ],
         tour_table_actions(
             'admin-pengajar',
-            'Registrasi Pengajar',
-            'Daftarkan pengajar baru beserta akun login dan penugasan kelas.',
+            'Registrasi Guru',
+            'Daftarkan guru baru beserta akun login dan penugasan kelas.',
             'Edit',
-            'Ubah data pengajar dan penugasan kelas.',
+            'Ubah data guru dan penugasan kelas.',
             'Hapus',
-            'Nonaktifkan atau hapus akun pengajar.',
+            'Nonaktifkan atau hapus akun guru.',
         ),
     ),
 
@@ -221,7 +266,7 @@ return [
         ['element' => '[data-tour="nav-admin.presensi-guru.index"]', 'title' => 'Menu Presensi Guru', 'description' => 'Catat kehadiran pengajar setiap hari.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Presensi Guru', 'description' => 'Input absensi harian seluruh pengajar di sekolah.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-presensi-guru-date"]', 'title' => 'Pilih Tanggal', 'description' => 'Tentukan tanggal presensi yang ingin dicatat atau diubah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-presensi-guru-input-table"]', 'title' => 'Daftar Pengajar', 'description' => 'Tandai Hadir/Tidak Hadir dan isi keterangan, lalu simpan.', 'side' => 'top'],
+        ['element' => '[data-tour="admin-presensi-guru-input-table"]', 'title' => 'Daftar Guru', 'description' => 'Tandai Hadir/Tidak Hadir dan isi keterangan, lalu simpan.', 'side' => 'top'],
     ],
 
     'admin.sarana.index' => array_merge(
@@ -256,6 +301,13 @@ return [
         ),
     ),
 
+    'admin.akun.index' => [
+        ['element' => '[data-tour="nav-admin.akun.index"]', 'title' => 'Menu Kode Rekening & Akun', 'description' => 'Master akun untuk RKAS, cashflow, dan jurnal.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Kode Rekening & Akun', 'description' => 'Kelola master akun dan kode rekening sekolah.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-akun-filter-tabs"]', 'title' => 'Filter', 'description' => 'Saring akun berdasarkan kategori.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-akun-table"]', 'title' => 'Daftar Akun', 'description' => 'Tabel master akun yang digunakan oleh modul akuntansi.', 'side' => 'top'],
+    ],
+
     'admin.cashflow.index' => array_merge(
         [
             ['element' => '[data-tour="nav-admin.cashflow.index"]', 'title' => 'Menu Cashflow', 'description' => 'Catat pemasukan dan pengeluaran keuangan sekolah.', 'side' => 'right'],
@@ -272,6 +324,32 @@ return [
             'Hapus catatan transaksi yang salah input.',
         ),
     ),
+
+    'admin.jurnal.index' => [
+        ['element' => '[data-tour="nav-admin.jurnal.index"]', 'title' => 'Menu Jurnal Umum', 'description' => 'Lihat jurnal manual dan jurnal otomatis dari transaksi.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Jurnal Umum', 'description' => 'Daftar jurnal sekolah Anda.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-jurnal-table"]', 'title' => 'Daftar Jurnal', 'description' => 'Semua jurnal dan statusnya ditampilkan di tabel ini.', 'side' => 'top'],
+    ],
+
+    'admin.sumber-dana.index' => [
+        ['element' => '[data-tour="nav-admin.sumber-dana.index"]', 'title' => 'Menu Sumber Dana', 'description' => 'Kelola daftar sumber dana untuk RKAS.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Sumber Dana', 'description' => 'Tambah dan atur sumber dana sekolah (BOS, Komite, SPP, dll).', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-sumber-dana-table"]', 'title' => 'Daftar Sumber Dana', 'description' => 'Tabel sumber dana aktif/nonaktif.', 'side' => 'top'],
+    ],
+
+    'admin.rkas.index' => [
+        ['element' => '[data-tour="nav-admin.rkas.index"]', 'title' => 'Menu RKAS', 'description' => 'Kelola RKAS per tahun ajaran.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'RKAS', 'description' => 'Buat, edit, dan sinkronisasi RKAS.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-filter"]', 'title' => 'Tahun Ajaran', 'description' => 'Pilih tahun ajaran untuk melihat RKAS.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-table"]', 'title' => 'Daftar RKAS', 'description' => 'Daftar periode RKAS dan statusnya.', 'side' => 'top'],
+    ],
+
+    'admin.rkas.laporan' => [
+        ['element' => '[data-tour="nav-admin.rkas.laporan"]', 'title' => 'Menu Laporan RKAS', 'description' => 'Laporan komparasi RKAS dan cashflow.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Laporan RKAS', 'description' => 'Pilih periode lalu lihat komparasi RKAS vs realisasi.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-laporan-filter"]', 'title' => 'Filter Periode', 'description' => 'Pilih tahun ajaran dan semester.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-laporan-table"]', 'title' => 'Tabel Laporan', 'description' => 'Ringkasan komparasi RKAS dan realisasi.', 'side' => 'top'],
+    ],
 
     'admin.biaya-bulanan.index' => [
         ['element' => '[data-tour="nav-admin.biaya-bulanan.index"]', 'title' => 'Menu Biaya Bulanan', 'description' => 'Atur jenis biaya dan biaya bulanan per siswa sebelum generate tagihan.', 'side' => 'right'],
@@ -330,6 +408,30 @@ return [
         ['element' => '[data-tour="admin-ai-token-balance"]', 'title' => 'Saldo Token', 'description' => 'Lihat sisa token AI sekolah. Setiap generate memakai 1 token.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-ai-persona-tabs"]', 'title' => 'Tab Persona', 'description' => 'Pilih scope persona: chat orang tua, evaluasi pencapaian, atau monev.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-ai-persona-form"]', 'title' => 'Form Persona', 'description' => 'Tulis instruksi persona atau gunakan tombol Generate AI untuk membuatnya otomatis.', 'side' => 'top'],
+    ],
+
+    'admin.role.index' => [
+        ['element' => '[data-tour="nav-admin.role.index"]', 'title' => 'Menu Role', 'description' => 'Kelola role dan permission menu.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Manajemen Role', 'description' => 'Tambah/edit role dan atur izin akses.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-role-table"]', 'title' => 'Daftar Role', 'description' => 'Tabel role yang tersedia di sekolah.', 'side' => 'top'],
+    ],
+
+    'admin.pengguna.index' => [
+        ['element' => '[data-tour="nav-admin.pengguna.index"]', 'title' => 'Menu Pengguna', 'description' => 'Kelola akun pengguna internal (admin/pengajar/orang tua jika tersedia).', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Manajemen Pengguna', 'description' => 'Tambah/edit pengguna dan perannya.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-pengguna-table"]', 'title' => 'Daftar Pengguna', 'description' => 'Tabel pengguna yang terdaftar.', 'side' => 'top'],
+    ],
+
+    'admin.akuntansi-setting.index' => [
+        ['element' => '[data-tour="nav-admin.akuntansi-setting.index"]', 'title' => 'Menu Pengaturan Akuntansi', 'description' => 'Atur default akun untuk transaksi dan jurnal otomatis.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan Akuntansi', 'description' => 'Konfigurasi default akun dan mapping kebutuhan akuntansi.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-akuntansi-setting-form"]', 'title' => 'Form Pengaturan', 'description' => 'Ubah nilai lalu simpan perubahan.', 'side' => 'top'],
+    ],
+
+    'admin.activity-log.index' => [
+        ['element' => '[data-tour="nav-admin.activity-log.index"]', 'title' => 'Menu Log Aktivitas', 'description' => 'Audit log perubahan data di sekolah.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Log Aktivitas', 'description' => 'Riwayat perubahan data di sekolah Anda.', 'side' => 'bottom'],
+        ['element' => '[data-tour="activity-log-filter"]', 'title' => 'Filter', 'description' => 'Saring berdasarkan tanggal, event, atau kata kunci.', 'side' => 'bottom'],
     ],
 
     // ─── ADMIN KELAS ───────────────────────────────────────────

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center justify-between flex-wrap gap-3" data-tour="page-header">
             <div class="flex items-center gap-3">
                 <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;">
                     <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -16,7 +16,7 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-full mx-auto">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
 
-        <form method="GET" class="card p-4 mb-5 flex flex-wrap gap-3 items-end">
+        <form method="GET" class="card p-4 mb-5 flex flex-wrap gap-3 items-end" data-tour="admin-rkas-laporan-filter">
             <div>
                 <label class="input-label">Tahun Ajaran</label>
                 <select name="tahun_ajaran" class="input-field text-sm">
@@ -52,7 +52,7 @@
                     <p class="section-subtitle">Anggaran vs Realisasi per sumber dana</p>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="data-table text-xs">
+                    <table class="data-table text-xs" data-tour="admin-rkas-laporan-table">
                         <thead>
                             <tr>
                                 <th rowspan="2">Kode</th>

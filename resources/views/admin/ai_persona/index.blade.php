@@ -95,6 +95,7 @@
                 }
             }
          }">
+        <x-settings-tabs />
 
         @if(session('success'))
             <div class="alert-success mb-5">

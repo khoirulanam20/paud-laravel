@@ -70,7 +70,7 @@
                             <span class="font-medium">Data Anak & Ortu</span>
                         </a>
                         <a href="{{ route('admin.pengajar.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
-                            <span class="font-medium">Data Pengajar</span>
+                            <span class="font-medium">Data Guru</span>
                         </a>
                         <a href="{{ route('admin.sarana.index') }}" class="p-4 border border-slate-200 rounded-lg hover:border-slate-900 transition flex flex-col items-center justify-center text-center">
                             <span class="font-medium">Sarana Prasarana</span>

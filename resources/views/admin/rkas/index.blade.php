@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center justify-between flex-wrap gap-3" data-tour="page-header">
             <div class="flex items-center gap-3">
                 <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;">
                     <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -19,7 +19,7 @@
 
         <div class="card overflow-hidden mb-6">
             <div class="px-6 py-4 flex flex-wrap gap-3 justify-between items-center border-b" style="border-color:rgba(0,0,0,0.06);">
-                <form method="GET" class="flex gap-2 items-center">
+                <form method="GET" class="flex gap-2 items-center" data-tour="admin-rkas-filter">
                     <label class="text-sm font-semibold" style="color:#9E9790;">Tahun Ajaran</label>
                     <select name="tahun_ajaran" class="input-field text-sm" onchange="this.form.submit()">
                         @foreach($tahunOptions as $ta)
@@ -29,7 +29,7 @@
                 </form>
                 <button @click="showCreateModal=true" class="btn-primary">+ Buat RKAS</button>
             </div>
-            <table class="data-table">
+            <table class="data-table" data-tour="admin-rkas-table">
                 <thead><tr><th>Periode</th><th>Status</th><th class="text-center">Baris</th><th>Sync Terakhir</th><th class="text-right">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($rkasList as $rkas)

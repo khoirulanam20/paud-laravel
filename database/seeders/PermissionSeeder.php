@@ -27,7 +27,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'menu.monev', 'label' => 'Monev'],
             ],
             'Lembaga & Guru' => [
-                ['name' => 'menu.data-pengajar', 'label' => 'Data Pengajar'],
+                ['name' => 'menu.data-pengajar', 'label' => 'Data Guru'],
                 ['name' => 'menu.presensi-guru', 'label' => 'Presensi Guru'],
                 ['name' => 'menu.sarana', 'label' => 'Sarana'],
                 ['name' => 'menu.menu-makanan', 'label' => 'Menu Makanan'],

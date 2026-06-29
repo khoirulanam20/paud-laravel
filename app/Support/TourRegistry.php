@@ -26,7 +26,19 @@ class TourRegistry
             return [];
         }
 
-        return self::all()[$route] ?? [];
+        $steps = self::all()[$route] ?? [];
+
+        while ($steps !== []) {
+            $element = $steps[0]['element'] ?? null;
+            if (is_string($element) && str_contains($element, 'data-tour="nav-')) {
+                array_shift($steps);
+                continue;
+            }
+
+            break;
+        }
+
+        return $steps;
     }
 
     /**

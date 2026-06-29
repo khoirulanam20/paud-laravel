@@ -91,6 +91,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/sekolah', [ProfileController::class, 'editSekolah'])->name('profile.sekolah.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -137,6 +138,26 @@ Route::middleware(['auth', 'role:Lembaga', 'admin.activity'])->prefix('lembaga')
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('pengaturan', function (\Illuminate\Http\Request $request) {
+        $user = $request->user();
+
+        $targets = [
+            'menu.role' => 'admin.role.index',
+            'menu.pengguna' => 'admin.pengguna.index',
+            'menu.log-aktivitas' => 'admin.activity-log.index',
+            'menu.setting-akuntansi' => 'admin.akuntansi-setting.index',
+            'menu.pengaturan-ai' => 'admin.ai-persona.index',
+        ];
+
+        foreach ($targets as $perm => $route) {
+            if ($user?->can($perm)) {
+                return redirect()->route($route);
+            }
+        }
+
+        abort(403);
+    })->name('settings');
+
     Route::get('monev', [AdminMonevController::class, 'index'])->name('monev.index');
     Route::post('monev/generate', [AdminMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
     Route::post('monev/bulk-generate', [AdminMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');

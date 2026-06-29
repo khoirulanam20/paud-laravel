@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -20,6 +20,7 @@
             openEdit(user) { this.editData = { id: user.id, name: user.name, email: user.email, role: user.role }; this.showEditModal = true; },
             openDelete(user) { this.deleteData = { id: user.id, name: user.name }; this.showDeleteModal = true; },
          }">
+        <x-settings-tabs />
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -50,7 +51,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="data-table w-full">
+                <table class="data-table w-full" data-tour="admin-pengguna-table">
                     <thead>
                         <tr>
                             <th>#</th>

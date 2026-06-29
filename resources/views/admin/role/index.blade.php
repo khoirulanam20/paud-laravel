@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -38,6 +38,7 @@
                 return groupPerms.some(p => this.permissionChecks[p]) && !this.groupAllChecked(groupPerms);
             }
          }">
+        <x-settings-tabs />
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -68,7 +69,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="data-table w-full">
+                <table class="data-table w-full" data-tour="admin-role-table">
                     <thead>
                         <tr>
                             <th>#</th>

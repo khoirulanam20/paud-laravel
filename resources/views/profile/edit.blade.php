@@ -1,8 +1,15 @@
 <x-app-layout>
+    @php
+        $profileMode = $profileMode ?? 'akun';
+        $isSchoolAdmin = $user->hasRole('Admin Sekolah') || $user->hasRole('Lembaga');
+        $pageTitle = $profileMode === 'sekolah'
+            ? 'Profil Sekolah'
+            : ($isSchoolAdmin ? 'Profil Admin' : 'Profil Akun Saya');
+    @endphp
     <x-slot name="header">
         <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
-            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Profil Akun Saya</h2>
+            <h2 class="font-bold text-xl" style="color:#2C2C2C;">{{ $pageTitle }}</h2>
         </div>
     </x-slot>
 
@@ -16,53 +23,65 @@
             <div class="alert-danger"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>
         @endif
 
-        {{-- SECTION: Akun Login --}}
-        <div class="card" data-tour="profile-account">
-            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Informasi Akun Login</h3>
-                    <p class="section-subtitle">Nama tampilan dan email untuk masuk ke sistem.</p>
+        @if($profileMode !== 'sekolah')
+            {{-- SECTION: Akun Login --}}
+            <div class="card" data-tour="profile-account">
+                <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
+                    <div>
+                        <h3 class="section-title">Informasi Akun Login</h3>
+                        <p class="section-subtitle">Nama tampilan dan email untuk masuk ke sistem.</p>
+                    </div>
+                    @php
+                        $akunFotoPath = filled(optional($user->pengajar)->photo)
+                            ? $user->pengajar->photo
+                            : ($user->anaks->first(fn ($a) => filled($a->photo))?->photo);
+                    @endphp
+                    <x-foto-profil :path="$akunFotoPath" :name="$user->name" size="lg" rounded="full" />
                 </div>
-                @php
-                    $akunFotoPath = filled(optional($user->pengajar)->photo)
-                        ? $user->pengajar->photo
-                        : ($user->anaks->first(fn ($a) => filled($a->photo))?->photo);
-                @endphp
-                <x-foto-profil :path="$akunFotoPath" :name="$user->name" size="lg" rounded="full" />
+                <form method="post" action="{{ route('profile.update') }}" class="px-6 py-5 space-y-4">
+                    @csrf @method('patch')
+                    <div><label class="input-label">Nama Tampilan</label><input type="text" name="name" value="{{ old('name', $user->name) }}" required class="input-field"></div>
+                    <div><label class="input-label">Alamat Email</label><input type="email" name="email" value="{{ old('email', $user->email) }}" required class="input-field"></div>
+                    @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
+                        <p class="text-xs text-yellow-600">Email Anda belum diverifikasi.</p>
+                    @endif
+                    <div class="flex justify-end"><button type="submit" class="btn-primary">{{ $isSchoolAdmin ? 'Simpan Profil Admin' : 'Simpan Akun' }}</button></div>
+                </form>
             </div>
-            <form method="post" action="{{ route('profile.update') }}" class="px-6 py-5 space-y-4">
-                @csrf @method('patch')
-                <div><label class="input-label">Nama Tampilan</label><input type="text" name="name" value="{{ old('name', $user->name) }}" required class="input-field"></div>
-                <div><label class="input-label">Alamat Email</label><input type="email" name="email" value="{{ old('email', $user->email) }}" required class="input-field"></div>
-                @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
-                    <p class="text-xs text-yellow-600">Email Anda belum diverifikasi.</p>
-                @endif
-                <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Akun</button></div>
-            </form>
-        </div>
+        @endif
 
-        {{-- SECTION: Profil Sekolah --}}
-        @if($user->hasRole('Admin Sekolah') && $sekolah)
-        <div class="card" data-tour="profile-role">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">Profil Sekolah</h3>
-                <p class="section-subtitle">Informasi resmi sekolah yang Anda kelola.</p>
-            </div>
-            <form method="post" action="{{ route('profile.sekolah.update') }}" class="px-6 py-5 space-y-4">
-                @csrf @method('patch')
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2"><label class="input-label">Nama Sekolah</label><input type="text" name="name" value="{{ $sekolah->name }}" required class="input-field"></div>
-                    <div><label class="input-label">NISN</label><input type="text" name="nisn" value="{{ $sekolah->nisn }}" class="input-field"></div>
-                    <div><label class="input-label">Kontak / HP</label><input type="text" name="phone" value="{{ $sekolah->phone }}" class="input-field"></div>
-                    <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="address" class="input-field" rows="3">{{ old('address', $sekolah->address) }}</textarea></div>
+        @if($profileMode === 'sekolah')
+            {{-- SECTION: Profil Sekolah --}}
+            @if(($user->hasRole('Admin Sekolah') || $user->hasRole('Lembaga')) && $sekolah)
+            <div class="card" data-tour="profile-role">
+                <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
+                    <div>
+                        <h3 class="section-title">Profil Sekolah</h3>
+                        <p class="section-subtitle">Informasi resmi sekolah yang Anda kelola.</p>
+                    </div>
+                    <x-foto-profil :path="$sekolah->photo" :name="$sekolah->name" size="xl" rounded="full" />
                 </div>
-                <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Profil Sekolah</button></div>
-            </form>
-        </div>
+                <form method="post" action="{{ route('profile.sekolah.update') }}" enctype="multipart/form-data" class="px-6 py-5 space-y-4">
+                    @csrf @method('patch')
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2"><label class="input-label">Nama Sekolah</label><input type="text" name="name" value="{{ old('name', $sekolah->name) }}" required class="input-field"></div>
+                        <div><label class="input-label">NISN</label><input type="text" name="nisn" value="{{ old('nisn', $sekolah->nisn) }}" class="input-field"></div>
+                        <div><label class="input-label">Kontak / HP</label><input type="text" name="phone" value="{{ old('phone', $sekolah->phone) }}" class="input-field"></div>
+                        <div class="col-span-2">
+                            <label class="input-label">Koordinat Lokasi (Opsional)</label>
+                            <input type="text" name="location_coordinate" value="{{ old('location_coordinate', $sekolah->location_coordinate) }}" class="input-field" placeholder="-6.200000, 106.816666">
+                        </div>
+                        <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="address" class="input-field" rows="3">{{ old('address', $sekolah->address) }}</textarea></div>
+                        <div class="col-span-2"><label class="input-label">Foto/Logo Sekolah (Opsional)</label><input type="file" id="photo-sekolah" name="photo" accept="image/*" class="input-field py-1.5 text-xs"></div>
+                    </div>
+                    <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Profil Sekolah</button></div>
+                </form>
+            </div>
+            @endif
         @endif
 
         {{-- SECTION: Profil Pengajar / Wali Kelas --}}
-        @if(($user->hasRole('Pengajar') || $user->hasRole('Wali Kelas')) && $pengajar)
+        @if($profileMode !== 'sekolah' && ($user->hasRole('Pengajar') || $user->hasRole('Wali Kelas')) && $pengajar)
         <div class="card" data-tour="profile-role">
             <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
                 <div>
@@ -96,7 +115,7 @@
         @endif
 
         {{-- SECTION: Profil Wali Murid --}}
-        @if($user->hasRole('Orang Tua') && $anaks && $anaks->count() > 0)
+        @if($profileMode !== 'sekolah' && $user->hasRole('Orang Tua') && $anaks && $anaks->count() > 0)
         @php
             $waliRef = $anaks->sortByDesc('updated_at')->first();
         @endphp
@@ -225,22 +244,24 @@
         </div>
         @endif
 
-        {{-- SECTION: Ganti Password --}}
-        <div class="card" data-tour="profile-security">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">Ganti Password</h3>
-                <p class="section-subtitle">Password default adalah "password123" silahkan ganti password setelah login pertama kali.</p>
-            </div>
-            <form method="post" action="{{ route('password.update') }}" class="px-6 py-5 space-y-4">
-                @csrf @method('put')
-                <div><label class="input-label">Password Saat Ini</label><input type="password" name="current_password" class="input-field" autocomplete="current-password"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="input-label">Password Baru</label><input type="password" name="password" class="input-field" autocomplete="new-password"></div>
-                    <div><label class="input-label">Konfirmasi Password</label><input type="password" name="password_confirmation" class="input-field" autocomplete="new-password"></div>
+        @if($profileMode !== 'sekolah')
+            {{-- SECTION: Ganti Password --}}
+            <div class="card" data-tour="profile-security">
+                <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                    <h3 class="section-title">Ganti Password</h3>
+                    <p class="section-subtitle">Password default adalah "password123" silahkan ganti password setelah login pertama kali.</p>
                 </div>
-                <div class="flex justify-end"><button type="submit" class="btn-primary">Ganti Password</button></div>
-            </form>
-        </div>
+                <form method="post" action="{{ route('password.update') }}" class="px-6 py-5 space-y-4">
+                    @csrf @method('put')
+                    <div><label class="input-label">Password Saat Ini</label><input type="password" name="current_password" class="input-field" autocomplete="current-password"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="input-label">Password Baru</label><input type="password" name="password" class="input-field" autocomplete="new-password"></div>
+                        <div><label class="input-label">Konfirmasi Password</label><input type="password" name="password_confirmation" class="input-field" autocomplete="new-password"></div>
+                    </div>
+                    <div class="flex justify-end"><button type="submit" class="btn-primary">Ganti Password</button></div>
+                </form>
+            </div>
+        @endif
 
     </div>
 
@@ -265,6 +286,11 @@
             const photoPengajar = document.getElementById('photo-pengajar');
             if (photoPengajar) {
                 photoPengajar.addEventListener('change', function() { handleCompress(this); });
+            }
+
+            const photoSekolah = document.getElementById('photo-sekolah');
+            if (photoSekolah) {
+                photoSekolah.addEventListener('change', function() { handleCompress(this); });
             }
 
             @if($user->hasRole('Orang Tua') && $anaks)

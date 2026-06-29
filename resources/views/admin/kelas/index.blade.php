@@ -146,7 +146,7 @@
                         <div>
                             <label class="input-label">Tentukan Wali Kelas</label>
                             <select name="wali_kelas_id" x-model="editData.wali_id" class="input-field @error('wali_kelas_id') border-red-500 @enderror">
-                                <option value="">— Pilih Pengajar —</option>
+                                <option value="">— Pilih Guru —</option>
                                 @foreach($pengajars as $p)
                                     <template x-if="editData.pengajar_ids && editData.pengajar_ids.includes({{ $p->id }})">
                                         <option value="{{ $p->id }}">{{ $p->name }}</option>
@@ -155,10 +155,10 @@
                             </select>
                             @error('wali_kelas_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                             <div class="mt-1.5 p-2 rounded-lg bg-teal-50 border border-teal-100" x-show="editData.pengajar_ids && editData.pengajar_ids.length > 0">
-                                <p class="text-[10px] text-teal-800">Hanya menampilkan pengajar yang terdaftar di kelas ini.</p>
+                                <p class="text-[10px] text-teal-800">Hanya menampilkan guru yang terdaftar di kelas ini.</p>
                             </div>
                             <div class="mt-1.5 p-2 rounded-lg bg-red-50 border border-red-100" x-show="!editData.pengajar_ids || editData.pengajar_ids.length === 0">
-                                <p class="text-[10px] text-red-700">Belum ada pengajar di kelas ini. Tambahkan pengajar di menu <b>Data Pengajar</b> dulu.</p>
+                                <p class="text-[10px] text-red-700">Belum ada guru di kelas ini. Tambahkan guru di menu <b>Data Guru</b> dulu.</p>
                             </div>
                         </div>
 

@@ -19,9 +19,23 @@
                 Ulangi panduan halaman
             </button>
             @endif -->
-            <x-dropdown-link :href="route('profile.edit')">
-                Profil Saya
-            </x-dropdown-link>
+            @if(Auth::user()->hasRole('Admin Sekolah') || Auth::user()->hasRole('Lembaga'))
+                @php
+                    $hasProfileSekolahRoute = \Illuminate\Support\Facades\Route::has('profile.sekolah.edit');
+                @endphp
+                <x-dropdown-link :href="route('profile.edit')">
+                    Profil Admin
+                </x-dropdown-link>
+                @if($hasProfileSekolahRoute)
+                    <x-dropdown-link :href="route('profile.sekolah.edit')">
+                        Profil Sekolah
+                    </x-dropdown-link>
+                @endif
+            @else
+                <x-dropdown-link :href="route('profile.edit')">
+                    Profil Saya
+                </x-dropdown-link>
+            @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <x-dropdown-link :href="route('logout')"

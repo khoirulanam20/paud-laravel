@@ -18,8 +18,11 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-5">
+        @if(request()->routeIs('admin.activity-log.*'))
+            <x-settings-tabs />
+        @endif
         <div class="card p-4">
-            <form method="GET" class="flex flex-wrap gap-3 items-end">
+            <form method="GET" class="flex flex-wrap gap-3 items-end" data-tour="activity-log-filter">
                 <div>
                     <label class="input-label">Dari</label>
                     <input type="date" name="from" value="{{ request('from') }}" class="input-field">

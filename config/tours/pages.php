@@ -12,10 +12,17 @@ return [
     ],
 
     'profile.edit' => [
+        ['element' => '[data-tour="nav-profile.edit"]', 'title' => 'Menu Profil Admin', 'description' => 'Kelola profil akun login Anda.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Profil Akun', 'description' => 'Kelola informasi login dan profil pribadi Anda.', 'side' => 'bottom'],
         ['element' => '[data-tour="profile-account"]', 'title' => 'Informasi Akun', 'description' => 'Ubah nama tampilan dan alamat email.', 'side' => 'bottom'],
         ['element' => '[data-tour="profile-role"]', 'title' => 'Profil Peran', 'description' => 'Data tambahan sesuai peran (sekolah, pengajar, orang tua).', 'side' => 'top'],
         ['element' => '[data-tour="profile-security"]', 'title' => 'Keamanan', 'description' => 'Ganti kata sandi untuk menjaga keamanan akun.', 'side' => 'top'],
+    ],
+
+    'profile.sekolah.edit' => [
+        ['element' => '[data-tour="nav-profile.sekolah.edit"]', 'title' => 'Menu Profil Sekolah', 'description' => 'Kelola identitas sekolah (NISN, alamat, koordinat, dan logo).', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Profil Sekolah', 'description' => 'Lengkapi informasi sekolah yang ditampilkan di sistem.', 'side' => 'bottom'],
+        ['element' => '[data-tour="profile-role"]', 'title' => 'Form Profil Sekolah', 'description' => 'Isi data sekolah lalu simpan perubahan.', 'side' => 'top'],
     ],
 
     'admin.presensi.rekap' => [
@@ -41,13 +48,13 @@ return [
     ],
 
     'admin.kegiatan-rutin.index' => [
-        ['element' => '[data-tour="nav-admin.kegiatan-rutin.index"]', 'title' => 'Menu Kegiatan Rutin', 'description' => 'Kelola pencatatan kegiatan rutin seluruh kelas.', 'side' => 'right'],
+        ['element' => '[data-tour="nav-admin.master-kegiatan-rutin.index"]', 'title' => 'Menu Kegiatan Rutin', 'description' => 'Kelola pencatatan kegiatan rutin seluruh kelas.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Kegiatan Rutin', 'description' => 'Pantau dan input kegiatan harian siswa.', 'side' => 'bottom'],
         ['element' => '[data-tour="kegiatan-rutin-list"]', 'title' => 'Daftar Siswa', 'description' => 'Pilih siswa untuk input atau lihat riwayat kegiatan rutin.', 'side' => 'top'],
     ],
 
     'pengajar.kegiatan-rutin.index' => [
-        ['element' => '[data-tour="nav-pengajar.kegiatan-rutin.index"]', 'title' => 'Menu Input Rutin', 'description' => 'Catat pencapaian kegiatan rutin harian siswa.', 'side' => 'right'],
+        ['element' => '[data-tour="nav-pengajar.master-kegiatan-rutin.index"]', 'title' => 'Menu Input Rutin', 'description' => 'Catat pencapaian kegiatan rutin harian siswa.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Update Pencapaian Rutin', 'description' => 'Input perkembangan harian siswa di kelas Anda.', 'side' => 'bottom'],
         ['element' => '[data-tour="kegiatan-rutin-list"]', 'title' => 'Daftar Siswa', 'description' => 'Klik Input untuk mencatat atau Detail untuk melihat riwayat.', 'side' => 'top'],
     ],

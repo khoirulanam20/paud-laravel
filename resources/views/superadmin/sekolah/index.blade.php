@@ -1,5 +1,9 @@
 <x-app-layout>
-    <x-slot name="header"><h2 class="font-bold text-xl" style="color:#2C2C2C;">Monitoring Sekolah</h2></x-slot>
+    <x-slot name="header">
+        <div class="flex items-center gap-3" data-tour="page-header">
+            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Monitoring Sekolah</h2>
+        </div>
+    </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <form method="GET" class="mb-6 flex flex-wrap gap-3 items-end">
             <div>

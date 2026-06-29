@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
@@ -25,7 +25,7 @@
                 <button @click="showCreateModal=true" class="btn-primary">+ Tambah Akun</button>
             </div>
 
-            <div class="px-6 py-3 border-b flex flex-wrap gap-2" style="border-color:rgba(0,0,0,0.06);">
+            <div class="px-6 py-3 border-b flex flex-wrap gap-2" data-tour="admin-akun-filter-tabs" style="border-color:rgba(0,0,0,0.06);">
                 @foreach(['all' => 'Semua', 'sistem' => 'Sistem', 'belanja' => 'Belanja', 'pendapatan' => 'Pendapatan'] as $key => $label)
                     <a href="{{ route('admin.akun.index', ['filter' => $key, 'q' => request('q')]) }}"
                        class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ $filter === $key ? 'btn-primary' : 'btn-secondary' }}">{{ $label }}</a>
@@ -38,7 +38,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="data-table">
+                <table class="data-table" data-tour="admin-akun-table">
                     <thead>
                         <tr>
                             <th>Kode</th>

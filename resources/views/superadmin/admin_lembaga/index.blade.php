@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Kelola Admin Lembaga</h2>
         </div>
     </x-slot>
