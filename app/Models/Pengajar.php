@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pengajar extends Model
 {
@@ -37,5 +38,10 @@ class Pengajar extends Model
     public function kelas()
     {
         return $this->belongsToMany(Kelas::class, 'kelas_pengajar');
+    }
+
+    public function waliKelas(): HasMany
+    {
+        return $this->hasMany(Kelas::class, 'wali_kelas_id');
     }
 }

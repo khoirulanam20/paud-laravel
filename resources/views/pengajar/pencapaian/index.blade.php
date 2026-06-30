@@ -57,8 +57,12 @@
                 'display_label' => $a->nickname ? $a->name . ' (' . $a->nickname . ')' : $a->name,
             ];
         }
+        $kelasOptions = $availableKelas
+            ->map(fn ($kelas) => ['id' => $kelas->id, 'name' => $kelas->name])
+            ->values()
+            ->all();
         $flags = JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
-        $payloadJson = json_encode(['kegiatanData' => $kegiatanData, 'anakMap' => $anakMap, 'editBundles' => $editBundles], $flags);
+        $payloadJson = json_encode(['kegiatanData' => $kegiatanData, 'anakMap' => $anakMap, 'editBundles' => $editBundles, 'kelasOptions' => $kelasOptions], $flags);
         if ($payloadJson === false) { $payloadJson = '{}'; }
     @endphp
 
@@ -69,7 +73,7 @@
             skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
-            selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
+            selectedKelasId: '', selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
             editBundleKey: null, editNilai: {}, editCatatan: {}, createNilai: {}, createCatatan: {},
             isCompressing: false, compressedFile: null,
             aiLoading: {}, aiSuggestions: {},
@@ -140,6 +144,13 @@
             get kegiatanData() { return this.payload.kegiatanData || {}; },
             get anakMap() { return this.payload.anakMap || {}; },
             get editBundles() { return this.payload.editBundles || {}; },
+            get kelasOptions() { return this.payload.kelasOptions || []; },
+            get filteredAnaks() {
+                const items = Object.values(this.anakMap);
+                if (this.kelasOptions.length <= 1) return items;
+                if (!this.selectedKelasId) return [];
+                return items.filter(anak => String(anak.kelas_id) === String(this.selectedKelasId));
+            },
             get filteredKegiatans() {
                 if (!this.selectedAnakId) return [];
                 const anakKelas = this.anakMap[this.selectedAnakId]?.kelas_id;
@@ -158,6 +169,7 @@
                 (this.matrikulasiOptions || []).forEach(o => { this.createNilai[String(o.id)] = ''; this.createCatatan[String(o.id)] = ''; });
             },
             openCreateModal() {
+                this.selectedKelasId = this.kelasOptions.length === 1 ? String(this.kelasOptions[0].id) : '';
                 this.selectedAnakId = ''; this.selectedKegiatanId = '';
                 this.createNilai = {}; this.createCatatan = {}; this.aiSuggestions = {};
                 this.showCreateModal = true;
@@ -400,14 +412,25 @@
                     @if($filterAspekRaw !== '')<input type="hidden" name="aspek" value="{{ $filterAspekRaw }}">@endif
                     <div class="modal-header"><h3 class="section-title">Rekam Pencapaian</h3></div>
                     <div class="modal-body space-y-4">
+                        <div x-show="kelasOptions.length > 1">
+                            <label class="input-label">Kelas <span class="text-red-500">*</span></label>
+                            <select class="input-field" x-model="selectedKelasId" @change="selectedAnakId = ''; selectedKegiatanId = ''; resetCreateMatrices()">
+                                <option value="">— Pilih Kelas —</option>
+                                <template x-for="kelas in kelasOptions" :key="kelas.id">
+                                    <option :value="kelas.id" x-text="kelas.name"></option>
+                                </template>
+                            </select>
+                            <p class="text-xs mt-1.5" style="color:#6B6560;">Pilih kelas dulu untuk mempermudah penyaringan siswa saat guru mengampu lebih dari satu kelas.</p>
+                        </div>
                         <div data-tour="modal-create-section-siswa">
                             <label class="input-label">Target Siswa <span class="text-red-500">*</span></label>
-                            <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''">
+                            <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''" :disabled="kelasOptions.length > 1 && !selectedKelasId">
                                 <option value="">— Pilih Siswa —</option>
-                                @foreach($anaks as $a)
-                                    <option value="{{ $a->id }}">{{ $a->name }}@if($a->nickname) ({{ $a->nickname }})@endif</option>
-                                @endforeach
+                                <template x-for="anak in filteredAnaks" :key="anak.id">
+                                    <option :value="anak.id" x-text="anak.display_label"></option>
+                                </template>
                             </select>
+                            <p class="text-xs mt-1.5" style="color:#9E9790;" x-show="kelasOptions.length > 1 && !selectedKelasId">Pilih kelas terlebih dahulu.</p>
                             <p class="text-xs mt-1.5" style="color:#6B6560;" x-show="selectedAnakId && anakMap[selectedAnakId]?.nickname">
                                 <span class="font-semibold">Nama panggilan:</span>
                                 <span x-text="anakMap[selectedAnakId]?.nickname"></span>
