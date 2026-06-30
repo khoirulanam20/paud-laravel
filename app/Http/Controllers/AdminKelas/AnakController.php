@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AdminKelas;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
+use App\Models\Kelas;
 use App\Models\Pengajar;
 use App\Models\User;
 use App\Support\PaginationPerPage;
@@ -20,7 +21,7 @@ class AnakController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelas = $pengajar->kelas;
+        $kelas = Kelas::where('wali_kelas_id', $pengajar->id)->orderBy('name')->get();
         $kelasIds = $kelas->pluck('id')->toArray();
 
         $query = Anak::whereIn('kelas_id', $kelasIds)->with('kelas')->orderBy('name');
@@ -36,7 +37,7 @@ class AnakController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
         abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
 
@@ -62,7 +63,7 @@ class AnakController extends Controller
 
         $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
         $sekolah_id = $pengajar->sekolah_id;
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
         abort_unless(in_array($request->kelas_id, $kelasIds), 403);
 
         $user = User::create([
@@ -102,7 +103,7 @@ class AnakController extends Controller
     public function update(Request $request, Anak $anak)
     {
         $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
         abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
 
         $request->validate([
@@ -147,7 +148,7 @@ class AnakController extends Controller
     public function destroy(Anak $anak)
     {
         $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
         abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
 
         $user = $anak->user;
