@@ -65,7 +65,7 @@
                     @csrf @method('patch')
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2"><label class="input-label">Nama Sekolah</label><input type="text" name="name" value="{{ old('name', $sekolah->name) }}" required class="input-field"></div>
-                        <div><label class="input-label">NISN</label><input type="text" name="nisn" value="{{ old('nisn', $sekolah->nisn) }}" class="input-field"></div>
+                        <div><label class="input-label">NPSN</label><input type="text" name="npsn" value="{{ old('npsn', $sekolah->nisn) }}" class="input-field"></div>
                         <div><label class="input-label">Kontak / HP</label><input type="text" name="phone" value="{{ old('phone', $sekolah->phone) }}" class="input-field"></div>
                         <div class="col-span-2">
                             <label class="input-label">Koordinat Lokasi (Opsional)</label>

@@ -20,7 +20,7 @@ return [
     ],
 
     'profile.sekolah.edit' => [
-        ['element' => '[data-tour="nav-profile.sekolah.edit"]', 'title' => 'Menu Profil Sekolah', 'description' => 'Kelola identitas sekolah (NISN, alamat, koordinat, dan logo).', 'side' => 'right'],
+        ['element' => '[data-tour="nav-profile.sekolah.edit"]', 'title' => 'Menu Profil Sekolah', 'description' => 'Kelola identitas sekolah (NPSN, alamat, koordinat, dan logo).', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Profil Sekolah', 'description' => 'Lengkapi informasi sekolah yang ditampilkan di sistem.', 'side' => 'bottom'],
         ['element' => '[data-tour="profile-role"]', 'title' => 'Form Profil Sekolah', 'description' => 'Isi data sekolah lalu simpan perubahan.', 'side' => 'top'],
     ],

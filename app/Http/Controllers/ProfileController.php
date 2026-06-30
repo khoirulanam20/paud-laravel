@@ -108,7 +108,7 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
-            'nisn' => 'nullable|string|max:100',
+            'npsn' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:50',
             'location_coordinate' => [
                 'nullable',
@@ -144,7 +144,8 @@ class ProfileController extends Controller
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name', 'address', 'nisn', 'phone', 'location_coordinate');
+        $data = $request->only('name', 'address', 'phone', 'location_coordinate');
+        $data['nisn'] = $request->input('npsn');
         if ($request->hasFile('photo')) {
             if (filled($sekolah->photo)) {
                 Storage::disk('public')->delete($sekolah->photo);
