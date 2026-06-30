@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Anak;
 use App\Models\Cashflow;
+use App\Models\Kelas;
 use App\Models\Kegiatan;
 use App\Models\KegiatanRutin;
+use App\Models\Kesehatan;
 use App\Models\KritikSaran;
 use App\Models\MenuMakanan;
 use App\Models\MenuMakananVote;
@@ -64,9 +66,22 @@ class DashboardController extends Controller
         if ($user->hasRole('Wali Kelas')) {
             $pengajar = Pengajar::where('user_id', $user->id)->first();
             if ($pengajar) {
-                $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-                $data['kelasWaliCount'] = count($kelasIds);
-                $data['kelasAnakCount'] = Anak::whereIn('kelas_id', $kelasIds)->count();
+                $waliKelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id');
+                $data['waliKelasList'] = Kelas::whereIn('id', $waliKelasIds)
+                    ->withCount('anaks')
+                    ->orderBy('name')
+                    ->get();
+                $data['kelasWaliCount'] = $waliKelasIds->count();
+                $data['kelasAnakCount'] = Anak::whereIn('kelas_id', $waliKelasIds)->count();
+                $data['presensiHariIniCount'] = Presensi::whereIn('kelas_id', $waliKelasIds)
+                    ->whereDate('tanggal', Carbon::today())
+                    ->count();
+                $data['kesehatanHariIniCount'] = Kesehatan::whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $waliKelasIds))
+                    ->whereDate('tanggal_pemeriksaan', Carbon::today())
+                    ->count();
+                $data['monevHariIniCount'] = Pencapaian::whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $waliKelasIds))
+                    ->whereDate('created_at', Carbon::today())
+                    ->count();
             }
         }
 
@@ -75,6 +90,11 @@ class DashboardController extends Controller
             if ($pengajar) {
                 $sekolahId = $pengajar->sekolah_id;
                 $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+                $data['kelasAjarCount'] = count($kelasIds);
+                $data['pengajarKelasList'] = $pengajar->kelas()
+                    ->withCount('anaks')
+                    ->orderBy('name')
+                    ->get();
 
                 if (! empty($kelasIds)) {
                     $data['totalAnakSekolah'] = Anak::whereIn('kelas_id', $kelasIds)->count();

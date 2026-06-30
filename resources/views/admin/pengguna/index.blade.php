@@ -15,9 +15,10 @@
             showCreateModal: false,
             showEditModal: false,
             showDeleteModal: false,
-            editData: { id: '', name: '', email: '', role: '' },
+            createData: { role: '', kelas_id: '' },
+            editData: { id: '', name: '', email: '', role: '', kelas_id: '' },
             deleteData: { id: '', name: '' },
-            openEdit(user) { this.editData = { id: user.id, name: user.name, email: user.email, role: user.role }; this.showEditModal = true; },
+            openEdit(user) { this.editData = { id: user.id, name: user.name, email: user.email, role: user.role, kelas_id: user.kelas_id || '' }; this.showEditModal = true; },
             openDelete(user) { this.deleteData = { id: user.id, name: user.name }; this.showDeleteModal = true; },
          }">
         <x-settings-tabs />
@@ -88,6 +89,7 @@
                                             'name' => $pengguna->name,
                                             'email' => $pengguna->email,
                                             'role' => $pengguna->roles->first()?->name ?? '',
+                                            'kelas_id' => $pengguna->kelas_id,
                                         ]) }})"
                                             class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                         @if($pengguna->id !== auth()->id())
@@ -140,12 +142,22 @@
                         </div>
                         <div>
                             <label class="input-label">Role</label>
-                            <select name="role" required class="input-field">
+                            <select name="role" required class="input-field" x-model="createData.role">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->name }}">{{ $role->name }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div x-show="createData.role === 'Wali Kelas'" x-cloak>
+                            <label class="input-label">Kelas Wali</label>
+                            <select name="kelas_id" class="input-field" :required="createData.role === 'Wali Kelas'" x-model="createData.kelas_id">
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach($kelas as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] mt-1" style="color:#9E9790;">Saat role `Wali Kelas` dipilih, kelas akan otomatis terhubung ke akun ini.</p>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -177,12 +189,22 @@
                         </div>
                         <div>
                             <label class="input-label">Role</label>
-                            <select name="role" required class="input-field">
+                            <select name="role" required class="input-field" x-model="editData.role">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->name }}" :selected="editData.role === '{{ $role->name }}'">{{ $role->name }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div x-show="editData.role === 'Wali Kelas'" x-cloak>
+                            <label class="input-label">Kelas Wali</label>
+                            <select name="kelas_id" class="input-field" :required="editData.role === 'Wali Kelas'" x-model="editData.kelas_id">
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach($kelas as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] mt-1" style="color:#9E9790;">Kelas akan otomatis terisi sesuai penugasan wali kelas pengguna ini.</p>
                         </div>
                     </div>
                     <div class="modal-footer">
