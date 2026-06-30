@@ -19,6 +19,40 @@
             }
          }" @kegiatan-cal-click.window="onCalClick($event.detail)">
 
+        @if($anaks->count() > 1)
+            <div class="card overflow-hidden mb-6">
+                <div class="px-5 py-5 border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF9F6;">
+                    <form method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <input type="hidden" name="month" value="{{ $month }}">
+                        <input type="hidden" name="day" value="{{ request('day') }}">
+                        <div class="md:col-span-4">
+                            <label class="input-label">Anak</label>
+                            <select name="anak_id" class="input-field w-full">
+                                <option value="">Semua Anak</option>
+                                @foreach($anaks as $anak)
+                                    <option value="{{ $anak->id }}" @selected((int) $anakId === (int) $anak->id)>{{ $anak->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="md:col-span-4">
+                            <label class="input-label">Tampilan Agenda</label>
+                            <select name="semua_sekolah" class="input-field w-full">
+                                <option value="0" @selected(! $semuaSekolah)>Kelas Anak Saja</option>
+                                <option value="1" @selected($semuaSekolah)>Semua Agenda Sekolah</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-4 flex gap-2">
+                            <button type="submit" class="btn-primary flex-1">Terapkan</button>
+                            @if($anakId || $semuaSekolah)
+                                <a href="{{ route('orangtua.kegiatan.index', ['year' => $year, 'month' => $month, 'day' => request('day')]) }}" class="btn-secondary flex-1 text-center">Reset</a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
+
         <div class="card overflow-hidden" data-tour="ortu-kegiatan-calendar">
             <div class="px-4 py-3 md:px-6 md:py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title text-sm md:text-base">Kalender Jurnal Kegiatan</h3>

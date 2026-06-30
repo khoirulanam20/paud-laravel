@@ -71,6 +71,9 @@
                     <thead>
                         <tr>
                             <th>Tanggal</th>
+                            @if($anaks->count() > 1)
+                                <th>Anak</th>
+                            @endif
                             <th>Kegiatan</th>
                             <th>Aspek</th>
                             <th class="text-center">Aksi</th>
@@ -82,6 +85,9 @@
                                                     <td class="whitespace-nowrap font-medium text-[#1A6B6B]">
                                                         {{ \Carbon\Carbon::parse($keg->tanggal)->format('d/m/Y') }}
                                                     </td>
+                                @if($anaks->count() > 1)
+                                    <td class="font-medium text-[#2C2C2C]">{{ $keg->anak->name ?? '-' }}</td>
+                                @endif
                                                     <td class="font-semibold text-[#2C2C2C]">{{ $keg->kegiatan }}</td>
                                                     <td><span
                                                             class="text-xs text-gray-500 font-medium px-2 py-1 bg-gray-100 rounded-md">{{ $keg->aspek }}</span>
@@ -91,6 +97,7 @@
                                 'tanggal' => \Carbon\Carbon::parse($keg->tanggal)->format('d M Y'),
                                 'kegiatan' => $keg->kegiatan,
                                 'aspek' => $keg->aspek,
+                                'anak' => $keg->anak->name ?? '-',
                                 'status' => $keg->status_pencapaian,
                                 'keterangan' => $keg->keterangan,
                                 'photo' => $keg->photo ? Storage::url($keg->photo) : null
@@ -102,7 +109,7 @@
                                                 </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="py-12 text-center text-gray-400">
+                                <td colspan="{{ $anaks->count() > 1 ? 5 : 4 }}" class="py-12 text-center text-gray-400">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="h-12 w-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
@@ -143,6 +150,11 @@
                     </template>
 
                     <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span
+                                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Anak</span>
+                            <p class="text-sm font-bold text-gray-900" x-text="selectedKeg?.anak || '-'"></p>
+                        </div>
                         <div>
                             <span
                                 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Tanggal</span>

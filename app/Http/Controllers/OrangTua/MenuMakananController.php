@@ -4,6 +4,7 @@ namespace App\Http\Controllers\OrangTua;
 
 use App\Http\Controllers\Controller;
 use App\Models\MenuMakanan;
+use App\Support\PaginationPerPage;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,7 @@ class MenuMakananController extends Controller
 
         $startDate = $request->input('start_date', now()->startOfWeek(CarbonInterface::MONDAY)->toDateString());
         $endDate = $request->input('end_date', now()->endOfWeek(CarbonInterface::SUNDAY)->toDateString());
+        $perPage = PaginationPerPage::resolve($request);
 
         $menus = MenuMakanan::where('sekolah_id', $sekolah_id)
             ->whereBetween('date', [$startDate, $endDate])
@@ -23,7 +25,8 @@ class MenuMakananController extends Controller
             ->withCount(['votes as dislikes_count' => fn ($q) => $q->where('vote_type', 'dislike')])
             ->with(['votes' => fn ($q) => $q->where('user_id', $user->id)])
             ->orderBy('date', 'desc')
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('orangtua.menu_makanan.index', compact('menus', 'startDate', 'endDate'));
     }

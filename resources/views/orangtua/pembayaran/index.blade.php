@@ -11,10 +11,34 @@
     </x-slot>
 
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        @if($anaks->count() > 1)
+            <div class="card overflow-hidden mb-6">
+                <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                    <h3 class="section-title mb-0">Filter Tagihan</h3>
+                </div>
+                <form method="GET" action="{{ route('orangtua.pembayaran.index') }}" class="px-6 py-4 flex flex-wrap items-end gap-4">
+                    <div class="min-w-[220px]">
+                        <label class="input-label">Anak</label>
+                        <select name="anak_id" class="input-field" onchange="this.form.submit()">
+                            <option value="">Semua Anak</option>
+                            @foreach($anaks as $anak)
+                                <option value="{{ $anak->id }}" @selected($selectedAnakId === $anak->id)>{{ $anak->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if($selectedAnakId !== null)
+                        <div>
+                            <a href="{{ route('orangtua.pembayaran.index') }}" class="btn-secondary">Reset</a>
+                        </div>
+                    @endif
+                </form>
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" data-tour="ortu-pembayaran-summary">
             @foreach($anaks as $anak)
                 @php
-                    $tagihanAnak = $pembayarans->where('anak_id', $anak->id);
+                    $tagihanAnak = $summaryPembayarans->where('anak_id', $anak->id);
                     $belumBayar = $tagihanAnak->whereIn('status', ['pending', 'rejected'])->sum('total_bayar');
                     $sudahBayar = $tagihanAnak->where('status', 'approved')->sum('total_bayar');
                 @endphp
@@ -41,7 +65,10 @@
         </div>
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 border-b"><h3 class="section-title mb-0">Daftar Tagihan</h3></div>
+            <div class="px-6 py-4 border-b flex flex-wrap items-center justify-between gap-4" style="border-color:rgba(0,0,0,0.06);">
+                <h3 class="section-title mb-0">Daftar Tagihan</h3>
+                <div class="text-xs font-semibold text-gray-400">{{ $pembayarans->total() }} tagihan</div>
+            </div>
             <div class="overflow-x-auto" data-tour="ortu-pembayaran-table">
                 <table class="w-full text-left">
                     <thead><tr class="bg-gray-50/50">
@@ -79,6 +106,10 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$pembayarans" />
+                {{ $pembayarans->links() }}
             </div>
         </div>
     </div>

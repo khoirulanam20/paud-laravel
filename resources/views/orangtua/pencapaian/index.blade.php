@@ -19,6 +19,25 @@
                 </div>
                 <form data-tour="ortu-pencapaian-filter" method="get" action="{{ route('orangtua.pencapaian.index') }}"
                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                    @if($anakList->count() > 1)
+                        <div class="sm:col-span-2 lg:col-span-3 min-w-0">
+                            <label class="input-label" for="ortu-penc-anak">Anak</label>
+                            <select id="ortu-penc-anak" name="filter_anak_id" class="input-field w-full min-w-0">
+                                <option value="">Semua Anak</option>
+                                @foreach($anakList as $anak)
+                                    <option value="{{ $anak->id }}" @selected($filterAnakId === $anak->id)>{{ $anak->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
+                        <label class="input-label" for="ortu-penc-tanggal-dari">Dari</label>
+                        <input id="ortu-penc-tanggal-dari" type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full min-w-0">
+                    </div>
+                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
+                        <label class="input-label" for="ortu-penc-tanggal-sampai">Sampai</label>
+                        <input id="ortu-penc-tanggal-sampai" type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full min-w-0">
+                    </div>
                     <div class="sm:col-span-2 lg:col-span-3 min-w-0">
                         <label class="input-label" for="ortu-penc-aspek">Aspek</label>
                         <select id="ortu-penc-aspek" name="aspek" class="input-field w-full min-w-0">

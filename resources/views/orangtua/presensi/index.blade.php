@@ -17,6 +17,17 @@
             </div>
             
             <form data-tour="ortu-presensi-period-filter" method="GET" action="{{ route('orangtua.presensi.index') }}" class="flex flex-wrap gap-3 items-end">
+                @if($anaks->count() > 1)
+                    <div class="w-full sm:w-auto">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 ml-1">Anak</label>
+                        <select name="anak_id" class="input-field py-2 text-sm min-w-[180px]" onchange="this.form.submit()">
+                            <option value="">Semua Anak</option>
+                            @foreach($anaks as $anak)
+                                <option value="{{ $anak->id }}" @selected($selectedAnakId === $anak->id)>{{ $anak->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
                 <div class="w-full sm:w-auto">
                     <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 ml-1">Rentang</label>
                     <select name="periode" class="input-field py-2 text-sm min-w-[140px]" onchange="this.form.submit()">
@@ -90,6 +101,9 @@
                             <thead>
                                 <tr class="bg-gray-50/50">
                                     <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Tanggal</th>
+                                    @if($anaks->count() > 1)
+                                        <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Anak</th>
+                                    @endif
                                     <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Status</th>
                                     <th class="px-6 py-3 text-[10px] font-bold uppercase text-gray-400">Keterangan</th>
                                 </tr>
@@ -101,6 +115,9 @@
                                             <p class="text-sm font-bold text-gray-900">{{ \Carbon\Carbon::parse($p->tanggal)->translatedFormat('d M Y') }}</p>
                                             <p class="text-[10px] text-gray-400 font-medium">{{ \Carbon\Carbon::parse($p->tanggal)->translatedFormat('l') }}</p>
                                         </td>
+                                        @if($anaks->count() > 1)
+                                            <td class="px-6 py-4 text-sm font-medium text-gray-700">{{ $p->anak->name ?? '-' }}</td>
+                                        @endif
                                         <td class="px-6 py-4">
                                             @if($p->hadir)
                                                 <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-100">
@@ -120,7 +137,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-12 text-center">
+                                        <td colspan="{{ $anaks->count() > 1 ? 4 : 3 }}" class="px-6 py-12 text-center">
                                             <div class="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-gray-50 mb-3 text-gray-300">
                                                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                             </div>

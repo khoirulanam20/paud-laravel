@@ -5,6 +5,7 @@ namespace App\Http\Controllers\OrangTua;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\PembayaranBulanan;
+use App\Support\PaginationPerPage;
 use App\Services\KwitansiService;
 use App\Services\PembayaranInvoicePdfService;
 use App\Services\RekapBiayaService;
@@ -19,7 +20,7 @@ class PembayaranController extends Controller
         private KwitansiService $kwitansiService,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $sekolahId = $user->sekolah_id;
@@ -29,13 +30,36 @@ class PembayaranController extends Controller
             ->with('kelas')
             ->get();
 
-        $pembayarans = PembayaranBulanan::whereIn('anak_id', $anaks->pluck('id'))
+        $anakIds = $anaks->pluck('id');
+        $selectedAnakId = null;
+        if ($request->filled('anak_id')) {
+            $candidate = (int) $request->input('anak_id');
+            if ($anakIds->contains($candidate)) {
+                $selectedAnakId = $candidate;
+            }
+        }
+
+        $summaryPembayarans = PembayaranBulanan::whereIn('anak_id', $anakIds)
             ->with(['anak', 'biayaBulananSekolah', 'diskon'])
             ->orderByDesc('periode_tahun')
             ->orderByDesc('periode_bulan')
             ->get();
 
-        return view('orangtua.pembayaran.index', compact('anaks', 'pembayarans'));
+        $pembayaransQuery = PembayaranBulanan::whereIn('anak_id', $anakIds)
+            ->with(['anak', 'biayaBulananSekolah', 'diskon'])
+            ->orderByDesc('periode_tahun')
+            ->orderByDesc('periode_bulan');
+
+        if ($selectedAnakId !== null) {
+            $pembayaransQuery->where('anak_id', $selectedAnakId);
+        }
+
+        $perPage = PaginationPerPage::resolve($request);
+        $pembayarans = $pembayaransQuery
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('orangtua.pembayaran.index', compact('anaks', 'pembayarans', 'summaryPembayarans', 'selectedAnakId'));
     }
 
     public function show(PembayaranBulanan $pembayaran)

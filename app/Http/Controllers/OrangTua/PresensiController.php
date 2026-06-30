@@ -19,15 +19,27 @@ class PresensiController extends Controller
             ->where('sekolah_id', $sekolahId)
             ->get();
         $anakIds = $anaks->pluck('id');
+        $selectedAnakId = null;
+        if ($request->filled('anak_id')) {
+            $candidate = (int) $request->input('anak_id');
+            if ($anakIds->contains($candidate)) {
+                $selectedAnakId = $candidate;
+            }
+        }
 
         $filter = PresensiPeriodeFilter::resolve($request);
 
-        $presensis = Presensi::whereIn('anak_id', $anakIds)
+        $presensisQuery = Presensi::whereIn('anak_id', $anakIds)
             ->whereBetween('tanggal', [$filter['from'], $filter['to']])
             ->orderBy('tanggal', 'desc')
-            ->with('anak')
-            ->get();
+            ->with('anak');
 
-        return view('orangtua.presensi.index', compact('anaks', 'presensis', 'filter'));
+        if ($selectedAnakId !== null) {
+            $presensisQuery->where('anak_id', $selectedAnakId);
+        }
+
+        $presensis = $presensisQuery->get();
+
+        return view('orangtua.presensi.index', compact('anaks', 'presensis', 'filter', 'selectedAnakId'));
     }
 }
