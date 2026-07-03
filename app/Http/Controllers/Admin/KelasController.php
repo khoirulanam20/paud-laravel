@@ -137,7 +137,7 @@ class KelasController extends Controller
 
         if ($request->wali_kelas_id != $oldWaliId) {
             if ($request->filled('wali_kelas_id')) {
-                $this->syncWaliKelasRole($request->wali_kelas_id);
+                $this->syncWaliKelasRole($request->wali_kelas_id, $kelas->id);
             }
             if ($oldWaliId) {
                 $this->removeWaliKelasRoleIfNecessary($oldWaliId);
@@ -204,11 +204,14 @@ class KelasController extends Controller
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
-    private function syncWaliKelasRole($pengajarId)
+    private function syncWaliKelasRole($pengajarId, ?int $kelasId = null)
     {
         $pengajar = Pengajar::find($pengajarId);
         if ($pengajar && $pengajar->user) {
             $pengajar->user->assignRole('Wali Kelas');
+            if ($kelasId) {
+                $pengajar->kelas()->syncWithoutDetaching([$kelasId]);
+            }
         }
     }
 

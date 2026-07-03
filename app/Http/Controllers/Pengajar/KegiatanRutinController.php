@@ -16,7 +16,7 @@ class KegiatanRutinController extends Controller
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
         $sekolahId = $pengajar->sekolah_id;
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
 
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $kelasId = $request->input('kelas_id');
@@ -35,7 +35,7 @@ class KegiatanRutinController extends Controller
             ->where('tanggal', $tanggal)
             ->get() : collect();
 
-        $classList = $pengajar->kelas;
+        $classList = $pengajar->accessibleKelas();
 
         return view('pengajar.kegiatan-rutin.index', compact('classList', 'anaks', 'rutins', 'tanggal', 'kelasId', 'masters'));
     }

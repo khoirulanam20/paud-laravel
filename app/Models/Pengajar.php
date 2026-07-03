@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsScopedActivity;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -43,5 +44,25 @@ class Pengajar extends Model
     public function waliKelas(): HasMany
     {
         return $this->hasMany(Kelas::class, 'wali_kelas_id');
+    }
+
+    /** Kelas dari pivot mengampu + kelas yang di-wali. */
+    public function accessibleKelasIds(): array
+    {
+        return $this->kelas()->pluck('kelas.id')
+            ->merge($this->waliKelas()->pluck('id'))
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function accessibleKelas(): Collection
+    {
+        $ids = $this->accessibleKelasIds();
+        if ($ids === []) {
+            return new Collection;
+        }
+
+        return Kelas::whereIn('id', $ids)->orderBy('name')->get();
     }
 }

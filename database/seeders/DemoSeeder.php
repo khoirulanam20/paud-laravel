@@ -206,8 +206,8 @@ class DemoSeeder extends Seeder
             ]
         );
 
-        // Pivot: guru biasa mengajar di Kelas Melati
-        $kelasMelati->pengajars()->syncWithoutDetaching([$pengajarGuru->id]);
+        // Pivot: wali kelas + guru biasa mengajar di Kelas Melati
+        $kelasMelati->pengajars()->syncWithoutDetaching([$pengajarWali->id, $pengajarGuru->id]);
 
         // Anak 1 — Adinda, di Kelas Melati
         $anakAdinda = Anak::firstOrCreate(

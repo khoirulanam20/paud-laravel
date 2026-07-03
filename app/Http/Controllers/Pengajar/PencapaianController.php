@@ -36,7 +36,7 @@ class PencapaianController extends Controller
     private function assertAnakDalamLingkupPencapaian(Anak $anak, Pengajar $pengajar): void
     {
         abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
         if (! empty($kelasIds)) {
             abort_if(! in_array((int) $anak->kelas_id, $kelasIds, true), 403);
         }
@@ -53,7 +53,7 @@ class PencapaianController extends Controller
         $tanggalSampai = $range ? $range[1] : null;
 
         $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
         if (! empty($kelasIds)) {
             $anakQuery->whereIn('kelas_id', $kelasIds);
         }
@@ -155,7 +155,7 @@ class PencapaianController extends Controller
 
         $filterAnakId = $request->filled('filter_anak_id') ? (int) $request->input('filter_anak_id') : null;
         $filterKelasId = $request->filled('filter_kelas_id') ? (int) $request->input('filter_kelas_id') : null;
-        $availableKelas = $pengajar->kelas()->orderBy('name')->get();
+        $availableKelas = $pengajar->accessibleKelas();
 
         $tokenBalance = $this->tokenService->getBalance((int) $sekolah_id);
         $hasTokens = $tokenBalance > 0;
@@ -195,7 +195,7 @@ class PencapaianController extends Controller
             'photo' => 'nullable|image|max:2048',
         ]);
 
-        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
 
         $kegiatan = Kegiatan::query()
             ->where('id', $request->integer('kegiatan_id'))
@@ -334,7 +334,7 @@ class PencapaianController extends Controller
             'kegiatan_id' => 'required|exists:kegiatans,id',
         ]);
 
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
         $anak = Anak::findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
 

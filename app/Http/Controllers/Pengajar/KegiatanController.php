@@ -29,8 +29,8 @@ class KegiatanController extends Controller
         [$year, $month] = KegiatanCalendar::resolveYearMonth($request);
         [$from, $to] = KegiatanCalendar::dateRangeForCalendar($year, $month);
 
-        $kelas = $pengajar->kelas;
-        $kelasIds = $kelas->pluck('id')->toArray();
+        $kelas = $pengajar->accessibleKelas();
+        $kelasIds = $pengajar->accessibleKelasIds();
 
         $query = Kegiatan::query()
             ->whereIn('kelas_id', $kelasIds)
@@ -81,7 +81,7 @@ class KegiatanController extends Controller
         ]);
 
         $pengajar = $this->getPengajar();
-        abort_if(! $pengajar->kelas()->where('kelas.id', $request->kelas_id)->exists(), 403);
+        abort_if(! in_array((int) $request->kelas_id, $pengajar->accessibleKelasIds(), true), 403);
 
         $data = [
             'sekolah_id' => $pengajar->sekolah_id,
@@ -112,7 +112,7 @@ class KegiatanController extends Controller
     public function update(Request $request, Kegiatan $kegiatan)
     {
         $pengajar = $this->getPengajar();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
         abort_if(! in_array($kegiatan->kelas_id, $kelasIds), 403);
 
         $request->validate([
@@ -163,7 +163,7 @@ class KegiatanController extends Controller
     public function destroy(Kegiatan $kegiatan)
     {
         $pengajar = $this->getPengajar();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
         abort_if(! in_array($kegiatan->kelas_id, $kelasIds), 403);
 
         if ($kegiatan->photo) {

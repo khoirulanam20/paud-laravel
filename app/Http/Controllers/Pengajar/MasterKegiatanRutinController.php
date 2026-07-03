@@ -24,7 +24,7 @@ class MasterKegiatanRutinController extends Controller
         $masters = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
             ->where('sekolah_id', $pengajar->sekolah_id)
             ->whereHas('kelas', function ($q) use ($pengajar) {
-                $q->whereIn('kelas.id', $pengajar->kelas->pluck('id'));
+                $q->whereIn('kelas.id', $pengajar->accessibleKelasIds());
             })
             ->latest()
             ->get();
@@ -37,7 +37,7 @@ class MasterKegiatanRutinController extends Controller
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
 
-        $classList = $pengajar->kelas;
+        $classList = $pengajar->accessibleKelas();
         $matrikulasiList = Matrikulasi::where('sekolah_id', $pengajar->sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.create', compact('classList', 'matrikulasiList'));
@@ -78,7 +78,7 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
-        $classList = $pengajar->kelas;
+        $classList = $pengajar->accessibleKelas();
         $matrikulasiList = Matrikulasi::where('sekolah_id', $pengajar->sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.edit', compact('masterKegiatanRutin', 'classList', 'matrikulasiList'));
@@ -116,7 +116,7 @@ class MasterKegiatanRutinController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $teacherKelasIds = $pengajar->accessibleKelasIds();
 
         // Check if this master activity is linked to any of the teacher's classes
         $linkedToTeacher = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->exists();
@@ -162,7 +162,7 @@ class MasterKegiatanRutinController extends Controller
 
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $teacherKelasIds = $pengajar->accessibleKelasIds();
 
         // Check if this master activity is linked to any of the teacher's classes
         $linkedToTeacher = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->exists();
@@ -217,7 +217,7 @@ class MasterKegiatanRutinController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $teacherKelasIds = $pengajar->accessibleKelasIds();
 
         // Check if student belongs to teacher's classes
         if (! in_array($anak->kelas_id, $teacherKelasIds)) {
