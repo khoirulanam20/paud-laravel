@@ -20,6 +20,7 @@
             'statusRoute' => $activeGeneration ? route('admin.monev.generation.status', $activeGeneration) : null,
             'activeGeneration' => $activeGeneration,
             'tourPrefix' => 'admin-monev',
+            'exportRoute' => 'admin.monev.export',
         ])
     </div>
 </x-app-layout>

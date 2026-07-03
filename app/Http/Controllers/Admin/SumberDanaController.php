@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\SumberDana;
 use Illuminate\Http\Request;
 
 class SumberDanaController extends Controller
 {
+    use DownloadsExcel;
     public function index()
     {
         $sumberDanas = SumberDana::where('sekolah_id', auth()->user()->sekolah_id)
@@ -15,6 +17,27 @@ class SumberDanaController extends Controller
             ->get();
 
         return view('admin.sumber-dana.index', compact('sumberDanas'));
+    }
+
+    public function export()
+    {
+        $rows = SumberDana::where('sekolah_id', auth()->user()->sekolah_id)
+            ->orderBy('urutan')
+            ->get()
+            ->map(fn (SumberDana $s) => [
+                $s->kode,
+                $s->nama,
+                $s->urutan,
+                $s->is_aktif ? 'Aktif' : 'Nonaktif',
+            ])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Kode', 'Nama', 'Urutan', 'Status'],
+            $rows,
+            'sumber-dana-'.now()->format('Y-m-d').'.xlsx',
+            'Sumber Dana'
+        );
     }
 
     public function store(Request $request)

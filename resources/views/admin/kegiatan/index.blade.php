@@ -97,10 +97,13 @@
                     <h3 class="section-title">Kalender Agenda Belajar</h3>
                     <p class="section-subtitle">Pilih tanggal dan kelas untuk melihat atau menambah agenda.</p>
                 </div>
-                <button data-tour="admin-kegiatan-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
+                <div class="flex items-center gap-2 shrink-0">
+                    <x-export-excel route="admin.kegiatan.export" />
+                    <button data-tour="admin-kegiatan-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
                         class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>Buat Jurnal Baru</button>
+                </div>
             </div>
             <form data-tour="admin-kegiatan-filter" method="get" class="px-6 py-4 flex flex-wrap items-end gap-4 border-b"
                 style="border-color:rgba(0,0,0,0.06);">

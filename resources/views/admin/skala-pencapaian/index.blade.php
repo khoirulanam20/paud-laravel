@@ -22,7 +22,10 @@
                     <h3 class="section-title">Master skala capaian</h3>
                     <p class="section-subtitle">Opsi penilaian pencapaian siswa (mis. BB, MB, BSH, BSB). Dipakai di form pencapaian dan saran AI.</p>
                 </div>
-                <button type="button" data-tour="admin-skala-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah skala</button>
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.skala-pencapaian.export" />
+                    <button type="button" data-tour="admin-skala-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah skala</button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">

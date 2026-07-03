@@ -43,7 +43,10 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Kelas</h3><p class="section-subtitle">Struktur pembagian kelas beserta admin pengelolanya</p></div>
-                <button data-tour="admin-kelas-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Buat Kelas Baru</button>
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.kelas.export" />
+                    <button data-tour="admin-kelas-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Buat Kelas Baru</button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">

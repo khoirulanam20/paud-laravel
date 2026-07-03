@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Kegiatan;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 class KegiatanController extends Controller
 {
     use CanUploadImage;
+    use DownloadsExcel;
 
     public function index(Request $request)
     {
@@ -51,6 +53,43 @@ class KegiatanController extends Controller
         $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();
 
         return view('admin.kegiatan.index', compact('calendarEvents', 'year', 'month', 'pengajars', 'kelas', 'matrikulasis'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        [$year, $month] = KegiatanCalendar::resolveYearMonth($request);
+        [$from, $to] = KegiatanCalendar::dateRangeForCalendar($year, $month);
+
+        $query = Kegiatan::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->with(['pengajar', 'kelas'])
+            ->whereBetween('date', [$from, $to]);
+
+        if ($request->filled('pengajar_id')) {
+            $query->where('pengajar_id', $request->integer('pengajar_id'));
+        }
+        if ($request->filled('kelas_id')) {
+            $query->where('kelas_id', $request->integer('kelas_id'));
+        }
+        if ($request->filled('day')) {
+            $query->whereDay('date', $request->integer('day'));
+        }
+
+        $rows = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get()->map(fn (Kegiatan $k) => [
+            $k->date?->format('Y-m-d') ?? '-',
+            $k->title ?? '-',
+            $k->kelas?->name ?? '-',
+            $k->pengajar?->name ?? '-',
+            $k->description ?? '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Tanggal', 'Judul', 'Kelas', 'Pengajar', 'Deskripsi'],
+            $rows,
+            sprintf('agenda-belajar-%04d-%02d.xlsx', $year, $month),
+            'Agenda Belajar'
+        );
     }
 
     public function store(Request $request)

@@ -43,12 +43,15 @@
                     <h3 class="section-title">Daftar Pengguna</h3>
                     <p class="section-subtitle">Kelola pengguna yang memiliki akses ke sistem</p>
                 </div>
-                <button @click="showCreateModal = true" class="btn-primary">
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.pengguna.export" />
+                    <button @click="showCreateModal = true" class="btn-primary">
                     <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
                     Tambah Pengguna
                 </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">

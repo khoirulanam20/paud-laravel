@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
@@ -23,6 +24,7 @@ use Illuminate\Validation\Rule;
 class PencapaianController extends Controller
 {
     use CanUploadImage;
+    use DownloadsExcel;
 
     public function __construct(
         protected AiTokenService $tokenService
@@ -160,6 +162,50 @@ class PencapaianController extends Controller
             'hasTokens',
             'tokenFallbackPencapaian',
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $range = TanggalRentang::dariSampaiQuery($request, null);
+        $filterAspekRaw = (string) $request->input('aspek', '');
+        $filterAspek = $filterAspekRaw === '' ? null : $filterAspekRaw;
+
+        $hariQuery = Pencapaian::query()
+            ->with(['anak', 'kegiatan', 'matrikulasi'])
+            ->orderByDesc('updated_at');
+
+        if ($range) {
+            $hariQuery->whereDate('created_at', '>=', $range[0])
+                ->whereDate('created_at', '<=', $range[1]);
+        }
+        $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
+        if ($request->filled('filter_anak_id')) {
+            $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
+        }
+        if ($request->filled('filter_kelas_id')) {
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
+        }
+
+        $rows = $hariQuery->get()
+            ->filter(fn (Pencapaian $p) => FilterAspekPencapaian::groupHasMatch($filterAspek, collect([$p])))
+            ->map(fn (Pencapaian $p) => [
+                $p->anak?->name ?? '-',
+                $p->kegiatan?->title ?? '-',
+                ($p->matrikulasi?->aspek ?? '-').' / '.($p->matrikulasi?->indicator ?? '-'),
+                $p->score ?? '-',
+                $p->feedback ?? '-',
+                $p->created_at?->format('Y-m-d') ?? '-',
+            ])
+            ->values()
+            ->all();
+
+        return $this->downloadExcel(
+            ['Siswa', 'Kegiatan', 'Aspek / Indikator', 'Nilai', 'Catatan', 'Tanggal'],
+            $rows,
+            'pencapaian-siswa-'.now()->format('Y-m-d').'.xlsx',
+            'Pencapaian Siswa'
+        );
     }
 
     public function sync(Request $request)

@@ -27,7 +27,10 @@
                         @endforeach
                     </select>
                 </form>
-                <button @click="showCreateModal=true" class="btn-primary">+ Buat RKAS</button>
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.rkas.export" />
+                    <button @click="showCreateModal=true" class="btn-primary">+ Buat RKAS</button>
+                </div>
             </div>
             <table class="data-table" data-tour="admin-rkas-table">
                 <thead><tr><th>Periode</th><th>Status</th><th class="text-center">Baris</th><th>Sync Terakhir</th><th class="text-right">Aksi</th></tr></thead>

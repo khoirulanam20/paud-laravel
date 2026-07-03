@@ -91,6 +91,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn-primary">Filter</button>
+                    <x-export-excel route="admin.kesehatan.export" />
                 </form>
             </div>
 

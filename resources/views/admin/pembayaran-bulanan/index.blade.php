@@ -146,6 +146,7 @@
                         </select>
                         <button type="submit" class="btn-secondary">Filter</button>
                     </form>
+                    <x-export-excel route="admin.pembayaran-bulanan.export" />
                     <button data-tour="admin-pembayaran-generate-btn" data-tour-open-modal="generate" @click="openGenerate()" class="btn-primary">Generate Tagihan</button>
                 </div>
             </div>

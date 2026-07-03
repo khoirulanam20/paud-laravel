@@ -59,6 +59,9 @@
                     </select>
                 </div>
             </form>
+            @if(auth()->user()->hasRole('Admin Sekolah'))
+                <x-export-excel route="admin.kegiatan-rutin.export" />
+            @endif
         </div>
 
         @if(session('success'))

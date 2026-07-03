@@ -17,7 +17,10 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex justify-between items-center border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Sumber Dana</h3><p class="section-subtitle">BOS, Komite, SPP, dll. per sekolah</p></div>
-                <button @click="showCreateModal=true" class="btn-primary">+ Tambah</button>
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.sumber-dana.export" />
+                    <button @click="showCreateModal=true" class="btn-primary">+ Tambah</button>
+                </div>
             </div>
             <table class="data-table" data-tour="admin-sumber-dana-table">
                 <thead><tr><th>Kode</th><th>Nama</th><th class="text-center">Urutan</th><th class="text-center">Status</th><th class="text-right">Aksi</th></tr></thead>

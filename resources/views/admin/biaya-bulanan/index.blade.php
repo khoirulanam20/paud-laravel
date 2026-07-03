@@ -89,6 +89,7 @@
                                     @endforeach
                                 </select>
                             </form>
+                            <x-export-excel route="admin.biaya-bulanan.export" class="text-sm" />
                             <button type="button" data-tour="admin-biaya-add-siswa-btn" data-tour-open-modal="addSiswa" @click="openAddSiswa()" class="btn-primary text-sm">+ Tambah Siswa</button>
                         </div>
                     </div>

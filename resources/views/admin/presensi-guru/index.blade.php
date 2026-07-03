@@ -32,6 +32,10 @@
             </div>
         @endif
 
+        <div class="mb-4 flex justify-end">
+            <x-export-excel route="admin.presensi-guru.export" />
+        </div>
+
         <form action="{{ route('admin.presensi-guru.store') }}" method="POST">
             @csrf
             <input type="hidden" name="tanggal" value="{{ $tanggal }}">

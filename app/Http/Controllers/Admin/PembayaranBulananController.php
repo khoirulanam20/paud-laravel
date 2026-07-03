@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Diskon;
 use App\Models\Kelas;
@@ -16,6 +17,8 @@ use Illuminate\Http\Request;
 
 class PembayaranBulananController extends Controller
 {
+    use DownloadsExcel;
+
     public function __construct(
         private RekapBiayaService $rekapBiayaService,
         private AkuntansiService $akuntansiService
@@ -114,6 +117,60 @@ class PembayaranBulananController extends Controller
         return view('admin.pembayaran-bulanan.index', compact(
             'pembayarans', 'kelas', 'bulan', 'tahun', 'kelasId', 'status', 'summary'
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $bulan = (int) $request->input('bulan', now()->month);
+        $tahun = (int) $request->input('tahun', now()->year);
+        $kelasId = $request->input('kelas_id');
+        $status = $request->input('status');
+
+        if ($kelasId && $this->waliKelasIds() !== null && ! in_array((int) $kelasId, $this->waliKelasIds(), true)) {
+            abort(403);
+        }
+
+        $query = PembayaranBulanan::where('sekolah_id', $sekolah_id)
+            ->where('periode_bulan', $bulan)
+            ->where('periode_tahun', $tahun)
+            ->with(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'items']);
+
+        $this->scopeToWaliKelas($query);
+
+        if ($kelasId) {
+            $query->whereHas('anak', fn ($q) => $q->where('kelas_id', $kelasId));
+        }
+
+        if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {
+            $query->where('status', $status);
+        }
+
+        $pembayarans = $query->orderBy('created_at', 'desc')->get();
+
+        $rows = $pembayarans->map(function (PembayaranBulanan $p) {
+            $biayaLain = $p->items->sum('nominal');
+
+            return [
+                $p->anak?->name ?? '-',
+                $p->anak?->kelas?->name ?? '-',
+                $p->biayaBulananSekolah?->nama_biaya ?? '-',
+                $p->hari_hadir ?? '-',
+                number_format((float) ($p->biaya_per_hari * $p->hari_hadir), 0, ',', '.'),
+                number_format((float) $biayaLain, 0, ',', '.'),
+                number_format((float) $p->subtotal, 0, ',', '.'),
+                $p->diskon?->nama ?? '-',
+                number_format((float) $p->total_bayar, 0, ',', '.'),
+                ucfirst($p->status),
+            ];
+        })->all();
+
+        return $this->downloadExcel(
+            ['Siswa', 'Kelas', 'Biaya', 'Hadir', 'Biaya/Bln', 'Biaya Lain', 'Subtotal', 'Diskon', 'Total', 'Status'],
+            $rows,
+            sprintf('rekap-pembayaran-%02d-%d.xlsx', $bulan, $tahun),
+            'Rekap Pembayaran'
+        );
     }
 
     public function show(PembayaranBulanan $pembayaran)

@@ -7,6 +7,9 @@
             </div>
             
             <div class="flex flex-wrap gap-2">
+                @if(auth()->user()->hasRole('Admin Sekolah'))
+                <x-export-excel route="admin.master-kegiatan-rutin.export" />
+                @endif
                 @if(!auth()->user()->hasRole('Pengajar'))
                 <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.create') }}" class="btn-primary py-2 px-4 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20 inline-flex items-center gap-2" data-tour="pg-master-rutin-add-btn">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>

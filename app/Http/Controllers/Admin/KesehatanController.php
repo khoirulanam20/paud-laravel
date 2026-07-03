@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kelas;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 
 class KesehatanController extends Controller
 {
+    use DownloadsExcel;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -31,6 +33,39 @@ class KesehatanController extends Controller
         $kelas = Kelas::where('sekolah_id', $user->sekolah_id)->orderBy('name')->get();
 
         return view('admin.kesehatan.index', compact('anaks', 'kelas'));
+    }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $query = Anak::where('sekolah_id', $user->sekolah_id)->with(['kelas', 'kesehatans' => fn ($q) => $q->latest('tanggal_pemeriksaan')->limit(1)]);
+
+        if ($request->filled('kelas_id')) {
+            $query->where('kelas_id', $request->kelas_id);
+        }
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%'.$request->search.'%');
+        }
+
+        $rows = $query->orderBy('name')->get()->map(function (Anak $anak) {
+            $k = $anak->kesehatans->first();
+
+            return [
+                $anak->name,
+                $anak->kelas?->name ?? '-',
+                $k ? ($k->berat_badan.' / '.$k->tinggi_badan) : '-',
+                $k ? trim(($k->gigi ?? '-').' / '.($k->telinga ?? '-').' / '.($k->kuku ?? '-')) : '-',
+                $k?->alergi ?? '-',
+                $k?->tanggal_pemeriksaan?->format('Y-m-d') ?? '-',
+            ];
+        })->all();
+
+        return $this->downloadExcel(
+            ['Siswa', 'Kelas', 'BB/TB', 'Kebersihan (G/T/K)', 'Alergi', 'Pemeriksaan Terakhir'],
+            $rows,
+            'kesehatan-siswa-'.now()->format('Y-m-d').'.xlsx',
+            'Kesehatan Siswa'
+        );
     }
 
     public function store(Request $request)

@@ -22,7 +22,10 @@
                     <h3 class="section-title">Daftar Kode Rekening & Akun</h3>
                     <p class="section-subtitle">Satu master untuk RKAS, cashflow, dan jurnal</p>
                 </div>
-                <button @click="showCreateModal=true" class="btn-primary">+ Tambah Akun</button>
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.akun.export" />
+                    <button @click="showCreateModal=true" class="btn-primary">+ Tambah Akun</button>
+                </div>
             </div>
 
             <div class="px-6 py-3 border-b flex flex-wrap gap-2" data-tour="admin-akun-filter-tabs" style="border-color:rgba(0,0,0,0.06);">

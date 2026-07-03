@@ -25,7 +25,10 @@
                     <h3 class="section-title">Indikator matrikulasi</h3>
                     <p class="section-subtitle">Standar penilaian tingkat sekolah; dipakai di jurnal kegiatan dan pencapaian siswa.</p>
                 </div>
-                <button data-tour="admin-matrikulasi-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah indikator</button>
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.matrikulasi.export" />
+                    <button data-tour="admin-matrikulasi-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah indikator</button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">

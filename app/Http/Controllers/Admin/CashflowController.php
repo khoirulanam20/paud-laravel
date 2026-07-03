@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use App\Models\Cashflow;
@@ -15,6 +16,8 @@ use Illuminate\Http\Request;
 
 class CashflowController extends Controller
 {
+    use DownloadsExcel;
+
     public function __construct(
         private AkuntansiService $akuntansiService,
         private KwitansiService $kwitansiService,
@@ -55,6 +58,35 @@ class CashflowController extends Controller
             'cashflows', 'totalIn', 'totalOut', 'balance',
             'summaryArusKas', 'bulan', 'tahun', 'akunKas', 'akunPendapatan', 'akunBeban', 'setting', 'sumberDanas',
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $bulan = (int) $request->input('bulan', now()->month);
+        $tahun = (int) $request->input('tahun', now()->year);
+
+        $cashflows = Cashflow::where('sekolah_id', $sekolahId)
+            ->whereYear('date', $tahun)
+            ->whereMonth('date', $bulan)
+            ->with(['akun', 'akunLawan', 'sumberDana'])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        $rows = $cashflows->map(fn (Cashflow $c) => [
+            $c->date?->format('Y-m-d') ?? '-',
+            $c->akun?->nama ?? '-',
+            $c->description ?? '-',
+            $c->type === 'in' ? 'Masuk' : 'Keluar',
+            number_format((float) $c->amount, 0, ',', '.'),
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Tanggal', 'Akun', 'Keterangan', 'Jenis', 'Nominal (Rp)'],
+            $rows,
+            sprintf('cashflow-%02d-%d.xlsx', $bulan, $tahun),
+            'Cashflow'
+        );
     }
 
     public function store(Request $request)

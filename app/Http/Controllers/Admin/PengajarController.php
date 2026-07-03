@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Kelas;
@@ -17,6 +18,7 @@ use Illuminate\Validation\Rule;
 class PengajarController extends Controller
 {
     use CanUploadImage;
+    use DownloadsExcel;
 
     public function index(Request $request)
     {
@@ -32,6 +34,30 @@ class PengajarController extends Controller
         $pendidikanOptions = array_values(array_unique($pendidikanOptions));
 
         return view('admin.pengajar.index', compact('pengajars', 'kelas', 'pendidikanOptions'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->latest()->get();
+
+        $rows = $pengajars->map(fn (Pengajar $p) => [
+            $p->name,
+            $p->user?->email ?? '-',
+            $p->jabatan ?? '-',
+            $p->kelas->pluck('name')->join(', ') ?: '-',
+            $p->nik ?? '-',
+            $p->phone ?? '-',
+            $p->pendidikan ?? '-',
+            $p->jenis_kelamin ?? '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Nama Guru', 'Email Login', 'Jabatan / Posisi', 'Penempatan Kelas', 'NIK', 'Telepon', 'Pendidikan', 'J/K'],
+            $rows,
+            'data-guru-'.now()->format('Y-m-d').'.xlsx',
+            'Data Guru'
+        );
     }
 
     public function store(Request $request)

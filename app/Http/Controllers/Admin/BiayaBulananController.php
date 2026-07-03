@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\BiayaBulananSekolah;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 
 class BiayaBulananController extends Controller
 {
+    use DownloadsExcel;
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
@@ -68,6 +70,43 @@ class BiayaBulananController extends Controller
         return view('admin.biaya-bulanan.index', compact(
             'siswaTerassign', 'biayaTerpilih', 'biayaAktif', 'kelas', 'kelasId', 'semuaBiaya', 'semuaAnak'
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $biayaAktif = BiayaBulananSekolah::where('sekolah_id', $sekolahId)->where('is_aktif', true)->orderBy('nama_biaya')->get();
+        $biayaTerpilih = $biayaAktif->first();
+        if ($request->filled('biaya_id')) {
+            $biayaTerpilih = $biayaAktif->firstWhere('id', (int) $request->biaya_id) ?? $biayaTerpilih;
+        }
+        $kelasId = $request->input('kelas_id');
+
+        $siswaTerassign = collect();
+        if ($biayaTerpilih) {
+            $siswaTerassign = BiayaBulananSiswa::where('biaya_bulanan_sekolah_id', $biayaTerpilih->id)
+                ->with(['anak.kelas'])
+                ->get()
+                ->sortBy(fn (BiayaBulananSiswa $bs) => $bs->anak->name ?? '');
+            if ($kelasId) {
+                $siswaTerassign = $siswaTerassign->filter(
+                    fn (BiayaBulananSiswa $bs) => $bs->anak && (int) $bs->anak->kelas_id === (int) $kelasId
+                );
+            }
+        }
+
+        $rows = $siswaTerassign->map(fn (BiayaBulananSiswa $bs) => [
+            $bs->anak?->name ?? '-',
+            $bs->anak?->kelas?->name ?? '-',
+            number_format((float) ($bs->biaya_bulanan ?? $biayaTerpilih?->nominal_default ?? 0), 0, ',', '.'),
+        ])->values()->all();
+
+        return $this->downloadExcel(
+            ['Siswa', 'Kelas', 'Biaya Bulanan (Rp)'],
+            $rows,
+            'biaya-bulanan-'.now()->format('Y-m-d').'.xlsx',
+            'Biaya Bulanan'
+        );
     }
 
     public function store(Request $request)

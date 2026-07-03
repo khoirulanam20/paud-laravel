@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AnakTemplateExport;
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAnakPendaftaranRequest;
 use App\Http\Traits\CanUploadImage;
@@ -22,6 +23,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class AnakController extends Controller
 {
     use CanUploadImage;
+    use DownloadsExcel;
 
     public function __construct(
         protected AnakRegistrationService $anakRegistration
@@ -31,6 +33,42 @@ class AnakController extends Controller
     {
         $sekolah_id = auth()->user()->sekolah_id;
 
+        $anaks = $this->buildIndexQuery($request, $sekolah_id)
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
+        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+
+        return view('admin.anak.index', compact('anaks', 'kelas'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $anaks = $this->buildIndexQuery($request, $sekolah_id)->get();
+
+        $rows = $anaks->map(fn (Anak $anak) => [
+            $anak->name,
+            $anak->nickname ?? '-',
+            $anak->kelas?->name ?? '-',
+            $anak->jenis_kelamin ?? '-',
+            $anak->dob ? $anak->age.' th' : '-',
+            $anak->parent_name ?? $anak->user?->name ?? '-',
+            $anak->user?->email ?? '-',
+            $anak->nik ?? '-',
+            $anak->dob?->format('Y-m-d') ?? '-',
+            $anak->alamat ?? '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Nama Anak', 'Panggilan', 'Kelas', 'J/K', 'Umur', 'Nama Orang Tua', 'Email Orang Tua', 'NIK', 'Tgl. Lahir', 'Alamat'],
+            $rows,
+            'data-siswa-'.now()->format('Y-m-d').'.xlsx',
+            'Data Siswa'
+        );
+    }
+
+    protected function buildIndexQuery(Request $request, int $sekolah_id)
+    {
         $query = Anak::where('sekolah_id', $sekolah_id)
             ->where('status', 'approved')
             ->with(['user', 'kelas'])
@@ -48,10 +86,7 @@ class AnakController extends Controller
             });
         }
 
-        $anaks = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
-        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
-
-        return view('admin.anak.index', compact('anaks', 'kelas'));
+        return $query;
     }
 
     public function show(Anak $anak)

@@ -75,6 +75,7 @@
                         </div>
                     @endif
                 </form>
+                <x-export-excel route="admin.presensi.rekap.export" />
             </div>
             <div class="px-6 py-2 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">
                 <span>Periode: <strong style="color:#2C2C2C;">{{ $presensiFilter['label'] ?? '' }}</strong></span>

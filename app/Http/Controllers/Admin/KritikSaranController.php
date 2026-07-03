@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\KritikSaran;
 use App\Support\PaginationPerPage;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 
 class KritikSaranController extends Controller
 {
+    use DownloadsExcel;
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
@@ -20,6 +22,34 @@ class KritikSaranController extends Controller
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.kritik_saran.index', compact('feedbacks'));
+    }
+
+    public function export(Request $request)
+    {
+        $rows = KritikSaran::query()
+            ->where('sekolah_id', auth()->user()->sekolah_id)
+            ->with(['user.anaks.kelas', 'sekolah'])
+            ->latest()
+            ->get()
+            ->map(function (KritikSaran $f) {
+                $kelas = $f->user?->anaks?->pluck('kelas.name')->filter()->unique()->join(', ') ?: '-';
+
+                return [
+                    $f->created_at?->format('Y-m-d H:i') ?? '-',
+                    $f->user?->name ?? '-',
+                    $f->sekolah?->name ?? '-',
+                    $kelas,
+                    \Illuminate\Support\Str::limit($f->message ?? '', 120),
+                ];
+            })
+            ->all();
+
+        return $this->downloadExcel(
+            ['Tanggal', 'Pengirim', 'Sekolah', 'Kelas (anak)', 'Ringkasan'],
+            $rows,
+            'kritik-saran-'.now()->format('Y-m-d').'.xlsx',
+            'Kritik & Saran'
+        );
     }
 
     public function show(KritikSaran $kritik_saran)

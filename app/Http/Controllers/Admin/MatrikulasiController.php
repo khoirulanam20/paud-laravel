@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Matrikulasi;
 use App\Support\PaginationPerPage;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 
 class MatrikulasiController extends Controller
 {
+    use DownloadsExcel;
     private function sekolahId(): ?int
     {
         $id = auth()->user()->sekolah_id;
@@ -27,6 +29,26 @@ class MatrikulasiController extends Controller
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.matrikulasi.index', compact('matrikulasis'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = $this->sekolahId();
+        abort_if($sekolah_id === null, 403);
+
+        $rows = Matrikulasi::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->latest()
+            ->get()
+            ->map(fn (Matrikulasi $m) => [$m->aspek ?? '-', $m->indicator, $m->description])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Aspek / Bidang', 'Indikator', 'Deskripsi'],
+            $rows,
+            'matrikulasi-'.now()->format('Y-m-d').'.xlsx',
+            'Matrikulasi'
+        );
     }
 
     public function store(Request $request)

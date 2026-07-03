@@ -46,6 +46,42 @@ class ActivityLogScopeService
         return $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection<int, Activity>
+     */
+    public function getForUser(User $user, Request $request)
+    {
+        $query = Activity::query()
+            ->where('log_name', 'admin')
+            ->with(['causer', 'subject'])
+            ->latest('id');
+
+        if ($user->hasRole('Superadmin')) {
+            // ponytail: no filter
+        } elseif ($user->hasRole('Lembaga')) {
+            $query->where('properties->lembaga_id', $user->lembaga_id);
+        } elseif ($user->sekolah_id && ($user->hasRole('Admin Sekolah') || $user->can('menu.log-aktivitas'))) {
+            $query->where('properties->sekolah_id', $user->sekolah_id);
+        } else {
+            abort(403);
+        }
+
+        if ($event = $request->query('event')) {
+            $query->where('event', $event);
+        }
+        if ($from = $request->query('from')) {
+            $query->whereDate('created_at', '>=', $from);
+        }
+        if ($to = $request->query('to')) {
+            $query->whereDate('created_at', '<=', $to);
+        }
+        if ($subjectType = $request->query('subject_type')) {
+            $query->where('subject_type', 'like', '%'.str_replace('\\', '\\\\', $subjectType).'%');
+        }
+
+        return $query->get();
+    }
+
     public function subjectLabel(Activity $activity): string
     {
         if (! $activity->subject_type) {

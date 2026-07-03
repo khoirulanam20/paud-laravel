@@ -9,6 +9,7 @@
     $tokenFallbackMonev = $tokenFallbackMonev ?? 'Maaf, fitur ini sedang terbatas.';
     $canBulkSelected = $aiReady && $hasTokens && $tokenBalance > 0 && empty($activeGeneration);
     $tourPrefix = $tourPrefix ?? 'admin-monev';
+    $exportRoute = $exportRoute ?? null;
 @endphp
 
 @if(session('success'))
@@ -81,7 +82,12 @@
             </div>
             <div class="sm:col-span-2 xl:col-span-2 flex flex-col gap-2 min-w-0">
                 <span class="input-label opacity-0 text-[0.65rem] leading-none max-sm:hidden" aria-hidden="true">&nbsp;</span>
-                <button type="submit" class="btn-primary w-full text-sm">Terapkan Filter</button>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn-primary flex-1 text-sm">Terapkan Filter</button>
+                    @if($exportRoute)
+                        <x-export-excel :route="$exportRoute" class="text-sm" />
+                    @endif
+                </div>
             </div>
         </form>
     </div>

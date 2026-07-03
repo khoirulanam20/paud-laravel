@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use App\Support\PaginationPerPage;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 
 class AkunController extends Controller
 {
+    use DownloadsExcel;
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
@@ -33,6 +35,41 @@ class AkunController extends Controller
         $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.akun.index', compact('akunList', 'filter'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $filter = $request->input('filter', 'all');
+
+        $query = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode');
+        $query = match ($filter) {
+            'sistem' => $query->sistem(),
+            'belanja' => $query->rkas()->where('jenis', 'beban'),
+            default => $query,
+        };
+        if ($search = $request->input('q')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('kode', 'like', "%{$search}%")
+                    ->orWhere('nama', 'like', "%{$search}%")
+                    ->orWhere('uraian', 'like', "%{$search}%");
+            });
+        }
+
+        $rows = $query->get()->map(fn (Akun $a) => [
+            $a->kode,
+            $a->nama,
+            $a->tipe ?? '-',
+            ($a->snp ?? '-').' / '.($a->komponen ?? '-'),
+            $a->jenis ?? '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Kode', 'Nama', 'Tipe', 'SNP / Komponen', 'Jenis'],
+            $rows,
+            'kode-rekening-'.now()->format('Y-m-d').'.xlsx',
+            'Kode Rekening'
+        );
     }
 
     public function store(Request $request)

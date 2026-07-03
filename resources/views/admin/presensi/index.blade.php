@@ -65,6 +65,7 @@
                             @error('tanggal')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </form>
+                    <x-export-excel route="admin.presensi.export" />
                 </div>
             </div>
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">

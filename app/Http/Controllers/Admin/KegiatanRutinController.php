@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\KegiatanRutin;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 
 class KegiatanRutinController extends Controller
 {
+    use DownloadsExcel;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -37,6 +39,39 @@ class KegiatanRutinController extends Controller
             ->get() : collect();
 
         return view('pengajar.kegiatan-rutin.index', compact('classList', 'anaks', 'rutins', 'tanggal', 'kelasId', 'masters'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $classList = Kelas::where('sekolah_id', $sekolahId)->get();
+        $kelasIds = $classList->pluck('id')->toArray();
+        $tanggal = $request->input('tanggal', date('Y-m-d'));
+        $kelasId = $request->input('kelas_id') ?: ($kelasIds[0] ?? null);
+
+        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
+        $masters = $kelasId ? MasterKegiatanRutin::whereHas('kelas', fn ($q) => $q->where('kelas.id', $kelasId))->get() : collect();
+        $rutins = $kelasId ? KegiatanRutin::where('kelas_id', $kelasId)->where('tanggal', $tanggal)->get()->keyBy(fn ($r) => $r->anak_id.'_'.$r->master_kegiatan_rutin_id) : collect();
+
+        $rows = [];
+        foreach ($anaks as $anak) {
+            foreach ($masters as $master) {
+                $rutin = $rutins->get($anak->id.'_'.$master->id);
+                $rows[] = [
+                    $anak->name,
+                    $master->aspek ?? '-',
+                    $master->nama_kegiatan,
+                    $rutin?->status_pencapaian ?? 'Belum diisi',
+                ];
+            }
+        }
+
+        return $this->downloadExcel(
+            ['Nama Siswa', 'Aspek', 'Kegiatan', 'Status Pencapaian'],
+            $rows,
+            'input-rutin-harian-'.$tanggal.'.xlsx',
+            'Input Rutin Harian'
+        );
     }
 
     public function store(Request $request)

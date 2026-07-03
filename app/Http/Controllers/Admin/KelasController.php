@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\Pengajar;
@@ -13,6 +14,7 @@ use Spatie\Permission\PermissionRegistrar;
 
 class KelasController extends Controller
 {
+    use DownloadsExcel;
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -31,6 +33,34 @@ class KelasController extends Controller
         $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
         return view('admin.kelas.index', compact('kelasList', 'pengajars'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        abort_if($sekolah_id === null, 403);
+
+        $kelasList = Kelas::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->with(['waliKelas', 'pengajars'])
+            ->withCount('anaks')
+            ->latest()
+            ->get();
+
+        $rows = $kelasList->map(fn (Kelas $k) => [
+            $k->name,
+            $k->waliKelas?->name ?? '-',
+            $k->description ?? '-',
+            $k->anaks_count,
+            $k->pengajars->pluck('name')->join(', ') ?: '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Nama Kelas', 'Wali Kelas', 'Deskripsi', 'Jumlah Siswa', 'Pengajar'],
+            $rows,
+            'data-kelas-'.now()->format('Y-m-d').'.xlsx',
+            'Kelola Kelas'
+        );
     }
 
     public function show(Kelas $kelas)

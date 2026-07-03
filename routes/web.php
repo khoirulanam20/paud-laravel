@@ -159,6 +159,35 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
         abort(403);
     })->name('settings');
 
+    // Export Excel
+    Route::get('anak/export', [AnakController::class, 'export'])->name('anak.export');
+    Route::get('pendaftaran/export', [PendaftaranController::class, 'export'])->name('pendaftaran.export');
+    Route::get('kelas/export', [KelasController::class, 'export'])->name('kelas.export');
+    Route::get('presensi/export', [PresensiController::class, 'export'])->name('presensi.export');
+    Route::get('presensi/rekap/export', [PresensiController::class, 'exportRekap'])->name('presensi.rekap.export');
+    Route::get('presensi-guru/export', [PresensiPengajarController::class, 'export'])->name('presensi-guru.export');
+    Route::get('kesehatan/export', [KesehatanController::class, 'export'])->name('kesehatan.export');
+    Route::get('matrikulasi/export', [AdminMatrikulasiController::class, 'export'])->name('matrikulasi.export');
+    Route::get('skala-pencapaian/export', [SkalaPencapaianController::class, 'export'])->name('skala-pencapaian.export');
+    Route::get('kegiatan/export', [KegiatanController::class, 'export'])->name('kegiatan.export');
+    Route::get('master-kegiatan-rutin/export', [MasterKegiatanRutinController::class, 'export'])->name('master-kegiatan-rutin.export');
+    Route::get('kegiatan-rutin/export', [KegiatanRutinController::class, 'export'])->name('kegiatan-rutin.export');
+    Route::get('pencapaian/export', [App\Http\Controllers\Admin\PencapaianController::class, 'export'])->name('pencapaian.export');
+    Route::get('monev/export', [AdminMonevController::class, 'export'])->name('monev.export');
+    Route::get('pengajar/export', [PengajarController::class, 'export'])->name('pengajar.export');
+    Route::get('sarana/export', [SaranaController::class, 'export'])->name('sarana.export');
+    Route::get('akun/export', [AkunController::class, 'export'])->name('akun.export');
+    Route::get('cashflow/export', [CashflowController::class, 'export'])->name('cashflow.export');
+    Route::get('jurnal/export', [JurnalController::class, 'export'])->name('jurnal.export');
+    Route::get('sumber-dana/export', [SumberDanaController::class, 'export'])->name('sumber-dana.export');
+    Route::get('rkas/export', [RkasController::class, 'export'])->name('rkas.export');
+    Route::get('rkas/laporan/export', [RkasController::class, 'exportLaporan'])->name('rkas.laporan.export');
+    Route::get('biaya-bulanan/export', [BiayaBulananController::class, 'export'])->name('biaya-bulanan.export');
+    Route::get('pembayaran-bulanan/export', [PembayaranBulananController::class, 'export'])->name('pembayaran-bulanan.export');
+    Route::get('kritik-saran/export', [AdminKritikSaranController::class, 'export'])->name('kritik-saran.export');
+    Route::get('pengguna/export', [PenggunaController::class, 'export'])->name('pengguna.export');
+    Route::get('activity-log/export', [ActivityLogController::class, 'export'])->name('activity-log.export');
+
     Route::get('monev', [AdminMonevController::class, 'index'])->name('monev.index');
     Route::post('monev/generate', [AdminMonevController::class, 'generate'])->middleware('throttle:10,1')->name('monev.generate');
     Route::post('monev/bulk-generate', [AdminMonevController::class, 'bulkGenerate'])->middleware('throttle:10,1')->name('monev.bulk-generate');

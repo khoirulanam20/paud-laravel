@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use App\Models\Rkas;
@@ -16,6 +17,8 @@ use Illuminate\Http\Request;
 
 class RkasController extends Controller
 {
+    use DownloadsExcel;
+
     public function __construct(
         private RkasService $rkasService,
         private RkasRealisasiService $realisasiService,
@@ -35,6 +38,32 @@ class RkasController extends Controller
         $tahunOptions = TahunAjaran::options();
 
         return view('admin.rkas.index', compact('rkasList', 'tahunAjaran', 'tahunOptions'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $tahunAjaran = $request->input('tahun_ajaran', TahunAjaran::current()['tahun_ajaran']);
+
+        $rows = Rkas::where('sekolah_id', $sekolahId)
+            ->where('tahun_ajaran', $tahunAjaran)
+            ->orderBy('semester')
+            ->withCount('lines')
+            ->get()
+            ->map(fn (Rkas $r) => [
+                $r->tahun_ajaran.' Semester '.$r->semester,
+                $r->isFinal() ? 'Final' : 'Draft',
+                $r->lines_count,
+                $r->synced_at?->format('Y-m-d H:i') ?? '-',
+            ])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Periode', 'Status', 'Baris', 'Sync Terakhir'],
+            $rows,
+            'rkas-'.str_replace('/', '-', $tahunAjaran).'.xlsx',
+            'RKAS'
+        );
     }
 
     public function store(Request $request)
@@ -142,6 +171,53 @@ class RkasController extends Controller
             'semester' => $semester,
             'tahunOptions' => TahunAjaran::options(),
         ]));
+    }
+
+    public function exportLaporan(Request $request)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $tahunAjaran = $request->input('tahun_ajaran', TahunAjaran::current()['tahun_ajaran']);
+        $semester = (int) $request->input('semester', TahunAjaran::current()['semester']);
+
+        $rka = Rkas::where('sekolah_id', $sekolahId)
+            ->where('tahun_ajaran', $tahunAjaran)
+            ->where('semester', $semester)
+            ->firstOrFail();
+
+        $laporan = $this->realisasiService->buildLaporan($rka);
+        $sumberDanas = $laporan['sumberDanas'];
+
+        $headings = ['Kode', 'Uraian'];
+        foreach ($sumberDanas as $sd) {
+            $headings[] = $sd->kode.' Anggaran';
+            $headings[] = $sd->kode.' Realisasi';
+            $headings[] = $sd->kode.' %';
+        }
+        $headings[] = 'Total Anggaran';
+        $headings[] = 'Total Realisasi';
+        $headings[] = 'Sisa';
+
+        $rows = $laporan['rows']->map(function (array $row) use ($sumberDanas) {
+            $line = [$row['akun']->kode, $row['akun']->nama];
+            foreach ($sumberDanas as $sd) {
+                $cell = $row['cells'][$sd->id] ?? ['anggaran' => 0, 'realisasi' => 0, 'persen' => null];
+                $line[] = $cell['anggaran'];
+                $line[] = $cell['realisasi'];
+                $line[] = $cell['persen'] ?? '-';
+            }
+            $line[] = $row['total_anggaran'];
+            $line[] = $row['total_realisasi'];
+            $line[] = $row['total_sisa'];
+
+            return $line;
+        })->all();
+
+        return $this->downloadExcel(
+            $headings,
+            $rows,
+            'laporan-rkas-'.str_replace('/', '-', $tahunAjaran)."-sem{$semester}.xlsx",
+            'Laporan RKAS'
+        );
     }
 
     public function updateRealisasi(Request $request, Rkas $rka)

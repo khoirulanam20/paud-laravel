@@ -8,7 +8,10 @@
                 <h2 class="font-bold text-xl" style="color:#2C2C2C;">Laporan RKAS</h2>
             </div>
             @if($rka)
-                <a href="{{ route('admin.rkas.export-pdf', ['tahun_ajaran' => $tahunAjaran, 'semester' => $semester]) }}" class="btn-secondary text-sm">Export PDF</a>
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.rkas.laporan.export" class="text-sm" />
+                    <a href="{{ route('admin.rkas.export-pdf', ['tahun_ajaran' => $tahunAjaran, 'semester' => $semester]) }}" class="btn-secondary text-sm">Export PDF</a>
+                </div>
             @endif
         </div>
     </x-slot>

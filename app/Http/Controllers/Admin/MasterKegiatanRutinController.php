@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 class MasterKegiatanRutinController extends Controller
 {
     use CanUploadImage;
+    use DownloadsExcel;
 
     public function index()
     {
@@ -27,6 +29,29 @@ class MasterKegiatanRutinController extends Controller
             ->get();
 
         return view('pengajar.master-kegiatan-rutin.index', compact('masters'));
+    }
+
+    public function export()
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $rows = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
+            ->where('sekolah_id', $sekolah_id)
+            ->latest()
+            ->get()
+            ->map(fn (MasterKegiatanRutin $m) => [
+                $m->nama_kegiatan,
+                $m->aspek ?? '-',
+                $m->matrikulasi?->indicator ?? '-',
+                $m->kelas->pluck('name')->join(', ') ?: '-',
+            ])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Nama Kegiatan', 'Aspek', 'Matrikulasi', 'Peserta (Kelas)'],
+            $rows,
+            'kegiatan-rutin-master-'.now()->format('Y-m-d').'.xlsx',
+            'Master Kegiatan Rutin'
+        );
     }
 
     public function create()

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use App\Models\Cashflow;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 
 class JurnalController extends Controller
 {
+    use DownloadsExcel;
+
     public function __construct(
         private AkuntansiService $akuntansiService
     ) {}
@@ -31,6 +34,36 @@ class JurnalController extends Controller
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.jurnal.index', compact('jurnals', 'bulan', 'tahun'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $bulan = (int) $request->input('bulan', now()->month);
+        $tahun = (int) $request->input('tahun', now()->year);
+
+        $jurnals = Jurnal::where('sekolah_id', $sekolahId)
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
+            ->with(['lines.akun', 'createdBy'])
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('no_jurnal', 'desc')
+            ->get();
+
+        $rows = $jurnals->map(fn (Jurnal $j) => [
+            $j->no_jurnal ?? '-',
+            $j->tanggal?->format('Y-m-d') ?? '-',
+            $j->deskripsi ?? '-',
+            number_format((float) $j->lines->sum('debit'), 0, ',', '.'),
+            $j->sumber ?? '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['No. Jurnal', 'Tanggal', 'Deskripsi', 'Total', 'Sumber'],
+            $rows,
+            sprintf('jurnal-%02d-%d.xlsx', $bulan, $tahun),
+            'Jurnal Umum'
+        );
     }
 
     public function create()

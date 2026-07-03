@@ -280,8 +280,10 @@
                                 @selected($filterAspekRaw === $asp)>{{ $asp }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="col-span-2 lg:col-span-2"><button type="submit"
-                                class="btn-primary w-full h-11 font-bold">Cari Data</button></div>
+                        <div class="col-span-2 lg:col-span-2 flex gap-2">
+                            <button type="submit" class="btn-primary flex-1 h-11 font-bold">Cari Data</button>
+                            <x-export-excel route="admin.pencapaian.export" class="h-11" />
+                        </div>
                     </form>
                 </div>
             </div>

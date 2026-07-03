@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\Pengajar;
@@ -16,6 +17,8 @@ use Spatie\Permission\Models\Role;
 
 class PenggunaController extends Controller
 {
+    use DownloadsExcel;
+
     private const HIDDEN_ROLES = ['Superadmin', 'Lembaga'];
 
     public function index(Request $request)
@@ -29,6 +32,28 @@ class PenggunaController extends Controller
         $kelas = Kelas::where('sekolah_id', $sekolahId)->orderBy('name')->get();
 
         return view('admin.pengguna.index', compact('penggunas', 'roles', 'kelas'));
+    }
+
+    public function export(Request $request)
+    {
+        $rows = User::where('sekolah_id', auth()->user()->sekolah_id)
+            ->with(['roles', 'kelas'])
+            ->latest()
+            ->get()
+            ->map(fn (User $u) => [
+                $u->name,
+                $u->email,
+                $u->roles->pluck('name')->join(', ') ?: '-',
+                $u->created_at?->format('Y-m-d') ?? '-',
+            ])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Nama', 'Email', 'Role', 'Bergabung'],
+            $rows,
+            'pengguna-'.now()->format('Y-m-d').'.xlsx',
+            'Pengguna'
+        );
     }
 
     public function store(Request $request)

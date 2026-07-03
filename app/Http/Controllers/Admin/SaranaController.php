@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Sarana;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 class SaranaController extends Controller
 {
     use CanUploadImage;
+    use DownloadsExcel;
 
     public function index(Request $request)
     {
@@ -19,6 +21,28 @@ class SaranaController extends Controller
         $saranas = Sarana::where('sekolah_id', $sekolah_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.sarana.index', compact('saranas'));
+    }
+
+    public function export(Request $request)
+    {
+        $rows = Sarana::where('sekolah_id', auth()->user()->sekolah_id)
+            ->latest()
+            ->get()
+            ->map(fn (Sarana $s) => [
+                $s->name,
+                $s->lokasi ?? '-',
+                $s->jenis ?? '-',
+                $s->quantity,
+                $s->condition ?? '-',
+            ])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Nama Sarana', 'Lokasi', 'Jenis', 'Jumlah', 'Kondisi'],
+            $rows,
+            'sarana-'.now()->format('Y-m-d').'.xlsx',
+            'Sarana'
+        );
     }
 
     public function store(Request $request)

@@ -193,6 +193,7 @@
                                 class="btn-secondary text-xs h-11 flex items-center">Reset</a>
                         @endif
                     </form>
+                    <x-export-excel route="admin.anak.export" class="h-11" />
                     <button type="button" @click="openImportModal()"
                         class="h-11 w-11 shrink-0 rounded-lg flex items-center justify-center transition border"
                         style="color: #1A6B6B; background: #E8F5F5; border-color: #D0E8E8;"

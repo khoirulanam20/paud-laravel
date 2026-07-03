@@ -14,9 +14,12 @@
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+            <div class="px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                <div>
                 <h3 class="section-title">Masukan orang tua &amp; wali</h3>
                 <p class="section-subtitle">Hanya masukan yang ditujukan ke sekolah Anda.</p>
+                </div>
+                <x-export-excel route="admin.kritik-saran.export" />
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table" data-tour="admin-kritik-table">
