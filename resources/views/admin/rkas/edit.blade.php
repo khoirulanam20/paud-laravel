@@ -23,11 +23,9 @@
 
         <form action="{{ route('admin.rkas.update', $rka) }}" method="POST">
             @csrf @method('PUT')
-            @foreach(['belanja' => 'Belanja', 'pendapatan' => 'Pendapatan'] as $jenis => $label)
-                @php $items = $jenis === 'belanja' ? $akunBelanja : $akunPendapatan; @endphp
-                @if($items->count() === 0) @continue @endif
+            @if($akunBelanja->count() > 0)
                 <div class="card overflow-hidden mb-6">
-                    <div class="px-6 py-3 border-b font-bold" style="border-color:rgba(0,0,0,0.06);background:#FAF6F0;">{{ $label }}</div>
+                    <div class="px-6 py-3 border-b font-bold" style="border-color:rgba(0,0,0,0.06);background:#FAF6F0;">Belanja</div>
                     <div class="overflow-x-auto">
                         <table class="data-table text-sm">
                             <thead>
@@ -39,7 +37,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($items as $akun)
+                                @foreach($akunBelanja as $akun)
                                     @php $line = $selected->get($akun->id); $anggarans = $line?->anggarans->keyBy('sumber_dana_id') ?? collect(); @endphp
                                     <tr>
                                         <td><input type="checkbox" name="lines[{{ $akun->id }}][enabled]" value="1" @checked($line !== null) {{ $rka->isFinal() ? 'disabled' : '' }}></td>
@@ -55,14 +53,12 @@
                             </tbody>
                         </table>
                     </div>
-                    @if(method_exists($items, 'links'))
-                        <div class="px-6 py-3 border-t" style="border-color:rgba(0,0,0,0.06);">
-                            <x-per-page-selector :paginator="$items" param="{{ $jenis }}_per_page" />
-                            {{ $items->withQueryString()->links() }}
-                        </div>
-                    @endif
+                    <div class="px-6 py-3 border-t" style="border-color:rgba(0,0,0,0.06);">
+                        <x-per-page-selector :paginator="$akunBelanja" param="belanja_per_page" />
+                        {{ $akunBelanja->withQueryString()->links() }}
+                    </div>
                 </div>
-            @endforeach
+            @endif
             @if(!$rka->isFinal())<div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Anggaran</button></div>@endif
         </form>
 

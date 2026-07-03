@@ -19,7 +19,6 @@ class AkunController extends Controller
         $query = match ($filter) {
             'sistem' => $query->sistem(),
             'belanja' => $query->rkas()->where('jenis', 'beban'),
-            'pendapatan' => $query->rkas()->where('jenis', 'pendapatan'),
             default => $query,
         };
 

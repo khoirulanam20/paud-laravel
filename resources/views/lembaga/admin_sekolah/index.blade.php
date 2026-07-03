@@ -6,8 +6,8 @@
         </div>
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ 
-        showCreateModal:false, 
-        showEditModal:false,
+        showCreateModal:@js($errors->any() && old('_method') !== 'PUT'), 
+        showEditModal:@js($errors->any() && old('_method') === 'PUT'),
         showDeleteModal:false, 
         deleteRoute:'', 
         editRoute:'',

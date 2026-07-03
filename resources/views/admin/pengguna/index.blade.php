@@ -12,8 +12,8 @@
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
-            showCreateModal: false,
-            showEditModal: false,
+            showCreateModal: @js($errors->any() && old('_method') !== 'PUT'),
+            showEditModal: @js($errors->any() && old('_method') === 'PUT'),
             showDeleteModal: false,
             createData: { role: '', kelas_id: '' },
             editData: { id: '', name: '', email: '', role: '', kelas_id: '' },
@@ -130,11 +130,12 @@
                     <div class="modal-body space-y-4">
                         <div>
                             <label class="input-label">Nama Lengkap</label>
-                            <input type="text" name="name" required placeholder="Nama pengguna" class="input-field">
+                            <input type="text" name="name" required placeholder="Nama pengguna" class="input-field" value="{{ old('name') }}">
                         </div>
                         <div>
                             <label class="input-label">Email</label>
-                            <input type="email" name="email" required placeholder="email@example.com" class="input-field">
+                            <input type="email" name="email" required placeholder="email@example.com" class="input-field @error('email') border-red-500 @enderror" value="{{ old('email') }}">
+                            @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="input-label">Password</label>
@@ -181,7 +182,8 @@
                         </div>
                         <div>
                             <label class="input-label">Email</label>
-                            <input type="email" name="email" x-model="editData.email" required class="input-field">
+                            <input type="email" name="email" x-model="editData.email" required class="input-field @error('email') border-red-500 @enderror" value="{{ old('email') }}">
+                            @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="input-label">Password <span class="text-xs" style="color:#9E9790;">(kosongkan jika tidak diubah)</span></label>

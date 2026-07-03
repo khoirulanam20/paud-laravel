@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+    <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6" x-data="{ showImageModal: false, activeImage: null }">
         <div class="card overflow-hidden" data-tour="anak-summary">
             <div class="p-6 md:p-8">
                 <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
@@ -261,7 +261,7 @@
                                                     <h4 class="font-bold text-gray-800 text-sm italic">{{ $first->kegiatan->title ?? '-' }}</h4>
                                                 </div>
                                                 @if($first->photo)
-                                                    <img src="{{ Storage::url($first->photo) }}" class="h-16 w-16 object-cover rounded-xl border border-black/5 shadow-sm cursor-pointer" onclick="window.open(this.src)">
+                                                    <img src="{{ Storage::url($first->photo) }}" class="h-16 w-16 object-cover rounded-xl border border-black/5 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($first->photo) }}'; showImageModal = true">
                                                 @endif
                                             </div>
 
@@ -292,5 +292,7 @@
                 </div>
             </div>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

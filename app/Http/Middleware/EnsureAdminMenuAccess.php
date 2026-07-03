@@ -38,6 +38,15 @@ class EnsureAdminMenuAccess
             abort(403);
         }
 
+        if ($routeName === 'admin.settings') {
+            $settingsPerms = ['menu.role', 'menu.pengguna', 'menu.log-aktivitas', 'menu.setting-akuntansi', 'menu.pengaturan-ai'];
+            if (collect($settingsPerms)->contains(fn ($p) => $user->can($p))) {
+                return $next($request);
+            }
+
+            abort(403);
+        }
+
         foreach (config('admin-menu.route_permissions', []) as $pattern => $permission) {
             if (Str::is($pattern, $routeName) && $user->can($permission)) {
                 return $next($request);

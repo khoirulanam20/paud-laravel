@@ -4,7 +4,7 @@
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Kelola Superadmin</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, deleteRoute:'', editRoute:'', editData:{name:'',email:''}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true}, openEdit(u,r){this.editData={name:u.name,email:u.email};this.editRoute=r;this.showEditModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:@js($errors->any() && old('_method') !== 'PUT'), showEditModal:@js($errors->any() && old('_method') === 'PUT'), showDeleteModal:false, deleteRoute:'', editRoute:'', editData:{name:'{{ old('name', '') }}',email:'{{ old('email', '') }}'}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true}, openEdit(u,r){this.editData={name:u.name,email:u.email};this.editRoute=r;this.showEditModal=true} }">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
@@ -37,8 +37,8 @@
             <form action="{{ route('superadmin.users.store') }}" method="POST">@csrf
                 <div class="modal-header"><h3 class="section-title">Tambah Superadmin</h3><p class="section-subtitle">Password awal: password123</p></div>
                 <div class="modal-body space-y-4">
-                    <div><label class="input-label">Nama</label><input type="text" name="name" required class="input-field"></div>
-                    <div><label class="input-label">Email</label><input type="email" name="email" required class="input-field"></div>
+                    <div><label class="input-label">Nama</label><input type="text" name="name" required class="input-field" value="{{ old('name') }}"></div>
+                    <div><label class="input-label">Email</label><input type="email" name="email" required class="input-field @error('email') border-red-500 @enderror" value="{{ old('email') }}">@error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror</div>
                 </div>
                 <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
             </form>
@@ -48,7 +48,7 @@
                 <div class="modal-header"><h3 class="section-title">Edit Superadmin</h3></div>
                 <div class="modal-body space-y-4">
                     <div><label class="input-label">Nama</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
-                    <div><label class="input-label">Email</label><input type="email" name="email" x-model="editData.email" required class="input-field"></div>
+                    <div><label class="input-label">Email</label><input type="email" name="email" x-model="editData.email" required class="input-field @error('email') border-red-500 @enderror">@error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror</div>
                     <div><label class="input-label">Password baru (opsional)</label><input type="password" name="password" class="input-field"></div>
                 </div>
                 <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>

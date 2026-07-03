@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Siswa Kelasku</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d; this.showEditModal=true}, openDelete(r){this.deleteRoute=r; this.showDeleteModal=true} }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:@js($errors->any() && old('_method') !== 'PUT'), showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d; this.showEditModal=true}, openDelete(r){this.deleteRoute=r; this.showDeleteModal=true} }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
@@ -178,7 +178,7 @@
                         </div>
                         <p class="text-[13px] font-bold text-[#1A6B6B] border-b pb-1" data-tour="modal-create-section-ortu">Data Orang Tua & Akun Login</p>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Email Orang Tua (Login)</label><input type="email" name="email" required class="input-field" placeholder="email@ortu.com"></div>
+                            <div><label class="input-label">Email Orang Tua (Login)</label><input type="email" name="email" required class="input-field @error('email') border-red-500 @enderror" placeholder="email@ortu.com" value="{{ old('email') }}">@error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror</div>
                             <div><label class="input-label">Nama Orang Tua</label><input type="text" name="parent_name" class="input-field" placeholder="Nama Wali"></div>
                         </div>
                         <div><label class="input-label">Alamat Lengkap</label><textarea name="alamat" rows="2" class="input-field" placeholder="Prov, Kab, Kec, Kel..."></textarea></div>

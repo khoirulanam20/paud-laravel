@@ -240,7 +240,7 @@ async function waitForStepElement(selector, interactive = false, generation = to
             return null;
         }
 
-        const element = document.querySelector(selector);
+        const element = findVisibleTourElement(selector);
         if (element && isElementVisible(element)) {
             if (interactive || !isModalSectionSelector(selector)) {
                 return element;
@@ -735,10 +735,34 @@ function toDriverStep(rawStep, generation) {
     } else if (isModalSectionSelector(selector)) {
         step.element = () => resolveModalSectionElement(selector);
     } else {
-        step.element = selector;
+        step.element = () => findVisibleTourElement(selector);
     }
 
     return step;
+}
+
+function isNavTourSelector(selector) {
+    return typeof selector === 'string' && selector.includes('data-tour="nav-');
+}
+
+function findVisibleTourElement(selector) {
+    if (!selector || isNavTourSelector(selector)) {
+        return null;
+    }
+
+    const roots = [document.querySelector('main'), document.body].filter(Boolean);
+
+    for (const root of roots) {
+        for (const element of root.querySelectorAll(selector)) {
+            if (element.closest('aside, nav.lg\\:hidden') || !isElementVisible(element)) {
+                continue;
+            }
+
+            return element;
+        }
+    }
+
+    return null;
 }
 
 async function prepareVisibleSteps(rawSteps, generation = tourGeneration) {
@@ -749,7 +773,7 @@ async function prepareVisibleSteps(rawSteps, generation = tourGeneration) {
             return [];
         }
 
-        if (!rawStep?.element) {
+        if (!rawStep?.element || isNavTourSelector(rawStep.element)) {
             continue;
         }
 
@@ -758,7 +782,7 @@ async function prepareVisibleSteps(rawSteps, generation = tourGeneration) {
             continue;
         }
 
-        if (!document.querySelector(rawStep.element)) {
+        if (!findVisibleTourElement(rawStep.element)) {
             continue;
         }
 

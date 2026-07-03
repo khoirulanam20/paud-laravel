@@ -13,6 +13,8 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{ 
             showModal: {{ $errors->any() ? 'true' : 'false' }},
+            showImageModal: false,
+            activeImage: null,
             isEdit: false,
             editId: '',
             messageValue: '',
@@ -48,7 +50,7 @@
                         <div class="flex items-center gap-3">
                             <div class="shrink-0">
                                 @if($fb->photo)
-                                    <div class="h-10 w-10 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onclick="window.open('{{ Storage::url($fb->photo) }}')">
+                                    <div class="h-10 w-10 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($fb->photo) }}'; showImageModal = true">
                                         <img src="{{ Storage::url($fb->photo) }}" class="h-full w-full object-cover">
                                     </div>
                                 @else
@@ -142,5 +144,7 @@
                 </form>
             </div>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

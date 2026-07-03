@@ -532,66 +532,48 @@ return [
     // ─── ORANG TUA ─────────────────────────────────────────────
 
     'orangtua.pencapaian.index' => [
-        ['element' => '[data-tour="nav-orangtua.pencapaian.index"]', 'title' => 'Menu Pencapaian', 'description' => 'Lihat perkembangan belajar anak Anda.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Pencapaian Anak', 'description' => 'Laporan pencapaian belajar anak dari kegiatan di sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-pencapaian-filter"]', 'title' => 'Filter Laporan', 'description' => 'Saring berdasarkan aspek, tanggal, atau pilih anak jika punya lebih dari satu.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-pencapaian-filter"]', 'title' => 'Pencapaian Anak', 'description' => 'Laporan pencapaian belajar anak dari kegiatan di sekolah. Saring berdasarkan aspek, tanggal, atau pilih anak.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-pencapaian-reports"]', 'title' => 'Laporan Pencapaian', 'description' => 'Setiap kartu berisi kegiatan, skala capaian, dan catatan guru.', 'side' => 'top'],
     ],
 
     'orangtua.chat.index' => [
-        ['element' => '[data-tour="nav-orangtua.chat.index"]', 'title' => 'Menu Chat', 'description' => 'Tanya jawab dengan asisten AI sekolah tentang anak Anda.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Chat Asisten', 'description' => 'Percakapan dengan chatbot sekolah untuk informasi seputar anak.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-chat-suggestions"]', 'title' => 'Pertanyaan Contoh', 'description' => 'Klik salah satu pertanyaan umum untuk memulai percakapan dengan cepat.', 'side' => 'top'],
+        ['element' => '[data-tour="ortu-chat-suggestions"]', 'title' => 'Chat Asisten', 'description' => 'Percakapan dengan chatbot sekolah. Klik pertanyaan contoh untuk memulai.', 'side' => 'top'],
         ['element' => '[data-tour="ortu-chat-input"]', 'title' => 'Ketik Pesan', 'description' => 'Tulis pertanyaan Anda di sini lalu kirim. Riwayat tersimpan otomatis.', 'side' => 'top'],
     ],
 
     'orangtua.monev.index' => [
-        ['element' => '[data-tour="nav-orangtua.monev.index"]', 'title' => 'Menu Monev', 'description' => 'Baca laporan monitoring & evaluasi bulanan anak.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Laporan Monev', 'description' => 'Ringkasan perkembangan anak per bulan dari sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-monev-filters"]', 'title' => 'Pilih Anak & Periode', 'description' => 'Pilih anak (jika ada lebih dari satu) serta bulan dan tahun laporan.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-monev-filters"]', 'title' => 'Laporan Monev', 'description' => 'Ringkasan perkembangan anak per bulan. Pilih anak serta bulan dan tahun laporan.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-monev-report"]', 'title' => 'Isi Laporan', 'description' => 'Baca analisis perkembangan anak yang dihasilkan sekolah.', 'side' => 'top'],
     ],
 
     'orangtua.kegiatan.index' => [
-        ['element' => '[data-tour="nav-orangtua.kegiatan.index"]', 'title' => 'Menu Agenda Belajar', 'description' => 'Lihat kegiatan belajar anak di sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Agenda Belajar', 'description' => 'Kalender jurnal kegiatan belajar anak Anda.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-kegiatan-calendar"]', 'title' => 'Kalender Kegiatan', 'description' => 'Klik tanggal yang ada jurnalnya untuk melihat detail kegiatan dan foto.', 'side' => 'top'],
+        ['element' => '[data-tour="ortu-kegiatan-calendar"]', 'title' => 'Agenda Belajar', 'description' => 'Kalender jurnal kegiatan belajar anak Anda. Klik tanggal yang ada jurnalnya.', 'side' => 'top'],
     ],
 
     'orangtua.kegiatan-rutin.index' => [
-        ['element' => '[data-tour="nav-orangtua.kegiatan-rutin.index"]', 'title' => 'Menu Kegiatan Rutin', 'description' => 'Pantau kegiatan rutin harian anak seperti makan dan tidur.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Kegiatan Rutin', 'description' => 'Riwayat kegiatan rutin anak yang dicatat guru setiap hari.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-rutin-filters"]', 'title' => 'Filter Riwayat', 'description' => 'Pilih anak, jenis kegiatan, dan rentang tanggal.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-rutin-filters"]', 'title' => 'Kegiatan Rutin', 'description' => 'Riwayat kegiatan rutin anak. Pilih anak, jenis kegiatan, dan rentang tanggal.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-rutin-results"]', 'title' => 'Hasil Kegiatan', 'description' => 'Klik item untuk melihat detail dan foto dokumentasi.', 'side' => 'top'],
     ],
 
     'orangtua.pembayaran.index' => [
-        ['element' => '[data-tour="nav-orangtua.pembayaran.index"]', 'title' => 'Menu Pembayaran', 'description' => 'Lihat tagihan bulanan dan unggah bukti transfer.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Pembayaran Bulanan', 'description' => 'Ringkasan tagihan anak Anda berdasarkan kehadiran di sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-pembayaran-summary"]', 'title' => 'Ringkasan per Anak', 'description' => 'Total belum dibayar dan sudah dibayar untuk setiap anak.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-pembayaran-summary"]', 'title' => 'Pembayaran Bulanan', 'description' => 'Ringkasan tagihan anak Anda berdasarkan kehadiran di sekolah.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-pembayaran-table"]', 'title' => 'Daftar Tagihan', 'description' => 'Semua tagihan per periode beserta status persetujuan sekolah.', 'side' => 'top'],
         ['element' => '[data-tour="ortu-pembayaran-action-detail"]', 'title' => 'Detail', 'description' => 'Buka rincian tagihan dan unggah bukti transfer.', 'side' => 'left'],
     ],
 
     'orangtua.presensi.index' => [
-        ['element' => '[data-tour="nav-orangtua.presensi.index"]', 'title' => 'Menu Kehadiran', 'description' => 'Pantau riwayat kehadiran anak di sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Kehadiran Anak', 'description' => 'Rekap absensi harian dan mingguan anak Anda.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-presensi-period-filter"]', 'title' => 'Filter Periode', 'description' => 'Pilih bulan atau minggu untuk melihat rekap kehadiran.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-presensi-period-filter"]', 'title' => 'Kehadiran Anak', 'description' => 'Rekap absensi harian dan mingguan. Pilih bulan atau minggu untuk melihat rekap.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-presensi-summary-cards"]', 'title' => 'Ringkasan Kehadiran', 'description' => 'Statistik hadir, izin, dan sakit per anak ditampilkan di sini.', 'side' => 'top'],
     ],
 
     'orangtua.menu-makanan.index' => [
-        ['element' => '[data-tour="nav-orangtua.menu-makanan.index"]', 'title' => 'Menu Makanan', 'description' => 'Lihat menu makan harian anak di sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Menu Makanan', 'description' => 'Daftar menu makan yang disajikan untuk siswa.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-menu-date-filter"]', 'title' => 'Filter Tanggal', 'description' => 'Pilih rentang tanggal lalu klik Tampilkan untuk melihat menu.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-menu-date-filter"]', 'title' => 'Menu Makanan', 'description' => 'Daftar menu makan siswa. Pilih rentang tanggal lalu klik Tampilkan.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-menu-list"]', 'title' => 'Daftar Menu', 'description' => 'Setiap hari menampilkan menu, foto, dan tombol suka/tidak suka.', 'side' => 'top'],
     ],
 
     'orangtua.kritik-saran.index' => array_merge(
         [
-            ['element' => '[data-tour="nav-orangtua.kritik-saran.index"]', 'title' => 'Menu Saran & Kritik', 'description' => 'Kirim masukan atau saran ke pihak sekolah.', 'side' => 'right'],
-            ['element' => '[data-tour="page-header"]', 'title' => 'Saran & Kritik', 'description' => 'Sampaikan masukan Anda dan lihat tanggapan dari sekolah.', 'side' => 'bottom'],
-            ['element' => '[data-tour="ortu-kritik-feed"]', 'title' => 'Riwayat Masukan', 'description' => 'Pesan yang sudah dikirim beserta tanggapan sekolah (jika ada).', 'side' => 'top'],
+            ['element' => '[data-tour="ortu-kritik-feed"]', 'title' => 'Saran & Kritik', 'description' => 'Sampaikan masukan Anda dan lihat tanggapan dari sekolah.', 'side' => 'top'],
         ],
         tour_table_actions(
             'ortu-kritik',
@@ -605,9 +587,7 @@ return [
     ),
 
     'orangtua.kesehatan.index' => [
-        ['element' => '[data-tour="nav-orangtua.kesehatan.index"]', 'title' => 'Menu Kesehatan Anak', 'description' => 'Pantau data kesehatan anak dari sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Kesehatan Anak', 'description' => 'Riwayat pemeriksaan kesehatan yang dicatat guru.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-kesehatan-metrics"]', 'title' => 'Data Terkini', 'description' => 'Berat badan, tinggi badan, lingkar kepala, dan info alergi terbaru.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-kesehatan-metrics"]', 'title' => 'Kesehatan Anak', 'description' => 'Riwayat pemeriksaan kesehatan. Berat badan, tinggi badan, lingkar kepala, dan info alergi terbaru.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-kesehatan-timeline"]', 'title' => 'Riwayat Pemeriksaan', 'description' => 'Timeline lengkap pemeriksaan kesehatan dari waktu ke waktu.', 'side' => 'top'],
     ],
 

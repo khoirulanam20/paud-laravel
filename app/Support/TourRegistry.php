@@ -49,7 +49,8 @@ class TourRegistry
     {
         return array_values(array_filter(
             self::steps($route),
-            fn (array $step) => empty($step['openModal']),
+            fn (array $step) => empty($step['openModal'])
+                && ! str_contains($step['element'] ?? '', 'data-tour="nav-'),
         ));
     }
 

@@ -26,7 +26,7 @@
             </div>
 
             <div class="px-6 py-3 border-b flex flex-wrap gap-2" data-tour="admin-akun-filter-tabs" style="border-color:rgba(0,0,0,0.06);">
-                @foreach(['all' => 'Semua', 'sistem' => 'Sistem', 'belanja' => 'Belanja', 'pendapatan' => 'Pendapatan'] as $key => $label)
+                @foreach(['all' => 'Semua', 'sistem' => 'Sistem', 'belanja' => 'Belanja'] as $key => $label)
                     <a href="{{ route('admin.akun.index', ['filter' => $key, 'q' => request('q')]) }}"
                        class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ $filter === $key ? 'btn-primary' : 'btn-secondary' }}">{{ $label }}</a>
                 @endforeach

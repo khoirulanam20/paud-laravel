@@ -72,6 +72,7 @@
             tokenFallbackPencapaian: @js($tokenFallbackPencapaian ?? 'Maaf, fitur ini sedang terbatas.'),
             skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
+            showImageModal: false, activeImage: null,
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
             selectedKelasId: '', selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
             editBundleKey: null, editNilai: {}, editCatatan: {}, createNilai: {}, createCatatan: {},
@@ -293,7 +294,7 @@
                         <div class="relative rounded-2xl bg-white border border-black/5 shadow-sm p-4 hover:shadow-md transition">
                             <div class="flex items-start gap-3 mb-4">
                                 @if($first->photo)
-                                    <img src="{{ asset('storage/' . $first->photo) }}" class="h-16 w-16 object-cover rounded-xl shadow-sm shrink-0" onclick="window.open(this.src)">
+                                    <img src="{{ asset('storage/' . $first->photo) }}" class="h-16 w-16 object-cover rounded-xl shadow-sm shrink-0 cursor-pointer" @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; showImageModal = true">
                                 @else
                                     <div class="h-16 w-16 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-black/5"><svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
                                 @endif
@@ -339,7 +340,7 @@
                             <tr>
                                 <td>
                                     @if($first->photo)
-                                        <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" onclick="window.open('{{ asset('storage/' . $first->photo) }}')">
+                                        <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; showImageModal = true">
                                             <img src="{{ asset('storage/' . $first->photo) }}" class="h-full w-full object-cover">
                                             <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
                                         </div>
@@ -598,10 +599,7 @@
                                         Foto Sebelumnya:
                                     </div>
                                     <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group" style="border-color:#1A6B6B22;">
-                                        <img :src="editBundles[editBundleKey].photo_url" class="w-full h-full object-cover">
-                                        <a :href="editBundles[editBundleKey].photo_url" target="_blank" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        </a>
+                                        <img :src="editBundles[editBundleKey].photo_url" class="w-full h-full object-cover cursor-pointer" @click="activeImage = editBundles[editBundleKey].photo_url; showImageModal = true">
                                     </div>
                                     <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Upload file baru untuk mengganti foto.</p>
                                 </div>
@@ -636,5 +634,7 @@
                 </form>
             </div>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

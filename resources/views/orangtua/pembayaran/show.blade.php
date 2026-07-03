@@ -14,31 +14,8 @@
     </x-slot>
 
     <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8"
-         x-data="{
-            showBayarModal: false,
-            showKwitansiModal: false,
-            kwitansiData: {},
-            kwitansiJenis: 'penerimaan',
-            kwitansiLoading: false,
-            async openKwitansi() {
-                this.kwitansiLoading = true;
-                try {
-                    const res = await fetch('{{ route('orangtua.pembayaran.kwitansi.defaults', $pembayaran) }}', {
-                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    if (!res.ok) throw new Error('Gagal memuat data kuitansi');
-                    const data = await res.json();
-                    this.kwitansiData = data;
-                    this.kwitansiJenis = data.jenis || 'penerimaan';
-                    this.showKwitansiModal = true;
-                } catch (e) {
-                    alert(e.message || 'Gagal memuat data kuitansi');
-                } finally {
-                    this.kwitansiLoading = false;
-                }
-            }
-         }"
-         @tour-close-modals.window="showBayarModal=false; showKwitansiModal=false">
+         x-data="{ showBayarModal: false, showImageModal: false, activeImage: null }"
+         @tour-close-modals.window="showBayarModal=false">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
@@ -89,9 +66,9 @@
                 @if($pembayaran->bukti_transfer)
                     <div class="card p-6" data-tour="ortu-pembayaran-bukti">
                         <h3 class="section-title mb-4">Bukti Transfer</h3>
-                        <a href="{{ Storage::url($pembayaran->bukti_transfer) }}" target="_blank">
-                            <img src="{{ Storage::url($pembayaran->bukti_transfer) }}" alt="Bukti" class="w-full rounded-lg border">
-                        </a>
+                        <img src="{{ Storage::url($pembayaran->bukti_transfer) }}" alt="Bukti"
+                            class="w-full rounded-lg border cursor-pointer"
+                            @click="activeImage = '{{ Storage::url($pembayaran->bukti_transfer) }}'; showImageModal = true">
                     </div>
                 @endif
 
@@ -100,10 +77,6 @@
                         <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         Download Invoice
                     </a>
-                    <button type="button" @click="openKwitansi()" :disabled="kwitansiLoading" class="btn-secondary w-full justify-center">
-                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Kuitansi BOP-12
-                    </button>
                 @endif
 
                 @if($pembayaran->isPending() || $pembayaran->isRejected())
@@ -131,25 +104,6 @@
             </div>
         </div>
 
-        @if($pembayaran->isApproved())
-        <div x-show="showKwitansiModal" class="modal-overlay" style="display:none;">
-            <div x-show="showKwitansiModal" x-transition class="modal-box max-w-3xl max-h-[90vh] overflow-y-auto" @click.away="showKwitansiModal=false">
-                <form action="{{ route('orangtua.pembayaran.kwitansi.pdf', $pembayaran) }}" method="POST" target="_blank">
-                    @csrf
-                    <div class="modal-header">
-                        <h3 class="section-title" x-text="kwitansiJenis === 'penerimaan' ? 'Kuitansi BOP-12 — Bukti Penerimaan' : 'Kuitansi BOP-12 — Bukti Pembayaran'"></h3>
-                        <p class="section-subtitle" x-text="kwitansiJenis === 'penerimaan' ? 'Formulir penerimaan dana (pemasukan kas). Periksa dan edit sebelum unduh PDF.' : 'Formulir pengeluaran dana. Periksa dan edit sebelum unduh PDF.'"></p>
-                    </div>
-                    <div class="modal-body">
-                        @include('kwitansi._preview-form')
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" @click="showKwitansiModal=false" class="btn-secondary">Batal</button>
-                        <button type="submit" class="btn-primary">Download PDF</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        @endif
+        <x-image-lightbox />
     </div>
 </x-app-layout>

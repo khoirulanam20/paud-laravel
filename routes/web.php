@@ -337,8 +337,6 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
 
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('pembayaran/{pembayaran}/invoice', [PembayaranController::class, 'exportInvoice'])->name('pembayaran.invoice');
-    Route::get('pembayaran/{pembayaran}/kwitansi/defaults', [PembayaranController::class, 'kwitansiDefaults'])->name('pembayaran.kwitansi.defaults');
-    Route::post('pembayaran/{pembayaran}/kwitansi/pdf', [PembayaranController::class, 'kwitansiPdf'])->name('pembayaran.kwitansi.pdf');
     Route::get('pembayaran/{pembayaran}', [PembayaranController::class, 'show'])->name('pembayaran.show');
     Route::post('pembayaran/{pembayaran}/bayar', [PembayaranController::class, 'bayar'])->name('pembayaran.bayar');
 });

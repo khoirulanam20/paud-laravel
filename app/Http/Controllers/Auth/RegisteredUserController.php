@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -74,6 +75,9 @@ class RegisteredUserController extends Controller
             ], $request->file('photo'));
 
             DB::commit();
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
@@ -81,7 +85,7 @@ class RegisteredUserController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'email' => 'Pendaftaran gagal diproses. Pastikan server sudah menjalankan migrasi (php artisan migrate --force) dan cache dibersihkan (php artisan optimize:clear). Hubungi admin jika masalah berlanjut.',
+                    'email' => 'Pendaftaran gagal diproses. Hubungi admin jika masalah berlanjut.',
                 ]);
         }
 

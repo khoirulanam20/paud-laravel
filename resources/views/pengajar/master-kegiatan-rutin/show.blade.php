@@ -2,6 +2,8 @@
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8" x-data="{ 
         openModal: false, 
         openDetailModal: false,
+        showImageModal: false,
+        activeImage: null,
         selectedAnak: null, 
         statusValue: '',
         keteranganValue: '',
@@ -107,7 +109,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-start gap-3">
                                         @if($r?->photo)
-                                            <div class="h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="window.open('{{ Storage::url($r->photo) }}')">
+                                            <div class="h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($r->photo) }}'; showImageModal = true">
                                                 <img src="{{ Storage::url($r->photo) }}" class="h-full w-full object-cover">
                                             </div>
                                         @endif
@@ -242,7 +244,7 @@
                                 
                                 <div class="flex flex-col sm:flex-row gap-4">
                                     <template x-if="item.photo_url">
-                                        <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="window.open(item.photo_url)">
+                                        <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = item.photo_url; showImageModal = true">
                                             <img :src="item.photo_url" class="w-full h-full object-cover">
                                         </div>
                                     </template>
@@ -259,5 +261,7 @@
                 </div>
             </div>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

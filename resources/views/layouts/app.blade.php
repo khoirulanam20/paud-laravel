@@ -138,7 +138,15 @@
                 $group['sections'] = array_values(array_filter($group['sections'], fn ($section) => count($section['items']) > 0));
                 return $group;
             }
-            if (!isset($group['items'])) return $group;
+            if (!isset($group['items'])) {
+                if (isset($group['route']) && $group['route'] === 'admin.settings') {
+                    $settingsPerms = ['menu.role', 'menu.pengguna', 'menu.log-aktivitas', 'menu.setting-akuntansi', 'menu.pengaturan-ai'];
+
+                    return collect($settingsPerms)->contains(fn ($p) => $user->can($p)) ? $group : null;
+                }
+
+                return $group;
+            }
             $group['items'] = array_filter($group['items'], function ($item) use ($user) {
                 if (!isset($item['perm'])) return true;
                 return $user->can($item['perm']);
@@ -148,10 +156,14 @@
         }, $roleNavItems);
         // Hapus grup yang kosong
         $roleNavItems = array_filter($roleNavItems, function ($group) {
+            if ($group === null) {
+                return false;
+            }
             if (!empty($group['collapsible'])) {
                 return !empty($group['sections']);
             }
             if (!isset($group['items'])) return true;
+
             return count($group['items']) > 0;
         });
         $roleNavItems = array_values($roleNavItems); // re-index
