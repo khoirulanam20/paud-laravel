@@ -65,4 +65,9 @@ class Pengajar extends Model
 
         return Kelas::whereIn('id', $ids)->orderBy('name')->get();
     }
+
+    public function monevGuruEvaluasis(): HasMany
+    {
+        return $this->hasMany(MonevGuruEvaluasi::class);
+    }
 }

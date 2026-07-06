@@ -29,6 +29,8 @@ class PermissionSeeder extends Seeder
             'Lembaga & Guru' => [
                 ['name' => 'menu.data-pengajar', 'label' => 'Data Guru'],
                 ['name' => 'menu.presensi-guru', 'label' => 'Presensi Guru'],
+                ['name' => 'menu.monev-guru', 'label' => 'Monev Guru'],
+                ['name' => 'menu.monev-guru-kriteria', 'label' => 'Kriteria Monev Guru'],
                 ['name' => 'menu.sarana', 'label' => 'Sarana'],
                 ['name' => 'menu.menu-makanan', 'label' => 'Menu Makanan'],
             ],

@@ -131,6 +131,174 @@ PROMPT;
     }
 
     /**
+     * Generate 3 catatan penilaian suggestions for monev guru per kriteria.
+     *
+     * @return array<string>
+     */
+    public function generateMonevGuruCatatanSuggestions(
+        string $guruName,
+        string $kriteriaNama,
+        string $kriteriaDeskripsi,
+        int $skor,
+        string $periodeLabel,
+        ?string $personaPrefix = null
+    ): array {
+        $identity = $personaPrefix !== null && trim($personaPrefix) !== ''
+            ? trim($personaPrefix)
+            : 'Kamu adalah kepala sekolah / supervisor PAUD yang profesional dan objektif.';
+
+        $deskripsi = $kriteriaDeskripsi !== '' ? $kriteriaDeskripsi : '(tidak ada deskripsi tambahan)';
+
+        $prompt = <<<PROMPT
+{$identity}
+Berikan TEPAT 3 saran catatan penilaian dalam Bahasa Indonesia untuk dicatat pada evaluasi kinerja guru PAUD.
+
+Konteks:
+- Nama Guru : {$guruName}
+- Kriteria Penilaian : {$kriteriaNama}
+- Panduan Kriteria : {$deskripsi}
+- Skor (1–100) : {$skor}
+- Periode Evaluasi : {$periodeLabel}
+
+Instruksi:
+- Setiap saran harus singkat (maks 2 kalimat), profesional, spesifik pada kriteria, dan selaras dengan skor.
+- Skor rendah (<60): ton konstruktif dengan area perbaikan jelas. Skor sedang (60–79): apresiasi + saran pengembangan. Skor tinggi (≥80): apresiasi konkret + pertahankan.
+- Jangan mengulang saran yang sama.
+- Jawab HANYA dengan 3 saran, masing-masing diawali dengan nomor (1. 2. 3.) tanpa penjelasan tambahan.
+
+Format jawaban:
+1. [Saran pertama]
+2. [Saran kedua]
+3. [Saran ketiga]
+PROMPT;
+
+        $response = Http::withToken($this->apiKey)
+            ->timeout(30)
+            ->post("{$this->baseUrl}/chat/completions", [
+                'model' => $this->model,
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens' => 512,
+                'temperature' => 0.8,
+            ]);
+
+        if (! $response->successful()) {
+            $this->throwApiError($response);
+        }
+
+        $content = $response->json('choices.0.message.content', '');
+
+        return $this->parseSuggestions($content);
+    }
+
+    /**
+     * @param  array<int, array{nama: string, skor: int, catatan: string, bobot: int}>  $penilaianItems
+     * @return array{catatan: array<string>, rekomendasi: array<string>}
+     */
+    public function generateMonevGuruRingkasanSuggestions(
+        string $guruName,
+        string $periodeLabel,
+        array $penilaianItems,
+        ?string $judul = null,
+        ?string $personaPrefix = null
+    ): array {
+        $identity = $personaPrefix !== null && trim($personaPrefix) !== ''
+            ? trim($personaPrefix)
+            : 'Kamu adalah kepala sekolah / supervisor PAUD yang profesional dan objektif.';
+
+        $judulLine = $judul ? "- Judul Evaluasi : {$judul}\n" : '';
+
+        $lines = [];
+        foreach ($penilaianItems as $item) {
+            $catatan = trim($item['catatan'] ?? '') !== '' ? $item['catatan'] : '(belum ada catatan)';
+            $lines[] = "- {$item['nama']} (bobot {$item['bobot']}%): skor {$item['skor']}/100 — {$catatan}";
+        }
+        $penilaianBlock = implode("\n", $lines);
+
+        $prompt = <<<PROMPT
+{$identity}
+Berdasarkan penilaian per kriteria berikut, buat saran catatan umum dan rekomendasi tindak lanjut untuk evaluasi kinerja guru PAUD.
+
+Konteks:
+- Nama Guru : {$guruName}
+{$judulLine}- Periode Evaluasi : {$periodeLabel}
+
+Penilaian per kriteria:
+{$penilaianBlock}
+
+Instruksi:
+- Buat TEPAT 3 saran untuk "catatan_umum" (ringkasan holistik kinerja guru) dan TEPAT 3 saran untuk "rekomendasi" (tindak lanjut konkret).
+- Setiap saran maks 3 kalimat, profesional, merujuk pola skor & catatan di atas.
+- Jawab HANYA JSON valid tanpa markdown:
+{"catatan":["saran 1","saran 2","saran 3"],"rekomendasi":["saran 1","saran 2","saran 3"]}
+PROMPT;
+
+        $response = Http::withToken($this->apiKey)
+            ->timeout(45)
+            ->post("{$this->baseUrl}/chat/completions", [
+                'model' => $this->model,
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens' => 1024,
+                'temperature' => 0.7,
+            ]);
+
+        if (! $response->successful()) {
+            $this->throwApiError($response);
+        }
+
+        $content = trim($response->json('choices.0.message.content', ''));
+
+        return $this->parseMonevGuruRingkasanSuggestions($content, $penilaianItems);
+    }
+
+    /**
+     * @param  array<int, array{nama: string, skor: int, catatan: string, bobot: int}>  $penilaianItems
+     * @return array{catatan: array<string>, rekomendasi: array<string>}
+     */
+    protected function parseMonevGuruRingkasanSuggestions(string $content, array $penilaianItems): array
+    {
+        $json = $content;
+        if (preg_match('/\{[\s\S]*\}/', $content, $m)) {
+            $json = $m[0];
+        }
+
+        $decoded = json_decode($json, true);
+        if (is_array($decoded)) {
+            $catatan = array_values(array_filter(array_map('strval', $decoded['catatan'] ?? [])));
+            $rekomendasi = array_values(array_filter(array_map('strval', $decoded['rekomendasi'] ?? [])));
+
+            if ($catatan !== [] || $rekomendasi !== []) {
+                return [
+                    'catatan' => $this->padSuggestions($catatan, 'Guru menunjukkan kinerja yang baik secara keseluruhan.'),
+                    'rekomendasi' => $this->padSuggestions($rekomendasi, 'Pertahankan performa dan lakukan refleksi berkala.'),
+                ];
+            }
+        }
+
+        // ponytail: fallback parse numbered blocks if JSON gagal
+        $catatan = $this->parseSuggestions($content);
+
+        return [
+            'catatan' => $catatan,
+            'rekomendasi' => $this->padSuggestions([], 'Lakukan pendampingan dan evaluasi lanjutan sesuai kebutuhan.'),
+        ];
+    }
+
+    /** @param  array<string>  $items */
+    protected function padSuggestions(array $items, string $fallback): array
+    {
+        $items = array_values(array_filter($items));
+        while (count($items) < 3) {
+            $items[] = $fallback;
+        }
+
+        return array_slice($items, 0, 3);
+    }
+
+    /**
      * Generate a monthly monitoring summary for a student's matriculation achievements.
      *
      * @param  array<string, mixed>  $stats  Aggregated data from MonevDataAggregator

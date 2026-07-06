@@ -19,6 +19,8 @@ use App\Http\Controllers\Admin\MasterKegiatanRutinController;
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
 use App\Http\Controllers\Admin\MenuMakananController;
 use App\Http\Controllers\Admin\MonevController as AdminMonevController;
+use App\Http\Controllers\Admin\MonevGuruEvaluasiController;
+use App\Http\Controllers\Admin\MonevGuruKriteriaController;
 use App\Http\Controllers\Admin\OrangTuaChatController;
 use App\Http\Controllers\Admin\OrangTuaSearchController;
 // Admin Sekolah Controllers
@@ -37,6 +39,7 @@ use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
 use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
 use App\Http\Controllers\Api\AiFeedbackController;
+use App\Http\Controllers\Api\AiMonevGuruController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestController;
@@ -54,6 +57,7 @@ use App\Http\Controllers\OrangTua\MonevController;
 use App\Http\Controllers\OrangTua\PembayaranController;
 use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
 use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
+use App\Http\Controllers\Pengajar\MonevGuruController as PengajarMonevGuruController;
 use App\Http\Controllers\Pengajar\MatrikulasiController;
 use App\Http\Controllers\Pengajar\PencapaianController;
 use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
@@ -174,6 +178,7 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('kegiatan-rutin/export', [KegiatanRutinController::class, 'export'])->name('kegiatan-rutin.export');
     Route::get('pencapaian/export', [App\Http\Controllers\Admin\PencapaianController::class, 'export'])->name('pencapaian.export');
     Route::get('monev/export', [AdminMonevController::class, 'export'])->name('monev.export');
+    Route::get('monev-guru/export', [MonevGuruEvaluasiController::class, 'export'])->name('monev-guru.export');
     Route::get('pengajar/export', [PengajarController::class, 'export'])->name('pengajar.export');
     Route::get('sarana/export', [SaranaController::class, 'export'])->name('sarana.export');
     Route::get('akun/export', [AkunController::class, 'export'])->name('akun.export');
@@ -195,6 +200,20 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('monev/generation/{generation}/status', [AdminMonevController::class, 'generationStatus'])->name('monev.generation.status');
     Route::get('monev/{anak}/pdf', [AdminMonevController::class, 'exportPdf'])->name('monev.export-pdf');
     Route::get('monev/{anak}', [AdminMonevController::class, 'show'])->name('monev.show');
+    Route::prefix('monev-guru')->name('monev-guru.')->group(function () {
+        Route::resource('kriteria', MonevGuruKriteriaController::class)
+            ->except(['show'])
+            ->parameters(['kriteria' => 'monev_guru_kriteria']);
+        Route::post('{monev_guru_evaluasi}/finalize', [MonevGuruEvaluasiController::class, 'finalize'])->name('finalize');
+        Route::get('{monev_guru_evaluasi}/pdf', [MonevGuruEvaluasiController::class, 'pdf'])->name('pdf');
+        Route::get('/', [MonevGuruEvaluasiController::class, 'index'])->name('index');
+        Route::get('create', [MonevGuruEvaluasiController::class, 'create'])->name('create');
+        Route::post('/', [MonevGuruEvaluasiController::class, 'store'])->name('store');
+        Route::get('{monev_guru_evaluasi}', [MonevGuruEvaluasiController::class, 'show'])->name('show');
+        Route::get('{monev_guru_evaluasi}/edit', [MonevGuruEvaluasiController::class, 'edit'])->name('edit');
+        Route::put('{monev_guru_evaluasi}', [MonevGuruEvaluasiController::class, 'update'])->name('update');
+        Route::delete('{monev_guru_evaluasi}', [MonevGuruEvaluasiController::class, 'destroy'])->name('destroy');
+    });
     Route::resource('kelas', KelasController::class)->except(['create', 'edit', 'show']);
     Route::resource('matrikulasi', AdminMatrikulasiController::class)->except(['create', 'edit', 'show']);
     Route::resource('skala-pencapaian', SkalaPencapaianController::class)->except(['create', 'edit', 'show']);
@@ -294,6 +313,12 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
+    Route::post('ai/monev-guru-suggestions', [AiMonevGuruController::class, 'suggest'])
+        ->middleware('throttle:10,1')
+        ->name('ai.monev-guru-suggestions');
+    Route::post('ai/monev-guru-ringkasan-suggestions', [AiMonevGuruController::class, 'suggestRingkasan'])
+        ->middleware('throttle:10,1')
+        ->name('ai.monev-guru-ringkasan-suggestions');
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 
@@ -336,6 +361,8 @@ Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->nam
     Route::get('kegiatan-rutin/detail/{anak}', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
+    Route::get('monev-guru', [PengajarMonevGuruController::class, 'index'])->name('monev-guru.index');
+    Route::get('monev-guru/{monev_guru_evaluasi}', [PengajarMonevGuruController::class, 'show'])->name('monev-guru.show');
 });
 
 // ─────────────────────────────────────────────
