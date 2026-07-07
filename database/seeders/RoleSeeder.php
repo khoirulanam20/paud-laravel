@@ -9,6 +9,14 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
+/**
+ * Referensi — role default, lembaga/sekolah dasar, dan user @example.com.
+ *
+ *   php artisan db:seed --class=Database\Seeders\RoleSeeder
+ *
+ * Atau via ReferenceSeeder / DevSetupSeeder.
+ * Additive (firstOrCreate) — tidak menghapus data, tapi bisa menambah entitas demo jika belum ada.
+ */
 class RoleSeeder extends Seeder
 {
     public function run(): void

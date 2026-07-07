@@ -8,6 +8,14 @@ use App\Models\Sekolah;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
+/**
+ * Akuntansi — COA sistem, belanja RKAS, dan pendapatan per sekolah.
+ *
+ *   php artisan db:seed --class=Database\Seeders\AkunSeeder
+ *
+ * Atau via AccountingSeeder / DevSetupSeeder.
+ * Relatif aman diulang (additive firstOrCreate).
+ */
 class AkunSeeder extends Seeder
 {
     private array $systemAkuns = [

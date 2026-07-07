@@ -29,13 +29,15 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * DemoSeeder — data demo untuk website PAUD.
+ * Demo — data contoh untuk website PAUD (local/staging saja).
  *
- * Jalankan setelah RoleSeeder:
+ * Jalankan setelah ReferenceSeeder (butuh lembaga + sekolah):
  *   php artisan db:seed --class=Database\Seeders\DemoSeeder
  *
- * atau via DatabaseSeeder:
- *   php artisan db:seed
+ * Atau setup dev lengkap:
+ *   php artisan db:seed --class=Database\Seeders\DevSetupSeeder
+ *
+ * Risiko: menambah user @example.com, anak demo, menimpa CMS.
  *
  * Kredensial akun demo (password: password):
  *
@@ -47,10 +49,8 @@ use Illuminate\Support\Facades\Hash;
  *   | Pengajar        | pengajar@example.com   |
  *   | Orang Tua       | ortu@example.com       |
  *
- * Data yang di-seed:
- *   - 1 lembaga (Yayasan Pendidikan Anak Bangsa)
- *   - 1 sekolah (PAUD Bintang Kecil)
- *   - 5 role & 5 user demo
+ * Data yang di-seed (butuh lembaga + sekolah dari ReferenceSeeder):
+ *   - User demo tambahan (wali kelas, dll.)
  *   - 2 pengajar + 2 kelas + pivot kelas_pengajar
  *   - 2 anak (status approved) milik akun orang tua
  *   - 5 indikator matrikulasi (Kognitif, Motorik, Sosial-Emosional, Bahasa, Seni)
@@ -75,34 +75,37 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Fondasi — role, lembaga, sekolah, user dasar
-        $this->call(RoleSeeder::class);
+        if (app()->environment('production')) {
+            $this->command->error('DemoSeeder diblokir di production.');
+
+            return;
+        }
 
         $lembaga = Lembaga::first();
         $sekolah = Sekolah::first();
 
         if (! $lembaga || ! $sekolah) {
-            $this->command->error('Lembaga atau sekolah tidak ditemukan setelah RoleSeeder. Batalkan DemoSeeder.');
+            $this->command->error('Lembaga atau sekolah tidak ditemukan. Jalankan ReferenceSeeder dulu.');
 
             return;
         }
 
-        // 2. Tambah user yang belum ada di RoleSeeder
+        // 1. Tambah user yang belum ada di RoleSeeder
         $users = $this->seedDemoUsers($lembaga, $sekolah);
 
-        // 3. Struktur sekolah — pengajar, kelas, anak
+        // 2. Struktur sekolah — pengajar, kelas, anak
         $schoolData = $this->seedSekolahData($sekolah, $users);
 
-        // 4. Data akademik — skala, matrikulasi, pencapaian, agenda, kegiatan rutin
+        // 3. Data akademik — skala, matrikulasi, pencapaian, agenda, kegiatan rutin
         $this->seedAkademik($sekolah, $schoolData);
 
-        // 5. Presensi — siswa & pengajar
+        // 4. Presensi — siswa & pengajar
         $this->seedPresensi($sekolah, $schoolData);
 
-        // 6. Operasional — kesehatan, menu makanan, sarana, cashflow, kritik saran, CMS
+        // 5. Operasional — kesehatan, menu makanan, sarana, cashflow, kritik saran, CMS
         $this->seedOperasional($sekolah, $schoolData, $users);
 
-        // 7. Token AI
+        // 6. Token AI
         $this->seedAiTokens($sekolah, $users['admin']);
 
         $this->command->info('DemoSeeder selesai. Semua akun demo siap digunakan.');

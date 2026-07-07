@@ -6,6 +6,14 @@ use App\Models\Sekolah;
 use App\Models\SumberDana;
 use Illuminate\Database\Seeder;
 
+/**
+ * Akuntansi — sumber dana default (BOS, BOSDA, Komite, SPP, Lain-lain) per sekolah.
+ *
+ *   php artisan db:seed --class=Database\Seeders\SumberDanaSeeder
+ *
+ * Atau via AccountingSeeder / DevSetupSeeder.
+ * Relatif aman diulang (additive firstOrCreate).
+ */
 class SumberDanaSeeder extends Seeder
 {
     private array $defaults = [
