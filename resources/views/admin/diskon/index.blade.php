@@ -65,6 +65,10 @@
                     </tbody>
                 </table>
             </div>
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$diskons" />
+                {{ $diskons->withQueryString()->links() }}
+            </div>
         </div>
 
         <!-- CREATE -->

@@ -138,9 +138,18 @@
                             </tbody>
                         </table>
                     </div>
-                    @if($siswaTerassign->count() > 0)
-                        <div class="px-6 py-4 border-t flex justify-end" style="border-color:rgba(0,0,0,0.06);">
-                            <button type="submit" form="form-update-biaya" data-tour="admin-biaya-save-btn" class="btn-primary">Simpan Biaya Bulanan</button>
+                    @if($siswaTerassign->total() > 0)
+                        <div class="px-6 py-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <x-per-page-selector :paginator="$siswaTerassign" />
+                                {{ $siswaTerassign->withQueryString()->links() }}
+                            </div>
+                            <button type="submit" form="form-update-biaya" data-tour="admin-biaya-save-btn" class="btn-primary shrink-0">Simpan Biaya Bulanan</button>
+                        </div>
+                    @elseif($siswaTerassign->hasPages())
+                        <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                            <x-per-page-selector :paginator="$siswaTerassign" />
+                            {{ $siswaTerassign->withQueryString()->links() }}
                         </div>
                     @endif
                 @else

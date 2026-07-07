@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Diskon;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 
 class DiskonController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
         $diskons = Diskon::where('sekolah_id', $sekolah_id)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
 
         return view('admin.diskon.index', compact('diskons'));
     }

@@ -78,15 +78,80 @@
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
+            <div class="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Jadwal Menu Makanan Harian</h3><p class="section-subtitle">Informasi menu dan gizi yang dikonsumsi siswa di sekolah</p></div>
                 @if(auth()->user()->hasRole('Admin Sekolah'))
-                    <button type="button" data-tour="admin-menu-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Input Menu</button>
+                    <button type="button" data-tour="admin-menu-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary shrink-0"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Input Menu</button>
                 @endif
             </div>
-            <div class="overflow-x-auto">
+
+            {{-- Mobile & tablet: card list --}}
+            <div class="lg:hidden divide-y" style="divide-color:rgba(0,0,0,0.06);">
+                @forelse($menus as $m)
+                    @php
+                        $menuDetailPayload = [
+                            'id' => $m->id,
+                            'date' => \Carbon\Carbon::parse($m->date)->format('d M Y'),
+                            'date_raw' => $m->date,
+                            'menu' => $m->menu,
+                            'nutrition_info' => $m->nutrition_info,
+                            'photo_url' => $m->photo ? Storage::url($m->photo) : null,
+                            'photo_kegiatan_url' => $m->photo_kegiatan ? Storage::url($m->photo_kegiatan) : null,
+                            'likes_count' => $m->likes_count,
+                            'dislikes_count' => $m->dislikes_count,
+                            'is_today' => \Carbon\Carbon::parse($m->date)->isToday(),
+                        ];
+                    @endphp
+                    <div class="px-4 sm:px-6 py-5 flex flex-col gap-4">
+                        <div class="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+                            @if($m->photo)
+                                <img src="{{ Storage::url($m->photo) }}" alt="Foto makanan" class="h-20 w-28 object-cover rounded-xl border border-gray-100 shrink-0">
+                            @endif
+                            @if($m->photo_kegiatan)
+                                <img src="{{ Storage::url($m->photo_kegiatan) }}" alt="Foto kegiatan makan" class="h-20 w-28 object-cover rounded-xl border border-gray-100 shrink-0">
+                            @endif
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                @if(\Carbon\Carbon::parse($m->date)->isToday())
+                                    <span class="badge badge-green">Hari Ini</span>
+                                @endif
+                                <p class="text-sm font-bold" style="color:#1A6B6B;">{{ \Carbon\Carbon::parse($m->date)->translatedFormat('l, d M Y') }}</p>
+                            </div>
+                            <p class="text-sm font-semibold whitespace-pre-line leading-relaxed" style="color:#2C2C2C;">{{ $m->menu }}</p>
+                            @if($m->nutrition_info)
+                                <div class="mt-2 p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                    <p class="text-[11px] leading-relaxed" style="color:#6B7280;">{{ $m->nutrition_info }}</p>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-md">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.757c1.246 0 2.228 1.053 2.115 2.285l-1.157 12.63c-.105 1.157-1.077 2.085-2.238 2.085H6.115c-1.161 0-2.133-.928-2.238-2.085L2.72 12.285C2.607 11.053 3.589 10 4.835 10H8.5l.5-5a3 3 0 013 3v2h2z" /></svg>
+                                {{ $m->likes_count }}
+                            </span>
+                            <span class="inline-flex items-center gap-1 text-xs font-bold text-orange-700 bg-orange-50 px-2 py-1 rounded-md">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.243c-1.246 0-2.228-1.053-2.115-2.285l1.157-12.63C4.39 1.157 5.362.23 6.523.23h11.362c1.161 0 2.133.928 2.238 2.085l1.157 12.63c.113 1.232-.869 2.285-2.115 2.285H15.5l-.5 5a3 3 0 01-3-3v-2h-2z" /></svg>
+                                {{ $m->dislikes_count }}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" @if($loop->first) data-tour="admin-menu-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js($menuDetailPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;">Detail</button>
+                            @if(auth()->user()->hasRole('Admin Sekolah'))
+                            <button type="button" @if($loop->first) data-tour="admin-menu-action-edit" data-tour-open-modal="edit" @endif @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                            <button type="button" @if($loop->first) data-tour="admin-menu-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.menu-makanan.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div class="px-6 py-12 text-center text-sm" style="color:#9E9790;">Belum ada jadwal menu yang diinput.</div>
+                @endforelse
+            </div>
+
+            {{-- Desktop: tabel --}}
+            <div class="hidden lg:block overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Tanggal</th><th>Daftar Menu</th><th>Informasi Gizi</th><th>Foto</th><th class="text-center">Respon Wali</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Tanggal</th><th class="min-w-[12rem] max-w-md">Daftar Menu</th><th class="hidden xl:table-cell">Informasi Gizi</th><th class="hidden lg:table-cell">Foto</th><th class="text-center">Respon Wali</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($menus as $m)
                         <tr>
@@ -94,9 +159,11 @@
                                 <div class="font-semibold text-sm" style="color:#2C2C2C;">{{ \Carbon\Carbon::parse($m->date)->format('d M Y') }}</div>
                                 @if(\Carbon\Carbon::parse($m->date)->isToday())<span class="badge badge-green mt-1">Hari Ini</span>@endif
                             </td>
-                            <td class="max-w-xs whitespace-pre-line text-sm">{{ $m->menu }}</td>
-                            <td class="max-w-xs" style="color:#9E9790;">{{ $m->nutrition_info ?? '-' }}</td>
-                            <td>
+                            <td class="min-w-[12rem] max-w-md">
+                                <p class="text-sm line-clamp-3 whitespace-pre-line" title="{{ $m->menu }}">{{ $m->menu }}</p>
+                            </td>
+                            <td class="hidden xl:table-cell max-w-xs" style="color:#9E9790;">{{ $m->nutrition_info ?? '-' }}</td>
+                            <td class="hidden lg:table-cell">
                                 <div class="flex gap-2">
                                     @if($m->photo)<img src="{{ Storage::url($m->photo) }}" class="h-12 w-16 object-cover rounded-lg" title="Foto Makanan">@endif
                                     @if($m->photo_kegiatan)<img src="{{ Storage::url($m->photo_kegiatan) }}" class="h-12 w-16 object-cover rounded-lg" title="Foto Kegiatan Makan">@endif
@@ -115,7 +182,8 @@
                                     </span>
                                 </div>
                             </td>
-                            <td class="text-right"><div class="flex items-center justify-end gap-2">
+                            <td class="text-right">
+                                <div class="flex flex-wrap justify-end gap-1.5">
                                 @php
                                     $menuDetailPayload = [
                                         'id' => $m->id,
@@ -130,12 +198,13 @@
                                         'is_today' => \Carbon\Carbon::parse($m->date)->isToday(),
                                     ];
                                 @endphp
-                                <button type="button" @if($loop->first) data-tour="admin-menu-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js($menuDetailPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;">Detail</button>
+                                <button type="button" @if($loop->first) data-tour="admin-menu-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js($menuDetailPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;">Detail</button>
                                 @if(auth()->user()->hasRole('Admin Sekolah'))
-                                <button type="button" @if($loop->first) data-tour="admin-menu-action-edit" data-tour-open-modal="edit" @endif @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button type="button" @if($loop->first) data-tour="admin-menu-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.menu-makanan.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <button type="button" @if($loop->first) data-tour="admin-menu-action-edit" data-tour-open-modal="edit" @endif @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button type="button" @if($loop->first) data-tour="admin-menu-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.menu-makanan.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                                 @endif
-                            </div></td>
+                                </div>
+                            </td>
                         </tr>
                         @empty
                         <tr><td colspan="6" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada jadwal menu yang diinput.</td></tr>
@@ -143,7 +212,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+            <div class="px-4 sm:px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
                 <x-per-page-selector :paginator="$menus" />
                 {{ $menus->links() }}
             </div>

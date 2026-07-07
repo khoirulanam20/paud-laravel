@@ -70,9 +70,9 @@
             </div>
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">
                 <span><strong style="color:#2C2C2C;">{{ $tanggal }}</strong></span>
-                <span>Total siswa: <strong style="color:#2C2C2C;">{{ $anaks->count() }}</strong></span>
+                <span>Total siswa: <strong style="color:#2C2C2C;">{{ $totalSiswa }}</strong></span>
                 <span>Hadir: <strong style="color:#1A6B6B;">{{ $hadirCount }}</strong></span>
-                <span>Tidak hadir: <strong style="color:#C0392B;">{{ $anaks->count() - $hadirCount }}</strong></span>
+                <span>Tidak hadir: <strong style="color:#C0392B;">{{ $totalSiswa - $hadirCount }}</strong></span>
                 <span>Rekap: <strong style="color:#6B6560;">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('F Y') }}</strong></span>
             </div>
         </div>
@@ -81,7 +81,7 @@
             <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Checklist kehadiran</h3>
-                    <p class="section-subtitle">Gunakan fitur ini untuk membantu pengajar atau wali kelas mencatat kehadiran siswa.</p>
+                    <p class="section-subtitle">Gunakan fitur ini untuk membantu pengajar atau wali kelas mencatat kehadiran siswa. Simpan hanya memperbarui siswa di halaman ini.</p>
                 </div>
             </div>
 
@@ -113,6 +113,7 @@
                                     @endphp
                                     <tr class="hover:bg-teal-50/30 transition-colors">
                                         <td class="text-center py-4">
+                                            <input type="hidden" name="page_anak_ids[]" value="{{ $anak->id }}">
                                             <input type="checkbox" name="hadir[]" value="{{ $anak->id }}" class="h-6 w-6 rounded-lg border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
                                                 @checked($checked)>
                                         </td>
@@ -140,8 +141,12 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="px-6 py-4 border-t flex justify-end" style="border-color: rgba(0,0,0,0.06);">
-                        <button type="submit" class="btn-primary">Simpan presensi</button>
+                    <div class="px-6 py-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style="border-color: rgba(0,0,0,0.06);">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <x-per-page-selector :paginator="$anaks" />
+                            {{ $anaks->withQueryString()->links() }}
+                        </div>
+                        <button type="submit" class="btn-primary shrink-0">Simpan presensi</button>
                     </div>
                 </form>
             @endif

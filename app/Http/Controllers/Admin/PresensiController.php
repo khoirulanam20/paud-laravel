@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kelas;
 use App\Models\Presensi;
+use App\Support\PaginationPerPage;
 use App\Support\PresensiPeriodeFilter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -26,28 +27,39 @@ class PresensiController extends Controller
         }
 
         $filterKelasId = $request->query('filter_kelas_id');
-        $anaks = $this->buildAnaksQuery($sekolah_id, $filterKelasId)->get();
+        $scopeQuery = $this->buildAnaksQuery($sekolah_id, $filterKelasId);
+        $scopeAnakIds = (clone $scopeQuery)->pluck('id');
+        $totalSiswa = $scopeAnakIds->count();
 
         $presensiByAnak = Presensi::where('sekolah_id', $sekolah_id)
             ->whereDate('tanggal', $tanggal)
             ->get()
             ->keyBy('anak_id');
 
-        $hadirCount = $presensiByAnak->where('hadir', true)->count();
+        $hadirCount = Presensi::where('sekolah_id', $sekolah_id)
+            ->whereDate('tanggal', $tanggal)
+            ->where('hadir', true)
+            ->whereIn('anak_id', $scopeAnakIds)
+            ->count();
+
+        $anaks = $scopeQuery
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
+
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
         // Rekap bulanan: hadir count for the month of the selected date
         $startOfMonth = Carbon::parse($tanggal)->startOfMonth()->toDateString();
         $endOfMonth = Carbon::parse($tanggal)->endOfMonth()->toDateString();
         $hadirBulanan = Presensi::where('sekolah_id', $sekolah_id)
-            ->whereIn('anak_id', $anaks->pluck('id'))
+            ->whereIn('anak_id', $scopeAnakIds)
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->where('hadir', true)
             ->selectRaw('anak_id, count(*) as total')
             ->groupBy('anak_id')
             ->pluck('total', 'anak_id');
 
-        return view('admin.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'kelas', 'hadirBulanan', 'filterKelasId'));
+        return view('admin.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'totalSiswa', 'kelas', 'hadirBulanan', 'filterKelasId'));
     }
 
     public function store(Request $request)
@@ -60,6 +72,8 @@ class PresensiController extends Controller
             'hadir' => ['nullable', 'array'],
             'hadir.*' => ['integer', 'exists:anaks,id'],
             'filter_kelas_id' => ['nullable', 'integer'],
+            'page_anak_ids' => ['nullable', 'array'],
+            'page_anak_ids.*' => ['integer', 'exists:anaks,id'],
         ]);
 
         $queryAnak = Anak::where('sekolah_id', $sekolah_id);
@@ -67,6 +81,11 @@ class PresensiController extends Controller
             $queryAnak->where('kelas_id', $request->filter_kelas_id);
         }
         $anakIds = $queryAnak->pluck('id')->all();
+
+        $pageAnakIds = array_map('intval', $validated['page_anak_ids'] ?? []);
+        if ($pageAnakIds !== []) {
+            $anakIds = array_values(array_intersect($anakIds, $pageAnakIds));
+        }
 
         $hadirIds = array_values(array_unique(array_map('intval', $validated['hadir'] ?? [])));
         $hadirIds = array_values(array_intersect($hadirIds, $anakIds));
@@ -97,12 +116,14 @@ class PresensiController extends Controller
         $sekolah_id = auth()->user()->sekolah_id;
 
         $anaksQuery = $this->buildAnaksQuery($sekolah_id, $request->input('kelas_id'));
-        $anaks = $anaksQuery->get();
+        $scopeAnakIds = (clone $anaksQuery)->pluck('id');
+        $anaks = $anaksQuery->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         $presensiFilter = PresensiPeriodeFilter::resolve($request);
         $hadirPeriode = Presensi::where('sekolah_id', $sekolah_id)
             ->whereBetween('tanggal', [$presensiFilter['from'], $presensiFilter['to']])
             ->where('hadir', true)
+            ->whereIn('anak_id', $scopeAnakIds)
             ->selectRaw('anak_id, count(*) as total')
             ->groupBy('anak_id')
             ->pluck('total', 'anak_id');

@@ -8,6 +8,7 @@ use App\Models\Anak;
 use App\Models\BiayaBulananSekolah;
 use App\Models\BiayaBulananSiswa;
 use App\Models\Kelas;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 
 class BiayaBulananController extends Controller
@@ -33,17 +34,21 @@ class BiayaBulananController extends Controller
         $anakSudahAssignIds = collect();
 
         if ($biayaTerpilih) {
-            $siswaTerassign = BiayaBulananSiswa::where('biaya_bulanan_sekolah_id', $biayaTerpilih->id)
+            $siswaQuery = BiayaBulananSiswa::query()
+                ->where('biaya_bulanan_sekolah_id', $biayaTerpilih->id)
                 ->with(['anak.kelas'])
-                ->get()
-                ->sortBy(fn (BiayaBulananSiswa $bs) => $bs->anak->name ?? '')
-                ->values();
+                ->whereHas('anak');
 
             if ($kelasId) {
-                $siswaTerassign = $siswaTerassign->filter(
-                    fn (BiayaBulananSiswa $bs) => $bs->anak && (int) $bs->anak->kelas_id === (int) $kelasId
-                )->values();
+                $siswaQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $kelasId));
             }
+
+            $siswaTerassign = $siswaQuery
+                ->join('anaks', 'biaya_bulanan_siswas.anak_id', '=', 'anaks.id')
+                ->orderBy('anaks.name')
+                ->select('biaya_bulanan_siswas.*')
+                ->paginate(PaginationPerPage::resolve($request))
+                ->withQueryString();
 
             $anakSudahAssignIds = BiayaBulananSiswa::where('biaya_bulanan_sekolah_id', $biayaTerpilih->id)
                 ->pluck('anak_id');

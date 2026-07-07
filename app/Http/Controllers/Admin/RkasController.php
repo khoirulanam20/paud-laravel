@@ -165,6 +165,18 @@ class RkasController extends Controller
         $laporan = $this->realisasiService->buildLaporan($rka);
         $rka->load(['lines.akun', 'lines.realisasis.sumberDana']);
 
+        $allRows = $laporan['rows'];
+        $perPage = PaginationPerPage::resolve($request);
+        $page = $request->integer('page', 1);
+        $paginatedRows = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allRows->forPage($page, $perPage)->values(),
+            $allRows->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+        $laporan['rows'] = $paginatedRows;
+
         return view('admin.rkas.laporan', array_merge($laporan, [
             'rka' => $rka,
             'tahunAjaran' => $tahunAjaran,

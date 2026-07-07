@@ -22,10 +22,10 @@
                 <div class="flex items-center gap-3">
                     <div>
                         <h3 class="section-title">Menunggu Persetujuan</h3>
-                        <p class="section-subtitle">{{ $pending->count() }} pendaftar baru membutuhkan tindakan</p>
+                        <p class="section-subtitle">{{ $pending->total() }} pendaftar baru membutuhkan tindakan</p>
                     </div>
-                    @if($pending->count() > 0)
-                    <span class="ml-auto inline-flex items-center justify-center h-7 px-3 rounded-full text-xs font-bold text-white" style="background:#FF8C42;">{{ $pending->count() }}</span>
+                    @if($pending->total() > 0)
+                    <span class="ml-auto inline-flex items-center justify-center h-7 px-3 rounded-full text-xs font-bold text-white" style="background:#FF8C42;">{{ $pending->total() }}</span>
                     @endif
                 </div>
             </div>
@@ -73,6 +73,10 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$pending" param="pending_per_page" />
+                {{ $pending->links() }}
             </div>
         </div>
 

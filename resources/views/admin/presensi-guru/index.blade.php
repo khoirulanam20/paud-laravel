@@ -97,8 +97,12 @@
             </div>
 
             @if($pengajars->isNotEmpty())
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="btn-primary px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-amber-900/20 hover:scale-[1.02] active:scale-95 transition-all">
+                <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <x-per-page-selector :paginator="$pengajars" />
+                        {{ $pengajars->withQueryString()->links() }}
+                    </div>
+                    <button type="submit" class="btn-primary px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-amber-900/20 hover:scale-[1.02] active:scale-95 transition-all shrink-0">
                         Simpan Presensi Hari Ini
                     </button>
                 </div>
@@ -160,6 +164,10 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+                <div class="px-6 py-4 border-t border-amber-100">
+                    <x-per-page-selector :paginator="$pengajars" />
+                    {{ $pengajars->withQueryString()->links() }}
                 </div>
             </div>
         </div>

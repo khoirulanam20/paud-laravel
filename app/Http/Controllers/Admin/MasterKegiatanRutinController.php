@@ -11,6 +11,7 @@ use App\Models\Kelas;
 use App\Models\MasterKegiatanRutin;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,14 +20,15 @@ class MasterKegiatanRutinController extends Controller
     use CanUploadImage;
     use DownloadsExcel;
 
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
 
         $masters = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
             ->where('sekolah_id', $sekolah_id)
             ->latest()
-            ->get();
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
 
         return view('pengajar.master-kegiatan-rutin.index', compact('masters'));
     }

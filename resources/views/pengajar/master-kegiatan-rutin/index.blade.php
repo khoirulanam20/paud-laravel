@@ -85,6 +85,10 @@
                     </tbody>
                 </table>
             </div>
+            <div class="px-6 py-4 border-t border-gray-100">
+                <x-per-page-selector :paginator="$masters" />
+                {{ $masters->withQueryString()->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

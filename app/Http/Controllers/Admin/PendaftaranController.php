@@ -15,7 +15,7 @@ class PendaftaranController extends Controller
     {
         $sekolahId = auth()->user()->sekolah_id;
 
-        $pending = Anak::with(['user.anaks'])->where('sekolah_id', $sekolahId)->where('status', 'pending')->latest()->get();
+        $pending = Anak::with(['user.anaks'])->where('sekolah_id', $sekolahId)->where('status', 'pending')->latest()->paginate(PaginationPerPage::resolve($request, 'pending_per_page'), ['*'], 'pending_page')->withQueryString();
         $approved = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'approved')->latest()->paginate(PaginationPerPage::resolve($request, 'approved_per_page'), ['*'], 'approved_page')->withQueryString();
         $rejected = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'rejected')->latest()->paginate(PaginationPerPage::resolve($request, 'rejected_per_page'), ['*'], 'rejected_page')->withQueryString();
 

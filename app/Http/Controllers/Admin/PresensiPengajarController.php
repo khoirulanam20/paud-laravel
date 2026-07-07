@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Pengajar;
 use App\Models\PresensiPengajar;
+use App\Support\PaginationPerPage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,8 @@ class PresensiPengajarController extends Controller
 
         $pengajars = Pengajar::where('sekolah_id', $sekolahId)
             ->orderBy('name')
-            ->get();
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
 
         $presensis = PresensiPengajar::where('sekolah_id', $sekolahId)
             ->where('tanggal', $tanggal)

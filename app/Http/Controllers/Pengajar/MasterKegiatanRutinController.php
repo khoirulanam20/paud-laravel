@@ -9,6 +9,7 @@ use App\Models\KegiatanRutin;
 use App\Models\MasterKegiatanRutin;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,7 +17,7 @@ class MasterKegiatanRutinController extends Controller
 {
     use CanUploadImage;
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
@@ -27,7 +28,8 @@ class MasterKegiatanRutinController extends Controller
                 $q->whereIn('kelas.id', $pengajar->accessibleKelasIds());
             })
             ->latest()
-            ->get();
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
 
         return view('pengajar.master-kegiatan-rutin.index', compact('masters'));
     }
