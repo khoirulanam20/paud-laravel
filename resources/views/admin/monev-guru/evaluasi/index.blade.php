@@ -68,6 +68,11 @@
                                     <a href="{{ route('admin.monev-guru.show', $e) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
                                     @if($e->isDraft())
                                         <a href="{{ route('admin.monev-guru.edit', $e) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#555;background:#eee;">Edit</a>
+                                        <form action="{{ route('admin.monev-guru.destroy', $e) }}" method="POST" class="inline" onsubmit="return confirm('Hapus draft evaluasi ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                        </form>
                                     @else
                                         <a href="{{ route('admin.monev-guru.pdf', $e) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#555;background:#eee;">PDF</a>
                                     @endif

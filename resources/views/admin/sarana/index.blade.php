@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Sarana Prasarana</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDetailModal:false, showDeleteModal:false, showImageModal:false, activeImage:'', editData:{}, detailData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDetail(d){this.detailData=d;this.showDetailModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDetailModal=false; showDeleteModal=false; showImageModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
@@ -41,6 +41,18 @@
                                 @else <span class="badge badge-amber">{{ $s->condition }}</span> @endif
                             </td>
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
+                                @php
+                                    $detailPayload = [
+                                        'id' => $s->id,
+                                        'name' => $s->name,
+                                        'lokasi' => $s->lokasi,
+                                        'jenis' => $s->jenis,
+                                        'quantity' => $s->quantity,
+                                        'condition' => $s->condition,
+                                        'photo_url' => $s->photo ? Storage::url($s->photo) : null,
+                                    ];
+                                @endphp
+                                <button type="button" @if($loop->first) data-tour="admin-sarana-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js($detailPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;">Detail</button>
                                 <button @if($loop->first) data-tour="admin-sarana-action-edit" data-tour-open-modal="edit" @endif @click="openEdit({{ json_encode($s) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @if($loop->first) data-tour="admin-sarana-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.sarana.destroy', $s) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </div></td>
@@ -54,6 +66,67 @@
             <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
                 <x-per-page-selector :paginator="$saranas" />
                 {{ $saranas->links() }}
+            </div>
+        </div>
+        <!-- DETAIL MODAL -->
+        <div x-show="showDetailModal" data-tour="modal-detail" class="modal-overlay" style="display:none;">
+            <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
+                <div class="modal-header flex items-center justify-between">
+                    <h3 class="section-title">Detail Sarana</h3>
+                    <button type="button" @click="showDetailModal=false" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+                <div class="modal-body space-y-5" data-tour="modal-detail-content">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#9E9790;">Foto Sarana</p>
+                        <div x-show="detailData.photo_url"
+                             class="rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm"
+                             @click="activeImage = detailData.photo_url; showImageModal = true">
+                            <img :src="detailData.photo_url" class="w-full max-h-72 object-cover hover:scale-[1.02] transition duration-300" alt="Foto sarana">
+                        </div>
+                        <div x-show="!detailData.photo_url"
+                             class="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center py-10 text-center">
+                            <svg class="h-10 w-10 mb-2" style="color:#9E9790;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <p class="text-sm" style="color:#9E9790;">Belum ada foto sarana</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Nama Sarana</p>
+                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.name || '—'"></p>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Lokasi</p>
+                            <span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50" x-text="detailData.lokasi || '-'"></span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Jenis</p>
+                            <span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50" x-text="detailData.jenis || '-'"></span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Jumlah</p>
+                            <span class="badge badge-teal" x-text="detailData.quantity ?? '—'"></span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Kondisi</p>
+                            <span class="badge badge-green" x-text="detailData.condition || '—'"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" @click="showDetailModal=false" class="btn-secondary w-full sm:w-auto">Tutup</button></div>
+            </div>
+        </div>
+        <!-- IMAGE LIGHTBOX -->
+        <div x-show="showImageModal"
+             class="modal-overlay modal-overlay--elevated modal-overlay--dark"
+             style="display: none;"
+             x-transition
+             @keydown.escape.window="showImageModal = false">
+            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
+                <button type="button" class="absolute -top-12 right-0 text-white hover:text-gray-300 transition flex items-center gap-2" @click="showImageModal = false">
+                    <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20" alt="Foto sarana">
             </div>
         </div>
         <!-- CREATE MODAL -->

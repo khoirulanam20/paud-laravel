@@ -24,6 +24,7 @@ class Kegiatan extends Model
     ];
 
     protected $casts = [
+        'date' => 'date',
         'photos' => 'array',
     ];
 

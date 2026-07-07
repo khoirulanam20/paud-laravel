@@ -34,7 +34,7 @@
         ])->values();
     @endphp
 
-    <div data-tour="ortu-chat-messages" class="orangtua-chat-shell mx-auto w-full max-w-3xl lg:max-w-4xl"
+    <div data-tour="ortu-chat-messages" class="orangtua-chat-shell mx-auto w-full max-w-3xl lg:max-w-4xl lg:flex-1 lg:min-h-0"
          x-data="orangTuaChat({
             messages: @js($initialMessages),
             storeUrl: @js(route('orangtua.chat.messages.store')),
@@ -221,7 +221,13 @@
         }
         @media (min-width: 1024px) {
             .orangtua-chat-shell {
-                height: calc(100dvh - 4rem - 1.5rem);
+                height: 100%;
+                min-height: 0;
+            }
+            .orangtua-chat-composer {
+                position: sticky;
+                bottom: 0;
+                z-index: 10;
             }
         }
         .orangtua-chat-messages {

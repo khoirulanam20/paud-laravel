@@ -54,7 +54,7 @@ class JurnalController extends Controller
             $j->no_jurnal ?? '-',
             $j->tanggal?->format('Y-m-d') ?? '-',
             $j->deskripsi ?? '-',
-            number_format((float) $j->lines->sum('debit'), 0, ',', '.'),
+            (float) $j->lines->sum('debit'),
             $j->sumber ?? '-',
         ])->all();
 
@@ -62,7 +62,8 @@ class JurnalController extends Controller
             ['No. Jurnal', 'Tanggal', 'Deskripsi', 'Total', 'Sumber'],
             $rows,
             sprintf('jurnal-%02d-%d.xlsx', $bulan, $tahun),
-            'Jurnal Umum'
+            'Jurnal Umum',
+            [3],
         );
     }
 

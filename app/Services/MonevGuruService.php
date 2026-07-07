@@ -18,7 +18,7 @@ class MonevGuruService
         $weightedSum = 0;
 
         foreach ($evaluasi->items as $item) {
-            if ($item->skor === null || ! $item->kriteria) {
+            if ($item->skor === null || ! $item->kriteria || ! $item->kriteria->is_active) {
                 continue;
             }
 
@@ -66,6 +66,11 @@ class MonevGuruService
                 ]
             );
         }
+
+        MonevGuruPenilaianItem::query()
+            ->where('monev_guru_evaluasi_id', $evaluasi->id)
+            ->whereNotIn('monev_guru_kriteria_id', $kriteriaIds)
+            ->delete();
     }
 
     public function finalize(MonevGuruEvaluasi $evaluasi): void

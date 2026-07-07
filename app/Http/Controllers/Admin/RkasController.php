@@ -212,11 +212,23 @@ class RkasController extends Controller
             return $line;
         })->all();
 
+        $currencyColumns = [];
+        $base = 2;
+        foreach ($sumberDanas as $i => $sd) {
+            $currencyColumns[] = $base + ($i * 3);
+            $currencyColumns[] = $base + ($i * 3) + 1;
+        }
+        $lastStart = $base + ($sumberDanas->count() * 3);
+        $currencyColumns[] = $lastStart;
+        $currencyColumns[] = $lastStart + 1;
+        $currencyColumns[] = $lastStart + 2;
+
         return $this->downloadExcel(
             $headings,
             $rows,
             'laporan-rkas-'.str_replace('/', '-', $tahunAjaran)."-sem{$semester}.xlsx",
-            'Laporan RKAS'
+            'Laporan RKAS',
+            $currencyColumns,
         );
     }
 

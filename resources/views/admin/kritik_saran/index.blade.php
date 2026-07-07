@@ -30,6 +30,7 @@
                             <th>Sekolah</th>
                             <th>Kelas (anak)</th>
                             <th>Ringkasan</th>
+                            <th class="text-center w-16">Foto</th>
                             <th class="text-right w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -56,13 +57,20 @@
                                 <td class="max-w-md">
                                     <p class="text-sm line-clamp-2" style="color:#6B6560;">{{ \Illuminate\Support\Str::limit($fb->message, 120) }}</p>
                                 </td>
+                                <td class="text-center">
+                                    @if($fb->photo)
+                                        <img src="{{ Storage::url($fb->photo) }}" class="h-10 w-10 rounded-lg object-cover mx-auto border border-gray-100" alt="">
+                                    @else
+                                        <span class="text-xs" style="color:#9E9790;">—</span>
+                                    @endif
+                                </td>
                                 <td class="text-right">
                                     <a href="{{ route('admin.kritik-saran.show', $fb) }}" @if($loop->first) data-tour="admin-kritik-action-detail" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg inline-block" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-14 text-center text-sm" style="color:#9E9790;">Belum ada kritik atau saran masuk.</td>
+                                <td colspan="8" class="py-14 text-center text-sm" style="color:#9E9790;">Belum ada kritik atau saran masuk.</td>
                             </tr>
                         @endforelse
                     </tbody>

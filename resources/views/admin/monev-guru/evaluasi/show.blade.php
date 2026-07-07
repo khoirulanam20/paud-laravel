@@ -17,6 +17,11 @@
                     @csrf
                     <button type="submit" class="btn-primary text-sm">Finalisasi</button>
                 </form>
+                <form action="{{ route('admin.monev-guru.destroy', $evaluasi) }}" method="POST" class="inline" onsubmit="return confirm('Hapus draft evaluasi ini?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-danger text-sm">Hapus draft</button>
+                </form>
             @endif
         </div>
 
@@ -43,7 +48,7 @@
                 <table class="data-table">
                     <thead><tr><th>Kriteria</th><th>Bobot</th><th>Skor</th><th>Catatan</th></tr></thead>
                     <tbody>
-                        @foreach($evaluasi->items->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
+                        @foreach($evaluasi->items->filter(fn ($i) => $i->kriteria?->is_active)->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
                         <tr>
                             <td>
                                 <div class="font-semibold">{{ $item->kriteria->nama ?? '—' }}</div>

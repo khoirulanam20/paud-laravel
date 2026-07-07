@@ -207,4 +207,49 @@ class MonevGuruTest extends TestCase
             ->assertOk()
             ->assertSee('Monev Guru');
     }
+
+    public function test_admin_can_delete_draft_evaluasi(): void
+    {
+        $f = $this->createFixtures();
+
+        $this->actingAs($f['admin'])->post(route('admin.monev-guru.store'), [
+            'pengajar_id' => $f['pengajar']->id,
+            'judul' => 'Draft Hapus',
+            'periode_mulai' => '2026-01-01',
+            'periode_selesai' => '2026-06-30',
+            'items' => $this->sampleItems($f['kriterias'], 75),
+            'finalize' => 0,
+        ]);
+
+        $evaluasi = MonevGuruEvaluasi::where('pengajar_id', $f['pengajar']->id)->first();
+        $this->assertNotNull($evaluasi);
+
+        $this->actingAs($f['admin'])->delete(route('admin.monev-guru.destroy', $evaluasi))
+            ->assertRedirect(route('admin.monev-guru.index'));
+
+        $this->assertDatabaseMissing('monev_guru_evaluasis', ['id' => $evaluasi->id]);
+    }
+
+    public function test_admin_cannot_delete_final_evaluasi(): void
+    {
+        $f = $this->createFixtures();
+
+        $this->actingAs($f['admin'])->post(route('admin.monev-guru.store'), [
+            'pengajar_id' => $f['pengajar']->id,
+            'judul' => 'Final Hapus',
+            'periode_mulai' => '2026-01-01',
+            'periode_selesai' => '2026-06-30',
+            'items' => $this->sampleItems($f['kriterias'], 80),
+            'finalize' => 1,
+        ]);
+
+        $evaluasi = MonevGuruEvaluasi::where('pengajar_id', $f['pengajar']->id)->first();
+        $this->assertNotNull($evaluasi);
+        $this->assertTrue($evaluasi->isFinal());
+
+        $this->actingAs($f['admin'])->delete(route('admin.monev-guru.destroy', $evaluasi))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('monev_guru_evaluasis', ['id' => $evaluasi->id]);
+    }
 }

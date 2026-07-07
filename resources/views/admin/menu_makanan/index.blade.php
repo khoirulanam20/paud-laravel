@@ -8,8 +8,10 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
         showCreateModal: false,
         showEditModal: false,
+        showDetailModal: false,
         showDeleteModal: false,
         editData: {},
+        detailData: {},
         deleteRoute: '',
         menuLines: [{id: Date.now(), value: ''}],
         editMenuLines: [],
@@ -32,6 +34,10 @@
             this.editData = d;
             this.editMenuLines = this.parseMenuToLines(d.menu);
             this.showEditModal = true;
+        },
+        openDetail(d) {
+            this.detailData = d;
+            this.showDetailModal = true;
         },
         addMenuLine() { this.menuLines.push({id: Date.now(), value: ''}); },
         removeMenuLine(i) { if (this.menuLines.length > 1) this.menuLines.splice(i, 1); },
@@ -68,7 +74,7 @@
             });
             form.submit();
         }
-    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
+    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDetailModal=false; showDeleteModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
@@ -80,7 +86,7 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Tanggal</th><th>Daftar Menu</th><th>Informasi Gizi</th><th>Foto</th><th class="text-center">Respon Wali</th>@if(auth()->user()->hasRole('Admin Sekolah'))<th class="text-right">Aksi</th>@endif</tr></thead>
+                    <thead><tr><th>Tanggal</th><th>Daftar Menu</th><th>Informasi Gizi</th><th>Foto</th><th class="text-center">Respon Wali</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($menus as $m)
                         <tr>
@@ -109,12 +115,27 @@
                                     </span>
                                 </div>
                             </td>
-                            @if(auth()->user()->hasRole('Admin Sekolah'))
                             <td class="text-right"><div class="flex items-center justify-end gap-2">
+                                @php
+                                    $menuDetailPayload = [
+                                        'id' => $m->id,
+                                        'date' => \Carbon\Carbon::parse($m->date)->format('d M Y'),
+                                        'date_raw' => $m->date,
+                                        'menu' => $m->menu,
+                                        'nutrition_info' => $m->nutrition_info,
+                                        'photo_url' => $m->photo ? Storage::url($m->photo) : null,
+                                        'photo_kegiatan_url' => $m->photo_kegiatan ? Storage::url($m->photo_kegiatan) : null,
+                                        'likes_count' => $m->likes_count,
+                                        'dislikes_count' => $m->dislikes_count,
+                                        'is_today' => \Carbon\Carbon::parse($m->date)->isToday(),
+                                    ];
+                                @endphp
+                                <button type="button" @if($loop->first) data-tour="admin-menu-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js($menuDetailPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;">Detail</button>
+                                @if(auth()->user()->hasRole('Admin Sekolah'))
                                 <button type="button" @if($loop->first) data-tour="admin-menu-action-edit" data-tour-open-modal="edit" @endif @click='openEdit(@json($m))' class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button type="button" @if($loop->first) data-tour="admin-menu-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.menu-makanan.destroy', $m) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                @endif
                             </div></td>
-                            @endif
                         </tr>
                         @empty
                         <tr><td colspan="6" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada jadwal menu yang diinput.</td></tr>
@@ -125,6 +146,54 @@
             <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
                 <x-per-page-selector :paginator="$menus" />
                 {{ $menus->links() }}
+            </div>
+        </div>
+        <!-- DETAIL MODAL -->
+        <div x-show="showDetailModal" data-tour="modal-detail" class="modal-overlay" style="display:none;">
+            <div x-show="showDetailModal" x-transition class="modal-box max-w-2xl" @click.away="showDetailModal=false">
+                <div class="modal-header flex items-center justify-between">
+                    <h3 class="section-title">Detail Menu Makanan</h3>
+                    <button type="button" @click="showDetailModal=false" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+                <div class="modal-body space-y-5" data-tour="modal-detail-content">
+                    <div class="flex items-center gap-2">
+                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.date || '—'"></p>
+                        <span x-show="detailData.is_today" class="badge badge-green">Hari Ini</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#9E9790;">Daftar Menu</p>
+                        <p class="text-sm whitespace-pre-line leading-relaxed" style="color:#2C2C2C;" x-text="detailData.menu || '—'"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Informasi Gizi</p>
+                        <p class="text-sm" style="color:#6B6560;" x-text="detailData.nutrition_info || '-'"></p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" x-show="detailData.photo_url || detailData.photo_kegiatan_url">
+                        <template x-if="detailData.photo_url">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#9E9790;">Foto Makanan</p>
+                                <img :src="detailData.photo_url" class="w-full rounded-xl object-cover max-h-48 border border-gray-100" alt="">
+                            </div>
+                        </template>
+                        <template x-if="detailData.photo_kegiatan_url">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#9E9790;">Foto Kegiatan Makan</p>
+                                <img :src="detailData.photo_kegiatan_url" class="w-full rounded-xl object-cover max-h-48 border border-gray-100" alt="">
+                            </div>
+                        </template>
+                    </div>
+                    <div class="flex items-center gap-4 pt-2">
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-md">
+                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.757c1.246 0 2.228 1.053 2.115 2.285l-1.157 12.63c-.105 1.157-1.077 2.085-2.238 2.085H6.115c-1.161 0-2.133-.928-2.238-2.085L2.72 12.285C2.607 11.053 3.589 10 4.835 10H8.5l.5-5a3 3 0 013 3v2h2z" /></svg>
+                            <span x-text="detailData.likes_count ?? 0"></span> Suka
+                        </span>
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-orange-700 bg-orange-50 px-2 py-1 rounded-md">
+                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.243c-1.246 0-2.228-1.053-2.115-2.285l1.157-12.63C4.39 1.157 5.362.23 6.523.23h11.362c1.161 0 2.133.928 2.238 2.085l1.157 12.63c.113 1.232-.869 2.285-2.115 2.285H15.5l-.5 5a3 3 0 01-3-3v-2h-2z" /></svg>
+                            <span x-text="detailData.dislikes_count ?? 0"></span> Tidak Suka
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" @click="showDetailModal=false" class="btn-secondary w-full sm:w-auto">Tutup</button></div>
             </div>
         </div>
         <!-- CREATE MODAL -->

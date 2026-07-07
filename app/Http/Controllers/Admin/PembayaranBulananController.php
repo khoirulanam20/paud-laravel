@@ -150,17 +150,20 @@ class PembayaranBulananController extends Controller
 
         $rows = $pembayarans->map(function (PembayaranBulanan $p) {
             $biayaLain = $p->items->sum('nominal');
+            $diskonLabel = $p->nilai_diskon > 0
+                ? ($p->diskon?->nama_diskon.' (-'.number_format($p->nilai_diskon, 0, ',', '.').')')
+                : '-';
 
             return [
                 $p->anak?->name ?? '-',
                 $p->anak?->kelas?->name ?? '-',
                 $p->biayaBulananSekolah?->nama_biaya ?? '-',
                 $p->hari_hadir ?? '-',
-                number_format((float) ($p->biaya_per_hari * $p->hari_hadir), 0, ',', '.'),
-                number_format((float) $biayaLain, 0, ',', '.'),
-                number_format((float) $p->subtotal, 0, ',', '.'),
-                $p->diskon?->nama ?? '-',
-                number_format((float) $p->total_bayar, 0, ',', '.'),
+                (float) $p->biaya_per_hari,
+                (float) $biayaLain,
+                (float) $p->subtotal,
+                $diskonLabel,
+                (float) $p->total_bayar,
                 ucfirst($p->status),
             ];
         })->all();
@@ -169,7 +172,8 @@ class PembayaranBulananController extends Controller
             ['Siswa', 'Kelas', 'Biaya', 'Hadir', 'Biaya/Bln', 'Biaya Lain', 'Subtotal', 'Diskon', 'Total', 'Status'],
             $rows,
             sprintf('rekap-pembayaran-%02d-%d.xlsx', $bulan, $tahun),
-            'Rekap Pembayaran'
+            'Rekap Pembayaran',
+            [4, 5, 6, 8],
         );
     }
 

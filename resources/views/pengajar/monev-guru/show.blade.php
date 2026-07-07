@@ -29,7 +29,7 @@
         <div class="card overflow-hidden mb-6">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);"><h3 class="section-title">Penilaian per kriteria</h3></div>
             <div class="divide-y" style="border-color:rgba(0,0,0,0.06);">
-                @foreach($evaluasi->items->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
+                @foreach($evaluasi->items->filter(fn ($i) => $i->kriteria?->is_active)->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
                 <div class="px-6 py-4">
                     <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
                         <div class="font-semibold">{{ $item->kriteria->nama ?? '—' }}</div>

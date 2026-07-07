@@ -48,7 +48,7 @@
                 <tr><th style="width:35%">Kriteria</th><th style="width:10%">Bobot</th><th style="width:10%">Skor</th><th>Catatan</th></tr>
             </thead>
             <tbody>
-                @foreach($evaluasi->items->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
+                @foreach($evaluasi->items->filter(fn ($i) => $i->kriteria?->is_active)->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
                 <tr>
                     <td>{{ $item->kriteria->nama ?? '—' }}</td>
                     <td>{{ $item->kriteria->bobot ?? '—' }}%</td>

@@ -78,14 +78,15 @@ class CashflowController extends Controller
             $c->akun?->nama ?? '-',
             $c->description ?? '-',
             $c->type === 'in' ? 'Masuk' : 'Keluar',
-            number_format((float) $c->amount, 0, ',', '.'),
+            (float) $c->amount,
         ])->all();
 
         return $this->downloadExcel(
             ['Tanggal', 'Akun', 'Keterangan', 'Jenis', 'Nominal (Rp)'],
             $rows,
             sprintf('cashflow-%02d-%d.xlsx', $bulan, $tahun),
-            'Cashflow'
+            'Cashflow',
+            [4],
         );
     }
 

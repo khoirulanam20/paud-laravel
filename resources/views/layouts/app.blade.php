@@ -313,7 +313,7 @@
             @include('layouts.topbar')
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto w-full {{ ($user && $user->hasRole('Orang Tua') && !request()->routeIs('orangtua.chat.*')) ? 'pb-24' : (($user && $user->hasRole('Orang Tua')) ? 'pb-0' : 'pb-20') }} lg:pb-0">
+            <main class="flex-1 w-full {{ request()->routeIs('orangtua.chat.*') ? 'overflow-hidden flex flex-col min-h-0' : 'overflow-y-auto' }} {{ ($user && $user->hasRole('Orang Tua') && !request()->routeIs('orangtua.chat.*')) ? 'pb-24' : (($user && $user->hasRole('Orang Tua')) ? 'pb-0' : 'pb-20') }} lg:pb-0">
                 @isset($header)
                     @if($isOrangTua)
                         {{-- Mobile: judul halaman (profil ada di menu Lainnya) --}}
@@ -340,7 +340,7 @@
                 @endisset
 
                 <!-- Page Content -->
-                <div class="min-h-[calc(100vh-64px)] w-full">
+                <div class="{{ request()->routeIs('orangtua.chat.*') ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : 'min-h-[calc(100vh-64px)]' }} w-full">
                     {{ $slot }}
                 </div>
             </main>

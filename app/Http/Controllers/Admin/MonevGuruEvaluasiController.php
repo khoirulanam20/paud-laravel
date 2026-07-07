@@ -199,6 +199,7 @@ class MonevGuruEvaluasiController extends Controller
     public function destroy(MonevGuruEvaluasi $monev_guru_evaluasi)
     {
         $this->assertSekolahEvaluasi($monev_guru_evaluasi);
+        abort_if($monev_guru_evaluasi->isFinal(), 403, 'Evaluasi final tidak dapat dihapus.');
 
         MonevGuruPenilaianItem::where('monev_guru_evaluasi_id', $monev_guru_evaluasi->id)->delete();
         $monev_guru_evaluasi->delete();

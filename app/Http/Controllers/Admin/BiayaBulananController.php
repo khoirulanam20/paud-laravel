@@ -98,14 +98,15 @@ class BiayaBulananController extends Controller
         $rows = $siswaTerassign->map(fn (BiayaBulananSiswa $bs) => [
             $bs->anak?->name ?? '-',
             $bs->anak?->kelas?->name ?? '-',
-            number_format((float) ($bs->biaya_bulanan ?? $biayaTerpilih?->nominal_default ?? 0), 0, ',', '.'),
+            (float) ($bs->biaya_bulanan ?? $biayaTerpilih?->nominal_default ?? 0),
         ])->values()->all();
 
         return $this->downloadExcel(
             ['Siswa', 'Kelas', 'Biaya Bulanan (Rp)'],
             $rows,
             'biaya-bulanan-'.now()->format('Y-m-d').'.xlsx',
-            'Biaya Bulanan'
+            'Biaya Bulanan',
+            [2],
         );
     }
 
