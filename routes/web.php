@@ -172,6 +172,9 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('presensi-guru/export', [PresensiPengajarController::class, 'export'])->name('presensi-guru.export');
     Route::get('kesehatan/export', [KesehatanController::class, 'export'])->name('kesehatan.export');
     Route::get('matrikulasi/export', [AdminMatrikulasiController::class, 'export'])->name('matrikulasi.export');
+    Route::get('matrikulasi/import/template', [AdminMatrikulasiController::class, 'downloadTemplate'])->name('matrikulasi.import.template');
+    Route::post('matrikulasi/import/test', [AdminMatrikulasiController::class, 'testImport'])->name('matrikulasi.import.test');
+    Route::post('matrikulasi/import', [AdminMatrikulasiController::class, 'import'])->name('matrikulasi.import');
     Route::get('skala-pencapaian/export', [SkalaPencapaianController::class, 'export'])->name('skala-pencapaian.export');
     Route::get('kegiatan/export', [KegiatanController::class, 'export'])->name('kegiatan.export');
     Route::get('master-kegiatan-rutin/export', [MasterKegiatanRutinController::class, 'export'])->name('master-kegiatan-rutin.export');
