@@ -193,6 +193,67 @@ class MatrikulasiImportTest extends TestCase
         $this->assertDatabaseMissing('matrikulasis', ['indicator' => 'Indikator Tes Saja']);
     }
 
+    public function test_import_accepts_legacy_export_header_for_aspek(): void
+    {
+        $fixtures = $this->createFixtures();
+
+        $file = $this->makeImportFile(
+            [
+                [
+                    'Kognitif',
+                    'Indikator Legacy Header',
+                    'Deskripsi legacy header.',
+                    '',
+                    '',
+                ],
+            ],
+            ['Aspek / Bidang', 'Indikator', 'Deskripsi', 'Tujuan', 'Strategi'],
+        );
+
+        $response = $this->actingAs($fixtures['admin'])->post(route('admin.matrikulasi.import'), [
+            'file' => $file,
+        ]);
+
+        $response->assertRedirect(route('admin.matrikulasi.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('matrikulasis', [
+            'indicator' => 'Indikator Legacy Header',
+            'aspek' => 'Kognitif',
+            'sekolah_id' => $fixtures['sekolah']->id,
+        ]);
+    }
+
+    public function test_import_treats_dash_as_empty_optional_fields(): void
+    {
+        $fixtures = $this->createFixtures();
+
+        $file = $this->makeImportFile([
+            [
+                '-',
+                'Indikator Tanpa Aspek',
+                'Deskripsi valid.',
+                '-',
+                '-',
+            ],
+        ]);
+
+        $response = $this->actingAs($fixtures['admin'])->post(route('admin.matrikulasi.import'), [
+            'file' => $file,
+        ]);
+
+        $response->assertRedirect(route('admin.matrikulasi.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('matrikulasis', [
+            'indicator' => 'Indikator Tanpa Aspek',
+            'aspek' => null,
+            'tujuan' => null,
+            'strategi' => null,
+            'sekolah_id' => $fixtures['sekolah']->id,
+        ]);
+    }
+
     public function test_test_import_reports_errors_without_saving(): void
     {
         $fixtures = $this->createFixtures();
@@ -224,10 +285,10 @@ class MatrikulasiImportTest extends TestCase
 
     /**
      * @param  array<int, array<int, string>>  $rows
+     * @param  list<string>  $headers
      */
-    protected function makeImportFile(array $rows): UploadedFile
+    protected function makeImportFile(array $rows, array $headers = ['aspek', 'indikator', 'deskripsi', 'tujuan', 'strategi']): UploadedFile
     {
-        $headers = ['aspek', 'indikator', 'deskripsi', 'tujuan', 'strategi'];
 
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();

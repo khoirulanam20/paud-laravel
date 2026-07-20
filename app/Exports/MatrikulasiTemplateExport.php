@@ -10,10 +10,16 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class MatrikulasiTemplateExport implements FromArray, ShouldAutoSize, WithStyles, WithTitle
 {
+    /** @return list<string> */
+    public static function headings(): array
+    {
+        return ['aspek', 'indikator', 'deskripsi', 'tujuan', 'strategi'];
+    }
+
     public function array(): array
     {
         return [
-            ['aspek', 'indikator', 'deskripsi', 'tujuan', 'strategi'],
+            self::headings(),
             [
                 'Kognitif',
                 'Mampu menghitung 1–10',

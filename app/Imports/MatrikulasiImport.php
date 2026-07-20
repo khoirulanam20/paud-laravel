@@ -76,28 +76,59 @@ class MatrikulasiImport implements ToCollection, WithHeadingRow
 
     protected function isEmptyRow(Collection $row): bool
     {
-        $indikator = trim((string) ($row['indikator'] ?? ''));
-        $deskripsi = trim((string) ($row['deskripsi'] ?? ''));
+        $data = $this->normalizeRow($row);
 
-        return $indikator === '' && $deskripsi === '';
+        return ($data['indikator'] ?? '') === '' && ($data['deskripsi'] ?? '') === '';
     }
 
     protected function normalizeRow(Collection $row): array
     {
-        $data = [];
+        return [
+            'aspek' => $this->nullableCell($this->pickRowValue($row, 'aspek')),
+            'indikator' => $this->requiredCell($this->pickRowValue($row, 'indikator')),
+            'deskripsi' => $this->requiredCell($this->pickRowValue($row, 'deskripsi')),
+            'tujuan' => $this->nullableCell($this->pickRowValue($row, 'tujuan')),
+            'strategi' => $this->nullableCell($this->pickRowValue($row, 'strategi')),
+        ];
+    }
 
-        foreach (['aspek', 'indikator', 'deskripsi', 'tujuan', 'strategi'] as $key) {
-            $value = $row[$key] ?? null;
-            if ($value === null || $value === '') {
-                $data[$key] = null;
+    protected function pickRowValue(Collection $row, string $key): mixed
+    {
+        $aliases = match ($key) {
+            'aspek' => ['aspek', 'aspek_bidang', 'aspek_faktor'],
+            default => [$key],
+        };
 
-                continue;
+        foreach ($aliases as $alias) {
+            $value = $row[$alias] ?? null;
+            if ($value !== null && $value !== '') {
+                return $value;
             }
-
-            $data[$key] = is_string($value) ? trim($value) : $value;
         }
 
-        return $data;
+        return null;
+    }
+
+    protected function nullableCell(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $text = is_string($value) ? trim($value) : trim((string) $value);
+
+        return $text === '' || $text === '-' ? null : $text;
+    }
+
+    protected function requiredCell(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $text = is_string($value) ? trim($value) : trim((string) $value);
+
+        return $text === '' ? null : $text;
     }
 
     protected function previewRow(array $validated): string

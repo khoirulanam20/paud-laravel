@@ -45,16 +45,16 @@ class MatrikulasiController extends Controller
             ->latest()
             ->get()
             ->map(fn (Matrikulasi $m) => [
-                $m->aspek ?? '-',
+                $m->aspek,
                 $m->indicator,
                 $m->description,
-                $m->tujuan ?? '-',
-                $m->strategi ?? '-',
+                $m->tujuan,
+                $m->strategi,
             ])
             ->all();
 
         return $this->downloadExcel(
-            ['Aspek / Bidang', 'Indikator', 'Deskripsi', 'Tujuan', 'Strategi'],
+            MatrikulasiTemplateExport::headings(),
             $rows,
             'matrikulasi-'.now()->format('Y-m-d').'.xlsx',
             'Matrikulasi'
