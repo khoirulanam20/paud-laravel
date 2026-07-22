@@ -57,12 +57,8 @@ Instruksi:
 - Setiap saran harus singkat (maks 2 kalimat), positif, spesifik, dan sesuai dengan usia anak PAUD / TK.
 - Gunakan bahasa yang hangat dan mendorong.
 - Jangan mengulang saran yang sama.
-- Jawab HANYA dengan 3 saran, masing-masing diawali dengan nomor (1. 2. 3.) tanpa penjelasan tambahan.
-
-Format jawaban:
-1. [Saran pertama]
-2. [Saran kedua]
-3. [Saran ketiga]
+- Jawab HANYA JSON valid tanpa markdown atau teks lain:
+{"saran":["saran pertama","saran kedua","saran ketiga"]}
 PROMPT;
 
         $response = Http::withToken($this->apiKey)
@@ -80,9 +76,9 @@ PROMPT;
             $this->throwApiError($response);
         }
 
-        $content = $response->json('choices.0.message.content', '');
+        $content = $this->extractCompletionContent($response);
 
-        return $this->parseSuggestions($content);
+        return $this->resolveFeedbackSuggestions($content);
     }
 
     protected function throwApiError(Response $response): void
@@ -96,17 +92,202 @@ PROMPT;
         throw new \RuntimeException('AI API error: HTTP '.$response->status());
     }
 
-    /**
-     * Parse the numbered list from the AI response into an array of 3 strings.
-     */
-    protected function parseSuggestions(string $content): array
+    protected function extractCompletionContent(Response $response): string
     {
-        $lines = preg_split('/\r?\n/', trim($content));
+        $body = $response->body();
+
+        if ($this->isSseBody($body)) {
+            return $this->extractContentFromSse($body);
+        }
+
+        $json = $response->json();
+        if (is_array($json)) {
+            $content = $this->extractContentFromJson($json);
+            if ($content !== '') {
+                return $content;
+            }
+        }
+
+        return trim($body);
+    }
+
+    protected function isSseBody(string $body): bool
+    {
+        return str_starts_with(trim($body), 'data:');
+    }
+
+    protected function extractContentFromSse(string $body): string
+    {
+        $content = '';
+        $reasoning = '';
+
+        foreach (preg_split('/\r?\n/', $body) as $line) {
+            $line = trim($line);
+            if ($line === '' || ! str_starts_with($line, 'data:')) {
+                continue;
+            }
+
+            $data = trim(substr($line, 5));
+            if ($data === '' || $data === '[DONE]') {
+                continue;
+            }
+
+            $json = json_decode($data, true);
+            if (! is_array($json)) {
+                continue;
+            }
+
+            $choice = $json['choices'][0] ?? [];
+            $delta = is_array($choice['delta'] ?? null) ? $choice['delta'] : [];
+            $message = is_array($choice['message'] ?? null) ? $choice['message'] : [];
+
+            $content .= $this->stringifyContentPart($delta['content'] ?? null);
+            $content .= $this->stringifyContentPart($message['content'] ?? null);
+            $content .= $this->stringifyContentPart($choice['text'] ?? null);
+
+            $reasoning .= $this->stringifyContentPart($delta['reasoning'] ?? null);
+            $reasoning .= $this->stringifyContentPart($delta['reasoning_content'] ?? null);
+            $reasoning .= $this->stringifyContentPart($message['reasoning'] ?? null);
+            $reasoning .= $this->stringifyContentPart($message['reasoning_content'] ?? null);
+        }
+
+        $content = trim($content);
+
+        return $content !== '' ? $content : trim($reasoning);
+    }
+
+    /**
+     * @param  array<string, mixed>  $json
+     */
+    protected function extractContentFromJson(array $json): string
+    {
+        $choice = $json['choices'][0] ?? [];
+
+        $content = $this->stringifyContentPart(data_get($choice, 'message.content'));
+        if ($content !== '') {
+            return $content;
+        }
+
+        $content = $this->stringifyContentPart($choice['text'] ?? null);
+        if ($content !== '') {
+            return $content;
+        }
+
+        foreach (['message.reasoning', 'message.reasoning_content'] as $path) {
+            $reasoning = $this->stringifyContentPart(data_get($choice, $path));
+            if ($reasoning !== '') {
+                return $reasoning;
+            }
+        }
+
+        return '';
+    }
+
+    protected function stringifyContentPart(mixed $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (! is_array($value)) {
+            return '';
+        }
+
+        $parts = [];
+        foreach ($value as $part) {
+            if (is_string($part)) {
+                $parts[] = $part;
+
+                continue;
+            }
+
+            if (is_array($part)) {
+                $parts[] = (string) ($part['text'] ?? $part['content'] ?? '');
+            }
+        }
+
+        return implode('', array_filter($parts, fn (string $part): bool => $part !== ''));
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function resolveFeedbackSuggestions(string $content): array
+    {
+        $fallback = 'Terus semangat dan pertahankan perkembangan yang baik ini!';
+
+        $fromJson = $this->parseJsonSuggestions($content, 'saran');
+        if ($fromJson !== null) {
+            return $this->padSuggestions($fromJson, $fallback);
+        }
+
+        $fromNumbered = $this->parseNumberedSuggestions($content);
+        if ($fromNumbered !== []) {
+            return $this->padSuggestions($fromNumbered, $fallback);
+        }
+
+        Log::warning('AI feedback response unparseable', [
+            'content' => mb_substr($content, 0, 500),
+            'base_url' => $this->baseUrl,
+            'model' => $this->model,
+        ]);
+
+        throw new \RuntimeException('Format respons AI tidak dikenali.');
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    protected function parseJsonSuggestions(string $content, string $key): ?array
+    {
+        $content = trim($content);
+        if ($content === '') {
+            return null;
+        }
+
+        $json = $content;
+        if (preg_match('/```(?:json)?\s*([\s\S]*?)```/i', $content, $matches)) {
+            $json = trim($matches[1]);
+        } elseif (preg_match('/\{[\s\S]*\}/', $content, $matches)) {
+            $json = $matches[0];
+        }
+
+        $decoded = json_decode($json, true);
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        $items = $decoded[$key] ?? $decoded['suggestions'] ?? null;
+        if (! is_array($items)) {
+            return null;
+        }
+
+        $items = array_values(array_filter(array_map('strval', $items)));
+
+        return $items !== [] ? $items : null;
+    }
+
+    /**
+     * Parse the numbered list from the AI response.
+     *
+     * @return list<string>
+     */
+    protected function parseNumberedSuggestions(string $content): array
+    {
+        $content = trim($content);
+        if ($content === '') {
+            return [];
+        }
+
+        $lines = preg_split('/\r?\n/', $content);
         $suggestions = [];
 
         foreach ($lines as $line) {
             $line = trim($line);
-            // Match lines starting with 1. 2. 3. (with possible bold markers)
             if (preg_match('/^\d+\.\s*\*{0,2}(.+)\*{0,2}$/', $line, $matches)) {
                 $suggestion = trim($matches[1]);
                 if ($suggestion !== '') {
@@ -115,19 +296,24 @@ PROMPT;
             }
         }
 
-        // Fallback: split by numbered pattern if no matches
-        if (empty($suggestions)) {
+        if ($suggestions === []) {
             preg_match_all('/\d+\.\s*(.+?)(?=\d+\.|$)/s', $content, $matches);
             $suggestions = array_map('trim', $matches[1] ?? []);
         }
 
-        // Ensure we always return exactly 3
-        $suggestions = array_values(array_filter($suggestions));
-        while (count($suggestions) < 3) {
-            $suggestions[] = 'Terus semangat dan pertahankan perkembangan yang baik ini!';
-        }
+        return array_values(array_filter($suggestions));
+    }
 
-        return array_slice($suggestions, 0, 3);
+    /**
+     * Parse the numbered list from the AI response into an array of 3 strings.
+     *
+     * @return array<string>
+     */
+    protected function parseSuggestions(string $content): array
+    {
+        $fallback = 'Terus semangat dan pertahankan perkembangan yang baik ini!';
+
+        return $this->padSuggestions($this->parseNumberedSuggestions($content), $fallback);
     }
 
     /**
@@ -187,7 +373,7 @@ PROMPT;
             $this->throwApiError($response);
         }
 
-        $content = $response->json('choices.0.message.content', '');
+        $content = $this->extractCompletionContent($response);
 
         return $this->parseSuggestions($content);
     }
@@ -249,7 +435,7 @@ PROMPT;
             $this->throwApiError($response);
         }
 
-        $content = trim($response->json('choices.0.message.content', ''));
+        $content = trim($this->extractCompletionContent($response));
 
         return $this->parseMonevGuruRingkasanSuggestions($content, $penilaianItems);
     }
@@ -382,7 +568,7 @@ PROMPT;
             $this->throwApiError($response);
         }
 
-        $content = trim((string) $response->json('choices.0.message.content', ''));
+        $content = trim($this->extractCompletionContent($response));
 
         if ($content === '') {
             throw new \RuntimeException('AI mengembalikan respons kosong.');
@@ -411,7 +597,7 @@ PROMPT;
             $this->throwApiError($response);
         }
 
-        $content = trim((string) $response->json('choices.0.message.content', ''));
+        $content = trim($this->extractCompletionContent($response));
 
         if ($content === '') {
             throw new \RuntimeException('AI mengembalikan respons kosong.');

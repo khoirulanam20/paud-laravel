@@ -110,6 +110,7 @@ class ActivityLogScopeService
             'Pengajar' => 'Pengajar',
             'CmsContent' => 'Konten CMS',
             'AiSetting' => 'Pengaturan AI',
+            'AiProviderSlot' => 'Slot Provider AI',
             'Jurnal' => 'Jurnal',
             'JurnalLine' => 'Baris Jurnal',
             'Akun' => 'Akun',

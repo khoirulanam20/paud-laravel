@@ -12,8 +12,9 @@
     </x-slot>
 
   @php
-      $selectedProvider = old('ai_provider', $aiSetting?->ai_provider ?? 'sumopod');
       $providersJson = json_encode($providers, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+      $slotsByNumber = $slotsByNumber ?? collect();
+      $configuredSlots = $aiSetting?->configuredSlotCount() ?? 0;
   @endphp
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto"
@@ -21,26 +22,12 @@
             activeTab: @js($activeTab),
             testLoading: false,
             testResult: null,
+            providers: {{ $providersJson }},
             setTab(tab) {
                 this.activeTab = tab;
                 const url = new URL(window.location);
                 url.searchParams.set('tab', tab);
                 window.history.replaceState({}, '', url);
-            },
-            providers: {{ $providersJson }},
-            selectedProvider: @js($selectedProvider),
-            onProviderChange() {
-                const preset = this.providers[this.selectedProvider];
-                if (!preset?.default_model) return;
-                const modelInput = document.getElementById('ai_model');
-                if (!modelInput || modelInput.dataset.userEdited === '1') return;
-                modelInput.value = preset.default_model;
-            },
-            providerLabel() {
-                return this.providers[this.selectedProvider]?.label ?? this.selectedProvider;
-            },
-            providerHint() {
-                return this.providers[this.selectedProvider]?.hint ?? '';
             },
             async testConnection() {
                 this.testLoading = true;
@@ -132,13 +119,16 @@
             </div>
             <div>
                 <div class="font-bold text-sm" style="color:#2C2C2C;">
-                    {{ $aiSetting?->hasValidApiKey() ? 'AI Aktif — API Key sudah dikonfigurasi' : 'AI Belum Dikonfigurasi' }}
+                    {{ $aiSetting?->hasValidApiKey() ? 'AI Aktif — '.$configuredSlots.' slot siap dipakai' : 'AI Belum Dikonfigurasi' }}
                 </div>
                 <div class="text-xs mt-1" style="color:#6B6560;">
                     @if($aiSetting?->hasValidApiKey())
-                        Provider: <strong>{{ $aiSetting->providerLabel() }}</strong> · Model: <strong>{{ $aiSetting->ai_model ?? '-' }}</strong>
+                        Utama: <strong>{{ $aiSetting->providerLabel() }}</strong> · Model: <strong>{{ $aiSetting->primaryModel() ?? '-' }}</strong>
+                        @if($configuredSlots > 1)
+                            · Fallback otomatis ke slot berikutnya jika gagal
+                        @endif
                     @else
-                        Pilih provider, masukkan API Key dan nama model untuk mengaktifkan fitur AI.
+                        Isi Slot 1 (Utama). Slot 2–3 opsional sebagai backup.
                     @endif
                 </div>
             </div>
@@ -181,92 +171,53 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Konfigurasi AI Provider</h3>
-                <p class="section-subtitle mt-1">Pilih provider AI dengan API <strong>OpenAI-compatible</strong> (<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">/v1/chat/completions</code>).</p>
+                <p class="section-subtitle mt-1">
+                    Atur hingga 3 slot OpenAI-compatible. Sistem mencoba Slot 1 dulu, lalu Slot 2, lalu Slot 3 jika gagal
+                    (HTTP error, timeout, respons kosong, atau format tidak dikenali).
+                </p>
             </div>
             <form data-tour="superadmin-ai-form" action="{{ route('superadmin.ai-setting.update') }}" method="POST">
                 @csrf
                 <input type="hidden" name="lembaga_id" value="{{ $lembaga_id }}">
-                <div class="px-6 py-6 space-y-6">
+                <div class="px-6 py-6 space-y-5">
+                    @include('superadmin.ai_setting._slot_fields', [
+                        'slotNumber' => 1,
+                        'slot' => $slotsByNumber->get(1),
+                        'title' => 'Slot 1 — Utama',
+                        'subtitle' => 'Provider utama yang selalu dicoba terlebih dahulu.',
+                        'required' => true,
+                        'providers' => $providers,
+                    ])
 
-                    {{-- Provider --}}
-                    <div>
-                        <label class="input-label" for="ai_provider">Provider AI</label>
-                        <select id="ai_provider" name="ai_provider"
-                            class="input-field @error('ai_provider') border-red-500 @enderror"
-                            x-model="selectedProvider"
-                            @change="onProviderChange()"
-                            required>
-                            @foreach($providers as $key => $provider)
-                                <option value="{{ $key }}" @selected($selectedProvider === $key)>
-                                    {{ $provider['label'] }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('ai_provider')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        <p class="text-[11px] mt-1" style="color:#9E9790;" x-text="providerHint()"></p>
-                    </div>
+                    @include('superadmin.ai_setting._slot_fields', [
+                        'slotNumber' => 2,
+                        'slot' => $slotsByNumber->get(2),
+                        'title' => 'Slot 2 — Backup 1',
+                        'subtitle' => 'Dipakai otomatis jika Slot 1 gagal.',
+                        'required' => false,
+                        'providers' => $providers,
+                    ])
 
-                    {{-- Base URL (custom only) --}}
-                    <div x-show="selectedProvider === 'custom'" x-cloak>
-                        <label class="input-label" for="ai_base_url">Base URL</label>
-                        <input type="url" id="ai_base_url" name="ai_base_url"
-                            class="input-field @error('ai_base_url') border-red-500 @enderror"
-                            value="{{ old('ai_base_url', $aiSetting?->ai_base_url ?? '') }}"
-                            placeholder="https://api.example.com/v1"
-                            :required="selectedProvider === 'custom'">
-                        @error('ai_base_url')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        <p class="text-[11px] mt-1" style="color:#9E9790;">Endpoint harus kompatibel OpenAI, tanpa trailing slash (akan dinormalisasi otomatis).</p>
-                    </div>
+                    @include('superadmin.ai_setting._slot_fields', [
+                        'slotNumber' => 3,
+                        'slot' => $slotsByNumber->get(3),
+                        'title' => 'Slot 3 — Backup 2',
+                        'subtitle' => 'Cadangan terakhir jika Slot 1 dan 2 gagal.',
+                        'required' => false,
+                        'providers' => $providers,
+                    ])
 
-                    {{-- API Key --}}
-                    <div>
-                        <label class="input-label" for="ai_api_key">API Key</label>
-                        <input type="password" id="ai_api_key" name="ai_api_key"
-                            class="input-field @error('ai_api_key') border-red-500 @enderror"
-                            placeholder="{{ $aiSetting?->apiKeyNeedsReentry() ? 'Masukkan ulang API Key dari provider' : ($aiSetting?->hasValidApiKey() ? '••••••••••••••••••• (terisi — kosongkan jika tidak ingin mengubah)' : 'Masukkan API Key dari provider yang dipilih') }}"
-                            autocomplete="new-password">
-                        @error('ai_api_key')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        <p class="text-[11px] mt-1" style="color:#9E9790;">API Key disimpan terenkripsi. Kosongkan jika tidak ingin mengubah key yang sudah tersimpan.</p>
-                    </div>
-
-                    {{-- Model Name --}}
-                    <div>
-                        <label class="input-label" for="ai_model">Nama Model AI</label>
-                        <input type="text" id="ai_model" name="ai_model"
-                            class="input-field @error('ai_model') border-red-500 @enderror"
-                            value="{{ old('ai_model', $aiSetting?->ai_model ?? 'gpt-4o-mini') }}"
-                            placeholder="gpt-4o-mini"
-                            @input="$event.target.dataset.userEdited = '1'"
-                            required>
-                        @error('ai_model')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
-                        <p class="text-[11px] mt-1" style="color:#9E9790;">
-                            Gunakan model <strong>chat/text</strong> (bukan speech/image). Contoh:
-                            <code class="bg-gray-100 px-1 rounded">gpt-4o-mini</code>,
-                            <code class="bg-gray-100 px-1 rounded">deepseek-chat</code>,
-                            <code class="bg-gray-100 px-1 rounded">llama-3.3-70b-versatile</code>
-                        </p>
-                        <div class="mt-2 rounded-lg border px-3 py-2 text-[11px] flex items-start gap-2" style="background:#FEF9EC; border-color:#F0B84233; color:#92640A;">
-                            <svg class="h-3.5 w-3.5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <span>Pastikan model yang dipilih mendukung <strong>Chat Completions</strong>. Model speech atau image tidak akan berfungsi.</span>
-                        </div>
-                    </div>
-
-                    {{-- Info Box --}}
                     <div class="rounded-xl border p-4 text-xs space-y-2" style="background:#FAF6F0; border-color:rgba(0,0,0,0.06); color:#6B6560;">
-                        <div class="font-semibold" style="color:#2C2C2C;">ℹ️ Cara konfigurasi</div>
+                        <div class="font-semibold" style="color:#2C2C2C;">Cara konfigurasi</div>
                         <ol class="list-decimal pl-4 space-y-1">
-                            <li>Pilih provider AI dari daftar, atau pilih <strong>Custom</strong> untuk endpoint sendiri.</li>
-                            <li>Buat API Key di dashboard provider yang dipilih.</li>
-                            <li>Masukkan API Key dan nama model yang mendukung chat completions.</li>
-                            <li>Gunakan tombol <strong>Test Koneksi AI</strong> untuk memverifikasi.</li>
+                            <li>Isi Slot 1 dengan provider utama (wajib).</li>
+                            <li>Opsional: aktifkan Slot 2/3 dengan provider atau model berbeda sebagai backup.</li>
+                            <li>Simpan, lalu gunakan <strong>Test Koneksi AI</strong> untuk menguji rantai fallback.</li>
                         </ol>
                     </div>
                 </div>
 
                 <div class="px-6 pb-6 flex flex-wrap justify-between items-center gap-3 border-t pt-5" style="border-color:rgba(0,0,0,0.06);">
-                    {{-- Test AI Button --}}
                     <button type="button" @click="testConnection()"
                         :disabled="testLoading"
                         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all"
@@ -291,7 +242,6 @@
                         </template>
                     </button>
 
-                    {{-- Save Button --}}
                     <button type="submit" class="btn-primary">
                         <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />

@@ -29,7 +29,7 @@ class MonevSummaryService
         protected AiTokenService $tokenService
     ) {}
 
-    public function resolveAiServiceForSekolah(int $sekolahId): ?SumopodAIService
+    public function resolveAiServiceForSekolah(int $sekolahId): ?FallbackAiService
     {
         $sekolah = Sekolah::find($sekolahId);
         $lembagaId = $sekolah?->lembaga_id;
@@ -40,14 +40,10 @@ class MonevSummaryService
 
         $aiSetting = AiSetting::where('lembaga_id', $lembagaId)->first();
 
-        if (! $aiSetting || ! $aiSetting->hasValidApiKey()) {
-            return null;
-        }
-
-        return $aiSetting->toAiService();
+        return $aiSetting?->resolveAiService();
     }
 
-    public function resolveAiServiceForUser(User $user): ?SumopodAIService
+    public function resolveAiServiceForUser(User $user): ?FallbackAiService
     {
         $lembagaId = $user->lembaga_id;
 
@@ -63,11 +59,7 @@ class MonevSummaryService
 
         $aiSetting = AiSetting::where('lembaga_id', $lembagaId)->first();
 
-        if (! $aiSetting || ! $aiSetting->hasValidApiKey()) {
-            return null;
-        }
-
-        return $aiSetting->toAiService();
+        return $aiSetting?->resolveAiService();
     }
 
     public function assertCanStartSelectedGeneration(
@@ -472,7 +464,7 @@ class MonevSummaryService
         int $bulan,
         string $sumber,
         ?User $by = null,
-        ?SumopodAIService $ai = null
+        SumopodAIService|FallbackAiService|null $ai = null
     ): MonevSummary {
         $existing = MonevSummary::query()
             ->where('anak_id', $anak->id)
@@ -588,7 +580,7 @@ class MonevSummaryService
         int $bulan,
         string $sumber,
         ?User $by = null,
-        ?SumopodAIService $ai = null
+        SumopodAIService|FallbackAiService|null $ai = null
     ): array {
         $generated = 0;
         $skipped = 0;

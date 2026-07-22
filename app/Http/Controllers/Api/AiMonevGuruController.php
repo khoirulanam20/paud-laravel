@@ -96,7 +96,7 @@ class AiMonevGuruController extends Controller
                     'skor' => (int) $validated['skor'],
                 ],
                 'Saran catatan monev guru: '.$pengajar->name.' — '.$kriteria->nama,
-                fn () => $aiSetting->toAiService()->generateMonevGuruCatatanSuggestions(
+                fn () => $aiSetting->resolveAiService()->generateMonevGuruCatatanSuggestions(
                     $pengajar->name,
                     $kriteria->nama,
                     (string) ($kriteria->deskripsi ?? ''),
@@ -216,7 +216,7 @@ class AiMonevGuruController extends Controller
                     'type' => 'ringkasan',
                 ],
                 'Saran ringkasan monev guru: '.$pengajar->name,
-                fn () => $aiSetting->toAiService()->generateMonevGuruRingkasanSuggestions(
+                fn () => $aiSetting->resolveAiService()->generateMonevGuruRingkasanSuggestions(
                     $pengajar->name,
                     $periodeLabel,
                     $penilaianItems,

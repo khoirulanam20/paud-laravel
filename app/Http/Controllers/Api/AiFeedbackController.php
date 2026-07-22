@@ -95,7 +95,7 @@ class AiFeedbackController extends Controller
                     'matrikulasi_id' => $matrikulasi->id,
                 ],
                 'Saran feedback pencapaian: '.$anak->displayName(),
-                fn () => $aiSetting->toAiService()->generateFeedbackSuggestions(
+                fn () => $aiSetting->resolveAiService()->generateFeedbackSuggestions(
                     $anak->displayName(),
                     $kegiatan->title,
                     $matrikulasiLabel,
