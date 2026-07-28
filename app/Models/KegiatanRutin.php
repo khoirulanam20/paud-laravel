@@ -28,6 +28,41 @@ class KegiatanRutin extends Model
         'tanggal' => 'date',
     ];
 
+    /** @return list<string> */
+    public static function statusOptions(): array
+    {
+        return [
+            'Belum Mulai',
+            'Belum Lancar',
+            'Lancar',
+            'Sangat Lancar',
+            'Tidak Hadir',
+        ];
+    }
+
+    /**
+     * @return array<int, array<int, string>>
+     */
+    public static function gridMapForKelas(?int $kelasId, string $tanggal): array
+    {
+        if (! $kelasId) {
+            return [];
+        }
+
+        $grid = [];
+        static::query()
+            ->where('kelas_id', $kelasId)
+            ->where('tanggal', $tanggal)
+            ->get(['anak_id', 'master_kegiatan_rutin_id', 'status_pencapaian'])
+            ->each(function (self $rutin) use (&$grid) {
+                if ($rutin->master_kegiatan_rutin_id) {
+                    $grid[$rutin->anak_id][$rutin->master_kegiatan_rutin_id] = $rutin->status_pencapaian;
+                }
+            });
+
+        return $grid;
+    }
+
     public function sekolah(): BelongsTo
     {
         return $this->belongsTo(Sekolah::class);

@@ -9,6 +9,7 @@ use App\Models\KegiatanRutin;
 use App\Models\Kelas;
 use App\Models\MasterKegiatanRutin;
 use App\Models\Pengajar;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class KegiatanRutinController extends Controller
@@ -34,11 +35,23 @@ class KegiatanRutinController extends Controller
             $query->where('kelas.id', $kelasId);
         })->get() : collect();
 
-        $rutins = $kelasId ? KegiatanRutin::where('kelas_id', $kelasId)
-            ->where('tanggal', $tanggal)
-            ->get() : collect();
+        $rutinGrid = KegiatanRutin::gridMapForKelas($kelasId, $tanggal);
+        $rutinGridYesterday = KegiatanRutin::gridMapForKelas(
+            $kelasId,
+            Carbon::parse($tanggal)->subDay()->format('Y-m-d')
+        );
+        $statusOptions = KegiatanRutin::statusOptions();
 
-        return view('pengajar.kegiatan-rutin.index', compact('classList', 'anaks', 'rutins', 'tanggal', 'kelasId', 'masters'));
+        return view('pengajar.kegiatan-rutin.index', compact(
+            'classList',
+            'anaks',
+            'rutinGrid',
+            'rutinGridYesterday',
+            'statusOptions',
+            'tanggal',
+            'kelasId',
+            'masters'
+        ));
     }
 
     public function export(Request $request)

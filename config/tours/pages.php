@@ -50,13 +50,13 @@ return [
     'admin.kegiatan-rutin.index' => [
         ['element' => '[data-tour="nav-admin.master-kegiatan-rutin.index"]', 'title' => 'Menu Kegiatan Rutin', 'description' => 'Kelola pencatatan kegiatan rutin seluruh kelas.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Kegiatan Rutin', 'description' => 'Pantau dan input kegiatan harian siswa.', 'side' => 'bottom'],
-        ['element' => '[data-tour="kegiatan-rutin-list"]', 'title' => 'Daftar Siswa', 'description' => 'Pilih siswa untuk input atau lihat riwayat kegiatan rutin.', 'side' => 'top'],
+        ['element' => '[data-tour="kegiatan-rutin-list"]', 'title' => 'Grid Pencapaian', 'description' => 'Isi status di grid per siswa dan kegiatan, lalu klik Simpan Semua.', 'side' => 'top'],
     ],
 
     'pengajar.kegiatan-rutin.index' => [
         ['element' => '[data-tour="nav-pengajar.master-kegiatan-rutin.index"]', 'title' => 'Menu Input Rutin', 'description' => 'Catat pencapaian kegiatan rutin harian siswa.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Update Pencapaian Rutin', 'description' => 'Input perkembangan harian siswa di kelas Anda.', 'side' => 'bottom'],
-        ['element' => '[data-tour="kegiatan-rutin-list"]', 'title' => 'Daftar Siswa', 'description' => 'Klik Input untuk mencatat atau Detail untuk melihat riwayat.', 'side' => 'top'],
+        ['element' => '[data-tour="kegiatan-rutin-list"]', 'title' => 'Grid Pencapaian', 'description' => 'Isi status di grid, gunakan Salin Kemarin atau Semua Lancar, lalu Simpan Semua.', 'side' => 'top'],
     ],
 
 ];
