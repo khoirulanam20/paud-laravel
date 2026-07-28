@@ -235,25 +235,25 @@
             </div>
         @endif
 
-        <div class="card overflow-hidden mb-6">
+        <div class="card mb-6">
             <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
                 <div class="space-y-6">
                     <div class="space-y-1">
                         <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Evaluasi (Sekolah)</h3>
                     </div>
                     <form data-tour="admin-pencapaian-filter" method="get" action="{{ route('admin.pencapaian.index') }}"
-                        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 items-end">
-                        <div class="col-span-1 lg:col-span-2 min-w-0">
+                        class="filter-toolbar-inline">
+                        <div class="filter-toolbar-field">
                             <label class="input-label">Dari</label>
                             <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}"
                                 class="input-field w-full h-11 text-xs font-bold border-black/10">
                         </div>
-                        <div class="col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="input-label">Sampai</label>
                             <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}"
                                 class="input-field w-full h-11 text-xs font-bold border-black/10">
                         </div>
-                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="input-label">Kelas</label>
                             <select name="filter_kelas_id"
                                 class="input-field w-full h-11 text-xs font-bold border-black/10">
@@ -262,7 +262,7 @@
                                 @selected($filterKelasId === (int) $k->id)>{{ $k->name }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="input-label">Nama Siswa</label>
                             <select name="filter_anak_id"
                                 class="input-field w-full h-11 text-xs font-bold border-black/10">
@@ -270,7 +270,7 @@
                                 @foreach($anaks as $a)<option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="input-label">Aspek</label>
                             <select name="aspek" class="input-field w-full h-11 text-xs font-bold border-black/10">
                                 <option value="">Semua Aspek</option>
@@ -280,9 +280,13 @@
                                 @selected($filterAspekRaw === $asp)>{{ $asp }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="col-span-2 lg:col-span-2 flex gap-2">
-                            <button type="submit" class="btn-primary flex-1 h-11 font-bold">Cari Data</button>
-                            <x-export-excel route="admin.pencapaian.export" class="h-11" />
+                        <div class="filter-toolbar-actions">
+                            <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                            <x-export-excel route="admin.pencapaian.export" :icon-only="true" />
                         </div>
                     </form>
                 </div>

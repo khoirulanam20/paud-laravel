@@ -20,7 +20,7 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div class="card overflow-hidden mb-6">
+        <div class="card mb-6">
             <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
                 <div class="space-y-1">
                     <h3 class="text-xl font-bold" style="color:#2C2C2C;">Ringkasan Perkembangan</h3>
@@ -30,11 +30,11 @@
                 </div>
 
                 <form data-tour="ortu-monev-filters" method="get" action="{{ route('orangtua.monev.index') }}"
-                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4 items-end">
+                    class="filter-toolbar-inline">
                     @if($anaks->count() > 1)
-                        <div class="sm:col-span-2 lg:col-span-4 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="input-label" for="ortu-monev-anak">Anak</label>
-                            <select id="ortu-monev-anak" name="anak_id" class="input-field w-full">
+                            <select id="ortu-monev-anak" name="anak_id" class="input-field w-full h-11">
                                 @foreach($anaks as $anak)
                                     <option value="{{ $anak->id }}" @selected($selectedAnak?->id === $anak->id)>{{ $anak->name }}</option>
                                 @endforeach
@@ -43,25 +43,26 @@
                     @elseif($selectedAnak)
                         <input type="hidden" name="anak_id" value="{{ $selectedAnak->id }}">
                     @endif
-                    <div class="sm:col-span-1 lg:col-span-3 min-w-0">
+                    <div class="filter-toolbar-field">
                         <label class="input-label" for="ortu-monev-bulan">Bulan</label>
-                        <select id="ortu-monev-bulan" name="bulan" class="input-field w-full">
+                        <select id="ortu-monev-bulan" name="bulan" class="input-field w-full h-11">
                             @foreach($months as $num => $name)
                                 <option value="{{ $num }}" @selected($bulan == $num)>{{ $name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="sm:col-span-1 lg:col-span-2 min-w-0">
+                    <div class="filter-toolbar-field">
                         <label class="input-label" for="ortu-monev-tahun">Tahun</label>
-                        <select id="ortu-monev-tahun" name="tahun" class="input-field w-full">
+                        <select id="ortu-monev-tahun" name="tahun" class="input-field w-full h-11">
                             @for($y = now()->year; $y >= now()->year - 2; $y--)
                                 <option value="{{ $y }}" @selected($tahun == $y)>{{ $y }}</option>
                             @endfor
                         </select>
                     </div>
-                    <div class="sm:col-span-2 lg:col-span-3 flex flex-col gap-2 min-w-0">
-                        <span class="input-label opacity-0 text-[0.65rem] leading-none max-sm:hidden" aria-hidden="true">&nbsp;</span>
-                        <button type="submit" class="btn-primary w-full text-sm">Tampilkan</button>
+                    <div class="filter-toolbar-actions">
+                        <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Tampilkan" aria-label="Tampilkan">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </button>
                     </div>
                 </form>
             </div>

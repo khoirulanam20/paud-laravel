@@ -124,6 +124,32 @@
         color: var(--text-secondary);
     }
 
+    /* Filter forms: fields wrap; actions on own row (avoids 12-col squeeze + clip) */
+    .filter-toolbar {
+        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end;
+    }
+
+    .filter-toolbar-actions {
+        @apply col-span-full flex flex-wrap items-center gap-2;
+    }
+
+    .filter-toolbar-actions .btn-primary,
+    .filter-toolbar-actions .btn-secondary {
+        @apply h-11;
+    }
+
+    .filter-toolbar-inline {
+        @apply flex flex-wrap lg:flex-nowrap items-end gap-3;
+    }
+
+    .filter-toolbar-inline > .filter-toolbar-field {
+        @apply min-w-0 flex-1 basis-[7.5rem];
+    }
+
+    .filter-toolbar-inline .filter-toolbar-actions {
+        @apply flex shrink-0 items-center gap-2;
+    }
+
     /* ─── Table ─── */
     .data-table {
         @apply w-full text-[12px] md:text-sm text-left;

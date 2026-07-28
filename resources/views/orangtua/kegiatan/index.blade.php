@@ -20,32 +20,38 @@
          }" @kegiatan-cal-click.window="onCalClick($event.detail)">
 
         @if($anaks->count() > 1)
-            <div class="card overflow-hidden mb-6">
+            <div class="card mb-6">
                 <div class="px-5 py-5 border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF9F6;">
-                    <form method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                    <form method="GET" class="filter-toolbar-inline">
                         <input type="hidden" name="year" value="{{ $year }}">
                         <input type="hidden" name="month" value="{{ $month }}">
                         <input type="hidden" name="day" value="{{ request('day') }}">
-                        <div class="md:col-span-4">
+                        <div class="filter-toolbar-field">
                             <label class="input-label">Anak</label>
-                            <select name="anak_id" class="input-field w-full">
+                            <select name="anak_id" class="input-field w-full h-11">
                                 <option value="">Semua Anak</option>
                                 @foreach($anaks as $anak)
                                     <option value="{{ $anak->id }}" @selected((int) $anakId === (int) $anak->id)>{{ $anak->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="md:col-span-4">
+                        <div class="filter-toolbar-field">
                             <label class="input-label">Tampilan Agenda</label>
-                            <select name="semua_sekolah" class="input-field w-full">
+                            <select name="semua_sekolah" class="input-field w-full h-11">
                                 <option value="0" @selected(! $semuaSekolah)>Kelas Anak Saja</option>
                                 <option value="1" @selected($semuaSekolah)>Semua Agenda Sekolah</option>
                             </select>
                         </div>
-                        <div class="md:col-span-4 flex gap-2">
-                            <button type="submit" class="btn-primary flex-1">Terapkan</button>
+                        <div class="filter-toolbar-actions">
+                            <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Terapkan" aria-label="Terapkan filter">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </button>
                             @if($anakId || $semuaSekolah)
-                                <a href="{{ route('orangtua.kegiatan.index', ['year' => $year, 'month' => $month, 'day' => request('day')]) }}" class="btn-secondary flex-1 text-center">Reset</a>
+                                <a href="{{ route('orangtua.kegiatan.index', ['year' => $year, 'month' => $month, 'day' => request('day')]) }}"
+                                    class="btn-secondary h-11 w-11 p-0 shrink-0 inline-flex items-center justify-center"
+                                    title="Reset" aria-label="Reset filter">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                </a>
                             @endif
                         </div>
                     </form>

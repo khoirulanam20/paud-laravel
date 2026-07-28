@@ -35,7 +35,7 @@
     @include('monev._generation-progress', ['statusRoute' => $statusRoute, 'activeGeneration' => $activeGeneration])
 @endif
 
-<div class="card overflow-hidden mb-6" data-tour="{{ $tourPrefix }}-summary">
+<div class="card mb-6" data-tour="{{ $tourPrefix }}-summary">
     <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
         <div class="space-y-1">
             <h3 class="text-xl font-bold" style="color:#2C2C2C;">Ringkasan Monev Matrikulasi</h3>
@@ -45,16 +45,16 @@
         </div>
 
         <form data-tour="{{ $tourPrefix }}-filters" method="get" action="{{ $indexRoute }}"
-            class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-12 gap-3 sm:gap-4 items-end">
-            <div class="sm:col-span-2 xl:col-span-4 min-w-0">
+            class="filter-toolbar-inline">
+            <div class="filter-toolbar-field">
                 <label class="input-label" for="monev-search">Cari Siswa</label>
                 <input id="monev-search" type="search" name="search" value="{{ $search }}" placeholder="Nama siswa..."
-                    class="input-field w-full">
+                    class="input-field w-full h-11">
             </div>
             @if($kelasList->count() > 1)
-                <div class="sm:col-span-1 xl:col-span-2 min-w-0">
+                <div class="filter-toolbar-field">
                     <label class="input-label" for="monev-kelas">Kelas</label>
-                    <select id="monev-kelas" name="kelas_id" class="input-field w-full">
+                    <select id="monev-kelas" name="kelas_id" class="input-field w-full h-11">
                         <option value="">Semua Kelas</option>
                         @foreach($kelasList as $k)
                             <option value="{{ $k->id }}" @selected($filterKelasId == $k->id)>{{ $k->name }}</option>
@@ -64,36 +64,37 @@
             @elseif($filterKelasId)
                 <input type="hidden" name="kelas_id" value="{{ $filterKelasId }}">
             @endif
-            <div class="sm:col-span-1 xl:col-span-2 min-w-0">
+            <div class="filter-toolbar-field">
                 <label class="input-label" for="monev-bulan">Bulan</label>
-                <select id="monev-bulan" name="bulan" class="input-field w-full">
+                <select id="monev-bulan" name="bulan" class="input-field w-full h-11">
                     @foreach($months as $num => $name)
                         <option value="{{ $num }}" @selected($bulan == $num)>{{ $name }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="sm:col-span-1 xl:col-span-2 min-w-0">
+            <div class="filter-toolbar-field">
                 <label class="input-label" for="monev-tahun">Tahun</label>
-                <select id="monev-tahun" name="tahun" class="input-field w-full">
+                <select id="monev-tahun" name="tahun" class="input-field w-full h-11">
                     @for($y = now()->year; $y >= now()->year - 2; $y--)
                         <option value="{{ $y }}" @selected($tahun == $y)>{{ $y }}</option>
                     @endfor
                 </select>
             </div>
-            <div class="sm:col-span-2 xl:col-span-2 flex flex-col gap-2 min-w-0">
-                <span class="input-label opacity-0 text-[0.65rem] leading-none max-sm:hidden" aria-hidden="true">&nbsp;</span>
-                <div class="flex gap-2">
-                    <button type="submit" class="btn-primary flex-1 text-sm">Terapkan Filter</button>
-                    @if($exportRoute)
-                        <x-export-excel :route="$exportRoute" class="text-sm" />
-                    @endif
-                </div>
+            <div class="filter-toolbar-actions">
+                <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Terapkan Filter" aria-label="Terapkan Filter">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+                @if($exportRoute)
+                    <x-export-excel :route="$exportRoute" :icon-only="true" />
+                @endif
             </div>
         </form>
     </div>
 
-    <div class="px-5 sm:px-6 py-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4" style="border-color: rgba(0,0,0,0.06); background:#fff;">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+    <div class="px-5 sm:px-6 py-4 border-b flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between gap-4" style="border-color: rgba(0,0,0,0.06); background:#fff;">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0 flex-1">
             <span class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0" style="background:#E8F5F5; color:#1A6B6B;">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 {{ $periodeLabel }}
@@ -105,7 +106,7 @@
             @endif
         </div>
 
-        <div class="shrink-0">
+        <div class="w-full md:w-auto md:max-w-full shrink-0">
             @if($isCurrentMonth && $canManual && $aiReady && $hasTokens)
                 <form method="post" action="{{ $generateRoute }}" onsubmit="return confirm('Generate ringkasan AI untuk semua siswa dalam scope ini? Proses berjalan di background.');">
                     @csrf
@@ -125,7 +126,7 @@
                     Generate sedang berjalan...
                 </span>
             @elseif($isCurrentMonth && !$canManual)
-                <span class="inline-flex items-center text-xs font-medium px-3 py-2 rounded-lg whitespace-nowrap" style="background:#F5F5F5; color:#6B6560;">
+                <span class="inline-flex items-center text-xs font-medium px-3 py-2 rounded-lg border whitespace-normal sm:whitespace-nowrap" style="background:#EDE8DF; color:#4A4540; border-color: rgba(0,0,0,0.08);">
                     Generate semua bulan ini sudah dipakai
                 </span>
             @endif
