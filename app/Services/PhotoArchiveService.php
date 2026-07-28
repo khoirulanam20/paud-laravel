@@ -6,6 +6,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipArchive;
 
 class PhotoArchiveService
@@ -51,6 +52,15 @@ class PhotoArchiveService
         }
 
         return response()->download($zipPath, $zipName)->deleteFileAfterSend(true);
+    }
+
+    public function downloadPublicFile(string $path, string $downloadName): StreamedResponse
+    {
+        if (! Storage::disk('public')->exists($path)) {
+            throw new \RuntimeException('File foto tidak ditemukan.');
+        }
+
+        return Storage::disk('public')->download($path, $downloadName);
     }
 
     public function slugFilename(string $date, string $label, int $index, ?string $extension = null): string

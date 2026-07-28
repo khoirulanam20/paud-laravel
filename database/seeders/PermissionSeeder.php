@@ -59,6 +59,7 @@ class PermissionSeeder extends Seeder
             ],
             'Masukan & Komunikasi' => [
                 ['name' => 'menu.kritik-saran', 'label' => 'Kritik & Saran'],
+                ['name' => 'menu.pengumuman', 'label' => 'Pengumuman'],
                 ['name' => 'menu.chat-orangtua', 'label' => 'Chat Orang Tua'],
             ],
             'Pengaturan' => [
@@ -100,6 +101,7 @@ class PermissionSeeder extends Seeder
                 'menu.kesehatan-siswa',
                 'menu.monev',
                 'menu.kritik-saran',
+                'menu.pengumuman',
                 'menu.chat-orangtua',
                 'menu.pengaturan-ai',
                 'menu.rekap-pembayaran',

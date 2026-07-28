@@ -116,6 +116,7 @@
                 'group' => 'Masukan & Komunikasi',
                 'items' => [
                     ['route' => 'admin.kritik-saran.index', 'label' => 'Kritik & Saran', 'perm' => 'menu.kritik-saran', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'admin.kritik-saran.*'],
+                    ['route' => 'admin.pengumuman.index', 'label' => 'Pengumuman', 'perm' => 'menu.pengumuman', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'pattern' => 'admin.pengumuman.*'],
                     ...($chatOrangTuaEnabled ? [['route' => 'admin.orangtua-chat.index', 'label' => 'Chat Orang Tua', 'perm' => 'menu.chat-orangtua', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', 'pattern' => 'admin.orangtua-chat.*']] : []),
                 ]
             ],

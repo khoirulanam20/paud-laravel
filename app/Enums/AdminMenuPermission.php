@@ -31,6 +31,7 @@ enum AdminMenuPermission: string
     case Diskon = 'menu.diskon';
     case RekapPembayaran = 'menu.rekap-pembayaran';
     case KritikSaran = 'menu.kritik-saran';
+    case Pengumuman = 'menu.pengumuman';
     case ChatOrangtua = 'menu.chat-orangtua';
     case Role = 'menu.role';
     case Pengguna = 'menu.pengguna';

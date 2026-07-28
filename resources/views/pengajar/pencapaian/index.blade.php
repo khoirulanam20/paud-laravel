@@ -10,6 +10,9 @@
         $photoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
             ? 'adminkelas.pencapaian.photos.download'
             : 'pengajar.pencapaian.photos.download';
+        $bundlePhotoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+            ? 'adminkelas.pencapaian.photos.download-bundle'
+            : 'pengajar.pencapaian.photos.download-bundle';
         $sekolahId = (int) ($skalas->first()?->sekolah_id ?? auth()->user()->sekolah_id ?? 0);
         $skalaOptions = $skalas->map(fn ($s) => ['code' => $s->code, 'label' => $s->label])->values()->all();
         $filterAspek = $filterAspek ?? null;
@@ -345,9 +348,14 @@
                             <tr>
                                 <td>
                                     @if($first->photo)
-                                        <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; showImageModal = true">
-                                            <img src="{{ asset('storage/' . $first->photo) }}" class="h-full w-full object-cover">
-                                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; showImageModal = true">
+                                                <img src="{{ asset('storage/' . $first->photo) }}" class="h-full w-full object-cover">
+                                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
+                                            </div>
+                                            <a href="{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}"
+                                                class="text-[10px] font-bold uppercase tracking-wide text-teal-700 hover:underline"
+                                                title="Unduh foto">Unduh</a>
                                         </div>
                                     @else
                                         <div class="h-10 w-10 bg-gray-100 rounded flex items-center justify-center"><svg class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
@@ -599,9 +607,14 @@
                             <label class="input-label">Dokumentasi (Evidence)</label>
                             <template x-if="editBundles[editBundleKey]?.has_photo">
                                 <div class="mb-3">
-                                    <div class="text-[11px] mb-2 flex items-center gap-1.5 font-bold" style="color:#1A6B6B;">
-                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                        Foto Sebelumnya:
+                                    <div class="text-[11px] mb-2 flex items-center justify-between gap-2 font-bold" style="color:#1A6B6B;">
+                                        <div class="flex items-center gap-1.5">
+                                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                            Foto Sebelumnya:
+                                        </div>
+                                        <a :href="editBundles[editBundleKey]?.photo_download_url"
+                                            class="text-[10px] font-bold uppercase tracking-wide underline hover:no-underline"
+                                            x-show="editBundles[editBundleKey]?.photo_download_url">Unduh</a>
                                     </div>
                                     <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group" style="border-color:#1A6B6B22;">
                                         <img :src="editBundles[editBundleKey].photo_url" class="w-full h-full object-cover cursor-pointer" @click="activeImage = editBundles[editBundleKey].photo_url; showImageModal = true">

@@ -808,6 +808,8 @@
                 </div>
             </div>
         </div>
+
+        <x-pengumuman-popup :pengumumans="$unreadPengumumans ?? collect()" />
         @endhasrole
 
         @unless(auth()->user()->roles->count() > 0)

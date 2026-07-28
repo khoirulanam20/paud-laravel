@@ -199,11 +199,7 @@
                                 x-text="detailData.description"></span></p>
                     </div>
                     <div x-show="detailData.photo_urls && detailData.photo_urls.length > 0">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-bold text-sm text-gray-800">Dokumentasi Kegiatan</h4>
-                            <a :href="`{{ $kegiatanPhotoSingleBase }}/${detailData.id}/photos/download`"
-                                class="btn-secondary text-xs py-1.5 px-3">Unduh Foto</a>
-                        </div>
+                        <h4 class="font-bold mb-3 text-sm text-gray-800">Dokumentasi Kegiatan</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <template x-for="(url, idx) in detailData.photo_urls" :key="url">
                                 <div
@@ -212,6 +208,9 @@
                                         <img :src="url" class="w-full h-full object-cover cursor-pointer"
                                             @click.stop="activeImage = url; showImageModal = true">
                                     </div>
+                                    <a :href="`{{ $kegiatanPhotoSingleBase }}/${detailData.id}/photos/download?index=${idx}`"
+                                        class="absolute bottom-1 left-1 z-10 rounded bg-white/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-700 shadow hover:bg-white"
+                                        @click.stop>Unduh</a>
                                     <button type="button"
                                         @click="immediateDelete(detailData.id, detailData.photo_urls_raw[idx])"
                                         class="absolute -top-1 -right-1 p-2 bg-red-600 rounded-bl-xl text-white shadow-lg hover:bg-red-700 transition-colors z-10 scale-90 group-hover:scale-100 opacity-0 group-hover:opacity-100"

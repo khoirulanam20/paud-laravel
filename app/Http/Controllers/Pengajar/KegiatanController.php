@@ -186,16 +186,25 @@ class KegiatanController extends Controller
         return $this->downloadPhotoArchive($entries, sprintf('foto-agenda-belajar-%04d-%02d.zip', $year, $month));
     }
 
-    public function downloadPhotosSingle(Kegiatan $kegiatan, PhotoArchiveService $photoArchive)
+    public function downloadPhotosSingle(Request $request, Kegiatan $kegiatan, PhotoArchiveService $photoArchive)
     {
         $pengajar = $this->getPengajar();
         $kelasIds = $pengajar->accessibleKelasIds();
         abort_if(! in_array((int) $kegiatan->kelas_id, $kelasIds, true), 403);
 
-        $entries = $photoArchive->entriesFromKegiatans(collect([$kegiatan]));
-        $date = $kegiatan->date?->format('Y-m-d') ?? now()->format('Y-m-d');
+        return $this->downloadKegiatanPhotoAtIndex($kegiatan, (int) $request->input('index', 0), $photoArchive);
+    }
 
-        return $this->downloadPhotoArchive($entries, 'foto-kegiatan-'.$date.'.zip');
+    protected function downloadKegiatanPhotoAtIndex(Kegiatan $kegiatan, int $index, PhotoArchiveService $photoArchive)
+    {
+        $photos = collect($kegiatan->photos ?? [])->filter()->values();
+        abort_if($photos->isEmpty(), 404, 'Foto dokumentasi tidak ditemukan.');
+        abort_if(! isset($photos[$index]), 404, 'Foto dokumentasi tidak ditemukan.');
+
+        $date = $kegiatan->date?->format('Y-m-d') ?? now()->format('Y-m-d');
+        $filename = $photoArchive->slugFilename($date, $kegiatan->title ?? 'kegiatan', $index + 1);
+
+        return $photoArchive->downloadPublicFile($photos[$index], $filename);
     }
 
     protected function filteredKegiatansQuery(Request $request)

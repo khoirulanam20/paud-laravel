@@ -13,6 +13,7 @@ use App\Models\MenuMakanan;
 use App\Models\MenuMakananVote;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
+use App\Models\Pengumuman;
 use App\Models\Presensi;
 use App\Models\Sarana;
 use App\Models\Sekolah;
@@ -263,6 +264,13 @@ class DashboardController extends Controller
                     ]];
                 });
             }
+
+            $data['unreadPengumumans'] = Pengumuman::where('sekolah_id', $sekolahId)
+                ->active()
+                ->whereDoesntHave('reads', fn ($q) => $q->where('user_id', $user->id))
+                ->orderByDesc('mulai_tayang')
+                ->orderByDesc('id')
+                ->get();
         }
 
         return view('dashboard', $data);

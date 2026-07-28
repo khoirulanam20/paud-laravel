@@ -172,17 +172,16 @@
                                 x-text="detailData.description"></span></p>
                     </div>
                     <div x-show="detailData.photo_urls && detailData.photo_urls.length > 0">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-bold text-sm text-gray-800">Dokumentasi</h4>
-                            <a :href="`{{ url('admin/kegiatan') }}/${detailData.id}/photos/download`"
-                                class="btn-secondary text-xs py-1.5 px-3">Unduh Foto</a>
-                        </div>
+                        <h4 class="font-bold mb-3 text-sm text-gray-800">Dokumentasi</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <template x-for="(url, idx) in detailData.photo_urls" :key="url">
                                 <div class="relative aspect-square rounded-xl overflow-hidden border bg-gray-100 shadow-sm flex flex-col group transition-all hover:shadow-md">
                                     <div class="h-full w-full overflow-hidden">
                                         <img :src="url" class="w-full h-full object-cover cursor-pointer" @click.stop="activeImage = url; showImageModal = true">
                                     </div>
+                                    <a :href="`{{ url('admin/kegiatan') }}/${detailData.id}/photos/download?index=${idx}`"
+                                        class="absolute bottom-1 left-1 z-10 rounded bg-white/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-700 shadow hover:bg-white"
+                                        @click.stop>Unduh</a>
                                     <button type="button" @click="confirmDeletePhoto(detailData.id, detailData.photo_urls_raw[idx])"
                                         class="absolute -top-1 -right-1 p-2 bg-red-600 rounded-bl-xl text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>

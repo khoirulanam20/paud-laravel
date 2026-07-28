@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
+use App\Http\Controllers\Concerns\ResolvesPencapaianBundlePhoto;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
@@ -28,6 +29,7 @@ class PencapaianController extends Controller
     use CanUploadImage;
     use DownloadsExcel;
     use DownloadsPhotoArchive;
+    use ResolvesPencapaianBundlePhoto;
 
     public function __construct(
         protected AiTokenService $tokenService
@@ -123,6 +125,12 @@ class PencapaianController extends Controller
                 'catatan' => $catatan,
                 'has_photo' => (bool) $photoUrl,
                 'photo_url' => $photoUrl,
+                'photo_download_url' => $photoUrl
+                    ? route('admin.pencapaian.photos.download-bundle', [
+                        'anak_id' => $first->anak_id,
+                        'kegiatan_id' => $first->kegiatan_id,
+                    ])
+                    : null,
             ];
         }
 
@@ -222,6 +230,16 @@ class PencapaianController extends Controller
         $entries = $photoArchive->entriesFromPencapaian($records->values());
 
         return $this->downloadPhotoArchive($entries, 'foto-pencapaian-'.now()->format('Y-m-d').'.zip');
+    }
+
+    public function downloadBundlePhoto(Request $request, PhotoArchiveService $photoArchive)
+    {
+        return $this->downloadPencapaianBundlePhoto($request, $photoArchive);
+    }
+
+    protected function authorizePencapaianBundleAnak(Anak $anak): void
+    {
+        abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
     }
 
     protected function pencapaianQueryForExport(Request $request)

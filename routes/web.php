@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\PembayaranBulananController;
 use App\Http\Controllers\Admin\PendaftaranController;
 use App\Http\Controllers\Admin\PengajarController;
 use App\Http\Controllers\Admin\PenggunaController;
+use App\Http\Controllers\Admin\PengumumanController;
 use App\Http\Controllers\Admin\PresensiController;
 use App\Http\Controllers\Admin\PresensiPengajarController;
 use App\Http\Controllers\Admin\RkasController;
@@ -55,6 +56,7 @@ use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananCo
 use App\Http\Controllers\OrangTua\MenuMakananVoteController;
 use App\Http\Controllers\OrangTua\MonevController;
 use App\Http\Controllers\OrangTua\PembayaranController;
+use App\Http\Controllers\OrangTua\PengumumanController as OrangTuaPengumumanController;
 use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
 use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
 use App\Http\Controllers\Pengajar\MonevGuruController as PengajarMonevGuruController;
@@ -184,6 +186,7 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('kegiatan-rutin/photos/download', [KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
     Route::get('pencapaian/export', [App\Http\Controllers\Admin\PencapaianController::class, 'export'])->name('pencapaian.export');
     Route::get('pencapaian/photos/download', [App\Http\Controllers\Admin\PencapaianController::class, 'downloadPhotos'])->name('pencapaian.photos.download');
+    Route::get('pencapaian/photos/download-bundle', [App\Http\Controllers\Admin\PencapaianController::class, 'downloadBundlePhoto'])->name('pencapaian.photos.download-bundle');
     Route::get('monev/export', [AdminMonevController::class, 'export'])->name('monev.export');
     Route::get('monev-guru/export', [MonevGuruEvaluasiController::class, 'export'])->name('monev-guru.export');
     Route::get('pengajar/export', [PengajarController::class, 'export'])->name('pengajar.export');
@@ -232,6 +235,7 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
     Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
+    Route::resource('pengumuman', PengumumanController::class)->except(['create', 'edit', 'show']);
 
     // Biaya Bulanan & Pembayaran
     Route::get('biaya-bulanan', [BiayaBulananController::class, 'index'])->name('biaya-bulanan.index');
@@ -337,6 +341,7 @@ Route::middleware(['auth', 'role:Wali Kelas'])->prefix('adminkelas')->name('admi
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
     Route::get('pencapaian/photos/download', [PencapaianController::class, 'downloadPhotos'])->name('pencapaian.photos.download');
+    Route::get('pencapaian/photos/download-bundle', [PencapaianController::class, 'downloadBundlePhoto'])->name('pencapaian.photos.download-bundle');
     Route::get('kegiatan/photos/download', [PengajarKegiatanController::class, 'downloadPhotos'])->name('kegiatan.photos.download');
     Route::get('kegiatan/{kegiatan}/photos/download', [PengajarKegiatanController::class, 'downloadPhotosSingle'])->name('kegiatan.photos.download-single');
     Route::get('kegiatan-rutin/photos/download', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
@@ -365,6 +370,7 @@ Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->nam
     Route::post('pencapaian/sync', [PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
     Route::get('pencapaian/photos/download', [PencapaianController::class, 'downloadPhotos'])->name('pencapaian.photos.download');
+    Route::get('pencapaian/photos/download-bundle', [PencapaianController::class, 'downloadBundlePhoto'])->name('pencapaian.photos.download-bundle');
     Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);
     Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
     Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
@@ -402,6 +408,7 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kesehatan', [App\Http\Controllers\OrangTua\KesehatanController::class, 'index'])->name('kesehatan.index');
     Route::get('presensi', [App\Http\Controllers\OrangTua\PresensiController::class, 'index'])->name('presensi.index');
     Route::post('menu-makanan/vote', [MenuMakananVoteController::class, 'vote'])->name('menu-makanan.vote');
+    Route::post('pengumuman/{pengumuman}/baca', [OrangTuaPengumumanController::class, 'markAsRead'])->name('pengumuman.baca');
     Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('chat/messages', [ChatController::class, 'store'])->middleware('throttle:20,1')->name('chat.messages.store');
     Route::delete('chat', [ChatController::class, 'destroy'])->name('chat.destroy');
