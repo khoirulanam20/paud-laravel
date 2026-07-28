@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\StoresStudentPresensi;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kelas;
@@ -11,10 +12,12 @@ use App\Support\PaginationPerPage;
 use App\Support\PresensiPeriodeFilter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PresensiController extends Controller
 {
     use DownloadsExcel;
+    use StoresStudentPresensi;
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
@@ -59,7 +62,9 @@ class PresensiController extends Controller
             ->groupBy('anak_id')
             ->pluck('total', 'anak_id');
 
-        return view('admin.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'totalSiswa', 'kelas', 'hadirBulanan', 'filterKelasId'));
+        $statusLabels = Presensi::statusLabels();
+
+        return view('admin.presensi.index', compact('anaks', 'presensiByAnak', 'tanggal', 'hadirCount', 'totalSiswa', 'kelas', 'hadirBulanan', 'filterKelasId', 'statusLabels'));
     }
 
     public function store(Request $request)
@@ -69,8 +74,9 @@ class PresensiController extends Controller
 
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],
-            'hadir' => ['nullable', 'array'],
-            'hadir.*' => ['integer', 'exists:anaks,id'],
+            'presensi' => ['nullable', 'array'],
+            'presensi.*.status' => ['required', Rule::in(Presensi::statusOptions())],
+            'presensi.*.keterangan' => ['nullable', 'string', 'max:500'],
             'filter_kelas_id' => ['nullable', 'integer'],
             'page_anak_ids' => ['nullable', 'array'],
             'page_anak_ids.*' => ['integer', 'exists:anaks,id'],
@@ -87,24 +93,12 @@ class PresensiController extends Controller
             $anakIds = array_values(array_intersect($anakIds, $pageAnakIds));
         }
 
-        $hadirIds = array_values(array_unique(array_map('intval', $validated['hadir'] ?? [])));
-        $hadirIds = array_values(array_intersect($hadirIds, $anakIds));
-
-        foreach ($anakIds as $anakId) {
-            $anak = Anak::find($anakId);
-            Presensi::updateOrCreate(
-                [
-                    'sekolah_id' => $sekolah_id,
-                    'anak_id' => $anakId,
-                    'tanggal' => $validated['tanggal'],
-                ],
-                [
-                    'kelas_id' => $anak->kelas_id,
-                    'hadir' => in_array((int) $anakId, $hadirIds, true),
-                    'status' => in_array((int) $anakId, $hadirIds, true) ? 'hadir' : 'alpha',
-                ]
-            );
-        }
+        $this->persistStudentPresensi(
+            $sekolah_id,
+            $validated['tanggal'],
+            $anakIds,
+            $validated['presensi'] ?? []
+        );
 
         return redirect()
             ->route('admin.presensi.index', array_filter(['tanggal' => $validated['tanggal'], 'filter_kelas_id' => $request->filter_kelas_id]))
@@ -161,14 +155,14 @@ class PresensiController extends Controller
             return [
                 $anak->name,
                 $anak->kelas?->name ?? '-',
-                $presensi?->hadir ? 'Hadir' : ($presensi ? 'Tidak Hadir' : 'Belum dicatat'),
-                $presensi?->status ?? '-',
+                $presensi ? Presensi::labelForStatus($presensi->status) : 'Belum dicatat',
+                $presensi?->keterangan ?? '-',
                 $hadirBulanan->get($anak->id, 0).' hari',
             ];
         })->all();
 
         return $this->downloadExcel(
-            ['Nama Siswa', 'Kelas', 'Kehadiran', 'Status', 'Rekap Bulan Ini'],
+            ['Nama Siswa', 'Kelas', 'Status', 'Keterangan', 'Rekap Bulan Ini'],
             $rows,
             'presensi-siswa-'.$tanggal.'.xlsx',
             'Presensi Harian'
@@ -180,21 +174,29 @@ class PresensiController extends Controller
         $sekolah_id = auth()->user()->sekolah_id;
         $anaks = $this->buildAnaksQuery($sekolah_id, $request->input('kelas_id'))->get();
         $presensiFilter = PresensiPeriodeFilter::resolve($request);
-        $hadirPeriode = Presensi::where('sekolah_id', $sekolah_id)
+        $rekapPeriode = Presensi::where('sekolah_id', $sekolah_id)
             ->whereBetween('tanggal', [$presensiFilter['from'], $presensiFilter['to']])
-            ->where('hadir', true)
-            ->selectRaw('anak_id, count(*) as total')
-            ->groupBy('anak_id')
-            ->pluck('total', 'anak_id');
+            ->selectRaw('anak_id, status, count(*) as total')
+            ->groupBy('anak_id', 'status')
+            ->get()
+            ->groupBy('anak_id');
 
-        $rows = $anaks->map(fn (Anak $anak) => [
-            $anak->name,
-            $anak->kelas?->name ?? '-',
-            $hadirPeriode->get($anak->id, 0).' hari',
-        ])->all();
+        $rows = $anaks->map(function (Anak $anak) use ($rekapPeriode) {
+            $stats = $rekapPeriode->get($anak->id, collect());
+            $byStatus = $stats->pluck('total', 'status');
+
+            return [
+                $anak->name,
+                $anak->kelas?->name ?? '-',
+                (int) ($byStatus['hadir'] ?? 0),
+                (int) ($byStatus['izin'] ?? 0),
+                (int) ($byStatus['sakit'] ?? 0),
+                (int) ($byStatus['alpha'] ?? 0),
+            ];
+        })->all();
 
         return $this->downloadExcel(
-            ['Nama Siswa', 'Kelas', 'Hadir'],
+            ['Nama Siswa', 'Kelas', 'Hadir', 'Izin', 'Sakit', 'Alpha'],
             $rows,
             'rekap-presensi-siswa-'.$presensiFilter['from'].'-'.$presensiFilter['to'].'.xlsx',
             'Rekap Presensi'

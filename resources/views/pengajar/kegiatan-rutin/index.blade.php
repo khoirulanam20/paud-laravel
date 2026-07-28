@@ -1,5 +1,7 @@
 @php
-    $routePrefix = auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.';
+    $routePrefix = auth()->user()->hasRole('Admin Sekolah')
+        ? 'admin.'
+        : (auth()->user()->hasRole('Wali Kelas') ? 'adminkelas.' : 'pengajar.');
 @endphp
 
 <x-app-layout>
@@ -78,6 +80,7 @@
             @if(auth()->user()->hasRole('Admin Sekolah'))
                 <x-export-excel route="admin.kegiatan-rutin.export" />
             @endif
+            <x-download-photos :route="$routePrefix.'kegiatan-rutin.photos.download'" :icon-only="true" />
         </div>
 
         @if(session('success'))

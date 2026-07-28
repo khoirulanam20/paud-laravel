@@ -66,7 +66,7 @@
             <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Checklist kehadiran</h3>
-                    <p class="section-subtitle">Centang siswa yang hadir pada tanggal di atas, lalu simpan</p>
+                    <p class="section-subtitle">Pilih status kehadiran dan isi keterangan jika perlu, lalu simpan</p>
                 </div>
             </div>
 
@@ -81,11 +81,9 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th class="w-14 text-center">
-                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" title="Pilih semua"
-                                            onclick="const m=this; this.closest('form').querySelectorAll('tbody input[type=checkbox][name=\'hadir[]\']').forEach(function(c){ c.checked = m.checked; });">
-                                    </th>
                                     <th>Nama siswa</th>
+                                    <th class="w-36">Status</th>
+                                    <th>Keterangan</th>
                                     <th>Rekap Bulan Ini</th>
                                 </tr>
                             </thead>
@@ -93,13 +91,9 @@
                                 @foreach($anaks as $anak)
                                     @php
                                         $row = $presensiByAnak->get($anak->id);
-                                        $checked = $row ? $row->hadir : false;
+                                        $currentStatus = $row?->status ?? ($row?->hadir ? 'hadir' : 'alpha');
                                     @endphp
                                     <tr class="hover:bg-teal-50/30 transition-colors">
-                                        <td class="text-center py-4">
-                                            <input type="checkbox" name="hadir[]" value="{{ $anak->id }}" class="h-6 w-6 rounded-lg border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
-                                                @checked($checked)>
-                                        </td>
                                         <td class="py-4">
                                             <div class="flex items-center gap-3">
                                                 <x-foto-profil :path="$anak->photo" :name="$anak->name" size="sm" />
@@ -108,6 +102,18 @@
                                                     @if($anak->dob)<span class="text-[10px] font-bold text-teal-600 uppercase tracking-tight">Umur: {{ $anak->age }}</span>@endif
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td class="py-4">
+                                            <select name="presensi[{{ $anak->id }}][status]" class="input-field py-2 text-xs w-full min-w-[7rem]">
+                                                @foreach($statusLabels as $value => $label)
+                                                    <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="py-4">
+                                            <input type="text" name="presensi[{{ $anak->id }}][keterangan]" value="{{ $row?->keterangan }}"
+                                                class="input-field py-2 text-xs w-full min-w-[10rem]" maxlength="500"
+                                                placeholder="Catatan opsional">
                                         </td>
                                         <td class="py-4">
                                             <div class="flex flex-col">

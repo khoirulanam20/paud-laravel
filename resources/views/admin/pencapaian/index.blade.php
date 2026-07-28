@@ -224,6 +224,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>{{ session('success') }}</div>@endif
+        @if(session('warning'))<div class="alert-danger mb-5">{{ session('warning') }}</div>@endif
         @if($errors->any())
             <div class="alert-danger mb-5">
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
@@ -287,6 +288,7 @@
                                 </svg>
                             </button>
                             <x-export-excel route="admin.pencapaian.export" :icon-only="true" />
+                            <x-download-photos route="admin.pencapaian.photos.download" :icon-only="true" />
                         </div>
                     </form>
                 </div>

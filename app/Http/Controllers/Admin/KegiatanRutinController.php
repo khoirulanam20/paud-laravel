@@ -3,18 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\KegiatanRutin;
 use App\Models\Kelas;
 use App\Models\MasterKegiatanRutin;
 use App\Models\Pengajar;
+use App\Services\PhotoArchiveService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class KegiatanRutinController extends Controller
 {
     use DownloadsExcel;
+    use DownloadsPhotoArchive;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -85,6 +88,26 @@ class KegiatanRutinController extends Controller
             'input-rutin-harian-'.$tanggal.'.xlsx',
             'Input Rutin Harian'
         );
+    }
+
+    public function downloadPhotos(Request $request, PhotoArchiveService $photoArchive)
+    {
+        $sekolahId = auth()->user()->sekolah_id;
+        $classList = Kelas::where('sekolah_id', $sekolahId)->get();
+        $kelasIds = $classList->pluck('id')->toArray();
+        $tanggal = $request->input('tanggal', date('Y-m-d'));
+        $kelasId = $request->input('kelas_id') ?: ($kelasIds[0] ?? null);
+
+        $records = KegiatanRutin::query()
+            ->with(['anak', 'masterKegiatanRutin'])
+            ->whereNotNull('photo')
+            ->when($kelasId, fn ($q) => $q->where('kelas_id', $kelasId))
+            ->where('tanggal', $tanggal)
+            ->get();
+
+        $entries = $photoArchive->entriesFromKegiatanRutin($records);
+
+        return $this->downloadPhotoArchive($entries, 'foto-kegiatan-rutin-'.$tanggal.'.zip');
     }
 
     public function store(Request $request)

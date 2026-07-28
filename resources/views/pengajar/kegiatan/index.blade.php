@@ -10,6 +10,15 @@
         </div>
     </x-slot>
 
+    @php
+        $kegiatanPhotoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+            ? 'adminkelas.kegiatan.photos.download'
+            : 'pengajar.kegiatan.photos.download';
+        $kegiatanPhotoSingleBase = auth()->user()->hasRole('Wali Kelas')
+            ? url('adminkelas/kegiatan')
+            : url('pengajar/kegiatan');
+    @endphp
+
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
             tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false, isCompressing: false,
             photoToDelete: {id:null, path:''},
@@ -104,6 +113,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>{{ session('success') }}</div>@endif
+        @if(session('warning'))<div class="alert-danger mb-5">{{ session('warning') }}</div>@endif
         @if($errors->any())
             <div class="alert-danger mb-5">
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
@@ -148,6 +158,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="submit" class="btn-secondary h-11">Tampilkan</button>
+                    <x-download-photos :route="$kegiatanPhotoDownloadRoute" :icon-only="true" class="h-11" />
                     @if(request()->anyFilled(['kelas_id', 'matrikulasi_id', 'day']))
                         <a href="{{ route('pengajar.kegiatan.index') }}" class="btn-secondary h-11 flex items-center justify-center bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700" title="Reset Filter">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -188,7 +199,11 @@
                                 x-text="detailData.description"></span></p>
                     </div>
                     <div x-show="detailData.photo_urls && detailData.photo_urls.length > 0">
-                        <h4 class="font-bold mb-3 text-sm text-gray-800">Dokumentasi Kegiatan</h4>
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-sm text-gray-800">Dokumentasi Kegiatan</h4>
+                            <a :href="`{{ $kegiatanPhotoSingleBase }}/${detailData.id}/photos/download`"
+                                class="btn-secondary text-xs py-1.5 px-3">Unduh Foto</a>
+                        </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <template x-for="(url, idx) in detailData.photo_urls" :key="url">
                                 <div

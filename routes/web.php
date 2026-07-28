@@ -177,9 +177,13 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::post('matrikulasi/import', [AdminMatrikulasiController::class, 'import'])->name('matrikulasi.import');
     Route::get('skala-pencapaian/export', [SkalaPencapaianController::class, 'export'])->name('skala-pencapaian.export');
     Route::get('kegiatan/export', [KegiatanController::class, 'export'])->name('kegiatan.export');
+    Route::get('kegiatan/photos/download', [KegiatanController::class, 'downloadPhotos'])->name('kegiatan.photos.download');
+    Route::get('kegiatan/{kegiatan}/photos/download', [KegiatanController::class, 'downloadPhotosSingle'])->name('kegiatan.photos.download-single');
     Route::get('master-kegiatan-rutin/export', [MasterKegiatanRutinController::class, 'export'])->name('master-kegiatan-rutin.export');
     Route::get('kegiatan-rutin/export', [KegiatanRutinController::class, 'export'])->name('kegiatan-rutin.export');
+    Route::get('kegiatan-rutin/photos/download', [KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
     Route::get('pencapaian/export', [App\Http\Controllers\Admin\PencapaianController::class, 'export'])->name('pencapaian.export');
+    Route::get('pencapaian/photos/download', [App\Http\Controllers\Admin\PencapaianController::class, 'downloadPhotos'])->name('pencapaian.photos.download');
     Route::get('monev/export', [AdminMonevController::class, 'export'])->name('monev.export');
     Route::get('monev-guru/export', [MonevGuruEvaluasiController::class, 'export'])->name('monev-guru.export');
     Route::get('pengajar/export', [PengajarController::class, 'export'])->name('pengajar.export');
@@ -332,6 +336,10 @@ Route::middleware(['auth', 'role:Wali Kelas'])->prefix('adminkelas')->name('admi
     Route::resource('anak', AdminKelasAnakController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
+    Route::get('pencapaian/photos/download', [PencapaianController::class, 'downloadPhotos'])->name('pencapaian.photos.download');
+    Route::get('kegiatan/photos/download', [PengajarKegiatanController::class, 'downloadPhotos'])->name('kegiatan.photos.download');
+    Route::get('kegiatan/{kegiatan}/photos/download', [PengajarKegiatanController::class, 'downloadPhotosSingle'])->name('kegiatan.photos.download-single');
+    Route::get('kegiatan-rutin/photos/download', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
     Route::get('kesehatan/history/{anak}', [App\Http\Controllers\AdminKelas\KesehatanController::class, 'history'])->name('kesehatan.history');
     Route::resource('kesehatan', App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('matrikulasi', [MatrikulasiController::class, 'index'])->name('matrikulasi.index');
@@ -351,9 +359,12 @@ Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->nam
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);
+    Route::get('kegiatan/photos/download', [PengajarKegiatanController::class, 'downloadPhotos'])->name('kegiatan.photos.download');
+    Route::get('kegiatan/{kegiatan}/photos/download', [PengajarKegiatanController::class, 'downloadPhotosSingle'])->name('kegiatan.photos.download-single');
     Route::resource('matrikulasi', MatrikulasiController::class)->only(['index']);
     Route::post('pencapaian/sync', [PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
+    Route::get('pencapaian/photos/download', [PencapaianController::class, 'downloadPhotos'])->name('pencapaian.photos.download');
     Route::resource('pencapaian', PencapaianController::class)->only(['index', 'destroy']);
     Route::post('master-kegiatan-rutin/{master_kegiatan_rutin}/store-rutin', [App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'storeRutin'])->name('master-kegiatan-rutin.store-rutin');
     Route::get('master-kegiatan-rutin/detail/{master_kegiatan_rutin}/{anak}', [App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class, 'detail'])->name('master-kegiatan-rutin.detail');
@@ -361,6 +372,7 @@ Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->nam
     Route::resource('master-kegiatan-rutin', App\Http\Controllers\Pengajar\MasterKegiatanRutinController::class);
     Route::get('kegiatan-rutin', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::post('kegiatan-rutin', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
+    Route::get('kegiatan-rutin/photos/download', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
     Route::get('kegiatan-rutin/detail/{anak}', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');

@@ -85,6 +85,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>{{ session('success') }}</div>@endif
+        @if(session('warning'))<div class="alert-danger mb-5">{{ session('warning') }}</div>@endif
         @if($errors->any())
             <div class="alert-danger mb-5">
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
@@ -99,6 +100,7 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                     <x-export-excel route="admin.kegiatan.export" />
+                    <x-download-photos route="admin.kegiatan.photos.download" />
                     <button data-tour="admin-kegiatan-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
                         class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -170,7 +172,11 @@
                                 x-text="detailData.description"></span></p>
                     </div>
                     <div x-show="detailData.photo_urls && detailData.photo_urls.length > 0">
-                        <h4 class="font-bold mb-3 text-sm text-gray-800">Dokumentasi</h4>
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-sm text-gray-800">Dokumentasi</h4>
+                            <a :href="`{{ url('admin/kegiatan') }}/${detailData.id}/photos/download`"
+                                class="btn-secondary text-xs py-1.5 px-3">Unduh Foto</a>
+                        </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <template x-for="(url, idx) in detailData.photo_urls" :key="url">
                                 <div class="relative aspect-square rounded-xl overflow-hidden border bg-gray-100 shadow-sm flex flex-col group transition-all hover:shadow-md">

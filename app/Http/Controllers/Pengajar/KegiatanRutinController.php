@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\Pengajar;
 
+use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\KegiatanRutin;
 use App\Models\MasterKegiatanRutin;
 use App\Models\Pengajar;
+use App\Services\PhotoArchiveService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class KegiatanRutinController extends Controller
 {
+    use DownloadsPhotoArchive;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -116,5 +119,27 @@ class KegiatanRutinController extends Controller
             });
 
         return response()->json($rutins);
+    }
+
+    public function downloadPhotos(Request $request, PhotoArchiveService $photoArchive)
+    {
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $kelasIds = $pengajar->accessibleKelasIds();
+        $tanggal = $request->input('tanggal', date('Y-m-d'));
+        $kelasId = $request->input('kelas_id') ?: ($kelasIds[0] ?? null);
+
+        abort_if($kelasId && ! empty($kelasIds) && ! in_array((int) $kelasId, $kelasIds, true), 403);
+
+        $records = KegiatanRutin::query()
+            ->with(['anak', 'masterKegiatanRutin'])
+            ->whereNotNull('photo')
+            ->when($kelasId, fn ($q) => $q->where('kelas_id', $kelasId))
+            ->when(! empty($kelasIds), fn ($q) => $q->whereIn('kelas_id', $kelasIds))
+            ->where('tanggal', $tanggal)
+            ->get();
+
+        $entries = $photoArchive->entriesFromKegiatanRutin($records);
+
+        return $this->downloadPhotoArchive($entries, 'foto-kegiatan-rutin-'.$tanggal.'.zip');
     }
 }

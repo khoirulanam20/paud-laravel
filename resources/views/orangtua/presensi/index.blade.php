@@ -127,7 +127,7 @@
                                             @else
                                                 <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                                                    {{ $p->status ?: 'Tanpa Keterangan' }}
+                                                    {{ \App\Models\Presensi::labelForStatus($p->status) }}
                                                 </span>
                                             @endif
                                         </td>

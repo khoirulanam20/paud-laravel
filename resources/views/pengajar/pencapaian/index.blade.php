@@ -7,6 +7,9 @@
     </x-slot>
 
     @php
+        $photoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+            ? 'adminkelas.pencapaian.photos.download'
+            : 'pengajar.pencapaian.photos.download';
         $sekolahId = (int) ($skalas->first()?->sekolah_id ?? auth()->user()->sekolah_id ?? 0);
         $skalaOptions = $skalas->map(fn ($s) => ['code' => $s->code, 'label' => $s->label])->values()->all();
         $filterAspek = $filterAspek ?? null;
@@ -203,6 +206,7 @@
         <script type="application/json" id="pencapaian-payload-json">{!! $payloadJson !!}</script>
 
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ session('success') }}</div>@endif
+        @if(session('warning'))<div class="alert-danger mb-5">{{ session('warning') }}</div>@endif
         @if($errors->any())
             <div class="alert-danger mb-5">
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
@@ -258,6 +262,7 @@
                             <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
+                            <x-download-photos :route="$photoDownloadRoute" :icon-only="true" />
                         </div>
                     </form>
                 </div>

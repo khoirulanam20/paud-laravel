@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Pengajar;
 
+use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
@@ -10,6 +11,7 @@ use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
 use App\Services\AiTokenService;
+use App\Services\PhotoArchiveService;
 use App\Support\AiTokenFeature;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
@@ -23,6 +25,7 @@ use Illuminate\Validation\Rule;
 class PencapaianController extends Controller
 {
     use CanUploadImage;
+    use DownloadsPhotoArchive;
 
     public function __construct(
         protected AiTokenService $tokenService
@@ -384,5 +387,46 @@ class PencapaianController extends Controller
         }
 
         return $q;
+    }
+
+    public function downloadPhotos(Request $request, PhotoArchiveService $photoArchive)
+    {
+        $pengajar = $this->getPengajar();
+        $kelasIds = $pengajar->accessibleKelasIds();
+        $range = TanggalRentang::dariSampaiQuery($request, null);
+        $filterAspekRaw = (string) $request->input('aspek', '');
+        $filterAspek = $filterAspekRaw === '' ? null : $filterAspekRaw;
+
+        $hariQuery = Pencapaian::query()
+            ->with(['anak', 'kegiatan', 'matrikulasi'])
+            ->whereNotNull('photo')
+            ->orderByDesc('updated_at');
+
+        if ($range) {
+            $hariQuery->whereDate('created_at', '>=', $range[0])
+                ->whereDate('created_at', '<=', $range[1]);
+        }
+
+        if (! empty($kelasIds)) {
+            $hariQuery->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
+        } else {
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $pengajar->sekolah_id));
+        }
+
+        if ($request->filled('filter_anak_id')) {
+            $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
+        }
+        if ($request->filled('filter_kelas_id')) {
+            $kid = (int) $request->input('filter_kelas_id');
+            abort_if(! empty($kelasIds) && ! in_array($kid, $kelasIds, true), 403);
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', $kid));
+        }
+
+        $records = $hariQuery->get()
+            ->filter(fn (Pencapaian $p) => FilterAspekPencapaian::groupHasMatch($filterAspek, collect([$p])));
+
+        $entries = $photoArchive->entriesFromPencapaian($records->values());
+
+        return $this->downloadPhotoArchive($entries, 'foto-pencapaian-'.now()->format('Y-m-d').'.zip');
     }
 }

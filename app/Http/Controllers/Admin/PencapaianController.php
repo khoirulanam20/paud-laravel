@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
@@ -11,6 +12,7 @@ use App\Models\Kelas;
 use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Services\AiTokenService;
+use App\Services\PhotoArchiveService;
 use App\Support\AiTokenFeature;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
@@ -25,6 +27,7 @@ class PencapaianController extends Controller
 {
     use CanUploadImage;
     use DownloadsExcel;
+    use DownloadsPhotoArchive;
 
     public function __construct(
         protected AiTokenService $tokenService
@@ -206,6 +209,51 @@ class PencapaianController extends Controller
             'pencapaian-siswa-'.now()->format('Y-m-d').'.xlsx',
             'Pencapaian Siswa'
         );
+    }
+
+    public function downloadPhotos(Request $request, PhotoArchiveService $photoArchive)
+    {
+        $records = $this->pencapaianQueryForExport($request)->get()
+            ->filter(fn (Pencapaian $p) => FilterAspekPencapaian::groupHasMatch(
+                $this->resolveFilterAspek($request),
+                collect([$p])
+            ));
+
+        $entries = $photoArchive->entriesFromPencapaian($records->values());
+
+        return $this->downloadPhotoArchive($entries, 'foto-pencapaian-'.now()->format('Y-m-d').'.zip');
+    }
+
+    protected function pencapaianQueryForExport(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $range = TanggalRentang::dariSampaiQuery($request, null);
+
+        $hariQuery = Pencapaian::query()
+            ->with(['anak', 'kegiatan', 'matrikulasi'])
+            ->whereNotNull('photo')
+            ->orderByDesc('updated_at');
+
+        if ($range) {
+            $hariQuery->whereDate('created_at', '>=', $range[0])
+                ->whereDate('created_at', '<=', $range[1]);
+        }
+        $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
+        if ($request->filled('filter_anak_id')) {
+            $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
+        }
+        if ($request->filled('filter_kelas_id')) {
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
+        }
+
+        return $hariQuery;
+    }
+
+    protected function resolveFilterAspek(Request $request): ?string
+    {
+        $filterAspekRaw = (string) $request->input('aspek', '');
+
+        return $filterAspekRaw === '' ? null : $filterAspekRaw;
     }
 
     public function sync(Request $request)

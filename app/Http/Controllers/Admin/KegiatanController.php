@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Kegiatan;
@@ -10,6 +11,7 @@ use App\Models\Kelas;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
 use App\Support\KegiatanCalendar;
+use App\Services\PhotoArchiveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,6 +19,7 @@ class KegiatanController extends Controller
 {
     use CanUploadImage;
     use DownloadsExcel;
+    use DownloadsPhotoArchive;
 
     public function index(Request $request)
     {
@@ -90,6 +93,49 @@ class KegiatanController extends Controller
             sprintf('agenda-belajar-%04d-%02d.xlsx', $year, $month),
             'Agenda Belajar'
         );
+    }
+
+    public function downloadPhotos(Request $request, PhotoArchiveService $photoArchive)
+    {
+        $kegiatans = $this->filteredKegiatansQuery($request)->get();
+        $entries = $photoArchive->entriesFromKegiatans($kegiatans);
+        [$year, $month] = KegiatanCalendar::resolveYearMonth($request);
+
+        return $this->downloadPhotoArchive($entries, sprintf('foto-agenda-belajar-%04d-%02d.zip', $year, $month));
+    }
+
+    public function downloadPhotosSingle(Kegiatan $kegiatan, PhotoArchiveService $photoArchive)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        abort_if($kegiatan->sekolah_id !== $sekolah_id, 403);
+
+        $entries = $photoArchive->entriesFromKegiatans(collect([$kegiatan]));
+        $date = $kegiatan->date?->format('Y-m-d') ?? now()->format('Y-m-d');
+
+        return $this->downloadPhotoArchive($entries, 'foto-kegiatan-'.$date.'.zip');
+    }
+
+    protected function filteredKegiatansQuery(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        [$year, $month] = KegiatanCalendar::resolveYearMonth($request);
+        [$from, $to] = KegiatanCalendar::dateRangeForCalendar($year, $month);
+
+        $query = Kegiatan::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->whereBetween('date', [$from, $to]);
+
+        if ($request->filled('pengajar_id')) {
+            $query->where('pengajar_id', $request->integer('pengajar_id'));
+        }
+        if ($request->filled('kelas_id')) {
+            $query->where('kelas_id', $request->integer('kelas_id'));
+        }
+        if ($request->filled('day')) {
+            $query->whereDay('date', $request->integer('day'));
+        }
+
+        return $query->orderBy('date', 'desc')->orderBy('id', 'desc');
     }
 
     public function store(Request $request)
