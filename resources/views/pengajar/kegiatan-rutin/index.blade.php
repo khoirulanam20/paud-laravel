@@ -12,7 +12,7 @@
         filterMulai: '{{ date('Y-m-01') }}',
         filterSampai: '{{ date('Y-m-t') }}',
         isLoadingDetail: false,
-        yesterdayGrid: @json($rutinGridYesterday),
+        yesterdayGrid: @js($rutinGridYesterday),
         async loadDetail(id, name) {
             this.selectedAnak = { id, name };
             this.openDetailModal = true;
