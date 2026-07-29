@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Controllers\Controller;
 use App\Models\Diskon;
 use App\Models\Kelas;
@@ -18,6 +19,7 @@ use Illuminate\Http\Request;
 class PembayaranBulananController extends Controller
 {
     use DownloadsExcel;
+    use DownloadsPublicPhoto;
 
     public function __construct(
         private RekapBiayaService $rekapBiayaService,
@@ -450,5 +452,16 @@ class PembayaranBulananController extends Controller
         return redirect()
             ->route('admin.pembayaran-bulanan.show', $pembayaran)
             ->with('success', 'Biaya tambahan berhasil dihapus.');
+    }
+
+    public function downloadBukti(PembayaranBulanan $pembayaran, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        $this->assertPembayaranAccessible($pembayaran);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $pembayaran->bukti_transfer,
+            $this->slugPhotoFilename('bukti-transfer-'.$pembayaran->id, $pembayaran->bukti_transfer)
+        );
     }
 }

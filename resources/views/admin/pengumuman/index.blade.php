@@ -42,7 +42,7 @@
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Pengumuman untuk Orang Tua</h3>
-                    <p class="section-subtitle">Broadcast informasi ke wali murid via popup di dashboard</p>
+                    <p class="section-subtitle">{{ ($waliKelasIds ?? null) !== null ? 'Informasi untuk orang tua kelas wali Anda' : 'Broadcast informasi ke wali murid via dashboard' }}</p>
                 </div>
                 <button type="button" @click="showCreateModal=true" class="btn-primary">
                     <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
@@ -56,6 +56,7 @@
                         <tr>
                             <th>Judul</th>
                             <th>Kategori</th>
+                            <th>Kelas</th>
                             <th>Periode Tayang</th>
                             <th>Status</th>
                             <th class="text-right">Aksi</th>
@@ -77,6 +78,8 @@
                                     'is_active' => $p->is_active,
                                     'is_active_now' => $isActiveNow,
                                     'gambar_url' => $p->gambar ? Storage::url($p->gambar) : null,
+                                    'kelas_id' => $p->kelas_id,
+                                    'kelas_name' => $p->kelas?->name,
                                 ];
                                 $editPayload = [
                                     'id' => $p->id,
@@ -87,6 +90,8 @@
                                     'selesai_tayang' => $p->selesai_tayang->format('Y-m-d'),
                                     'is_active' => $p->is_active,
                                     'gambar_url' => $p->gambar ? Storage::url($p->gambar) : null,
+                                    'kelas_id' => $p->kelas_id,
+                                    'kelas_name' => $p->kelas?->name,
                                 ];
                             @endphp
                             <tr>
@@ -101,6 +106,7 @@
                                     </div>
                                 </td>
                                 <td><span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50">{{ $p->kategori }}</span></td>
+                                <td class="text-sm" style="color:#6B6560;">{{ $p->kelas?->name ?? 'Semua kelas' }}</td>
                                 <td class="text-sm" style="color:#6B6560;">{{ $p->mulai_tayang->translatedFormat('d M Y') }} – {{ $p->selesai_tayang->translatedFormat('d M Y') }}</td>
                                 <td>
                                     @if($isActiveNow)
@@ -122,7 +128,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada pengumuman.</td></tr>
+                            <tr><td colspan="6" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada pengumuman.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -181,6 +187,26 @@
                     <div class="modal-body space-y-4">
                         <div><label class="input-label">Judul</label><input type="text" name="judul" value="{{ old('judul') }}" required class="input-field" placeholder="Contoh: Libur Nasional"></div>
                         <div><label class="input-label">Kategori</label><input type="text" name="kategori" value="{{ old('kategori') }}" required class="input-field" placeholder="Contoh: Umum, Keuangan, Kegiatan"></div>
+                        @if(($waliKelasIds ?? null) === null)
+                            <div>
+                                <label class="input-label">Target Kelas</label>
+                                <select name="kelas_id" class="input-field">
+                                    <option value="">Semua kelas</option>
+                                    @foreach($kelasList as $kelas)
+                                        <option value="{{ $kelas->id }}" @selected((int) old('kelas_id') === $kelas->id)>{{ $kelas->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @else
+                            <div>
+                                <label class="input-label">Kelas</label>
+                                <select name="kelas_id" required class="input-field">
+                                    @foreach($kelasList as $kelas)
+                                        <option value="{{ $kelas->id }}" @selected((int) old('kelas_id', $kelasList->first()?->id) === $kelas->id)>{{ $kelas->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div><label class="input-label">Isi / Info Lainnya</label><textarea name="isi" rows="5" required class="input-field" placeholder="Tulis detail pengumuman...">{{ old('isi') }}</textarea></div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Mulai Tayang</label><input type="date" name="mulai_tayang" value="{{ old('mulai_tayang', now()->format('Y-m-d')) }}" required class="input-field"></div>
@@ -211,6 +237,23 @@
                     <div class="modal-body space-y-4">
                         <div><label class="input-label">Judul</label><input type="text" name="judul" x-model="editData.judul" required class="input-field"></div>
                         <div><label class="input-label">Kategori</label><input type="text" name="kategori" x-model="editData.kategori" required class="input-field"></div>
+                        @if(($waliKelasIds ?? null) === null)
+                            <div>
+                                <label class="input-label">Target Kelas</label>
+                                <select name="kelas_id" x-model="editData.kelas_id" class="input-field">
+                                    <option value="">Semua kelas</option>
+                                    @foreach($kelasList as $kelas)
+                                        <option value="{{ $kelas->id }}">{{ $kelas->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @else
+                            <input type="hidden" name="kelas_id" x-model="editData.kelas_id">
+                            <div>
+                                <label class="input-label">Kelas</label>
+                                <p class="text-sm font-semibold" style="color:#2C2C2C;" x-text="editData.kelas_name || '—'"></p>
+                            </div>
+                        @endif
                         <div><label class="input-label">Isi / Info Lainnya</label><textarea name="isi" rows="5" x-model="editData.isi" required class="input-field"></textarea></div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">Mulai Tayang</label><input type="date" name="mulai_tayang" x-model="editData.mulai_tayang" required class="input-field"></div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\OrangTua;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Models\Anak;
 use App\Models\PembayaranBulanan;
 use App\Support\PaginationPerPage;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PembayaranController extends Controller
 {
+    use DownloadsPublicPhoto;
     public function __construct(
         private RekapBiayaService $rekapBiayaService,
     ) {}
@@ -110,5 +112,16 @@ class PembayaranController extends Controller
     {
         $anakIds = Anak::where('user_id', auth()->id())->pluck('id');
         abort_if(! $anakIds->contains($pembayaran->anak_id), 403);
+    }
+
+    public function downloadBukti(PembayaranBulanan $pembayaran, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        $this->authorizePembayaran($pembayaran);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $pembayaran->bukti_transfer,
+            $this->slugPhotoFilename('bukti-transfer-'.$pembayaran->id, $pembayaran->bukti_transfer)
+        );
     }
 }

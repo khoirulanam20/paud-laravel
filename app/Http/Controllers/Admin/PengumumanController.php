@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
+use App\Models\Kelas;
+use App\Models\Pengajar;
 use App\Models\Pengumuman;
 use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
@@ -17,21 +19,33 @@ class PengumumanController extends Controller
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $pengumumans = Pengumuman::where('sekolah_id', $sekolah_id)
+        $query = Pengumuman::where('sekolah_id', $sekolah_id)
+            ->with('kelas')
             ->latest('mulai_tayang')
-            ->latest('id')
+            ->latest('id');
+
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds !== null) {
+            $query->whereIn('kelas_id', $waliKelasIds);
+        }
+
+        $pengumumans = $query
             ->paginate(PaginationPerPage::resolve($request))
             ->withQueryString();
 
-        return view('admin.pengumuman.index', compact('pengumumans'));
+        $kelasList = $this->kelasOptions($sekolah_id, $waliKelasIds);
+
+        return view('admin.pengumuman.index', compact('pengumumans', 'kelasList', 'waliKelasIds'));
     }
 
     public function store(Request $request)
     {
         $validated = $this->validatePengumuman($request);
+        $kelasId = $this->resolveKelasId($validated['kelas_id'] ?? null);
 
         $data = [
             'sekolah_id' => auth()->user()->sekolah_id,
+            'kelas_id' => $kelasId,
             'judul' => $validated['judul'],
             'kategori' => $validated['kategori'],
             'isi' => $validated['isi'],
@@ -51,11 +65,13 @@ class PengumumanController extends Controller
 
     public function update(Request $request, Pengumuman $pengumuman)
     {
-        abort_if($pengumuman->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPengumumanAccessible($pengumuman);
 
         $validated = $this->validatePengumuman($request);
+        $kelasId = $this->resolveKelasId($validated['kelas_id'] ?? null);
 
         $data = [
+            'kelas_id' => $kelasId,
             'judul' => $validated['judul'],
             'kategori' => $validated['kategori'],
             'isi' => $validated['isi'],
@@ -78,7 +94,7 @@ class PengumumanController extends Controller
 
     public function destroy(Pengumuman $pengumuman)
     {
-        abort_if($pengumuman->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPengumumanAccessible($pengumuman);
 
         if ($pengumuman->gambar) {
             Storage::disk('public')->delete($pengumuman->gambar);
@@ -89,8 +105,67 @@ class PengumumanController extends Controller
         return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil dihapus.');
     }
 
+    /** @return list<int>|null */
+    private function waliKelasIds(): ?array
+    {
+        if (! auth()->user()->hasRole('Wali Kelas') || auth()->user()->hasRole('Admin Sekolah')) {
+            return null;
+        }
+
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
+
+        return Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->all();
+    }
+
+    /** @param  list<int>|null  $waliKelasIds */
+    private function kelasOptions(int $sekolahId, ?array $waliKelasIds)
+    {
+        $query = Kelas::where('sekolah_id', $sekolahId)->orderBy('name');
+        if ($waliKelasIds !== null) {
+            $query->whereIn('id', $waliKelasIds);
+        }
+
+        return $query->get();
+    }
+
+    private function resolveKelasId(?int $kelasId): ?int
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds !== null) {
+            abort_if($waliKelasIds === [], 403);
+            abort_if($kelasId === null || ! in_array($kelasId, $waliKelasIds, true), 403);
+
+            return $kelasId;
+        }
+
+        if ($kelasId === null) {
+            return null;
+        }
+
+        abort_unless(
+            Kelas::where('sekolah_id', auth()->user()->sekolah_id)->whereKey($kelasId)->exists(),
+            403
+        );
+
+        return $kelasId;
+    }
+
+    private function assertPengumumanAccessible(Pengumuman $pengumuman): void
+    {
+        abort_if($pengumuman->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($pengumuman->kelas_id === null || ! in_array((int) $pengumuman->kelas_id, $waliKelasIds, true), 403);
+    }
+
     private function validatePengumuman(Request $request): array
     {
+        $waliKelasIds = $this->waliKelasIds();
+
         return $request->validate([
             'judul' => 'required|string|max:255',
             'kategori' => 'required|string|max:100',
@@ -99,6 +174,11 @@ class PengumumanController extends Controller
             'selesai_tayang' => ['required', 'date', 'after_or_equal:mulai_tayang'],
             'gambar' => 'nullable|image|max:2048',
             'is_active' => ['nullable', Rule::in(['0', '1', 0, 1, true, false])],
+            'kelas_id' => [
+                $waliKelasIds !== null ? 'required' : 'nullable',
+                'integer',
+                Rule::exists('kelas', 'id')->where(fn ($q) => $q->where('sekolah_id', auth()->user()->sekolah_id)),
+            ],
         ]);
     }
 }

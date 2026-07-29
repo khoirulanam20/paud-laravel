@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\OrangTua;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
+use App\Http\Controllers\Concerns\ResolvesPencapaianBundlePhoto;
 use App\Models\Anak;
 use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
@@ -15,6 +17,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class PencapaianController extends Controller
 {
+    use ResolvesPencapaianBundlePhoto;
     public function index(Request $request)
     {
         $anakList = Anak::where('user_id', auth()->id())->orderBy('name')->get();
@@ -105,5 +108,15 @@ class PencapaianController extends Controller
             'filterAspekRaw',
             'aspekPilihan',
         ));
+    }
+
+    public function downloadBundlePhoto(Request $request, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        return $this->downloadPencapaianBundlePhoto($request, $photoArchive);
+    }
+
+    protected function authorizePencapaianBundleAnak(Anak $anak): void
+    {
+        abort_if((int) $anak->user_id !== (int) auth()->id(), 403);
     }
 }

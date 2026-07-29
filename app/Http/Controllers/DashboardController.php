@@ -265,12 +265,28 @@ class DashboardController extends Controller
                 });
             }
 
-            $data['unreadPengumumans'] = Pengumuman::where('sekolah_id', $sekolahId)
-                ->active()
-                ->whereDoesntHave('reads', fn ($q) => $q->where('user_id', $user->id))
+            $kelasIds = $data['anaks']
+                ->where('status', 'approved')
+                ->pluck('kelas_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            $data['pengumumans'] = Pengumuman::where('sekolah_id', $sekolahId)
+                ->where('is_active', true)
+                ->forKelasIds($kelasIds)
+                ->with('kelas')
                 ->orderByDesc('mulai_tayang')
                 ->orderByDesc('id')
+                ->limit(20)
                 ->get();
+
+            $data['readPengumumanIds'] = \App\Models\PengumumanRead::query()
+                ->where('user_id', $user->id)
+                ->whereIn('pengumuman_id', $data['pengumumans']->pluck('id'))
+                ->pluck('pengumuman_id')
+                ->all();
         }
 
         return view('dashboard', $data);

@@ -179,6 +179,7 @@
                     ['route' => 'adminkelas.presensi.index', 'label' => 'Presensi Kelasku', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'adminkelas.presensi.*'],
                     ['route' => 'adminkelas.kesehatan.index', 'label' => 'Kesehatan Kelasku', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'adminkelas.kesehatan.*'],
                     ['route' => 'adminkelas.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'adminkelas.monev.*'],
+                    ['route' => 'admin.pengumuman.index', 'label' => 'Pengumuman', 'perm' => 'menu.pengumuman', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'pattern' => 'admin.pengumuman.*'],
                 ]
             ],
             [

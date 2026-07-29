@@ -73,7 +73,7 @@
             tokenFallbackPencapaian: @js($tokenFallbackPencapaian ?? 'Maaf, fitur ini sedang terbatas.'),
             skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
-            showImageModal: false, activeImage: null,
+            showImageModal: false, activeImage: null, activeDownloadUrl: null,
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
             selectedKelasIdCreate: '', selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
             editBundleKey: null, editNilai: {}, editCatatan: {}, createNilai: {}, createCatatan: {},
@@ -355,7 +355,7 @@
                                     @if($first->photo)
                                         <div class="flex items-center gap-2">
                                             <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer"
-                                                @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; showImageModal = true">
+                                                @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; activeDownloadUrl = '{{ route('admin.pencapaian.photos.download-bundle', ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}'; showImageModal = true">
                                                 <img src="{{ asset('storage/' . $first->photo) }}"
                                                     class="h-full w-full object-cover">
                                                 <div
@@ -688,7 +688,7 @@
                                         style="border-color:#1A6B6B22;">
                                         <img :src="editBundles[editBundleKey].photo_url"
                                             class="w-full h-full object-cover cursor-pointer"
-                                            @click="activeImage = editBundles[editBundleKey].photo_url; showImageModal = true">
+                                            @click="activeImage = editBundles[editBundleKey].photo_url; activeDownloadUrl = editBundles[editBundleKey].photo_download_url; showImageModal = true">
                                     </div>
                                     <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Pilih file baru di bawah
                                         ini jika ingin mengganti foto.</p>

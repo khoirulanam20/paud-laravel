@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Controllers\Controller;
 use App\Models\KritikSaran;
 use App\Support\PaginationPerPage;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 class KritikSaranController extends Controller
 {
     use DownloadsExcel;
+    use DownloadsPublicPhoto;
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
@@ -75,5 +77,16 @@ class KritikSaranController extends Controller
         return redirect()
             ->route('admin.kritik-saran.show', $kritik_saran)
             ->with('success', 'Status dan tanggapan berhasil disimpan.');
+    }
+
+    public function downloadPhoto(KritikSaran $kritik_saran, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        abort_if($kritik_saran->sekolah_id !== auth()->user()->sekolah_id, 404);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $kritik_saran->photo,
+            $this->slugPhotoFilename('kritik-saran-'.$kritik_saran->id, $kritik_saran->photo)
+        );
     }
 }

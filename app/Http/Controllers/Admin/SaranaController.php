@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Sarana;
@@ -14,6 +15,7 @@ class SaranaController extends Controller
 {
     use CanUploadImage;
     use DownloadsExcel;
+    use DownloadsPublicPhoto;
 
     public function index(Request $request)
     {
@@ -114,5 +116,16 @@ class SaranaController extends Controller
         $sarana->delete();
 
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil dihapus.');
+    }
+
+    public function downloadPhoto(Sarana $sarana, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        abort_if($sarana->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $sarana->photo,
+            $this->slugPhotoFilename($sarana->name ?? 'sarana', $sarana->photo)
+        );
     }
 }

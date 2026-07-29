@@ -1,7 +1,8 @@
 @php
-    $routePrefix = auth()->user()->hasRole('Admin Sekolah')
-        ? 'admin.'
-        : (auth()->user()->hasRole('Wali Kelas') ? 'adminkelas.' : 'pengajar.');
+    $routePrefix = auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.';
+    $photoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+        ? 'adminkelas.kegiatan-rutin.photos.download'
+        : $routePrefix.'kegiatan-rutin.photos.download';
 @endphp
 
 <x-app-layout>
@@ -12,6 +13,9 @@
         filterMulai: '{{ date('Y-m-01') }}',
         filterSampai: '{{ date('Y-m-t') }}',
         isLoadingDetail: false,
+        showImageModal: false,
+        activeImage: null,
+        activeDownloadUrl: null,
         yesterdayGrid: @js($rutinGridYesterday),
         async loadDetail(id, name) {
             this.selectedAnak = { id, name };
@@ -80,7 +84,7 @@
             @if(auth()->user()->hasRole('Admin Sekolah'))
                 <x-export-excel route="admin.kegiatan-rutin.export" />
             @endif
-            <x-download-photos :route="$routePrefix.'kegiatan-rutin.photos.download'" :icon-only="true" />
+            <x-download-photos :route="$photoDownloadRoute" :icon-only="true" />
         </div>
 
         @if(session('success'))
@@ -244,11 +248,17 @@
                                         <p class="text-sm text-gray-700 leading-relaxed" x-text="item.keterangan"></p>
                                     </div>
                                 </template>
+                                <template x-if="item.photo_url">
+                                    <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = item.photo_url; activeDownloadUrl = item.photo_download_url; showImageModal = true">
+                                        <img :src="item.photo_url" class="w-full h-full object-cover" alt="Dokumentasi">
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
                 </div>
             </div>
         </div>
+        <x-image-lightbox />
     </div>
 </x-app-layout>

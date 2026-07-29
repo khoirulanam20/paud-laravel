@@ -1,4 +1,4 @@
-@props(['pengumumans'])
+@props(['pengumumans', 'autoOpen' => false])
 
 @php
     $items = collect($pengumumans)->map(fn ($p) => [
@@ -6,6 +6,7 @@
         'judul' => $p->judul,
         'kategori' => $p->kategori,
         'isi' => $p->isi,
+        'mulai_tayang' => $p->mulai_tayang?->translatedFormat('d M Y'),
         'gambar_url' => $p->gambar ? Storage::url($p->gambar) : null,
         'baca_url' => route('orangtua.pengumuman.baca', $p),
     ])->values();
@@ -21,9 +22,13 @@
     marking: false,
     get current() { return this.pengumumans[this.currentIndex] || null; },
     init() {
-        if (this.pengumumans.length > 0) {
+        if (@js($autoOpen) && this.pengumumans.length > 0) {
             this.showPengumumanModal = true;
         }
+    },
+    openAt(index) {
+        this.currentIndex = index;
+        this.showPengumumanModal = true;
     },
     async tutup() {
         if (!this.current || this.marking) return;
@@ -49,7 +54,7 @@
             this.marking = false;
         }
     }
-}" @tour-close-modals.window="showPengumumanModal=false; showImageModal=false">
+}" @open-pengumuman.window="openAt($event.detail.index)" @tour-close-modals.window="showPengumumanModal=false; showImageModal=false">
 
     <div x-show="showPengumumanModal" class="modal-overlay modal-overlay--elevated" style="display:none;" x-cloak>
         <div x-show="showPengumumanModal" x-transition class="modal-box max-w-lg w-full mx-4 !p-0 flex flex-col max-h-[min(90dvh,calc(100dvh-2rem))]" @click.away="">
@@ -69,9 +74,8 @@
                                 <span x-text="currentIndex + 1"></span>/<span x-text="pengumumans.length"></span>
                             </span>
                             <button type="button"
-                                    @click="tutup()"
-                                    :disabled="marking"
-                                    class="h-8 w-8 rounded-full flex items-center justify-center transition disabled:opacity-50"
+                                    @click="showPengumumanModal = false"
+                                    class="h-8 w-8 rounded-full flex items-center justify-center transition"
                                     :class="current.gambar_url ? 'bg-black/40 text-white backdrop-blur-sm hover:bg-black/60' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
                                     aria-label="Tutup">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -82,9 +86,16 @@
                     </div>
 
                     <div class="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-2.5">
+                        <p x-show="current.mulai_tayang" class="text-[11px] font-semibold uppercase tracking-wider" style="color:#9E9790;" x-text="current.mulai_tayang"></p>
                         <h3 class="text-lg font-bold leading-snug pr-8" style="color:#2C2C2C;" x-text="current.judul"></h3>
                         <span class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background:#E8F4F4;color:#1A6B6B;" x-text="current.kategori"></span>
                         <p class="text-sm leading-relaxed whitespace-pre-wrap pb-1" style="color:#4A4540;" x-text="current.isi"></p>
+                    </div>
+
+                    <div class="px-5 py-4 border-t shrink-0" style="border-color:rgba(0,0,0,0.06);">
+                        <button type="button" @click="tutup()" :disabled="marking" class="btn-primary w-full justify-center">
+                            <span x-text="marking ? 'Menyimpan...' : 'Tandai sudah dibaca'"></span>
+                        </button>
                     </div>
                 </div>
             </template>

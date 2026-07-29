@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\OrangTua;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Traits\CanUploadImage;
 use App\Models\KritikSaran;
 use App\Support\PaginationPerPage;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 class KritikSaranController extends Controller
 {
     use CanUploadImage;
+    use DownloadsPublicPhoto;
 
     public function index(Request $request)
     {
@@ -98,5 +100,16 @@ class KritikSaranController extends Controller
         $kritik_saran->delete();
 
         return redirect()->route('orangtua.kritik-saran.index')->with('success', 'Pesan Anda berhasil dihapus.');
+    }
+
+    public function downloadPhoto(KritikSaran $kritik_saran, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        abort_if((int) $kritik_saran->user_id !== (int) auth()->id(), 403);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $kritik_saran->photo,
+            $this->slugPhotoFilename('kritik-saran-'.$kritik_saran->id, $kritik_saran->photo)
+        );
     }
 }

@@ -243,6 +243,7 @@ class MasterKegiatanRutinController extends Controller
                     'status_pencapaian' => $q->status_pencapaian,
                     'keterangan' => $q->keterangan,
                     'photo_url' => $q->photo ? Storage::url($q->photo) : null,
+                    'photo_download_url' => $q->photo ? route('pengajar.kegiatan-rutin.photo.download', $q) : null,
                 ];
             });
 

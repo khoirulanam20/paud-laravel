@@ -6,7 +6,7 @@
         </div>
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" 
-         x-data="{ showImageModal: false, activeImage: null }">
+         x-data="{ showImageModal: false, activeImage: null, activeDownloadUrl: null }">
 
         <div class="card mb-6">
             <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
@@ -59,13 +59,13 @@
                     <div class="flex gap-2 shrink-0 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
                         @if($m->photo)
                             <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0" 
-                                 @click="activeImage = '{{ Storage::url($m->photo) }}'; showImageModal = true">
+                                 @click="activeImage = '{{ Storage::url($m->photo) }}'; activeDownloadUrl = '{{ route('orangtua.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo']) }}'; showImageModal = true">
                                 <img src="{{ Storage::url($m->photo) }}" class="w-full h-full object-cover">
                             </div>
                         @endif
                         @if($m->photo_kegiatan)
                             <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0"
-                                 @click="activeImage = '{{ Storage::url($m->photo_kegiatan) }}'; showImageModal = true">
+                                 @click="activeImage = '{{ Storage::url($m->photo_kegiatan) }}'; activeDownloadUrl = '{{ route('orangtua.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo_kegiatan']) }}'; showImageModal = true">
                                 <img src="{{ Storage::url($m->photo_kegiatan) }}" class="w-full h-full object-cover">
                             </div>
                         @endif
@@ -123,18 +123,6 @@
             </div>
         </div>
 
-        {{-- Modal Preview Gambar --}}
-        <div x-show="showImageModal" 
-             class="modal-overlay modal-overlay--dark"
-             style="display: none;"
-             x-transition
-             @keydown.escape.window="showImageModal = false">
-            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
-                <button class="absolute -top-10 right-0 text-white hover:text-gray-300 transition" @click="showImageModal = false">
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white">
-            </div>
-        </div>
+        <x-image-lightbox />
     </div>
 </x-app-layout>

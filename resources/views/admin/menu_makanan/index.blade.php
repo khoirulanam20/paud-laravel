@@ -10,6 +10,9 @@
         showEditModal: false,
         showDetailModal: false,
         showDeleteModal: false,
+        showImageModal: false,
+        activeImage: null,
+        activeDownloadUrl: null,
         editData: {},
         detailData: {},
         deleteRoute: '',
@@ -74,7 +77,7 @@
             });
             form.submit();
         }
-    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDetailModal=false; showDeleteModal=false">
+    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDetailModal=false; showDeleteModal=false; showImageModal=false">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
@@ -96,7 +99,9 @@
                             'menu' => $m->menu,
                             'nutrition_info' => $m->nutrition_info,
                             'photo_url' => $m->photo ? Storage::url($m->photo) : null,
+                            'photo_download_url' => $m->photo ? route('admin.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo']) : null,
                             'photo_kegiatan_url' => $m->photo_kegiatan ? Storage::url($m->photo_kegiatan) : null,
+                            'photo_kegiatan_download_url' => $m->photo_kegiatan ? route('admin.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo_kegiatan']) : null,
                             'likes_count' => $m->likes_count,
                             'dislikes_count' => $m->dislikes_count,
                             'is_today' => \Carbon\Carbon::parse($m->date)->isToday(),
@@ -192,7 +197,9 @@
                                         'menu' => $m->menu,
                                         'nutrition_info' => $m->nutrition_info,
                                         'photo_url' => $m->photo ? Storage::url($m->photo) : null,
+                                        'photo_download_url' => $m->photo ? route('admin.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo']) : null,
                                         'photo_kegiatan_url' => $m->photo_kegiatan ? Storage::url($m->photo_kegiatan) : null,
+                                        'photo_kegiatan_download_url' => $m->photo_kegiatan ? route('admin.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo_kegiatan']) : null,
                                         'likes_count' => $m->likes_count,
                                         'dislikes_count' => $m->dislikes_count,
                                         'is_today' => \Carbon\Carbon::parse($m->date)->isToday(),
@@ -241,13 +248,13 @@
                         <template x-if="detailData.photo_url">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#9E9790;">Foto Makanan</p>
-                                <img :src="detailData.photo_url" class="w-full rounded-xl object-cover max-h-48 border border-gray-100" alt="">
+                                <img :src="detailData.photo_url" class="w-full rounded-xl object-cover max-h-48 border border-gray-100 cursor-pointer" alt="" @click="activeImage = detailData.photo_url; activeDownloadUrl = detailData.photo_download_url; showImageModal = true">
                             </div>
                         </template>
                         <template x-if="detailData.photo_kegiatan_url">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#9E9790;">Foto Kegiatan Makan</p>
-                                <img :src="detailData.photo_kegiatan_url" class="w-full rounded-xl object-cover max-h-48 border border-gray-100" alt="">
+                                <img :src="detailData.photo_kegiatan_url" class="w-full rounded-xl object-cover max-h-48 border border-gray-100 cursor-pointer" alt="" @click="activeImage = detailData.photo_kegiatan_url; activeDownloadUrl = detailData.photo_kegiatan_download_url; showImageModal = true">
                             </div>
                         </template>
                     </div>
@@ -384,5 +391,6 @@
                 </form>
             </div>
         </div>
+        <x-image-lightbox />
     </div>
 </x-app-layout>

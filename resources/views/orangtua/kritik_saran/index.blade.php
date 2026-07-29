@@ -15,6 +15,7 @@
             showModal: {{ $errors->any() ? 'true' : 'false' }},
             showImageModal: false,
             activeImage: null,
+            activeDownloadUrl: null,
             isEdit: false,
             editId: '',
             messageValue: '',
@@ -50,7 +51,7 @@
                         <div class="flex items-center gap-3">
                             <div class="shrink-0">
                                 @if($fb->photo)
-                                    <div class="h-10 w-10 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($fb->photo) }}'; showImageModal = true">
+                                    <div class="h-10 w-10 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($fb->photo) }}'; activeDownloadUrl = '{{ route('orangtua.kritik-saran.photo.download', $fb) }}'; showImageModal = true">
                                         <img src="{{ Storage::url($fb->photo) }}" class="h-full w-full object-cover">
                                     </div>
                                 @else

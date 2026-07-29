@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
             tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false, isCompressing: false,
             photoToDelete: {id:null, path:''},
             openEdit(d){ 
@@ -177,11 +177,8 @@
                             <template x-for="(url, idx) in detailData.photo_urls" :key="url">
                                 <div class="relative aspect-square rounded-xl overflow-hidden border bg-gray-100 shadow-sm flex flex-col group transition-all hover:shadow-md">
                                     <div class="h-full w-full overflow-hidden">
-                                        <img :src="url" class="w-full h-full object-cover cursor-pointer" @click.stop="activeImage = url; showImageModal = true">
+                                        <img :src="url" class="w-full h-full object-cover cursor-pointer" @click.stop="activeImage = url; activeDownloadUrl = `{{ url('admin/kegiatan') }}/${detailData.id}/photos/download?index=${idx}`; showImageModal = true">
                                     </div>
-                                    <a :href="`{{ url('admin/kegiatan') }}/${detailData.id}/photos/download?index=${idx}`"
-                                        class="absolute bottom-1 left-1 z-10 rounded bg-white/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-700 shadow hover:bg-white"
-                                        @click.stop>Unduh</a>
                                     <button type="button" @click="confirmDeletePhoto(detailData.id, detailData.photo_urls_raw[idx])"
                                         class="absolute -top-1 -right-1 p-2 bg-red-600 rounded-bl-xl text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -437,23 +434,7 @@
              </div>
         </div>
 
-        {{-- Modal Preview Gambar --}}
-        <div x-show="showImageModal"
-            class="modal-overlay modal-overlay--elevated modal-overlay--dark"
-            style="display: none;" x-transition @keydown.escape.window="showImageModal = false">
-            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
-                <button
-                    class="absolute -top-12 right-0 text-white hover:text-gray-300 transition flex items-center gap-2"
-                    @click="showImageModal = false">
-                    <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                <img :src="activeImage"
-                    class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
-            </div>
-        </div>
+        <x-image-lightbox />
 
     </div>
 </x-app-layout>

@@ -184,6 +184,7 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('master-kegiatan-rutin/export', [MasterKegiatanRutinController::class, 'export'])->name('master-kegiatan-rutin.export');
     Route::get('kegiatan-rutin/export', [KegiatanRutinController::class, 'export'])->name('kegiatan-rutin.export');
     Route::get('kegiatan-rutin/photos/download', [KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
+    Route::get('kegiatan-rutin/{kegiatan_rutin}/photo/download', [KegiatanRutinController::class, 'downloadPhoto'])->name('kegiatan-rutin.photo.download');
     Route::get('pencapaian/export', [App\Http\Controllers\Admin\PencapaianController::class, 'export'])->name('pencapaian.export');
     Route::get('pencapaian/photos/download', [App\Http\Controllers\Admin\PencapaianController::class, 'downloadPhotos'])->name('pencapaian.photos.download');
     Route::get('pencapaian/photos/download-bundle', [App\Http\Controllers\Admin\PencapaianController::class, 'downloadBundlePhoto'])->name('pencapaian.photos.download-bundle');
@@ -191,6 +192,7 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('monev-guru/export', [MonevGuruEvaluasiController::class, 'export'])->name('monev-guru.export');
     Route::get('pengajar/export', [PengajarController::class, 'export'])->name('pengajar.export');
     Route::get('sarana/export', [SaranaController::class, 'export'])->name('sarana.export');
+    Route::get('sarana/{sarana}/photo/download', [SaranaController::class, 'downloadPhoto'])->name('sarana.photo.download');
     Route::get('akun/export', [AkunController::class, 'export'])->name('akun.export');
     Route::get('cashflow/export', [CashflowController::class, 'export'])->name('cashflow.export');
     Route::get('jurnal/export', [JurnalController::class, 'export'])->name('jurnal.export');
@@ -233,8 +235,11 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::post('anak/import', [AnakController::class, 'import'])->name('anak.import');
     Route::resource('anak', AnakController::class)->except(['create', 'edit']);
     Route::resource('sarana', SaranaController::class)->except(['create', 'edit', 'show']);
+    Route::get('sarana/{sarana}/photo/download', [SaranaController::class, 'downloadPhoto'])->name('sarana.photo.download');
     Route::resource('pengajar', PengajarController::class)->except(['create', 'edit', 'show']);
     Route::resource('menu-makanan', MenuMakananController::class)->except(['create', 'edit', 'show']);
+    Route::get('menu-makanan/{menu_makanan}/photo/download', [MenuMakananController::class, 'downloadPhoto'])->name('menu-makanan.photo.download');
+    Route::get('menu-makanan/{menu_makanan}/photo/download', [MenuMakananController::class, 'downloadPhoto'])->name('menu-makanan.photo.download');
     Route::resource('pengumuman', PengumumanController::class)->except(['create', 'edit', 'show']);
 
     // Biaya Bulanan & Pembayaran
@@ -275,6 +280,8 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('pembayaran-bulanan', [PembayaranBulananController::class, 'index'])->name('pembayaran-bulanan.index');
     Route::get('pembayaran-bulanan/generate-preview', [PembayaranBulananController::class, 'generatePreview'])->name('pembayaran-bulanan.generate-preview');
     Route::get('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'show'])->name('pembayaran-bulanan.show');
+    Route::get('pembayaran-bulanan/{pembayaran}/bukti/download', [PembayaranBulananController::class, 'downloadBukti'])->name('pembayaran-bulanan.bukti.download');
+    Route::get('pembayaran-bulanan/{pembayaran}/bukti/download', [PembayaranBulananController::class, 'downloadBukti'])->name('pembayaran-bulanan.bukti.download');
     Route::post('pembayaran-bulanan/generate', [PembayaranBulananController::class, 'generate'])->name('pembayaran-bulanan.generate');
     Route::delete('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'destroy'])->name('pembayaran-bulanan.destroy');
     Route::patch('pembayaran-bulanan/{pembayaran}/diskon', [PembayaranBulananController::class, 'updateDiskon'])->name('pembayaran-bulanan.update-diskon');
@@ -305,6 +312,8 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
     Route::get('kegiatan-rutin/detail/{anak}', [KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
     Route::get('kritik-saran', [AdminKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'show'])->name('kritik-saran.show');
+    Route::get('kritik-saran/{kritik_saran}/photo/download', [AdminKritikSaranController::class, 'downloadPhoto'])->name('kritik-saran.photo.download');
+    Route::get('kritik-saran/{kritik_saran}/photo/download', [AdminKritikSaranController::class, 'downloadPhoto'])->name('kritik-saran.photo.download');
     Route::patch('kritik-saran/{kritik_saran}', [AdminKritikSaranController::class, 'update'])->name('kritik-saran.update');
     Route::get('orangtua-chat', [OrangTuaChatController::class, 'index'])->name('orangtua-chat.index');
     Route::get('orangtua-chat/{orangtua_chat}', [OrangTuaChatController::class, 'show'])->name('orangtua-chat.show');
@@ -345,6 +354,7 @@ Route::middleware(['auth', 'role:Wali Kelas'])->prefix('adminkelas')->name('admi
     Route::get('kegiatan/photos/download', [PengajarKegiatanController::class, 'downloadPhotos'])->name('kegiatan.photos.download');
     Route::get('kegiatan/{kegiatan}/photos/download', [PengajarKegiatanController::class, 'downloadPhotosSingle'])->name('kegiatan.photos.download-single');
     Route::get('kegiatan-rutin/photos/download', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
+    Route::get('kegiatan-rutin/{kegiatan_rutin}/photo/download', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'downloadPhoto'])->name('kegiatan-rutin.photo.download');
     Route::get('kesehatan/history/{anak}', [App\Http\Controllers\AdminKelas\KesehatanController::class, 'history'])->name('kesehatan.history');
     Route::resource('kesehatan', App\Http\Controllers\AdminKelas\KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('matrikulasi', [MatrikulasiController::class, 'index'])->name('matrikulasi.index');
@@ -379,6 +389,7 @@ Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->nam
     Route::get('kegiatan-rutin', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::post('kegiatan-rutin', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'store'])->name('kegiatan-rutin.store');
     Route::get('kegiatan-rutin/photos/download', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'downloadPhotos'])->name('kegiatan-rutin.photos.download');
+    Route::get('kegiatan-rutin/{kegiatan_rutin}/photo/download', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'downloadPhoto'])->name('kegiatan-rutin.photo.download');
     Route::get('kegiatan-rutin/detail/{anak}', [App\Http\Controllers\Pengajar\KegiatanRutinController::class, 'detail'])->name('kegiatan-rutin.detail');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
@@ -395,13 +406,16 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');
     Route::get('kegiatan-rutin', [App\Http\Controllers\OrangTua\KegiatanRutinController::class, 'index'])->name('kegiatan-rutin.index');
     Route::get('pencapaian', [OrangTuaPencapaianController::class, 'index'])->name('pencapaian.index');
+    Route::get('pencapaian/photos/download-bundle', [OrangTuaPencapaianController::class, 'downloadBundlePhoto'])->name('pencapaian.photos.download-bundle');
     Route::get('monev', [MonevController::class, 'index'])->name('monev.index');
     Route::get('monev/{anak}/pdf', [MonevController::class, 'exportPdf'])->name('monev.export-pdf');
     Route::get('monev/{anak}', [MonevController::class, 'show'])->name('monev.show');
     Route::get('menu-makanan', [OrangTuaMenuMakananController::class, 'index'])->name('menu-makanan.index');
+    Route::get('menu-makanan/{menu_makanan}/photo/download', [OrangTuaMenuMakananController::class, 'downloadPhoto'])->name('menu-makanan.photo.download');
     Route::redirect('kritik-saran/riwayat', '/orangtua/kritik-saran');
     Route::get('kritik-saran', [OrangTuaKritikSaranController::class, 'index'])->name('kritik-saran.index');
     Route::get('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'show'])->name('kritik-saran.show');
+    Route::get('kritik-saran/{kritik_saran}/photo/download', [OrangTuaKritikSaranController::class, 'downloadPhoto'])->name('kritik-saran.photo.download');
     Route::post('kritik-saran', [OrangTuaKritikSaranController::class, 'store'])->name('kritik-saran.store');
     Route::patch('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'update'])->name('kritik-saran.update');
     Route::delete('kritik-saran/{kritik_saran}', [OrangTuaKritikSaranController::class, 'destroy'])->name('kritik-saran.destroy');
@@ -416,6 +430,7 @@ Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtu
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('pembayaran/{pembayaran}/invoice', [PembayaranController::class, 'exportInvoice'])->name('pembayaran.invoice');
     Route::get('pembayaran/{pembayaran}', [PembayaranController::class, 'show'])->name('pembayaran.show');
+    Route::get('pembayaran/{pembayaran}/bukti/download', [PembayaranController::class, 'downloadBukti'])->name('pembayaran.bukti.download');
     Route::post('pembayaran/{pembayaran}/bayar', [PembayaranController::class, 'bayar'])->name('pembayaran.bayar');
 });
 

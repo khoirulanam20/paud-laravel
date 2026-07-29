@@ -17,6 +17,7 @@ class Pengumuman extends Model
 
     protected $fillable = [
         'sekolah_id',
+        'kelas_id',
         'judul',
         'kategori',
         'isi',
@@ -40,9 +41,24 @@ class Pengumuman extends Model
         return $this->belongsTo(Sekolah::class);
     }
 
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class);
+    }
+
     public function reads(): HasMany
     {
         return $this->hasMany(PengumumanRead::class);
+    }
+
+    public function scopeForKelasIds(Builder $query, array $kelasIds): Builder
+    {
+        return $query->where(function (Builder $q) use ($kelasIds) {
+            $q->whereNull('kelas_id');
+            if ($kelasIds !== []) {
+                $q->orWhereIn('kelas_id', $kelasIds);
+            }
+        });
     }
 
     public function scopeActive(Builder $query): Builder

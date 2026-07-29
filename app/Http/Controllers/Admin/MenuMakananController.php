@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\MenuMakanan;
+use App\Services\PhotoArchiveService;
 use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class MenuMakananController extends Controller
 {
     use CanUploadImage;
+    use \App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 
     public function index(Request $request)
     {
@@ -104,5 +107,23 @@ class MenuMakananController extends Controller
         $menu_makanan->delete();
 
         return redirect()->route('admin.menu-makanan.index')->with('success', 'Menu Makanan berhasil dihapus.');
+    }
+
+    public function downloadPhoto(Request $request, MenuMakanan $menu_makanan, PhotoArchiveService $photoArchive)
+    {
+        abort_if($menu_makanan->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $field = $request->validate([
+            'field' => ['required', Rule::in(['photo', 'photo_kegiatan'])],
+        ])['field'];
+
+        $path = $menu_makanan->{$field};
+        $prefix = $field === 'photo_kegiatan' ? 'menu-kegiatan' : 'menu-makanan';
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $path,
+            $this->slugPhotoFilename($prefix.'-'.$menu_makanan->date?->format('Y-m-d'), $path)
+        );
     }
 }

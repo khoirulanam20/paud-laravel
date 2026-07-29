@@ -14,7 +14,7 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false, showItemModal: false, showImageModal: false, activeImage: null, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showItemModal=false">
+         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false, showItemModal: false, showImageModal: false, activeImage: null, activeDownloadUrl: null, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showItemModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -129,7 +129,7 @@
                         <h3 class="section-title mb-4">Bukti Transfer</h3>
                         <img src="{{ Storage::url($pembayaran->bukti_transfer) }}" alt="Bukti"
                             class="w-full rounded-lg border cursor-pointer"
-                            @click="activeImage = '{{ Storage::url($pembayaran->bukti_transfer) }}'; showImageModal = true">
+                            @click="activeImage = '{{ Storage::url($pembayaran->bukti_transfer) }}'; activeDownloadUrl = '{{ route('admin.pembayaran-bulanan.bukti.download', $pembayaran) }}'; showImageModal = true">
                     </div>
                 @endif
 

@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\OrangTua;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
+use App\Models\Anak;
 use App\Models\MenuMakanan;
 use App\Support\PaginationPerPage;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class MenuMakananController extends Controller
 {
+    use DownloadsPublicPhoto;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -29,5 +33,23 @@ class MenuMakananController extends Controller
             ->withQueryString();
 
         return view('orangtua.menu_makanan.index', compact('menus', 'startDate', 'endDate'));
+    }
+
+    public function downloadPhoto(Request $request, MenuMakanan $menu_makanan, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        abort_if($menu_makanan->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $field = $request->validate([
+            'field' => ['required', Rule::in(['photo', 'photo_kegiatan'])],
+        ])['field'];
+
+        $path = $menu_makanan->{$field};
+        $prefix = $field === 'photo_kegiatan' ? 'menu-kegiatan' : 'menu-makanan';
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $path,
+            $this->slugPhotoFilename($prefix.'-'.$menu_makanan->date?->format('Y-m-d'), $path)
+        );
     }
 }

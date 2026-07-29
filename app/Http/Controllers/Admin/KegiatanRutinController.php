@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\KegiatanRutin;
@@ -13,11 +14,13 @@ use App\Models\Pengajar;
 use App\Services\PhotoArchiveService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class KegiatanRutinController extends Controller
 {
     use DownloadsExcel;
     use DownloadsPhotoArchive;
+    use DownloadsPublicPhoto;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -174,9 +177,25 @@ class KegiatanRutinController extends Controller
                     'kegiatan' => $q->kegiatan,
                     'status_pencapaian' => $q->status_pencapaian,
                     'keterangan' => $q->keterangan,
+                    'photo_url' => $q->photo ? Storage::url($q->photo) : null,
+                    'photo_download_url' => $q->photo ? route('admin.kegiatan-rutin.photo.download', $q) : null,
                 ];
             });
 
         return response()->json($rutins);
+    }
+
+    public function downloadPhoto(KegiatanRutin $kegiatan_rutin, PhotoArchiveService $photoArchive)
+    {
+        abort_if($kegiatan_rutin->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $kegiatan_rutin->photo,
+            $this->slugPhotoFilename(
+                'kegiatan-rutin-'.$kegiatan_rutin->tanggal?->format('Y-m-d'),
+                $kegiatan_rutin->photo
+            )
+        );
     }
 }
