@@ -171,7 +171,7 @@
         $roleNavItems = array_values($roleNavItems); // re-index
     }
     if ($user && $user->hasRole('Wali Kelas')) {
-        $roleNavItems = array_merge($roleNavItems, [
+        $waliKelasNav = [
             [
                 'group' => 'Kelas saya',
                 'items' => [
@@ -198,7 +198,23 @@
                     ['route' => 'admin.pembayaran-bulanan.index', 'label' => 'Rekap Pembayaran', 'perm' => 'menu.rekap-pembayaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'pattern' => 'admin.pembayaran-bulanan.*'],
                 ]
             ],
-        ]);
+        ];
+        $waliKelasNav = array_map(function ($group) use ($user) {
+            if (! isset($group['items'])) {
+                return $group;
+            }
+            $group['items'] = array_values(array_filter($group['items'], function ($item) use ($user) {
+                if (! isset($item['perm'])) {
+                    return true;
+                }
+
+                return $user->can($item['perm']);
+            }));
+
+            return $group;
+        }, $waliKelasNav);
+        $waliKelasNav = array_values(array_filter($waliKelasNav, fn ($group) => ! isset($group['items']) || count($group['items']) > 0));
+        $roleNavItems = array_merge($roleNavItems, $waliKelasNav);
     }
     if ($user && $user->hasRole('Pengajar') && ! $user->hasRole('Wali Kelas')) {
         $roleNavItems = array_merge($roleNavItems, [

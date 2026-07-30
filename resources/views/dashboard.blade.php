@@ -384,51 +384,8 @@
             }
         }">
 
-            @if(($pengumumans ?? collect())->isNotEmpty())
-            <div class="card overflow-hidden" data-tour="dashboard-pengumuman">
-                <div class="px-5 py-4 border-b flex items-center justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
-                    <div>
-                        <h3 class="section-title mb-0">Pengumuman Sekolah</h3>
-                        <p class="text-sm m-0 mt-0.5" style="color:#9E9790;">Riwayat informasi dari sekolah dan wali kelas</p>
-                    </div>
-                </div>
-                <ul class="divide-y" style="divide-color:rgba(0,0,0,0.06);">
-                    @foreach($pengumumans as $pengumuman)
-                        @php $isRead = in_array($pengumuman->id, $readPengumumanIds ?? [], true); @endphp
-                        <li>
-                            <button type="button"
-                                    @click="$dispatch('open-pengumuman', { index: {{ $loop->index }} })"
-                                    class="w-full text-left px-5 py-4 hover:bg-[#FAF6F0] transition flex items-start gap-3">
-                                <div class="h-10 w-10 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-sm" style="background:#1A6B6B;">
-                                    {{ mb_substr($pengumuman->judul, 0, 1) }}
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                                        <p class="font-semibold text-sm m-0" style="color:#2C2C2C;">{{ $pengumuman->judul }}</p>
-                                        @unless($isRead)
-                                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background:#FEF3C7;color:#92400E;">Baru</span>
-                                        @endunless
-                                    </div>
-                                    <p class="text-xs m-0" style="color:#9E9790;">
-                                        {{ $pengumuman->mulai_tayang->translatedFormat('d M Y') }}
-                                        @if($pengumuman->kelas)
-                                            · {{ $pengumuman->kelas->name }}
-                                        @else
-                                            · Semua kelas
-                                        @endif
-                                        · {{ $pengumuman->kategori }}
-                                    </p>
-                                </div>
-                                <svg class="h-5 w-5 shrink-0 mt-1" style="color:#9E9790;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                            </button>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
             {{-- ═══ Welcome & Attendance Summary Card ═══ --}}
-            <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-6" data-tour="dashboard-welcome"
+            <div class="relative rounded-2xl overflow-hidden text-white shadow-lg" data-tour="dashboard-welcome"
                  style="background: linear-gradient(135deg, #1A6B6B 0%, #155959 50%, #0f4040 100%);
                         box-shadow: 0 8px 32px rgba(26,107,107,0.30);">
 
@@ -539,6 +496,48 @@
                 </div>
             </div>
 
+            @if(($pengumumans ?? collect())->isNotEmpty())
+            <div class="card overflow-hidden" data-tour="dashboard-pengumuman">
+                <div class="px-5 py-4 border-b flex items-center justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                    <div>
+                        <h3 class="section-title mb-0">Pengumuman Sekolah</h3>
+                        <p class="text-sm m-0 mt-0.5" style="color:#9E9790;">Riwayat informasi dari sekolah dan wali kelas</p>
+                    </div>
+                </div>
+                <ul class="divide-y" style="divide-color:rgba(0,0,0,0.06);">
+                    @foreach($pengumumans as $pengumuman)
+                        @php $isRead = in_array($pengumuman->id, $readPengumumanIds ?? [], true); @endphp
+                        <li>
+                            <button type="button"
+                                    @click="$dispatch('open-pengumuman', { index: {{ $loop->index }} })"
+                                    class="w-full text-left px-5 py-4 hover:bg-[#FAF6F0] transition flex items-start gap-3">
+                                <div class="h-10 w-10 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-sm" style="background:#1A6B6B;">
+                                    {{ mb_substr($pengumuman->judul, 0, 1) }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                                        <p class="font-semibold text-sm m-0" style="color:#2C2C2C;">{{ $pengumuman->judul }}</p>
+                                        @unless($isRead)
+                                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background:#FEF3C7;color:#92400E;">Baru</span>
+                                        @endunless
+                                    </div>
+                                    <p class="text-xs m-0" style="color:#9E9790;">
+                                        {{ $pengumuman->mulai_tayang->translatedFormat('d M Y') }}
+                                        @if($pengumuman->kelas)
+                                            · {{ $pengumuman->kelas->name }}
+                                        @else
+                                            · Semua kelas
+                                        @endif
+                                        · {{ $pengumuman->kategori }}
+                                    </p>
+                                </div>
+                                <svg class="h-5 w-5 shrink-0 mt-1" style="color:#9E9790;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8" data-tour="dashboard-recent">
                 <div class="lg:col-span-1 flex flex-col gap-5">
