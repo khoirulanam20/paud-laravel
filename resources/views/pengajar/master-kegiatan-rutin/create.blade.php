@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div class="mb-6 flex items-center gap-4" data-tour="page-header">
-            <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.index') }}" class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm">
+            <a href="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.index') }}" class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </a>
             <div>
@@ -33,7 +33,7 @@
                         : this.allMatrikulasi;
                 }
             }">
-            <form action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.store') }}" method="POST" class="p-6 space-y-6">
+            <form action="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -76,7 +76,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                    <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.index') }}" class="btn-secondary py-2 px-5 rounded-xl font-bold">Batal</a>
+                    <a href="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.index') }}" class="btn-secondary py-2 px-5 rounded-xl font-bold">Batal</a>
                     <button type="submit" class="btn-primary py-2 px-6 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20">
                         Simpan Kegiatan
                     </button>

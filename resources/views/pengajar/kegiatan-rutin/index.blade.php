@@ -1,8 +1,6 @@
 @php
-    $routePrefix = auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.';
-    $photoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
-        ? 'adminkelas.kegiatan-rutin.photos.download'
-        : $routePrefix.'kegiatan-rutin.photos.download';
+    $routePrefix = auth()->user()->kegiatanRutinRoutePrefix();
+    $photoDownloadRoute = $routePrefix.'kegiatan-rutin.photos.download';
 @endphp
 
 <x-app-layout>
@@ -22,7 +20,7 @@
             this.openDetailModal = true;
             this.isLoadingDetail = true;
             try {
-                const is_admin = {{ auth()->user()->hasRole('Admin Sekolah') ? 'true' : 'false' }};
+                const is_admin = {{ auth()->user()->usesAdminKegiatanRutinRoutes() ? 'true' : 'false' }};
                 const prefix = is_admin ? '/admin' : '/pengajar';
                 let res = await fetch(`${prefix}/kegiatan-rutin/detail/${id}?mulai=${this.filterMulai}&sampai=${this.filterSampai}`);
                 this.detailData = await res.json();
@@ -81,7 +79,7 @@
                     </select>
                 </div>
             </form>
-            @if(auth()->user()->hasRole('Admin Sekolah'))
+            @if(auth()->user()->usesAdminKegiatanRutinRoutes())
                 <x-export-excel route="admin.kegiatan-rutin.export" />
             @endif
             <x-download-photos :route="$photoDownloadRoute" :icon-only="true" />

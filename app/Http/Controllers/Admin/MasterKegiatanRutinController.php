@@ -23,9 +23,13 @@ class MasterKegiatanRutinController extends Controller
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
+        $waliKelasIds = $this->waliKelasIds();
 
         $masters = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
             ->where('sekolah_id', $sekolah_id)
+            ->when($waliKelasIds !== null, function ($query) use ($waliKelasIds) {
+                $query->whereHas('kelas', fn ($q) => $q->whereIn('kelas.id', $waliKelasIds));
+            })
             ->latest()
             ->paginate(PaginationPerPage::resolve($request))
             ->withQueryString();
@@ -36,8 +40,13 @@ class MasterKegiatanRutinController extends Controller
     public function export()
     {
         $sekolah_id = auth()->user()->sekolah_id;
+        $waliKelasIds = $this->waliKelasIds();
+
         $rows = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
             ->where('sekolah_id', $sekolah_id)
+            ->when($waliKelasIds !== null, function ($query) use ($waliKelasIds) {
+                $query->whereHas('kelas', fn ($q) => $q->whereIn('kelas.id', $waliKelasIds));
+            })
             ->latest()
             ->get()
             ->map(fn (MasterKegiatanRutin $m) => [
@@ -61,7 +70,7 @@ class MasterKegiatanRutinController extends Controller
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
 
-        $classList = Kelas::where('sekolah_id', $sekolah_id)->get();
+        $classList = $this->kelasOptions($sekolah_id, $this->waliKelasIds());
         $matrikulasiList = Matrikulasi::where('sekolah_id', $sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.create', compact('classList', 'matrikulasiList'));
@@ -76,6 +85,8 @@ class MasterKegiatanRutinController extends Controller
             'kelas_ids' => 'required|array',
             'kelas_ids.*' => 'exists:kelas,id',
         ]);
+
+        $this->assertKelasIdsInScope($request->kelas_ids);
 
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
@@ -106,7 +117,9 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
-        $classList = Kelas::where('sekolah_id', $sekolah_id)->get();
+        $this->assertMasterInScope($masterKegiatanRutin);
+
+        $classList = $this->kelasOptions($sekolah_id, $this->waliKelasIds());
         $matrikulasiList = Matrikulasi::where('sekolah_id', $sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.edit', compact('masterKegiatanRutin', 'classList', 'matrikulasiList'));
@@ -121,6 +134,8 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        $this->assertMasterInScope($masterKegiatanRutin);
+
         $request->validate([
             'nama_kegiatan' => 'required|string|max:255',
             'aspek' => 'required|string|max:255',
@@ -128,6 +143,8 @@ class MasterKegiatanRutinController extends Controller
             'kelas_ids' => 'required|array',
             'kelas_ids.*' => 'exists:kelas,id',
         ]);
+
+        $this->assertKelasIdsInScope($request->kelas_ids);
 
         $masterKegiatanRutin->update([
             'nama_kegiatan' => $request->nama_kegiatan,
@@ -149,16 +166,26 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        $this->assertMasterInScope($masterKegiatanRutin);
+
+        $waliKelasIds = $this->waliKelasIds();
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $kelasId = $request->input('kelas_id');
-        $kelasIds = $masterKegiatanRutin->kelas->pluck('id')->toArray();
+        $masterKelasIds = $masterKegiatanRutin->kelas->pluck('id')->toArray();
+        $availableKelasIds = $waliKelasIds !== null
+            ? array_values(array_intersect($masterKelasIds, $waliKelasIds))
+            : $masterKelasIds;
 
-        if (! $kelasId && ! empty($kelasIds)) {
-            $kelasId = $kelasIds[0];
+        if (! $kelasId && ! empty($availableKelasIds)) {
+            $kelasId = $availableKelasIds[0];
         }
 
-        if ($kelasId && ! in_array($kelasId, $kelasIds)) {
+        if ($kelasId && ! in_array((int) $kelasId, $masterKelasIds, true)) {
             abort(403, 'Kelas tidak ditautkan ke kegiatan ini.');
+        }
+
+        if ($kelasId && $waliKelasIds !== null && ! in_array((int) $kelasId, $waliKelasIds, true)) {
+            abort(403, 'Kelas tidak dalam cakupan Anda.');
         }
 
         $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
@@ -168,7 +195,9 @@ class MasterKegiatanRutinController extends Controller
             ->get()
             ->keyBy('anak_id') : collect();
 
-        $classList = $masterKegiatanRutin->kelas;
+        $classList = $masterKegiatanRutin->kelas()
+            ->when($waliKelasIds !== null, fn ($q) => $q->whereIn('kelas.id', $waliKelasIds))
+            ->get();
 
         return view('pengajar.master-kegiatan-rutin.show', compact('masterKegiatanRutin', 'classList', 'anaks', 'rutins', 'tanggal', 'kelasId'));
     }
@@ -190,6 +219,9 @@ class MasterKegiatanRutinController extends Controller
         if ($masterKegiatanRutin->sekolah_id !== $sekolah_id) {
             abort(403);
         }
+
+        $this->assertMasterInScope($masterKegiatanRutin);
+        $this->assertKelasIdInScope((int) $request->kelas_id);
 
         $pengajar_id = $masterKegiatanRutin->pengajar_id ?? (Pengajar::where('sekolah_id', $sekolah_id)->first()->id ?? null);
 
@@ -236,6 +268,9 @@ class MasterKegiatanRutinController extends Controller
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
 
+        $this->assertMasterInScope($masterKegiatanRutin);
+        $this->assertAnakInScope($anak);
+
         $mulai = $request->query('mulai', date('Y-m-01'));
         $sampai = $request->query('sampai', date('Y-m-t'));
 
@@ -268,6 +303,8 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        $this->assertMasterInScope($masterKegiatanRutin);
+
         foreach ($masterKegiatanRutin->kegiatanRutins as $qr) {
             if ($qr->photo) {
                 Storage::disk('public')->delete($qr->photo);
@@ -288,6 +325,8 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        $this->assertKelasIdInScope((int) $kegiatanRutin->kelas_id);
+
         if ($kegiatanRutin->photo) {
             Storage::disk('public')->delete($kegiatanRutin->photo);
         }
@@ -295,5 +334,72 @@ class MasterKegiatanRutinController extends Controller
         $kegiatanRutin->delete();
 
         return back()->with('success', 'Catatan pencapaian berhasil dihapus.');
+    }
+
+    /** @return list<int>|null */
+    private function waliKelasIds(): ?array
+    {
+        if (! auth()->user()->hasRole('Wali Kelas') || auth()->user()->hasRole('Admin Sekolah')) {
+            return null;
+        }
+
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
+
+        return $pengajar->accessibleKelasIds();
+    }
+
+    /** @param  list<int>|null  $waliKelasIds */
+    private function kelasOptions(int $sekolahId, ?array $waliKelasIds)
+    {
+        $query = Kelas::where('sekolah_id', $sekolahId)->orderBy('name');
+        if ($waliKelasIds !== null) {
+            $query->whereIn('id', $waliKelasIds);
+        }
+
+        return $query->get();
+    }
+
+    private function assertMasterInScope(MasterKegiatanRutin $master): void
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($waliKelasIds === [], 403);
+
+        $linked = $master->kelas()->whereIn('kelas.id', $waliKelasIds)->exists();
+        abort_unless($linked, 403);
+    }
+
+    /** @param  list<int>  $kelasIds */
+    private function assertKelasIdsInScope(array $kelasIds): void
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($waliKelasIds === [], 403);
+
+        foreach ($kelasIds as $kelasId) {
+            abort_unless(in_array((int) $kelasId, $waliKelasIds, true), 403);
+        }
+    }
+
+    private function assertKelasIdInScope(int $kelasId): void
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($waliKelasIds === [], 403);
+        abort_unless(in_array($kelasId, $waliKelasIds, true), 403);
+    }
+
+    private function assertAnakInScope(Anak $anak): void
+    {
+        $this->assertKelasIdInScope((int) $anak->kelas_id);
     }
 }

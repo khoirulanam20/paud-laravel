@@ -21,11 +21,12 @@ class KegiatanRutinController extends Controller
     use DownloadsExcel;
     use DownloadsPhotoArchive;
     use DownloadsPublicPhoto;
+
     public function index(Request $request)
     {
         $user = auth()->user();
         $sekolahId = $user->sekolah_id;
-        $classList = Kelas::where('sekolah_id', $sekolahId)->get();
+        $classList = $this->kelasOptions($sekolahId, $this->waliKelasIds());
         $kelasIds = $classList->pluck('id')->toArray();
 
         $tanggal = $request->input('tanggal', date('Y-m-d'));
@@ -33,6 +34,10 @@ class KegiatanRutinController extends Controller
 
         if (! $kelasId && ! empty($kelasIds)) {
             $kelasId = $kelasIds[0];
+        }
+
+        if ($kelasId && $this->waliKelasIds() !== null && ! in_array((int) $kelasId, $kelasIds, true)) {
+            abort(403);
         }
 
         $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
@@ -63,10 +68,14 @@ class KegiatanRutinController extends Controller
     public function export(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $classList = Kelas::where('sekolah_id', $sekolahId)->get();
+        $classList = $this->kelasOptions($sekolahId, $this->waliKelasIds());
         $kelasIds = $classList->pluck('id')->toArray();
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $kelasId = $request->input('kelas_id') ?: ($kelasIds[0] ?? null);
+
+        if ($kelasId && $this->waliKelasIds() !== null && ! in_array((int) $kelasId, $kelasIds, true)) {
+            abort(403);
+        }
 
         $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
         $masters = $kelasId ? MasterKegiatanRutin::whereHas('kelas', fn ($q) => $q->where('kelas.id', $kelasId))->get() : collect();
@@ -96,10 +105,14 @@ class KegiatanRutinController extends Controller
     public function downloadPhotos(Request $request, PhotoArchiveService $photoArchive)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $classList = Kelas::where('sekolah_id', $sekolahId)->get();
+        $classList = $this->kelasOptions($sekolahId, $this->waliKelasIds());
         $kelasIds = $classList->pluck('id')->toArray();
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $kelasId = $request->input('kelas_id') ?: ($kelasIds[0] ?? null);
+
+        if ($kelasId && $this->waliKelasIds() !== null && ! in_array((int) $kelasId, $kelasIds, true)) {
+            abort(403);
+        }
 
         $records = KegiatanRutin::query()
             ->with(['anak', 'masterKegiatanRutin'])
@@ -120,6 +133,8 @@ class KegiatanRutinController extends Controller
             'kelas_id' => 'required|exists:kelas,id',
             'rutin' => 'required|array',
         ]);
+
+        $this->assertKelasIdInScope((int) $request->kelas_id);
 
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
@@ -160,6 +175,8 @@ class KegiatanRutinController extends Controller
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
 
+        $this->assertAnakInScope($anak);
+
         $mulai = $request->query('mulai', date('Y-m-01'));
         $sampai = $request->query('sampai', date('Y-m-t'));
 
@@ -188,6 +205,7 @@ class KegiatanRutinController extends Controller
     public function downloadPhoto(KegiatanRutin $kegiatan_rutin, PhotoArchiveService $photoArchive)
     {
         abort_if($kegiatan_rutin->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertKelasIdInScope((int) $kegiatan_rutin->kelas_id);
 
         return $this->downloadPublicPhoto(
             $photoArchive,
@@ -197,5 +215,44 @@ class KegiatanRutinController extends Controller
                 $kegiatan_rutin->photo
             )
         );
+    }
+
+    /** @return list<int>|null */
+    private function waliKelasIds(): ?array
+    {
+        if (! auth()->user()->hasRole('Wali Kelas') || auth()->user()->hasRole('Admin Sekolah')) {
+            return null;
+        }
+
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
+
+        return $pengajar->accessibleKelasIds();
+    }
+
+    /** @param  list<int>|null  $waliKelasIds */
+    private function kelasOptions(int $sekolahId, ?array $waliKelasIds)
+    {
+        $query = Kelas::where('sekolah_id', $sekolahId)->orderBy('name');
+        if ($waliKelasIds !== null) {
+            $query->whereIn('id', $waliKelasIds);
+        }
+
+        return $query->get();
+    }
+
+    private function assertKelasIdInScope(int $kelasId): void
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($waliKelasIds === [], 403);
+        abort_unless(in_array($kelasId, $waliKelasIds, true), 403);
+    }
+
+    private function assertAnakInScope(Anak $anak): void
+    {
+        $this->assertKelasIdInScope((int) $anak->kelas_id);
     }
 }

@@ -116,6 +116,16 @@ class User extends Authenticatable
         return $value !== null ? (int) $value : null;
     }
 
+    public function usesAdminKegiatanRutinRoutes(): bool
+    {
+        return $this->hasRole(['Admin Sekolah', 'Wali Kelas']);
+    }
+
+    public function kegiatanRutinRoutePrefix(): string
+    {
+        return $this->usesAdminKegiatanRutinRoutes() ? 'admin.' : 'pengajar.';
+    }
+
     public function canAccessAdminPanel(): bool
     {
         if ($this->hasRole('Orang Tua')) {
