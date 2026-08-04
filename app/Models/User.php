@@ -126,6 +126,11 @@ class User extends Authenticatable
         return $this->usesAdminKegiatanRutinRoutes() ? 'admin.' : 'pengajar.';
     }
 
+    public function canManageKegiatanRutinMaster(): bool
+    {
+        return $this->usesAdminKegiatanRutinRoutes();
+    }
+
     public function canAccessAdminPanel(): bool
     {
         if ($this->hasRole('Orang Tua')) {

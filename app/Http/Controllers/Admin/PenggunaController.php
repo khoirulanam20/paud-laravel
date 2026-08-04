@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
-use App\Models\Pengajar;
 use App\Models\User;
+use App\Services\WaliKelasAssignmentService;
 use App\Support\ActivityLogger;
 use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class PenggunaController extends Controller
     {
         $sekolahId = auth()->user()->sekolah_id;
         $penggunas = User::where('sekolah_id', $sekolahId)
-            ->with(['roles', 'kelas'])
+            ->with(['roles', 'kelas', 'pengajar.waliKelas'])
             ->latest()
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $roles = Role::whereNotIn('name', self::HIDDEN_ROLES)->get();
@@ -149,61 +149,14 @@ class PenggunaController extends Controller
 
     private function syncWaliKelasAssignment(User $user, ?int $kelasId): void
     {
-        $pengajar = $user->pengajar;
+        $service = app(WaliKelasAssignmentService::class);
 
         if ($kelasId === null) {
-            if (! $pengajar) {
-                $user->forceFill(['kelas_id' => null])->save();
-
-                return;
-            }
-
-            Kelas::where('wali_kelas_id', $pengajar->id)->update(['wali_kelas_id' => null]);
-            $user->forceFill(['kelas_id' => null])->save();
+            $service->clear($user);
 
             return;
         }
 
-        if (! $pengajar) {
-            $pengajar = Pengajar::create([
-                'user_id' => $user->id,
-                'sekolah_id' => $user->sekolah_id,
-                'name' => $user->name,
-                'jabatan' => 'Wali Kelas',
-            ]);
-        } else {
-            $pengajar->update([
-                'name' => $user->name,
-                'sekolah_id' => $user->sekolah_id,
-                'jabatan' => filled($pengajar->jabatan) ? $pengajar->jabatan : 'Wali Kelas',
-            ]);
-        }
-
-        $oldWaliPengajarId = Kelas::whereKey($kelasId)->value('wali_kelas_id');
-
-        Kelas::where('wali_kelas_id', $pengajar->id)
-            ->where('id', '!=', $kelasId)
-            ->update(['wali_kelas_id' => null]);
-
-        Kelas::whereKey($kelasId)->update(['wali_kelas_id' => $pengajar->id]);
-        $pengajar->kelas()->syncWithoutDetaching([$kelasId]);
-        $user->forceFill(['kelas_id' => $kelasId])->save();
-
-        if ($oldWaliPengajarId && (int) $oldWaliPengajarId !== (int) $pengajar->id) {
-            $this->removeWaliKelasRoleIfNecessary((int) $oldWaliPengajarId);
-        }
-    }
-
-    private function removeWaliKelasRoleIfNecessary(int $pengajarId): void
-    {
-        if (Kelas::where('wali_kelas_id', $pengajarId)->exists()) {
-            return;
-        }
-
-        $pengajar = Pengajar::find($pengajarId);
-        if ($pengajar?->user && $pengajar->user->hasRole('Wali Kelas')) {
-            $pengajar->user->removeRole('Wali Kelas');
-            $pengajar->user->forceFill(['kelas_id' => null])->save();
-        }
+        $service->assign($user, $kelasId);
     }
 }

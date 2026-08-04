@@ -91,8 +91,8 @@
                                             'id' => $pengguna->id,
                                             'name' => $pengguna->name,
                                             'email' => $pengguna->email,
-                                            'role' => $pengguna->roles->first()?->name ?? '',
-                                            'kelas_id' => $pengguna->kelas_id,
+                                            'role' => $pengguna->hasRole('Wali Kelas') ? 'Wali Kelas' : ($pengguna->roles->first()?->name ?? ''),
+                                            'kelas_id' => $pengguna->kelas_id ?? $pengguna->pengajar?->waliKelas->first()?->id,
                                         ]) }})"
                                             class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                         @if($pengguna->id !== auth()->id())
@@ -152,6 +152,7 @@
                                     <option value="{{ $role->name }}">{{ $role->name }}</option>
                                 @endforeach
                             </select>
+                            <p class="text-[11px] mt-1" style="color:#9E9790;">Untuk guru PAUD, gunakan menu Data Guru. Role Pengajar tidak perlu dibuat di sini.</p>
                         </div>
                         <div x-show="createData.role === 'Wali Kelas'" x-cloak>
                             <label class="input-label">Kelas Wali</label>

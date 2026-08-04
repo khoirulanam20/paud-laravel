@@ -3,14 +3,14 @@
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="page-header">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 leading-tight">Kegiatan Rutin</h2>
-                <p class="text-sm text-gray-500 mt-1">{{ auth()->user()->hasRole('Pengajar') ? 'Pilih kegiatan untuk memperbarui pencapaian siswa.' : 'Kelola data kegiatan rutin untuk sekolah Anda.' }}</p>
+                <p class="text-sm text-gray-500 mt-1">{{ auth()->user()->canManageKegiatanRutinMaster() ? 'Kelola data kegiatan rutin untuk sekolah Anda.' : 'Pilih kegiatan untuk memperbarui pencapaian siswa.' }}</p>
             </div>
             
             <div class="flex flex-wrap gap-2">
                 @if(auth()->user()->usesAdminKegiatanRutinRoutes())
                 <x-export-excel route="admin.master-kegiatan-rutin.export" />
                 @endif
-                @if(!auth()->user()->hasRole('Pengajar'))
+                @if(auth()->user()->canManageKegiatanRutinMaster())
                 <a href="{{ route(auth()->user()->kegiatanRutinRoutePrefix().'master-kegiatan-rutin.create') }}" class="btn-primary py-2 px-4 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20 inline-flex items-center gap-2" data-tour="pg-master-rutin-add-btn">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                     Tambah Kegiatan
@@ -60,7 +60,7 @@
                                         <a href="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.show', $master) }}" @if($loop->first) data-tour="pg-master-rutin-action-detail" @endif class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-blue-500 hover:text-white transition group border border-gray-100 shadow-sm text-blue-600" title="Detail Capaian Siswa">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                         </a>
-                                        @if(!auth()->user()->hasRole('Pengajar'))
+                                        @if(auth()->user()->canManageKegiatanRutinMaster())
                                         <a href="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.edit', $master) }}" @if($loop->first) data-tour="pg-master-rutin-action-edit" @endif class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-yellow-500 hover:text-white transition group border border-gray-100 shadow-sm text-yellow-600" title="Edit Kegiatan">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                         </a>
