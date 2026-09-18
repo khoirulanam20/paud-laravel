@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pengajar extends Model
 {
-    use LogsScopedActivity;
+    use BelongsToSekolah, LogsScopedActivity;
 
     protected $fillable = [
         'user_id',

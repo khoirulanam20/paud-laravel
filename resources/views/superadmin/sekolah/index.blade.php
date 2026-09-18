@@ -1,41 +1,109 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3" data-tour="page-header">
-            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Monitoring Sekolah</h2>
+            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Kelola Sekolah</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <form method="GET" class="mb-6 flex flex-wrap gap-3 items-end">
-            <div>
-                <label class="input-label">Filter Lembaga</label>
-                <select name="lembaga_id" class="input-field" onchange="this.form.submit()">
-                    <option value="">Semua lembaga</option>
-                    @foreach($lembagas as $l)
-                        <option value="{{ $l->id }}" @selected(request('lembaga_id') == $l->id)>{{ $l->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </form>
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showRejectModal:false, editData:{}, deleteRoute:'', rejectRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true}, openReject(r){this.rejectRoute=r;this.showRejectModal=true} }">
+        @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
+        @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
+
+        <div class="flex flex-wrap gap-2 mb-4">
+            @foreach(['all' => 'Semua', 'pending' => 'Pending ('.$pendingCount.')', 'active' => 'Aktif', 'suspended' => 'Ditangguhkan', 'rejected' => 'Ditolak'] as $key => $label)
+                <a href="{{ route('superadmin.sekolah.index', ['status' => $key]) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ ($status ?? 'all') === $key ? 'bg-[#1A6B6B] text-white' : 'bg-white border' }}"
+                   style="{{ ($status ?? 'all') === $key ? '' : 'border-color:rgba(0,0,0,0.1);color:#6B6560;' }}">{{ $label }}</a>
+            @endforeach
+        </div>
+
         <div class="card overflow-hidden">
-            <table class="data-table">
-                <thead><tr><th>Sekolah</th><th>Lembaga</th><th>Alamat</th><th>Telepon</th></tr></thead>
-                <tbody>
-                    @forelse($sekolahs as $s)
-                    <tr>
-                        <td class="font-semibold">{{ $s->name }}</td>
-                        <td>{{ $s->lembaga?->name ?? '-' }}</td>
-                        <td>{{ $s->address ?? '-' }}</td>
-                        <td>{{ $s->phone ?? '-' }}</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="4" class="py-8 text-center" style="color:#9E9790;">Tidak ada data sekolah.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
+                <div><h3 class="section-title">Daftar Sekolah</h3><p class="section-subtitle">Kelola sekolah yang terdaftar di platform</p></div>
+                <button @click="showCreateModal=true" class="btn-primary">Tambah Sekolah</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead><tr><th>Sekolah</th><th>Status</th><th>Admin</th><th>Alamat</th><th class="text-right">Aksi</th></tr></thead>
+                    <tbody>
+                        @forelse($sekolahs as $s)
+                        @php $admin = $adminEmails->get($s->id); $st = $s->status ?? 'active'; @endphp
+                        <tr>
+                            <td class="font-semibold">{{ $s->name }}</td>
+                            <td>
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full
+                                    @if($st === 'pending') bg-amber-100 text-amber-800
+                                    @elseif($st === 'rejected') bg-red-100 text-red-800
+                                    @elseif($st === 'suspended') bg-gray-200 text-gray-700
+                                    @else bg-emerald-100 text-emerald-800 @endif">{{ ucfirst($st) }}</span>
+                            </td>
+                            <td class="text-sm">{{ $admin?->email ?? '-' }}</td>
+                            <td class="text-sm">{{ $s->address ?? '-' }}</td>
+                            <td class="text-right space-x-1">
+                                @if($st === 'pending')
+                                    <form action="{{ route('superadmin.sekolah.approve', $s) }}" method="POST" class="inline">@csrf
+                                        <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Setujui</button>
+                                    </form>
+                                    <button type="button" @click="openReject('{{ route('superadmin.sekolah.reject', $s) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Tolak</button>
+                                @endif
+                                <button @click="openEdit({{ json_encode($s) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button @click="openDelete('{{ route('superadmin.sekolah.destroy', $s) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="5" class="py-8 text-center" style="color:#9E9790;">Belum ada sekolah.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
             <div class="px-6 py-4 border-t">
                 <x-per-page-selector :paginator="$sekolahs" />
                 {{ $sekolahs->links() }}
             </div>
         </div>
+
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;"><div x-show="showCreateModal" x-transition class="modal-box max-w-lg" @click.away="showCreateModal=false">
+            <form action="{{ route('superadmin.sekolah.store') }}" method="POST">@csrf
+                <div class="modal-header"><h3 class="section-title">Tambah Sekolah</h3></div>
+                <div class="modal-body space-y-4">
+                    <div><label class="input-label">Nama sekolah</label><input type="text" name="sekolah_name" required class="input-field"></div>
+                    <div><label class="input-label">Alamat</label><textarea name="sekolah_address" rows="2" class="input-field"></textarea></div>
+                    <div><label class="input-label">Telepon</label><input type="text" name="sekolah_phone" class="input-field"></div>
+                    <hr style="border-color:rgba(0,0,0,0.08);">
+                    <div><label class="input-label">Nama admin sekolah</label><input type="text" name="admin_name" required class="input-field"></div>
+                    <div><label class="input-label">Email admin</label><input type="email" name="admin_email" required class="input-field"></div>
+                    <div><label class="input-label">Password (opsional)</label><input type="password" name="password" class="input-field" placeholder="Default: password123"></div>
+                </div>
+                <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+            </form>
+        </div></div>
+
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;"><div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
+            <form :action="`/superadmin/sekolah/${editData.id}`" method="POST">@csrf @method('PUT')
+                <div class="modal-header"><h3 class="section-title">Edit Sekolah</h3></div>
+                <div class="modal-body space-y-4">
+                    <div><label class="input-label">Nama</label><input type="text" name="name" x-model="editData.name" required class="input-field"></div>
+                    <div><label class="input-label">Alamat</label><textarea name="address" x-model="editData.address" rows="2" class="input-field"></textarea></div>
+                    <div><label class="input-label">Telepon</label><input type="text" name="phone" x-model="editData.phone" class="input-field"></div>
+                </div>
+                <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+            </form>
+        </div></div>
+
+        <div x-show="showDeleteModal" class="modal-overlay" style="display:none;"><div x-show="showDeleteModal" x-transition class="modal-box" @click.away="showDeleteModal=false">
+            <div class="modal-header"><h3 class="section-title">Hapus Sekolah?</h3></div>
+            <div class="modal-body"><p class="text-sm" style="color:#6B6560;">Data sekolah akan dihapus permanen.</p></div>
+            <div class="modal-footer">
+                <button type="button" @click="showDeleteModal=false" class="btn-secondary">Batal</button>
+                <form :action="deleteRoute" method="POST">@csrf @method('DELETE')<button type="submit" class="btn-danger">Hapus</button></form>
+            </div>
+        </div></div>
+
+        <div x-show="showRejectModal" class="modal-overlay" style="display:none;"><div x-show="showRejectModal" x-transition class="modal-box" @click.away="showRejectModal=false">
+            <form :action="rejectRoute" method="POST">@csrf
+                <div class="modal-header"><h3 class="section-title">Tolak Pendaftaran</h3></div>
+                <div class="modal-body"><label class="input-label">Alasan penolakan</label><textarea name="rejection_reason" rows="3" required class="input-field"></textarea></div>
+                <div class="modal-footer"><button type="button" @click="showRejectModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-danger">Tolak</button></div>
+            </form>
+        </div></div>
     </div>
 </x-app-layout>

@@ -15,7 +15,7 @@ class ActivityLogger
 
         return array_filter([
             'lembaga_id' => $user instanceof User ? $user->lembaga_id : null,
-            'sekolah_id' => $user instanceof User ? $user->sekolah_id : null,
+            'sekolah_id' => TenantContext::sekolahId() ?? ($user instanceof User ? $user->sekolah_id : null),
             'route_name' => $request?->route()?->getName(),
             'ip' => $request?->ip(),
             'user_agent' => $request?->userAgent(),

@@ -37,6 +37,7 @@
                     <a href="{{ route('dashboard') }}" class="guest-btn guest-btn-ghost text-sm py-2 px-4">Dashboard</a>
                 @else
                     <a href="{{ route('login') }}" class="guest-btn guest-btn-ghost text-sm py-2 px-4">Masuk</a>
+                    <a href="{{ route('guest.daftar-sekolah') }}" class="guest-btn guest-btn-secondary text-sm py-2 px-4">Daftar Sekolah</a>
                 @endauth
                 <a href="{{ GuestWhatsApp::url(GuestWhatsApp::demoIntro()) }}" target="_blank" rel="noopener noreferrer" class="guest-btn guest-btn-primary text-sm py-2 px-5">Hubungi Kami</a>
             </div>
@@ -62,6 +63,7 @@
                 <a href="{{ route('dashboard') }}" @click="open=false" class="guest-btn guest-btn-ghost block text-center w-full">Dashboard</a>
             @else
                 <a href="{{ route('login') }}" @click="open=false" class="guest-btn guest-btn-ghost block text-center w-full">Masuk</a>
+                <a href="{{ route('guest.daftar-sekolah') }}" @click="open=false" class="guest-btn guest-btn-secondary block text-center w-full mt-2">Daftar Sekolah</a>
             @endauth
             <a href="{{ GuestWhatsApp::url(GuestWhatsApp::demoIntro()) }}" target="_blank" rel="noopener noreferrer" @click="open=false" class="guest-btn guest-btn-primary block text-center w-full mt-2">Hubungi Kami</a>
             <a href="{{ route('guest.pendaftaran') }}" @click="open=false" class="guest-btn guest-btn-secondary block text-center w-full mt-2">Pendaftaran Orang Tua</a>
@@ -95,6 +97,8 @@
                         <li><a href="{{ route('guest.fasilitas') }}" class="hover:text-[var(--guest-sage-dark)] transition-colors duration-200 cursor-pointer">Fitur</a></li>
                         <!-- <li><a href="{{ route('guest.galeri') }}" class="hover:text-[var(--guest-sage-dark)] transition-colors duration-200 cursor-pointer">Galeri</a></li> -->
                         <li><a href="{{ route('guest.kontak') }}" class="hover:text-[var(--guest-sage-dark)] transition-colors duration-200 cursor-pointer">Kontak</a></li>
+                        <li><a href="{{ route('guest.daftar-sekolah') }}" class="hover:text-[var(--guest-sage-dark)] transition-colors duration-200 cursor-pointer">Daftar Sekolah</a></li>
+                        <li><a href="{{ route('guest.pendaftaran') }}" class="hover:text-[var(--guest-sage-dark)] transition-colors duration-200 cursor-pointer">Pendaftaran Orang Tua</a></li>
                     </ul>
                 </div>
                 <div>
@@ -116,7 +120,10 @@
                     <p>© {{ date('Y') }} SIPP PAUD Manager</p>
                     <p class="mt-1 opacity-80">Illustrations by <a href="https://storyset.com/education" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--guest-sage-dark)]">Storyset</a></p>
                 </div>
-                <a href="{{ route('guest.pendaftaran') }}" class="font-semibold hover:text-[var(--guest-sage-dark)] transition-colors cursor-pointer" style="color: var(--guest-sage);">Pendaftaran Orang Tua →</a>
+                <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+                    <a href="{{ route('guest.daftar-sekolah') }}" class="font-semibold hover:text-[var(--guest-sage-dark)] transition-colors cursor-pointer" style="color: var(--guest-sage);">Daftar Sekolah →</a>
+                    <a href="{{ route('guest.pendaftaran') }}" class="font-semibold hover:text-[var(--guest-sage-dark)] transition-colors cursor-pointer" style="color: var(--guest-sage);">Pendaftaran Orang Tua →</a>
+                </div>
             </div>
         </div>
     </footer>

@@ -7,9 +7,18 @@
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Kelola Lembaga / Yayasan</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true} }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showRejectModal:false, editData:{}, deleteRoute:'', rejectRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true}, openReject(r){this.rejectRoute=r;this.showRejectModal=true} }">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
+
+        <div class="flex flex-wrap gap-2 mb-4">
+            @foreach(['all' => 'Semua', 'pending' => 'Pending ('.$pendingCount.')', 'active' => 'Aktif', 'rejected' => 'Ditolak'] as $key => $label)
+                <a href="{{ route('superadmin.lembaga.index', ['status' => $key]) }}"
+                   class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ ($status ?? 'all') === $key ? 'bg-[#1A6B6B] text-white' : 'bg-white border' }}"
+                   style="{{ ($status ?? 'all') === $key ? '' : 'border-color:rgba(0,0,0,0.1);color:#6B6560;' }}">{{ $label }}</a>
+            @endforeach
+        </div>
+
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Lembaga</h3><p class="section-subtitle">Kelola yayasan yang terdaftar di platform</p></div>
@@ -17,20 +26,34 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama</th><th>Alamat</th><th>Sekolah</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama</th><th>Status</th><th>Kontak</th><th>Sekolah</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($lembagas as $l)
                         <tr>
                             <td class="font-semibold">{{ $l->name }}</td>
-                            <td>{{ $l->address ?? '-' }}</td>
+                            <td>
+                                @php $st = $l->status ?? 'active'; @endphp
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full
+                                    @if($st === 'pending') bg-amber-100 text-amber-800
+                                    @elseif($st === 'rejected') bg-red-100 text-red-800
+                                    @elseif($st === 'suspended') bg-gray-200 text-gray-700
+                                    @else bg-emerald-100 text-emerald-800 @endif">{{ ucfirst($st) }}</span>
+                            </td>
+                            <td class="text-sm">{{ $l->contact_email ?? '-' }}</td>
                             <td>{{ $l->sekolahs_count }}</td>
-                            <td class="text-right">
+                            <td class="text-right space-x-1">
+                                @if(($l->status ?? 'active') === 'pending')
+                                    <form action="{{ route('superadmin.lembaga.approve', $l) }}" method="POST" class="inline">@csrf
+                                        <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Setujui</button>
+                                    </form>
+                                    <button type="button" @click="openReject('{{ route('superadmin.lembaga.reject', $l) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Tolak</button>
+                                @endif
                                 <button @click="openEdit({{ json_encode($l) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @click="openDelete('{{ route('superadmin.lembaga.destroy', $l) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" class="py-8 text-center" style="color:#9E9790;">Belum ada lembaga.</td></tr>
+                        <tr><td colspan="5" class="py-8 text-center" style="color:#9E9790;">Belum ada lembaga.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -40,6 +63,8 @@
                 {{ $lembagas->links() }}
             </div>
         </div>
+
+        {{-- modals unchanged structure --}}
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;"><div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
             <form action="{{ route('superadmin.lembaga.store') }}" method="POST">@csrf
                 <div class="modal-header"><h3 class="section-title">Tambah Lembaga</h3></div>
@@ -60,6 +85,16 @@
                     <div><label class="input-label">Telepon</label><input type="text" name="phone" x-model="editData.phone" class="input-field"></div>
                 </div>
                 <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+            </form>
+        </div></div>
+        <div x-show="showRejectModal" class="modal-overlay" style="display:none;"><div x-show="showRejectModal" x-transition class="modal-box" @click.away="showRejectModal=false">
+            <form :action="rejectRoute" method="POST">@csrf
+                <div class="modal-header"><h3 class="section-title">Tolak Pendaftaran?</h3></div>
+                <div class="modal-body">
+                    <label class="input-label">Alasan penolakan</label>
+                    <textarea name="rejection_reason" rows="3" class="input-field" required></textarea>
+                </div>
+                <div class="modal-footer"><button type="button" @click="showRejectModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" style="background:#C0392B;">Tolak</button></div>
             </form>
         </div></div>
         <div x-show="showDeleteModal" class="modal-overlay" style="display:none;"><div x-show="showDeleteModal" x-transition class="modal-box" @click.away="showDeleteModal=false">

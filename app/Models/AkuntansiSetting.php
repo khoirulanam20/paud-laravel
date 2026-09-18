@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AkuntansiSetting extends Model
 {
-    use LogsScopedActivity;
+    use BelongsToSekolah, LogsScopedActivity;
 
     protected $table = 'akuntansi_settings';
 

@@ -7,8 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\User;
 use App\Services\WaliKelasAssignmentService;
+use App\Models\Sekolah;
 use App\Support\ActivityLogger;
 use App\Support\PaginationPerPage;
+use App\Support\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -23,12 +25,16 @@ class PenggunaController extends Controller
 
     public function index(Request $request)
     {
-        $sekolahId = auth()->user()->sekolah_id;
+        $sekolahId = TenantContext::requireSekolahId();
         $penggunas = User::where('sekolah_id', $sekolahId)
             ->with(['roles', 'kelas', 'pengajar.waliKelas'])
             ->latest()
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
-        $roles = Role::whereNotIn('name', self::HIDDEN_ROLES)->get();
+        $roles = Role::whereNotIn('name', self::HIDDEN_ROLES)
+            ->where(function ($query) use ($sekolahId) {
+                $query->whereNull('sekolah_id')->orWhere('sekolah_id', $sekolahId);
+            })
+            ->get();
         $kelas = Kelas::where('sekolah_id', $sekolahId)->orderBy('name')->get();
 
         return view('admin.pengguna.index', compact('penggunas', 'roles', 'kelas'));
@@ -36,7 +42,7 @@ class PenggunaController extends Controller
 
     public function export(Request $request)
     {
-        $rows = User::where('sekolah_id', auth()->user()->sekolah_id)
+        $rows = User::where('sekolah_id', TenantContext::requireSekolahId())
             ->with(['roles', 'kelas'])
             ->latest()
             ->get()
@@ -67,15 +73,19 @@ class PenggunaController extends Controller
                 Rule::requiredIf(fn () => $request->input('role') === 'Wali Kelas'),
                 'nullable',
                 'integer',
-                Rule::exists('kelas', 'id')->where(fn ($query) => $query->where('sekolah_id', auth()->user()->sekolah_id)),
+                Rule::exists('kelas', 'id')->where(fn ($query) => $query->where('sekolah_id', TenantContext::requireSekolahId())),
             ],
         ]);
+
+        $sekolahId = TenantContext::requireSekolahId();
+        $lembagaId = auth()->user()->lembaga_id ?? Sekolah::find($sekolahId)?->lembaga_id;
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'sekolah_id' => auth()->user()->sekolah_id,
+            'lembaga_id' => $lembagaId,
+            'sekolah_id' => $sekolahId,
             'kelas_id' => $request->input('role') === 'Wali Kelas' ? $request->integer('kelas_id') : null,
         ]);
 
@@ -93,7 +103,7 @@ class PenggunaController extends Controller
 
     public function update(Request $request, User $pengguna)
     {
-        abort_if($pengguna->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($pengguna->sekolah_id !== TenantContext::requireSekolahId(), 403);
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -104,7 +114,7 @@ class PenggunaController extends Controller
                 Rule::requiredIf(fn () => $request->input('role') === 'Wali Kelas'),
                 'nullable',
                 'integer',
-                Rule::exists('kelas', 'id')->where(fn ($query) => $query->where('sekolah_id', auth()->user()->sekolah_id)),
+                Rule::exists('kelas', 'id')->where(fn ($query) => $query->where('sekolah_id', TenantContext::requireSekolahId())),
             ],
         ]);
 
@@ -135,7 +145,7 @@ class PenggunaController extends Controller
 
     public function destroy(User $pengguna)
     {
-        abort_if($pengguna->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($pengguna->sekolah_id !== TenantContext::requireSekolahId(), 403);
 
         if ($pengguna->id === auth()->id()) {
             return back()->withErrors(['pengguna' => 'Tidak dapat menghapus akun sendiri.']);

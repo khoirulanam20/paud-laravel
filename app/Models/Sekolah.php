@@ -12,6 +12,14 @@ class Sekolah extends Model
 {
     use LogsScopedActivity;
 
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_ACTIVE = 'active';
+
+    public const STATUS_SUSPENDED = 'suspended';
+
+    public const STATUS_REJECTED = 'rejected';
+
     protected $fillable = [
         'lembaga_id',
         'name',
@@ -20,7 +28,19 @@ class Sekolah extends Model
         'nisn',
         'location_coordinate',
         'photo',
+        'status',
+        'slug',
     ];
+
+    public function isOperational(): bool
+    {
+        return ($this->status ?? self::STATUS_ACTIVE) === self::STATUS_ACTIVE;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
 
     public function lembaga(): BelongsTo
     {

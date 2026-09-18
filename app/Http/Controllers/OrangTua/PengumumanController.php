@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\OrangTua;
 
+use App\Support\TenantContext;
+
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Pengumuman;
@@ -12,7 +14,7 @@ class PengumumanController extends Controller
 {
     public function markAsRead(Pengumuman $pengumuman): JsonResponse
     {
-        abort_if($pengumuman->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($pengumuman->sekolah_id !== TenantContext::requireSekolahId(), 403);
         $this->assertPengumumanVisible($pengumuman);
 
         PengumumanRead::firstOrCreate(

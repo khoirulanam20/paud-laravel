@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\OrangTua;
 
+use App\Support\TenantContext;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Traits\CanUploadImage;
@@ -43,7 +45,7 @@ class KritikSaranController extends Controller
         ]);
 
         $data = [
-            'sekolah_id' => auth()->user()->sekolah_id,
+            'sekolah_id' => TenantContext::requireSekolahId(),
             'user_id' => auth()->id(),
             'message' => $request->message,
             'status' => 'Terkirim',

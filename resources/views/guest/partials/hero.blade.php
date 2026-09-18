@@ -21,6 +21,7 @@
                 </p>
                 <div class="mt-8 flex flex-col sm:flex-row flex-wrap gap-3 justify-center lg:justify-start" data-guest-animate="hero">
                     <a href="{{ route('guest.kontak') }}" class="guest-btn guest-btn-primary w-full sm:w-auto">Minta Demo</a>
+                    <a href="{{ route('guest.daftar-sekolah') }}" class="guest-btn guest-btn-secondary w-full sm:w-auto">Daftar Sekolah</a>
                     <a href="{{ route('guest.fasilitas') }}" class="guest-btn guest-btn-secondary w-full sm:w-auto">Lihat Fitur</a>
                 </div>
                 <div class="mt-10 flex flex-wrap gap-6 justify-center lg:justify-start" data-guest-animate="hero">

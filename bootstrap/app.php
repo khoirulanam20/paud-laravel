@@ -3,6 +3,8 @@
 use App\Http\Middleware\EnableAdminActivityLogging;
 use App\Http\Middleware\EnsureAdminMenuAccess;
 use App\Http\Middleware\EnsureLembagaSekolahContext;
+use App\Http\Middleware\EnsureSekolahActive;
+use App\Http\Middleware\SetTenantContext;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -36,6 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'admin.menu' => EnsureAdminMenuAccess::class,
             'lembaga.sekolah' => EnsureLembagaSekolahContext::class,
+            'tenant.context' => SetTenantContext::class,
+            'sekolah.active' => EnsureSekolahActive::class,
             'admin.activity' => EnableAdminActivityLogging::class,
         ]);
     })

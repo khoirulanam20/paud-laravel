@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -18,7 +19,7 @@ class EnsureAdminMenuAccess
         }
 
         if ($user?->hasRole('Lembaga')) {
-            if (! $user->sekolah_id) {
+            if (! TenantContext::sekolahId()) {
                 abort(403, 'Pilih cabang sekolah aktif terlebih dahulu.');
             }
 

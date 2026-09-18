@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\LogsScopedActivity;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Services\AiTokenService;
+use App\Support\TenantContext;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -105,15 +106,14 @@ class User extends Authenticatable
         );
     }
 
-    public function getSekolahIdAttribute($value): ?int
+    public function approvedSekolahIds(): array
     {
-        if ($this->hasRole('Lembaga')) {
-            $active = session('active_sekolah_id');
-
-            return $active ? (int) $active : null;
-        }
-
-        return $value !== null ? (int) $value : null;
+        return $this->anaks()
+            ->where('status', 'approved')
+            ->distinct()
+            ->pluck('sekolah_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     public function usesAdminKegiatanRutinRoutes(): bool
@@ -138,10 +138,10 @@ class User extends Authenticatable
         }
 
         if ($this->hasRole('Lembaga')) {
-            return $this->sekolah_id !== null;
+            return TenantContext::sekolahId() !== null;
         }
 
-        if (! $this->getAttributes()['sekolah_id'] ?? null) {
+        if (! ($this->getAttributes()['sekolah_id'] ?? null)) {
             return false;
         }
 
@@ -160,9 +160,10 @@ class User extends Authenticatable
 
     public function firstAccessibleAdminRoute(?bool $chatOrangTuaEnabled = null): ?string
     {
-        if ($this->sekolah_id && $chatOrangTuaEnabled === null) {
+        $sekolahId = TenantContext::sekolahId();
+        if ($sekolahId && $chatOrangTuaEnabled === null) {
             $chatOrangTuaEnabled = app(AiTokenService::class)
-                ->isChatOrangTuaEnabled((int) $this->sekolah_id);
+                ->isChatOrangTuaEnabled($sekolahId);
         }
 
         foreach (config('admin-menu.menu_order', []) as $item) {

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\ActivityLogger;
+use App\Support\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -73,7 +75,7 @@ class RoleController extends Controller
 
     public function index()
     {
-        $roles = Role::with('permissions')->whereNotIn('name', $this->hiddenRoles)->get();
+        $roles = $this->scopedRolesQuery()->with('permissions')->get();
         $permissionGroups = $this->permissionGroups;
 
         return view('admin.role.index', compact('roles', 'permissionGroups'));
@@ -81,11 +83,20 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
+        $sekolahId = TenantContext::requireSekolahId();
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:'.Role::class.',name'],
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('roles', 'name')->where(fn ($q) => $q->where('sekolah_id', $sekolahId)),
+            ],
         ]);
 
-        $role = Role::create(['name' => $request->name]);
+        $role = Role::create([
+            'name' => $request->name,
+            'guard_name' => 'web',
+            'sekolah_id' => $sekolahId,
+        ]);
 
         ActivityLogger::log('Role dibuat', null, ['role' => $role->name]);
 
@@ -95,12 +106,19 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
+        $this->authorizeTenantRole($role);
+
         if (in_array($role->name, $this->defaultRoles)) {
             return back()->withErrors(['role' => 'Role default tidak dapat diubah.']);
         }
 
+        $sekolahId = TenantContext::requireSekolahId();
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:'.Role::class.',name,'.$role->id],
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('roles', 'name')->ignore($role->id)->where(fn ($q) => $q->where('sekolah_id', $sekolahId)),
+            ],
         ]);
 
         $role->update(['name' => $request->name]);
@@ -113,6 +131,8 @@ class RoleController extends Controller
 
     public function updatePermissions(Request $request, Role $role)
     {
+        $this->authorizeTenantRole($role);
+
         $request->validate([
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:'.Permission::class.',name'],
@@ -133,6 +153,8 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        $this->authorizeTenantRole($role);
+
         if (in_array($role->name, $this->defaultRoles)) {
             return back()->withErrors(['role' => 'Role default tidak dapat dihapus.']);
         }
@@ -143,6 +165,30 @@ class RoleController extends Controller
         ActivityLogger::log('Role dihapus', null, ['role' => $roleName]);
 
         return redirect()->route('admin.role.index')
-            ->with('success', 'Role "'.e($role->name).'" berhasil dihapus.');
+            ->with('success', 'Role "'.$roleName.'" berhasil dihapus.');
+    }
+
+    private function scopedRolesQuery()
+    {
+        $sekolahId = TenantContext::requireSekolahId();
+
+        return Role::query()
+            ->whereNotIn('name', $this->hiddenRoles)
+            ->where(function ($query) use ($sekolahId) {
+                $query->whereNull('sekolah_id')
+                    ->orWhere('sekolah_id', $sekolahId);
+            });
+    }
+
+    private function authorizeTenantRole(Role $role): void
+    {
+        if (in_array($role->name, $this->defaultRoles) && $role->sekolah_id === null) {
+            return;
+        }
+
+        abort_unless(
+            (int) $role->sekolah_id === TenantContext::requireSekolahId(),
+            403
+        );
     }
 }

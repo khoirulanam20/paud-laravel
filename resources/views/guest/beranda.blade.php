@@ -8,5 +8,8 @@
    
 
 
-    @include('guest.partials.cta-banner')
+    @include('guest.partials.cta-banner', [
+        'tertiaryLabel' => 'Daftar Sekolah Gratis',
+        'tertiaryRoute' => 'guest.daftar-sekolah',
+    ])
 </x-guest-public>

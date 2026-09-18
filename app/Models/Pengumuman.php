@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
 use App\Models\Concerns\LogsScopedActivity;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pengumuman extends Model
 {
-    use LogsScopedActivity;
+    use BelongsToSekolah, LogsScopedActivity;
 
     protected $table = 'pengumumans';
 

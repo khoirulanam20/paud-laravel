@@ -23,24 +23,20 @@ class RegisteredUserController extends Controller
         protected AnakRegistrationService $anakRegistration
     ) {}
 
-    /**
-     * Form pendaftaran (tampilan sama dengan /pendaftaran — kartu auth SIPP).
-     */
     public function create(): View
     {
-        $sekolahs = Sekolah::orderBy('name')->get();
+        $sekolahs = Sekolah::active()->orderBy('name')->get();
 
         return view('auth.register', compact('sekolahs'));
     }
 
-    /**
-     * Handle an incoming registration request.
-     */
     public function store(Request $request): RedirectResponse
     {
+        $sekolah = Sekolah::active()->findOrFail($request->input('sekolah_id'));
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'sekolah_id' => ['required', 'exists:sekolahs,id'],
             'anak_name' => ['required', 'string', 'max:255'],
@@ -49,14 +45,40 @@ class RegisteredUserController extends Controller
             'catatan_ortu' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $existingUser = User::where('email', $request->email)->first();
+
+        if ($existingUser && ! $existingUser->hasRole('Orang Tua')) {
+            throw ValidationException::withMessages([
+                'email' => 'Email sudah terdaftar dengan peran lain. Gunakan email lain.',
+            ]);
+        }
+
         DB::beginTransaction();
 
         try {
+            if ($existingUser) {
+                $user = $existingUser;
+
+                $this->anakRegistration->createPendingForParent($user, [
+                    'name' => $request->anak_name,
+                    'dob' => $request->anak_dob,
+                    'catatan_ortu' => $request->catatan_ortu,
+                ], (int) $sekolah->id, $request->file('photo'));
+
+                DB::commit();
+
+                return redirect()->route('login')->with(
+                    'status',
+                    'Akun sudah terdaftar. Pendaftaran anak baru dikirim — silakan masuk untuk melanjutkan.'
+                );
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'sekolah_id' => $request->sekolah_id,
+                'lembaga_id' => $sekolah->lembaga_id,
+                'sekolah_id' => null,
             ]);
 
             Role::firstOrCreate(
@@ -72,7 +94,7 @@ class RegisteredUserController extends Controller
                 'name' => $request->anak_name,
                 'dob' => $request->anak_dob,
                 'catatan_ortu' => $request->catatan_ortu,
-            ], $request->file('photo'));
+            ], (int) $sekolah->id, $request->file('photo'));
 
             DB::commit();
         } catch (ValidationException $e) {
@@ -91,7 +113,7 @@ class RegisteredUserController extends Controller
 
         return redirect()->route('login')->with(
             'status',
-            'Pendaftaran berhasil! 🎉 Akun Anda sedang menunggu persetujuan Admin Sekolah. Anda akan bisa login setelah disetujui.'
+            'Pendaftaran berhasil! Akun Anda sedang menunggu persetujuan Admin Sekolah. Anda akan bisa login setelah disetujui.'
         );
     }
 }

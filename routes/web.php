@@ -43,12 +43,15 @@ use App\Http\Controllers\Api\AiFeedbackController;
 use App\Http\Controllers\Api\AiMonevGuruController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Guest\LembagaRegistrationController;
+use App\Http\Controllers\Guest\SekolahRegistrationController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\Lembaga\AdminSekolahController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
 use App\Http\Controllers\Lembaga\SchoolSwitcherController;
 use App\Http\Controllers\Lembaga\SekolahController;
 use App\Http\Controllers\OrangTua\AnakController as OrangTuaAnakController;
+use App\Http\Controllers\OrangTua\SchoolSwitcherController as OrangTuaSchoolSwitcherController;
 use App\Http\Controllers\OrangTua\ChatController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
@@ -88,12 +91,20 @@ Route::post('/pendaftaran', [RegisteredUserController::class, 'store'])
     ->name('guest.pendaftaran.store');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('guest.kontak');
 Route::post('/kontak', [GuestController::class, 'kontakSend'])->name('guest.kontak.send');
+Route::get('/daftar-sekolah', [SekolahRegistrationController::class, 'create'])->name('guest.daftar-sekolah');
+Route::post('/daftar-sekolah', [SekolahRegistrationController::class, 'store'])
+    ->middleware('guest')
+    ->name('guest.daftar-sekolah.store');
+Route::redirect('/daftar-lembaga', '/daftar-sekolah', 301);
+Route::post('/daftar-lembaga', [LembagaRegistrationController::class, 'store'])
+    ->middleware('guest')
+    ->name('guest.daftar-lembaga.store');
 
 // ─────────────────────────────────────────────
 // AUTH REQUIRED
 // ─────────────────────────────────────────────
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'tenant.context'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -120,7 +131,9 @@ Route::middleware(['auth', 'role:Superadmin', 'admin.activity'])->prefix('supera
     Route::resource('lembaga', SuperadminLembagaController::class)->except(['create', 'edit', 'show']);
     Route::resource('admin-lembaga', SuperadminAdminLembagaController::class)->except(['create', 'edit', 'show']);
     Route::resource('users', SuperadminUserController::class)->except(['create', 'edit', 'show']);
-    Route::get('sekolah', [SuperadminSekolahController::class, 'index'])->name('sekolah.index');
+    Route::resource('sekolah', SuperadminSekolahController::class)->except(['create', 'edit', 'show']);
+    Route::post('sekolah/{sekolah}/approve', [SuperadminSekolahController::class, 'approve'])->name('sekolah.approve');
+    Route::post('sekolah/{sekolah}/reject', [SuperadminSekolahController::class, 'reject'])->name('sekolah.reject');
     Route::get('cms', [SuperadminCmsController::class, 'index'])->name('cms.index');
     Route::post('cms', [SuperadminCmsController::class, 'update'])->name('cms.update');
     Route::get('ai-setting', [SuperadminAiSettingController::class, 'index'])->name('ai-setting.index');
@@ -128,6 +141,8 @@ Route::middleware(['auth', 'role:Superadmin', 'admin.activity'])->prefix('supera
     Route::post('ai-setting/test', [SuperadminAiSettingController::class, 'testConnection'])->name('ai-setting.test');
     Route::post('ai-setting/tokens', [SuperadminAiSettingController::class, 'storeTokens'])->name('ai-setting.tokens.store');
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
+    Route::post('lembaga/{lembaga}/approve', [SuperadminLembagaController::class, 'approve'])->name('lembaga.approve');
+    Route::post('lembaga/{lembaga}/reject', [SuperadminLembagaController::class, 'reject'])->name('lembaga.reject');
 });
 
 // ─────────────────────────────────────────────
@@ -144,7 +159,7 @@ Route::middleware(['auth', 'role:Lembaga', 'admin.activity'])->prefix('lembaga')
 // ─────────────────────────────────────────────
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 'sekolah.active', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('pengaturan', function (Request $request) {
         $user = $request->user();
 
@@ -345,7 +360,7 @@ Route::middleware(['auth', 'admin.menu', 'lembaga.sekolah', 'admin.activity'])->
 // ─────────────────────────────────────────────
 // ADMIN KELAS
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Wali Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
+Route::middleware(['auth', 'tenant.context', 'sekolah.active', 'role:Wali Kelas'])->prefix('adminkelas')->name('adminkelas.')->group(function () {
     Route::resource('anak', AdminKelasAnakController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::get('presensi', [AdminKelasPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [AdminKelasPresensiController::class, 'store'])->name('presensi.store');
@@ -370,7 +385,7 @@ Route::middleware(['auth', 'role:Wali Kelas'])->prefix('adminkelas')->name('admi
 // ─────────────────────────────────────────────
 // PENGAJAR
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->name('pengajar.')->group(function () {
+Route::middleware(['auth', 'tenant.context', 'sekolah.active', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->name('pengajar.')->group(function () {
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);
@@ -400,7 +415,8 @@ Route::middleware(['auth', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->nam
 // ─────────────────────────────────────────────
 // ORANG TUA
 // ─────────────────────────────────────────────
-Route::middleware(['auth', 'role:Orang Tua'])->prefix('orangtua')->name('orangtua.')->group(function () {
+Route::middleware(['auth', 'tenant.context', 'sekolah.active', 'role:Orang Tua'])->prefix('orangtua')->name('orangtua.')->group(function () {
+    Route::post('active-sekolah', [OrangTuaSchoolSwitcherController::class, 'update'])->name('active-sekolah.update');
     Route::get('anak/tambah', [OrangTuaAnakController::class, 'create'])->name('anak.create');
     Route::post('anak', [OrangTuaAnakController::class, 'store'])->name('anak.store');
     Route::get('kegiatan', [OrangTuaKegiatanController::class, 'index'])->name('kegiatan.index');

@@ -16,9 +16,6 @@
                 <h3 class="section-title">Daftarkan Anak Baru</h3>
                 <p class="section-subtitle mt-1">
                     Data akan ditinjau Admin Sekolah sebelum anak aktif di sistem.
-                    @if($sekolah)
-                        Sekolah: <strong>{{ $sekolah->name }}</strong>
-                    @endif
                 </p>
             </div>
 
@@ -36,6 +33,17 @@
 
             <form method="POST" action="{{ route('orangtua.anak.store') }}" enctype="multipart/form-data" class="px-6 py-5 space-y-5" data-tour="anak-create-form">
                 @csrf
+
+                <div>
+                    <label class="input-label" for="sekolah_id">Sekolah</label>
+                    <select id="sekolah_id" name="sekolah_id" class="input-field" required>
+                        <option value="">-- Pilih sekolah --</option>
+                        @foreach($sekolahs as $s)
+                            <option value="{{ $s->id }}" @selected(old('sekolah_id') == $s->id)>{{ $s->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('sekolah_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                </div>
 
                 <div>
                     <label class="input-label" for="name">Nama anak</label>

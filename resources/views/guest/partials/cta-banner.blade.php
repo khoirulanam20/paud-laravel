@@ -1,10 +1,12 @@
 @props([
     'title' => 'Siap Digitalisasi PAUD Anda?',
-    'subtitle' => 'Hubungi tim kami untuk demo platform SIPP dan konsultasi kebutuhan lembaga Anda.',
+    'subtitle' => 'Hubungi tim kami untuk demo platform SIPP dan konsultasi kebutuhan sekolah Anda.',
     'primaryLabel' => 'Hubungi untuk Demo',
     'primaryRoute' => 'guest.kontak',
     'secondaryLabel' => 'Masuk',
     'secondaryRoute' => 'login',
+    'tertiaryLabel' => null,
+    'tertiaryRoute' => null,
 ])
 <section class="relative overflow-hidden">
     @include('guest.partials.wave-divider', ['flip' => true, 'fill' => 'var(--guest-sage)'])
@@ -18,6 +20,9 @@
                     <a href="{{ route('dashboard') }}" class="guest-btn guest-btn-secondary cursor-pointer" style="border-color:#fff; color:#fff; background:transparent;">Buka Dashboard</a>
                 @else
                     <a href="{{ route($secondaryRoute) }}" class="guest-btn guest-btn-secondary cursor-pointer" style="border-color:#fff; color:#fff; background:transparent;">{{ $secondaryLabel }}</a>
+                    @if($tertiaryLabel && $tertiaryRoute)
+                        <a href="{{ route($tertiaryRoute) }}" class="guest-btn guest-btn-secondary cursor-pointer" style="border-color:#fff; color:#fff; background:transparent;">{{ $tertiaryLabel }}</a>
+                    @endif
                 @endauth
             </div>
         </div>

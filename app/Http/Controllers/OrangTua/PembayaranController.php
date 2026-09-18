@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\OrangTua;
 
+use App\Support\TenantContext;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Models\Anak;
@@ -22,7 +24,7 @@ class PembayaranController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $sekolahId = $user->sekolah_id;
+        $sekolahId = TenantContext::requireSekolahId();
 
         $anaks = Anak::where('user_id', $user->id)
             ->where('sekolah_id', $sekolahId)

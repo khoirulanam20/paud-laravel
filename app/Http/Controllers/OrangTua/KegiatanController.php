@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\OrangTua;
 
+use App\Support\TenantContext;
+
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Kegiatan;
@@ -14,7 +16,7 @@ class KegiatanController extends Controller
 {
     public function index(Request $request)
     {
-        $sekolah_id = auth()->user()->sekolah_id;
+        $sekolah_id = TenantContext::requireSekolahId();
         $anaks = Anak::where('user_id', auth()->id())
             ->where('sekolah_id', $sekolah_id)
             ->orderBy('name')

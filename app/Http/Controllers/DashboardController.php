@@ -20,6 +20,7 @@ use App\Models\Sekolah;
 use App\Models\User;
 use App\Support\HariLiburIndonesia;
 use App\Support\PresensiPeriodeFilter;
+use App\Support\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -115,31 +116,39 @@ class DashboardController extends Controller
         }
 
         if ($user->hasRole('Orang Tua')) {
-            $sekolahId = $user->sekolah_id;
-            $data['anaks'] = Anak::where('user_id', $user->id)
-                ->where('sekolah_id', $sekolahId)
+            $sekolahId = TenantContext::sekolahId();
+            $data['ortuSekolahs'] = Sekolah::query()
+                ->whereIn('id', $user->approvedSekolahIds())
+                ->orderBy('name')
+                ->get(['id', 'name']);
+            $data['anaks'] = Anak::withoutSekolahScope()
+                ->where('user_id', $user->id)
+                ->when($sekolahId, fn ($q) => $q->where('sekolah_id', $sekolahId))
                 ->orderBy('name')
                 ->get();
             $approvedAnaks = $data['anaks']->where('status', 'approved')->values();
             $data['anakIds'] = $approvedAnaks->pluck('id');
 
-            $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)
-                ->whereDate('date', Carbon::today())
-                ->withCount(['votes as likes_count' => fn ($q) => $q->where('vote_type', 'like')])
-                ->withCount(['votes as dislikes_count' => fn ($q) => $q->where('vote_type', 'dislike')])
-                ->first();
-
+            $data['menuHariIni'] = null;
             $data['myVote'] = null;
-            if ($data['menuHariIni']) {
-                $data['myVote'] = MenuMakananVote::where('menu_makanan_id', $data['menuHariIni']->id)
-                    ->where('user_id', $user->id)
+            if ($sekolahId) {
+                $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)
+                    ->whereDate('date', Carbon::today())
+                    ->withCount(['votes as likes_count' => fn ($q) => $q->where('vote_type', 'like')])
+                    ->withCount(['votes as dislikes_count' => fn ($q) => $q->where('vote_type', 'dislike')])
                     ->first();
+
+                if ($data['menuHariIni']) {
+                    $data['myVote'] = MenuMakananVote::where('menu_makanan_id', $data['menuHariIni']->id)
+                        ->where('user_id', $user->id)
+                        ->first();
+                }
             }
 
             // Combine Activities and Achievements into a single feed
             $feeds = collect();
 
-            if ($data['anakIds']->isNotEmpty()) {
+            if ($sekolahId && $data['anakIds']->isNotEmpty()) {
                 $childKelasIds = $approvedAnaks->pluck('kelas_id')->filter()->unique();
                 $kegiatansQuery = Kegiatan::query()
                     ->where('sekolah_id', $sekolahId)

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\OrangTua;
 
+use App\Support\TenantContext;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Models\Anak;
@@ -17,7 +19,7 @@ class MenuMakananController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $sekolah_id = $user->sekolah_id;
+        $sekolah_id = TenantContext::requireSekolahId();
 
         $startDate = $request->input('start_date', now()->startOfWeek(CarbonInterface::MONDAY)->toDateString());
         $endDate = $request->input('end_date', now()->endOfWeek(CarbonInterface::SUNDAY)->toDateString());
@@ -37,7 +39,7 @@ class MenuMakananController extends Controller
 
     public function downloadPhoto(Request $request, MenuMakanan $menu_makanan, \App\Services\PhotoArchiveService $photoArchive)
     {
-        abort_if($menu_makanan->sekolah_id !== auth()->user()->sekolah_id, 403);
+        abort_if($menu_makanan->sekolah_id !== TenantContext::requireSekolahId(), 403);
 
         $field = $request->validate([
             'field' => ['required', Rule::in(['photo', 'photo_kegiatan'])],

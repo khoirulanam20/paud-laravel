@@ -16,5 +16,8 @@
             </div>
             @endforeach
         </div>
+        <div class="text-center mt-10" data-guest-animate="fade-up">
+            <a href="{{ route('guest.daftar-sekolah') }}" class="guest-btn guest-btn-primary">Daftar Sekolah Sekarang</a>
+        </div>
     </div>
 </section>

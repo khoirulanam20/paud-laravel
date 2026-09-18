@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\OrangTua;
 
+use App\Support\TenantContext;
+
 use App\Exceptions\InsufficientAiTokensException;
 use App\Http\Controllers\Controller;
 use App\Services\AiTokenService;
@@ -23,7 +25,7 @@ class ChatController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $sekolahId = (int) $user->sekolah_id;
+        $sekolahId = (int) TenantContext::requireSekolahId();
         abort_unless($this->tokenService->isChatOrangTuaEnabled($sekolahId), 403, 'Fitur chat sedang dinonaktifkan oleh sekolah.');
 
         $chat = $this->chatService->getOrCreateChat($user);
@@ -37,7 +39,7 @@ class ChatController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $sekolahId = (int) auth()->user()->sekolah_id;
+        $sekolahId = (int) TenantContext::requireSekolahId();
         if (! $this->tokenService->isChatOrangTuaEnabled($sekolahId)) {
             return response()->json(['error' => 'Fitur chat sedang dinonaktifkan oleh sekolah.'], 403);
         }
@@ -64,7 +66,7 @@ class ChatController extends Controller
                         'created_at' => $result['assistant_message']->created_at->toIso8601String(),
                     ],
                 ],
-                'token_balance' => $this->tokenService->getBalance((int) auth()->user()->sekolah_id),
+                'token_balance' => $this->tokenService->getBalance((int) TenantContext::requireSekolahId()),
             ]);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -75,7 +77,7 @@ class ChatController extends Controller
             return response()->json([
                 'error' => $e->fallbackMessage,
                 'token_exhausted' => true,
-                'token_balance' => $this->tokenService->getBalance((int) auth()->user()->sekolah_id),
+                'token_balance' => $this->tokenService->getBalance((int) TenantContext::requireSekolahId()),
                 'messages' => $lastMessages->map(fn ($msg) => [
                     'id' => $msg->id,
                     'role' => $msg->role,
@@ -96,7 +98,7 @@ class ChatController extends Controller
 
     public function destroy(): JsonResponse
     {
-        $sekolahId = (int) auth()->user()->sekolah_id;
+        $sekolahId = (int) TenantContext::requireSekolahId();
         if (! $this->tokenService->isChatOrangTuaEnabled($sekolahId)) {
             return response()->json(['error' => 'Fitur chat sedang dinonaktifkan oleh sekolah.'], 403);
         }

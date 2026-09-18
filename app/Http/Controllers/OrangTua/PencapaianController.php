@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\OrangTua;
-
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Controllers\Concerns\ResolvesPencapaianBundlePhoto;

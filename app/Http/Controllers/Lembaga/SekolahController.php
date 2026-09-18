@@ -32,6 +32,7 @@ class SekolahController extends Controller
             'name' => $request->name,
             'address' => $request->address,
             'phone' => $request->phone,
+            'status' => Sekolah::STATUS_ACTIVE,
         ]);
 
         SkalaPencapaian::seedDefaultsForSekolah($sekolah->id);

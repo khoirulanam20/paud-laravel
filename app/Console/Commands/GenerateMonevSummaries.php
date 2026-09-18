@@ -26,8 +26,9 @@ class GenerateMonevSummaries extends Command
 
         $this->info("Memproses monev periode {$bulan}/{$tahun}...");
 
-        $anaks = Anak::query()
+        $anaks = Anak::withoutSekolahScope()
             ->where('status', 'approved')
+            ->whereHas('sekolah', fn ($q) => $q->where('status', 'active'))
             ->orderBy('sekolah_id')
             ->orderBy('name')
             ->get();
