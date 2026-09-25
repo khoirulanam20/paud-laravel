@@ -30,7 +30,7 @@ class TabunganInvestasiTest extends TestCase
         $kas = Akun::create([
             'sekolah_id' => $sekolah->id,
             'tipe' => 'sistem',
-            'kode' => 'SYS.KAS',
+            'kode' => '1101',
             'nama' => 'Kas',
             'jenis' => 'aset',
             'saldo_normal' => 'debit',
@@ -40,8 +40,8 @@ class TabunganInvestasiTest extends TestCase
         $tabungan = Akun::create([
             'sekolah_id' => $sekolah->id,
             'tipe' => 'sistem',
-            'kode' => 'SYS.TABUNGAN',
-            'nama' => 'Tabungan',
+            'kode' => '1106',
+            'nama' => 'Persediaan Tabungan Test',
             'jenis' => 'aset',
             'kategori_arus_kas' => 'investasi',
             'saldo_normal' => 'debit',
@@ -51,8 +51,8 @@ class TabunganInvestasiTest extends TestCase
         $pendapatan = Akun::create([
             'sekolah_id' => $sekolah->id,
             'tipe' => 'sistem',
-            'kode' => 'P.99',
-            'nama' => 'Pendapatan Lain',
+            'kode' => '4201',
+            'nama' => 'Pendapatan Bunga',
             'jenis' => 'pendapatan',
             'saldo_normal' => 'kredit',
             'is_aktif' => true,
@@ -61,8 +61,8 @@ class TabunganInvestasiTest extends TestCase
         $beban = Akun::create([
             'sekolah_id' => $sekolah->id,
             'tipe' => 'rkas',
-            'kode' => 'B.01',
-            'nama' => 'Beban',
+            'kode' => '5101',
+            'nama' => 'Beban Gaji',
             'jenis' => 'beban',
             'saldo_normal' => 'debit',
             'is_aktif' => true,

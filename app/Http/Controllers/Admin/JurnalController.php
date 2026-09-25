@@ -9,6 +9,7 @@ use App\Models\Cashflow;
 use App\Models\Jurnal;
 use App\Services\AkuntansiService;
 use App\Support\PaginationPerPage;
+use App\Support\StandardCoa;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -142,7 +143,7 @@ class JurnalController extends Controller
 
             $akunKasIds = Akun::where('sekolah_id', $sekolahId)
                 ->where('jenis', 'aset')
-                ->whereIn('kode', ['1-1000', '1-1100'])
+                ->whereIn('kode', StandardCoa::KAS_BANK_KODES)
                 ->pluck('id');
 
             foreach ($lines as $line) {

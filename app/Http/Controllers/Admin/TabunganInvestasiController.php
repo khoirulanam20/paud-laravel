@@ -8,6 +8,7 @@ use App\Models\AkuntansiTabunganAkun;
 use App\Models\Cashflow;
 use App\Services\AkuntansiService;
 use App\Support\PaginationPerPage;
+use App\Support\StandardCoa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -180,7 +181,7 @@ class TabunganInvestasiController extends Controller
             ->where('jenis', 'aset')
             ->where(function ($q) use ($tabunganAkunIds) {
                 $q->where(function ($q2) {
-                    $q2->sistem()->whereIn('kode', ['SYS.KAS', 'SYS.BANK']);
+                    $q2->whereIn('kode', StandardCoa::KAS_BANK_KODES);
                 });
                 if ($tabunganAkunIds !== []) {
                     $q->orWhereIn('id', $tabunganAkunIds);

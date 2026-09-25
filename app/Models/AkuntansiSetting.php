@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToSekolah;
 use App\Models\Concerns\LogsScopedActivity;
+use App\Support\StandardCoa;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -65,11 +66,11 @@ class AkuntansiSetting extends Model
 
     public static function forSekolah(int $sekolahId): self
     {
-        $kas = Akun::where('sekolah_id', $sekolahId)->where('kode', 'SYS.KAS')->first();
-        $pendapatanLain = Akun::where('sekolah_id', $sekolahId)->where('kode', 'P.99')->first();
-        $bebanDefault = Akun::where('sekolah_id', $sekolahId)->where('tipe', 'rkas')->where('jenis', 'beban')->orderBy('kode')->first();
-        $piutang = Akun::where('sekolah_id', $sekolahId)->where('kode', 'SYS.PIUTANG')->first();
-        $pendapatanSpp = Akun::where('sekolah_id', $sekolahId)->where('kode', 'P.01')->first();
+        $kas = Akun::where('sekolah_id', $sekolahId)->where('kode', StandardCoa::DEFAULT_KAS)->first();
+        $pendapatanLain = Akun::where('sekolah_id', $sekolahId)->where('kode', StandardCoa::DEFAULT_COUNTER_IN)->first();
+        $bebanDefault = Akun::where('sekolah_id', $sekolahId)->where('kode', StandardCoa::DEFAULT_COUNTER_OUT)->first();
+        $piutang = Akun::where('sekolah_id', $sekolahId)->where('kode', StandardCoa::DEFAULT_PIUTANG)->first();
+        $pendapatanSpp = Akun::where('sekolah_id', $sekolahId)->where('kode', StandardCoa::DEFAULT_PENDAPATAN)->first();
 
         $attrs = array_filter([
             'metode_pencatatan' => 'cash',
