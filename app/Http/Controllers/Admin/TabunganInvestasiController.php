@@ -31,7 +31,7 @@ class TabunganInvestasiController extends Controller
 
         $saldos = [];
         foreach ($tabunganAkuns as $row) {
-            $saldos[$row->akun_id] = $this->akuntansiService->saldoAkun($row->akun_id);
+            $saldos[$row->akun_id] = $this->akuntansiService->saldoTabunganAkun($sekolahId, $row->akun_id);
         }
 
         $mutasiQuery = Cashflow::where('sekolah_id', $sekolahId)

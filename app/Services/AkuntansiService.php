@@ -218,6 +218,25 @@ class AkuntansiService
     }
 
     /**
+     * Saldo kartu tabungan: jurnal + cashflow yang belum punya jurnal (agar selaras dengan tabel mutasi).
+     */
+    public function saldoTabunganAkun(int $sekolahId, int $akunId): float
+    {
+        $saldo = $this->saldoAkun($akunId);
+
+        Cashflow::where('sekolah_id', $sekolahId)
+            ->whereNull('jurnal_id')
+            ->where(function ($q) use ($akunId) {
+                $q->where('akun_id', $akunId)->orWhere('akun_lawan_id', $akunId);
+            })
+            ->each(function (Cashflow $trx) use ($akunId, &$saldo) {
+                $saldo += $this->netCashflowUntukAkun($trx, $akunId);
+            });
+
+        return $saldo;
+    }
+
+    /**
      * Total saldo per jenis akun (aset/liabilitas/ekuitas/pendapatan/beban)
      */
     public function saldoPerJenis(string $jenis, int $sekolahId, ?string $sampaiTanggal = null): float
@@ -238,6 +257,21 @@ class AkuntansiService
     public function getSetting(int $sekolahId): AkuntansiSetting
     {
         return AkuntansiSetting::forSekolah($sekolahId);
+    }
+
+    private function netCashflowUntukAkun(Cashflow $trx, int $akunId): float
+    {
+        $amount = (float) $trx->amount;
+
+        if ((int) $trx->akun_id === $akunId) {
+            return $trx->type === 'in' ? $amount : -$amount;
+        }
+
+        if ((int) $trx->akun_lawan_id === $akunId) {
+            return $trx->type === 'out' ? $amount : -$amount;
+        }
+
+        return 0.0;
     }
 
     /** @param array<array{int, float, float}> $lines [akun_id, debit, kredit] */
