@@ -9,12 +9,12 @@
 
 @php
     $optionsJson = collect($options)->map(function ($a) {
-        $text = (string) ($a->uraian ?? $a->nama ?? '');
+        $nama = (string) ($a->nama ?? '');
 
         return [
             'id' => (string) $a->id,
-            'label' => $a->kode.' — '.$text,
-            'search' => strtolower($a->kode.' '.$text.' '.($a->nama ?? '').' '.($a->snp ?? '').' '.($a->komponen ?? '')),
+            'label' => $a->kode.' — '.$nama,
+            'search' => strtolower($a->kode.' '.$nama.' '.($a->uraian ?? '').' '.($a->snp ?? '').' '.($a->komponen ?? '')),
         ];
     })->values()->all();
     $initial = (string) old($name, $value);
