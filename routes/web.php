@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AkuntansiSettingController;
 use App\Http\Controllers\Admin\AnakController;
 use App\Http\Controllers\Admin\BiayaBulananController;
 use App\Http\Controllers\Admin\CashflowController;
+use App\Http\Controllers\Admin\TabunganInvestasiController;
 use App\Http\Controllers\Admin\DiskonController;
 use App\Http\Controllers\Admin\JurnalController;
 use App\Http\Controllers\Admin\KegiatanController;
@@ -210,6 +211,9 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::get('sarana/{sarana}/photo/download', [SaranaController::class, 'downloadPhoto'])->name('sarana.photo.download');
     Route::get('akun/export', [AkunController::class, 'export'])->name('akun.export');
     Route::get('cashflow/export', [CashflowController::class, 'export'])->name('cashflow.export');
+    Route::get('tabungan-investasi', [TabunganInvestasiController::class, 'index'])->name('tabungan-investasi.index');
+    Route::put('tabungan-investasi/settings', [TabunganInvestasiController::class, 'updateSettings'])->name('tabungan-investasi.settings');
+    Route::post('tabungan-investasi/mutasi', [TabunganInvestasiController::class, 'mutasi'])->name('tabungan-investasi.mutasi');
     Route::get('jurnal/export', [JurnalController::class, 'export'])->name('jurnal.export');
     Route::get('sumber-dana/export', [SumberDanaController::class, 'export'])->name('sumber-dana.export');
     Route::get('rkas/export', [RkasController::class, 'export'])->name('rkas.export');

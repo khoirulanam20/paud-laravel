@@ -158,6 +158,15 @@ class BiayaBulananController extends Controller
     public function destroy(BiayaBulananSekolah $biayaBulanan)
     {
         abort_if($biayaBulanan->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        if ($biayaBulanan->pembayaran()->exists()) {
+            $biayaBulanan->update(['is_aktif' => false]);
+
+            return redirect()->route('admin.biaya-bulanan.index')
+                ->with('success', 'Jenis biaya tidak dapat dihapus karena sudah ada pembayaran. Status dinonaktifkan.');
+        }
+
+        BiayaBulananSiswa::where('biaya_bulanan_sekolah_id', $biayaBulanan->id)->delete();
         $biayaBulanan->delete();
 
         return redirect()->route('admin.biaya-bulanan.index')

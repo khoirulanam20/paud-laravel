@@ -20,7 +20,7 @@
             <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Daftar Kode Rekening & Akun</h3>
-                    <p class="section-subtitle">Satu master untuk RKAS, cashflow, dan jurnal</p>
+                    <p class="section-subtitle">Kode akun, jenis, nama, kelompok/subkelompok (SNP), dan uraian — untuk RKAS, cashflow, dan jurnal</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <x-export-excel route="admin.akun.export" />
@@ -30,13 +30,25 @@
 
             <div class="px-6 py-3 border-b flex flex-wrap gap-2" data-tour="admin-akun-filter-tabs" style="border-color:rgba(0,0,0,0.06);">
                 @foreach(['all' => 'Semua', 'sistem' => 'Sistem', 'belanja' => 'Belanja'] as $key => $label)
-                    <a href="{{ route('admin.akun.index', ['filter' => $key, 'q' => request('q')]) }}"
+                    <a href="{{ route('admin.akun.index', array_merge(request()->only(['q', 'kelompok', 'subkelompok']), ['filter' => $key])) }}"
                        class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ $filter === $key ? 'btn-primary' : 'btn-secondary' }}">{{ $label }}</a>
                 @endforeach
-                <form method="GET" class="ml-auto flex gap-2">
+                <form method="GET" class="ml-auto flex flex-wrap gap-2 items-center">
                     <input type="hidden" name="filter" value="{{ $filter }}">
+                    <select name="kelompok" class="input-field text-sm w-44" onchange="this.form.subkelompok.value=''; this.form.submit()">
+                        <option value="">Semua kelompok</option>
+                        @foreach($kelompokOptions as $opt)
+                            <option value="{{ $opt }}" @selected(request('kelompok') === $opt)>{{ $opt }}</option>
+                        @endforeach
+                    </select>
+                    <select name="subkelompok" class="input-field text-sm w-48">
+                        <option value="">Semua subkelompok</option>
+                        @foreach($subkelompokOptions as $opt)
+                            <option value="{{ $opt }}" @selected(request('subkelompok') === $opt)>{{ Str::limit($opt, 40) }}</option>
+                        @endforeach
+                    </select>
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari..." class="input-field text-sm w-40">
-                    <button type="submit" class="btn-secondary text-xs">Cari</button>
+                    <button type="submit" class="btn-secondary text-xs">Filter</button>
                 </form>
             </div>
 
@@ -44,11 +56,12 @@
                 <table class="data-table" data-tour="admin-akun-table">
                     <thead>
                         <tr>
-                            <th>Kode</th>
-                            <th>Nama</th>
-                            <th>Tipe</th>
-                            <th>SNP / Komponen</th>
+                            <th>Kode Akun</th>
                             <th class="text-center">Jenis</th>
+                            <th>Nama Akun</th>
+                            <th>Kelompok</th>
+                            <th>Subkelompok</th>
+                            <th>Uraian</th>
                             <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -56,13 +69,11 @@
                         @forelse($akunList as $akun)
                             <tr>
                                 <td class="font-mono font-semibold whitespace-nowrap" style="color:#1A6B6B;">{{ $akun->kode }}</td>
-                                <td>
-                                    <div class="font-medium">{{ $akun->nama }}</div>
-                                    @if($akun->uraian)<div class="text-xs truncate max-w-xs" style="color:#9E9790;" title="{{ $akun->uraian }}">{{ Str::limit($akun->uraian, 60) }}</div>@endif
-                                </td>
-                                <td><span class="badge {{ $akun->tipe === 'sistem' ? 'badge-blue' : 'badge-green' }}">{{ ucfirst($akun->tipe) }}</span></td>
-                                <td class="text-xs" style="color:#9E9790;">{{ $akun->snp ?? '-' }} / {{ $akun->komponen ?? '-' }}</td>
                                 <td class="text-center"><span class="badge badge-gray text-xs">{{ ucfirst($akun->jenis) }}</span></td>
+                                <td class="font-medium">{{ $akun->nama }}</td>
+                                <td class="text-xs" style="color:#9E9790;">{{ $akun->snp ?? '-' }}</td>
+                                <td class="text-xs" style="color:#9E9790;">{{ $akun->komponen ?? '-' }}</td>
+                                <td class="text-xs max-w-xs truncate" style="color:#9E9790;" @if($akun->uraian) title="{{ $akun->uraian }}" @endif>{{ $akun->uraian ? Str::limit($akun->uraian, 50) : '-' }}</td>
                                 <td class="text-right">
                                     <button @click="editData={{ json_encode($akun->only(['id','kode','nama','snp','komponen','uraian','tipe','jenis','kategori_arus_kas','saldo_normal','deskripsi'])) }}; showEditModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                     @if(!$akun->isSistem())
@@ -71,7 +82,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="py-12 text-center" style="color:#9E9790;">Belum ada akun.</td></tr>
+                            <tr><td colspan="7" class="py-12 text-center" style="color:#9E9790;">Belum ada akun.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -92,8 +103,8 @@
                         <div><label class="input-label">Jenis</label><select name="jenis" class="input-field"><option value="beban">Beban</option><option value="pendapatan">Pendapatan</option><option value="aset">Aset</option><option value="liabilitas">Liabilitas</option></select></div>
                         <div class="col-span-2"><label class="input-label">Nama</label><input type="text" name="nama" required class="input-field"></div>
                         <div class="col-span-2"><label class="input-label">Uraian</label><textarea name="uraian" rows="2" class="input-field"></textarea></div>
-                        <div><label class="input-label">SNP</label><input type="text" name="snp" class="input-field"></div>
-                        <div><label class="input-label">Komponen</label><input type="text" name="komponen" class="input-field"></div>
+                        <div><label class="input-label">Kelompok</label><input type="text" name="snp" class="input-field" placeholder="SNP / kelompok RKAS"></div>
+                        <div><label class="input-label">Subkelompok</label><input type="text" name="komponen" class="input-field"></div>
                         <div><label class="input-label">Saldo Normal</label><select name="saldo_normal" class="input-field"><option value="debit">Debit</option><option value="kredit">Kredit</option></select></div>
                         <input type="hidden" name="tipe" value="rkas">
                     </div>
@@ -112,8 +123,8 @@
                         <div><label class="input-label">Jenis</label><select name="jenis" x-model="editData.jenis" :disabled="editData.tipe==='sistem'" class="input-field"><option value="beban">Beban</option><option value="pendapatan">Pendapatan</option><option value="aset">Aset</option><option value="liabilitas">Liabilitas</option><option value="ekuitas">Ekuitas</option></select></div>
                         <div class="col-span-2"><label class="input-label">Nama</label><input type="text" name="nama" x-model="editData.nama" required class="input-field"></div>
                         <div class="col-span-2"><label class="input-label">Uraian</label><textarea name="uraian" x-model="editData.uraian" rows="2" class="input-field"></textarea></div>
-                        <div><label class="input-label">SNP</label><input type="text" name="snp" x-model="editData.snp" class="input-field"></div>
-                        <div><label class="input-label">Komponen</label><input type="text" name="komponen" x-model="editData.komponen" class="input-field"></div>
+                        <div><label class="input-label">Kelompok</label><input type="text" name="snp" x-model="editData.snp" class="input-field"></div>
+                        <div><label class="input-label">Subkelompok</label><input type="text" name="komponen" x-model="editData.komponen" class="input-field"></div>
                         <div><label class="input-label">Saldo Normal</label><select name="saldo_normal" x-model="editData.saldo_normal" class="input-field"><option value="debit">Debit</option><option value="kredit">Kredit</option></select></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>

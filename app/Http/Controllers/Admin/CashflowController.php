@@ -11,6 +11,7 @@ use App\Services\AkuntansiService;
 use App\Services\KwitansiService;
 use App\Support\PaginationPerPage;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,24 +30,27 @@ class CashflowController extends Controller
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
-        $cashflows = Cashflow::where('sekolah_id', $sekolahId)
-            ->whereYear('date', $tahun)
-            ->whereMonth('date', $bulan)
+        $filtered = $this->filteredCashflowQuery($sekolahId, $request);
+
+        $cashflows = (clone $filtered)
             ->with(['akun', 'akunLawan', 'sumberDana', 'jurnal'])
             ->orderBy('date', 'desc')
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
-        $totalIn = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'in')->sum('amount');
-        $totalOut = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
-        $balance = $totalIn - $totalOut;
+        $totalIn = (float) (clone $filtered)->where('type', 'in')->sum('amount');
+        $totalOut = (float) (clone $filtered)->where('type', 'out')->sum('amount');
 
-        $summaryArusKas = Cashflow::where('sekolah_id', $sekolahId)
-            ->whereYear('date', $tahun)
-            ->whereMonth('date', $bulan)
+        $balance = (float) Cashflow::where('sekolah_id', $sekolahId)->where('type', 'in')->sum('amount')
+            - (float) Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
+
+        $summaryArusKas = (clone $filtered)
             ->whereNotNull('akun_id')
             ->with('akun')
             ->get()
             ->groupBy(fn ($c) => $c->akun?->kategori_arus_kas ?? 'tidak_diketahui');
+
+        $kelompokOptions = $this->distinctAkunKelompok($sekolahId);
+        $subkelompokOptions = $this->distinctAkunSubkelompok($sekolahId, $request->input('kelompok'));
 
         $akunKas = Akun::where('sekolah_id', $sekolahId)->aktif()->sistem()->where('jenis', 'aset')->orderBy('kode')->get();
         $akunPendapatan = Akun::where('sekolah_id', $sekolahId)->aktif()->rkas()->where('jenis', 'pendapatan')->orderBy('kode')->get();
@@ -57,6 +61,7 @@ class CashflowController extends Controller
         return view('admin.cashflow.index', compact(
             'cashflows', 'totalIn', 'totalOut', 'balance',
             'summaryArusKas', 'bulan', 'tahun', 'akunKas', 'akunPendapatan', 'akunBeban', 'setting', 'sumberDanas',
+            'kelompokOptions', 'subkelompokOptions',
         ));
     }
 
@@ -66,9 +71,7 @@ class CashflowController extends Controller
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
-        $cashflows = Cashflow::where('sekolah_id', $sekolahId)
-            ->whereYear('date', $tahun)
-            ->whereMonth('date', $bulan)
+        $cashflows = $this->filteredCashflowQuery($sekolahId, $request)
             ->with(['akun', 'akunLawan', 'sumberDana'])
             ->orderBy('date', 'desc')
             ->get();
@@ -195,5 +198,96 @@ class CashflowController extends Controller
             $data,
             $this->kwitansiService->jenisForCashflow($cashflow)
         );
+    }
+
+    private function filteredCashflowQuery(int $sekolahId, Request $request): Builder
+    {
+        $query = Cashflow::where('sekolah_id', $sekolahId);
+        $this->applyPeriodFilter($query, $request);
+        $this->applyTypeFilter($query, $request);
+        $this->applyKelompokFilter($query, $request);
+
+        return $query;
+    }
+
+    private function applyPeriodFilter(Builder $query, Request $request): void
+    {
+        if ($request->filled('dari') && $request->filled('sampai')) {
+            $query->whereBetween('date', [$request->input('dari'), $request->input('sampai')]);
+
+            return;
+        }
+
+        $bulan = (int) $request->input('bulan', now()->month);
+        $tahun = (int) $request->input('tahun', now()->year);
+        $query->whereYear('date', $tahun)->whereMonth('date', $bulan);
+    }
+
+    private function applyTypeFilter(Builder $query, Request $request): void
+    {
+        $type = $request->input('type', 'all');
+        if (in_array($type, ['in', 'out'], true)) {
+            $query->where('type', $type);
+        }
+    }
+
+    private function applyKelompokFilter(Builder $query, Request $request): void
+    {
+        $kelompok = $request->input('kelompok');
+        $subkelompok = $request->input('subkelompok');
+
+        if (! $kelompok && ! $subkelompok) {
+            return;
+        }
+
+        $query->where(function (Builder $q) use ($kelompok, $subkelompok) {
+            $q->where(function (Builder $inner) use ($kelompok, $subkelompok) {
+                $inner->whereHas('akun', fn (Builder $a) => $this->scopeAkunKelompok($a, $kelompok, $subkelompok));
+            })->orWhere(function (Builder $inner) use ($kelompok, $subkelompok) {
+                $inner->whereHas('akunLawan', fn (Builder $a) => $this->scopeAkunKelompok($a, $kelompok, $subkelompok));
+            });
+        });
+    }
+
+    private function scopeAkunKelompok(Builder $query, ?string $kelompok, ?string $subkelompok): void
+    {
+        if ($kelompok) {
+            $query->where('snp', $kelompok);
+        }
+        if ($subkelompok) {
+            $query->where('komponen', $subkelompok);
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function distinctAkunKelompok(int $sekolahId): array
+    {
+        return Akun::where('sekolah_id', $sekolahId)
+            ->aktif()
+            ->whereNotNull('snp')
+            ->where('snp', '!=', '')
+            ->distinct()
+            ->orderBy('snp')
+            ->pluck('snp')
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function distinctAkunSubkelompok(int $sekolahId, ?string $kelompok): array
+    {
+        $q = Akun::where('sekolah_id', $sekolahId)
+            ->aktif()
+            ->whereNotNull('komponen')
+            ->where('komponen', '!=', '');
+
+        if ($kelompok) {
+            $q->where('snp', $kelompok);
+        }
+
+        return $q->distinct()->orderBy('komponen')->pluck('komponen')->all();
     }
 }

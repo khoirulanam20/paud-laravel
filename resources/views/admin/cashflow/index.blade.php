@@ -40,15 +40,15 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6" data-tour="admin-cashflow-stats">
             <div class="stat-card">
                 <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12"/></svg></div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Total Pemasukan</p><p class="text-2xl font-bold" style="color:#1A6B6B;">Rp {{ number_format($totalIn, 0, ',', '.') }}</p></div>
+                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Pemasukan (periode & filter)</p><p class="text-2xl font-bold" style="color:#1A6B6B;">Rp {{ number_format($totalIn, 0, ',', '.') }}</p></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background:#FAD7D2; color:#C0392B;"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 13l-5 5m0 0l-5-5m5 5V6"/></svg></div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Total Pengeluaran</p><p class="text-2xl font-bold" style="color:#C0392B;">Rp {{ number_format($totalOut, 0, ',', '.') }}</p></div>
+                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Pengeluaran (periode & filter)</p><p class="text-2xl font-bold" style="color:#C0392B;">Rp {{ number_format($totalOut, 0, ',', '.') }}</p></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="{{ $balance >= 0 ? '' : 'background:#FAD7D2; color:#C0392B;' }}"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg></div>
-                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Saldo Kas</p><p class="text-2xl font-bold" style="color:{{ $balance >= 0 ? '#1A6B6B' : '#C0392B' }};">Rp {{ number_format($balance, 0, ',', '.') }}</p></div>
+                <div><p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Saldo Kas (keseluruhan)</p><p class="text-2xl font-bold" style="color:{{ $balance >= 0 ? '#1A6B6B' : '#C0392B' }};">Rp {{ number_format($balance, 0, ',', '.') }}</p></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background:#D0E8E8; color:#1A6B6B;"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
@@ -79,15 +79,34 @@
             <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Riwayat Transaksi</h3><p class="section-subtitle">Semua catatan pemasukan dan pengeluaran</p></div>
                 <div class="flex gap-2 flex-wrap">
-                    <form method="GET" class="flex gap-2">
-                        <select name="bulan" class="input-field w-36 text-sm">
+                    <form method="GET" class="flex flex-wrap gap-2 items-center">
+                        <select name="bulan" class="input-field w-32 text-sm">
                             @foreach(range(1,12) as $m)
                                 <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->locale('id')->translatedFormat('F') }}</option>
                             @endforeach
                         </select>
                         <select name="tahun" class="input-field w-24 text-sm">
-                            @foreach(range(now()->year - 2, now()->year) as $y)
+                            @foreach(range(now()->year - 2, now()->year + 1) as $y)
                                 <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            @endforeach
+                        </select>
+                        <input type="date" name="dari" value="{{ request('dari') }}" class="input-field text-sm w-36" title="Opsional: ganti periode bulan">
+                        <input type="date" name="sampai" value="{{ request('sampai') }}" class="input-field text-sm w-36">
+                        <select name="type" class="input-field text-sm w-32">
+                            <option value="all" @selected(request('type', 'all') === 'all')>Semua jenis</option>
+                            <option value="in" @selected(request('type') === 'in')>Pemasukan</option>
+                            <option value="out" @selected(request('type') === 'out')>Pengeluaran</option>
+                        </select>
+                        <select name="kelompok" class="input-field text-sm w-40" onchange="this.form.subkelompok.value=''">
+                            <option value="">Kelompok</option>
+                            @foreach($kelompokOptions as $opt)
+                                <option value="{{ $opt }}" @selected(request('kelompok') === $opt)>{{ Str::limit($opt, 28) }}</option>
+                            @endforeach
+                        </select>
+                        <select name="subkelompok" class="input-field text-sm w-40">
+                            <option value="">Subkelompok</option>
+                            @foreach($subkelompokOptions as $opt)
+                                <option value="{{ $opt }}" @selected(request('subkelompok') === $opt)>{{ Str::limit($opt, 28) }}</option>
                             @endforeach
                         </select>
                         <button type="submit" class="btn-secondary text-xs">Filter</button>

@@ -14,6 +14,8 @@
          x-data="{
              showCreateModal: false,
              showAddSiswaModal: false,
+             showDeleteBiayaModal: false,
+             deleteBiayaRoute: '',
              filterKelasId: '',
              selectedIds: [],
              semuaAnak: @js($semuaAnak),
@@ -31,7 +33,7 @@
                  this.filterKelasId = '';
                  this.showAddSiswaModal = true;
              }
-         }" @tour-close-modals.window="showCreateModal=false; showAddSiswaModal=false">
+         }" @tour-close-modals.window="showCreateModal=false; showAddSiswaModal=false; showDeleteBiayaModal=false">
 
         @if(session('success'))
             <div class="alert-success mb-5">{{ session('success') }}</div>
@@ -51,20 +53,24 @@
                 </div>
                 <div class="space-y-2">
                     @forelse($semuaBiaya as $biaya)
-                        <a href="{{ route('admin.biaya-bulanan.index', ['biaya_id' => $biaya->id, 'kelas_id' => $kelasId]) }}"
-                           class="block p-3 rounded-lg border transition {{ $biayaTerpilih && $biayaTerpilih->id === $biaya->id ? 'border-[#1A6B6B] bg-[#D0E8E8]' : 'border-black/5 hover:bg-gray-50' }}">
-                            <div class="flex items-center justify-between">
-                                <div>
+                        <div class="p-3 rounded-lg border transition {{ $biayaTerpilih && $biayaTerpilih->id === $biaya->id ? 'border-[#1A6B6B] bg-[#D0E8E8]' : 'border-black/5 hover:bg-gray-50' }}">
+                            <div class="flex items-start justify-between gap-2">
+                                <a href="{{ route('admin.biaya-bulanan.index', ['biaya_id' => $biaya->id, 'kelas_id' => $kelasId]) }}" class="flex-1 min-w-0">
                                     <p class="font-semibold text-sm" style="color:#2C2C2C;">{{ $biaya->nama_biaya }}</p>
                                     <p class="text-xs mt-0.5" style="color:#9E9790;">Default: {{ $biaya->getNominalDefaultFormatted() }}</p>
+                                </a>
+                                <div class="flex flex-col items-end gap-1 shrink-0">
+                                    @if($biaya->is_aktif)
+                                        <span class="badge badge-green text-[10px]">Aktif</span>
+                                    @else
+                                        <span class="badge badge-gray text-[10px]">Nonaktif</span>
+                                    @endif
+                                    <button type="button"
+                                            @click="deleteBiayaRoute='{{ route('admin.biaya-bulanan.destroy', $biaya) }}'; showDeleteBiayaModal=true"
+                                            class="text-[10px] font-semibold px-2 py-1 rounded" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                                 </div>
-                                @if($biaya->is_aktif)
-                                    <span class="badge badge-green text-[10px]">Aktif</span>
-                                @else
-                                    <span class="badge badge-gray text-[10px]">Nonaktif</span>
-                                @endif
                             </div>
-                        </a>
+                        </div>
                     @empty
                         <p class="text-sm text-center py-4" style="color:#9E9790;">Belum ada jenis biaya.</p>
                     @endforelse
@@ -244,5 +250,13 @@
             </div>
         </div>
         @endif
+
+        <x-confirm-modal
+            show="showDeleteBiayaModal"
+            action-binding="deleteBiayaRoute"
+            method="DELETE"
+            title="Hapus jenis biaya?"
+            message="Jenis biaya yang sudah memiliki riwayat pembayaran akan dinonaktifkan, bukan dihapus."
+        />
     </div>
 </x-app-layout>

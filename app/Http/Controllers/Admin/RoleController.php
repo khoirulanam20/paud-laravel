@@ -44,6 +44,7 @@ class RoleController extends Controller
         'Akuntansi' => [
             ['name' => 'menu.akun-coa', 'label' => 'Kode Rekening & Akun'],
             ['name' => 'menu.cashflow', 'label' => 'Cashflow'],
+            ['name' => 'menu.tabungan-investasi', 'label' => 'Tabungan & Investasi'],
             ['name' => 'menu.jurnal-umum', 'label' => 'Jurnal Umum'],
         ],
         'RKAS' => [

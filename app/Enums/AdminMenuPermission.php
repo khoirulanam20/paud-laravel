@@ -23,6 +23,7 @@ enum AdminMenuPermission: string
     case MenuMakanan = 'menu.menu-makanan';
     case AkunCoa = 'menu.akun-coa';
     case Cashflow = 'menu.cashflow';
+    case TabunganInvestasi = 'menu.tabungan-investasi';
     case JurnalUmum = 'menu.jurnal-umum';
     case SumberDana = 'menu.sumber-dana';
     case Rkas = 'menu.rkas';

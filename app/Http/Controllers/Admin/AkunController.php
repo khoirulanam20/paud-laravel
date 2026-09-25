@@ -6,35 +6,30 @@ use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Akun;
 use App\Support\PaginationPerPage;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class AkunController extends Controller
 {
     use DownloadsExcel;
+
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
         $filter = $request->input('filter', 'all');
 
-        $query = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode');
-
-        $query = match ($filter) {
-            'sistem' => $query->sistem(),
-            'belanja' => $query->rkas()->where('jenis', 'beban'),
-            default => $query,
-        };
-
-        if ($search = $request->input('q')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('kode', 'like', "%{$search}%")
-                    ->orWhere('nama', 'like', "%{$search}%")
-                    ->orWhere('uraian', 'like', "%{$search}%");
-            });
-        }
-
+        $query = $this->baseQuery($sekolahId, $filter, $request);
         $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
-        return view('admin.akun.index', compact('akunList', 'filter'));
+        $kelompokOptions = $this->distinctKelompok($sekolahId);
+        $subkelompokOptions = $this->distinctSubkelompok($sekolahId, $request->input('kelompok'));
+
+        return view('admin.akun.index', compact(
+            'akunList',
+            'filter',
+            'kelompokOptions',
+            'subkelompokOptions',
+        ));
     }
 
     public function export(Request $request)
@@ -42,30 +37,19 @@ class AkunController extends Controller
         $sekolahId = auth()->user()->sekolah_id;
         $filter = $request->input('filter', 'all');
 
-        $query = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode');
-        $query = match ($filter) {
-            'sistem' => $query->sistem(),
-            'belanja' => $query->rkas()->where('jenis', 'beban'),
-            default => $query,
-        };
-        if ($search = $request->input('q')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('kode', 'like', "%{$search}%")
-                    ->orWhere('nama', 'like', "%{$search}%")
-                    ->orWhere('uraian', 'like', "%{$search}%");
-            });
-        }
-
-        $rows = $query->get()->map(fn (Akun $a) => [
-            $a->kode,
-            $a->nama,
-            $a->tipe ?? '-',
-            ($a->snp ?? '-').' / '.($a->komponen ?? '-'),
-            $a->jenis ?? '-',
-        ])->all();
+        $rows = $this->baseQuery($sekolahId, $filter, $request)
+            ->get()
+            ->map(fn (Akun $a) => [
+                $a->kode,
+                ucfirst($a->jenis ?? '-'),
+                $a->nama,
+                $a->snp ?? '-',
+                $a->komponen ?? '-',
+                $a->uraian ?? '-',
+            ])->all();
 
         return $this->downloadExcel(
-            ['Kode', 'Nama', 'Tipe', 'SNP / Komponen', 'Jenis'],
+            ['Kode Akun', 'Jenis', 'Nama Akun', 'Kelompok', 'Subkelompok', 'Uraian'],
             $rows,
             'kode-rekening-'.now()->format('Y-m-d').'.xlsx',
             'Kode Rekening'
@@ -126,6 +110,69 @@ class AkunController extends Controller
         $akun->delete();
 
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil dihapus.');
+    }
+
+    private function baseQuery(int $sekolahId, string $filter, Request $request): Builder
+    {
+        $query = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode');
+
+        $query = match ($filter) {
+            'sistem' => $query->sistem(),
+            'belanja' => $query->rkas()->where('jenis', 'beban'),
+            default => $query,
+        };
+
+        if ($search = $request->input('q')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('kode', 'like', "%{$search}%")
+                    ->orWhere('nama', 'like', "%{$search}%")
+                    ->orWhere('uraian', 'like', "%{$search}%")
+                    ->orWhere('snp', 'like', "%{$search}%")
+                    ->orWhere('komponen', 'like', "%{$search}%");
+            });
+        }
+
+        if ($kelompok = $request->input('kelompok')) {
+            $query->where('snp', $kelompok);
+        }
+
+        if ($subkelompok = $request->input('subkelompok')) {
+            $query->where('komponen', $subkelompok);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function distinctKelompok(int $sekolahId): array
+    {
+        return Akun::where('sekolah_id', $sekolahId)
+            ->aktif()
+            ->whereNotNull('snp')
+            ->where('snp', '!=', '')
+            ->distinct()
+            ->orderBy('snp')
+            ->pluck('snp')
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function distinctSubkelompok(int $sekolahId, ?string $kelompok): array
+    {
+        $q = Akun::where('sekolah_id', $sekolahId)
+            ->aktif()
+            ->whereNotNull('komponen')
+            ->where('komponen', '!=', '');
+
+        if ($kelompok) {
+            $q->where('snp', $kelompok);
+        }
+
+        return $q->distinct()->orderBy('komponen')->pluck('komponen')->all();
     }
 
     private function validated(Request $request): array
