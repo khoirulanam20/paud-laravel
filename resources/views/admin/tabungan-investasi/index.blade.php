@@ -39,16 +39,18 @@
         </div>
 
         @if($tabunganAkuns->isNotEmpty())
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
                 @foreach($tabunganAkuns as $row)
-                    <div class="stat-card">
+                    <div class="stat-card flex-col items-stretch gap-0">
                         <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">{{ $row->akun->kode }}</p>
-                        <p class="font-semibold text-sm mb-1" style="color:#2C2C2C;">{{ $row->akun->nama }}</p>
-                        <p class="text-xl font-bold" style="color:#1A6B6B;">Rp {{ number_format($saldos[$row->akun_id] ?? 0, 0, ',', '.') }}</p>
-                        <button type="button" class="btn-secondary text-xs mt-3"
-                                @click="mutasiAksi='setor'; mutasiAkunId='{{ $row->akun_id }}'; showMutasiModal=true">Setor</button>
-                        <button type="button" class="btn-secondary text-xs mt-3 ml-2"
-                                @click="mutasiAksi='tarik'; mutasiAkunId='{{ $row->akun_id }}'; showMutasiModal=true">Tarik</button>
+                        <p class="font-semibold text-sm mb-2" style="color:#2C2C2C;">{{ $row->akun->nama }}</p>
+                        <p class="text-xl font-bold tabular-nums whitespace-nowrap mb-4" style="color:#1A6B6B;">Rp&nbsp;{{ number_format($saldos[$row->akun_id] ?? 0, 0, ',', '.') }}</p>
+                        <div class="flex flex-wrap gap-2 mt-auto pt-1 border-t" style="border-color:rgba(0,0,0,0.06);">
+                            <button type="button" class="btn-secondary text-xs flex-1 min-w-[5.5rem]"
+                                    @click="mutasiAksi='setor'; mutasiAkunId='{{ $row->akun_id }}'; showMutasiModal=true">Setor</button>
+                            <button type="button" class="btn-secondary text-xs flex-1 min-w-[5.5rem]"
+                                    @click="mutasiAksi='tarik'; mutasiAkunId='{{ $row->akun_id }}'; showMutasiModal=true">Tarik</button>
+                        </div>
                     </div>
                 @endforeach
             </div>
