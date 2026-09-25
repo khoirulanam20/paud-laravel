@@ -206,18 +206,23 @@
                         <div><label class="input-label">Jenis</label><select name="type" x-model="createType" required class="input-field"><option value="in">Pemasukan</option><option value="out">Pengeluaran</option></select></div>
                         <div class="col-span-2"><label class="input-label">Nominal (Rp)</label><input type="number" name="amount" min="0" required placeholder="Contoh: 500000" class="input-field"></div>
                         <div class="col-span-2">
-                            <label class="input-label">Akun Kas</label>
+                            <label class="input-label">Akun Aset</label>
                             <select name="akun_id" class="input-field">
                                 <option value="">— Gunakan Default Setting —</option>
                                 @foreach($akunAset as $a)
                                     <option value="{{ $a->id }}" {{ $setting->akun_kas_id == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">Akun default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}. Jurnal dibuat otomatis.</p>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Default dari pengaturan: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}. Jurnal dibuat otomatis.</p>
                         </div>
                         <div class="col-span-2">
-                            <label class="input-label">Akun</label>
-                            <x-akun-search-select name="akun_lawan_id" :options="$akunAset" />
+                            <label class="input-label">Kode Rekening (Akun Lawan)</label>
+                            <template x-if="createType === 'in'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" />
+                            </template>
+                            <template x-if="createType === 'out'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" />
+                            </template>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" required rows="2" placeholder="Pembayaran SPP Bulan Juli..." class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="createType === 'out'">
@@ -246,18 +251,23 @@
                         <div><label class="input-label">Jenis</label><select name="type" x-model="editData.type" required class="input-field"><option value="in">Pemasukan</option><option value="out">Pengeluaran</option></select></div>
                         <div class="col-span-2"><label class="input-label">Nominal (Rp)</label><input type="number" name="amount" x-model="editData.amount" min="0" required class="input-field"></div>
                         <div class="col-span-2">
-                            <label class="input-label">Akun Kas</label>
+                            <label class="input-label">Akun Aset</label>
                             <select name="akun_id" x-model="editData.akun_id" class="input-field">
                                 <option value="">— Gunakan Default —</option>
                                 @foreach($akunAset as $a)
                                     <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">Akun default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}</p>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Default dari pengaturan: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}</p>
                         </div>
                         <div class="col-span-2">
-                            <label class="input-label">Akun</label>
-                            <x-akun-search-select name="akun_lawan_id" :options="$akunAset" watch-parent />
+                            <label class="input-label">Kode Rekening (Akun Lawan)</label>
+                            <template x-if="editData.type === 'in'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" watch-parent />
+                            </template>
+                            <template x-if="editData.type === 'out'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" watch-parent />
+                            </template>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" x-model="editData.description" required rows="2" class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="editData.type === 'out'">
