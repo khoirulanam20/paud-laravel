@@ -220,6 +220,58 @@
         color: var(--guest-text);
     }
 
+    .guest-textarea {
+        @apply w-full rounded-3xl border px-4 py-3 text-sm transition-colors duration-200 resize-y min-h-[5.5rem];
+        border-color: var(--guest-border);
+        background: #fff;
+    }
+
+    .guest-textarea:focus {
+        @apply outline-none ring-2;
+        border-color: var(--guest-sage);
+        --tw-ring-color: rgba(107, 143, 122, 0.25);
+    }
+
+    .guest-notice {
+        @apply rounded-2xl px-4 py-3.5 text-sm leading-relaxed flex gap-3 items-start;
+        background: var(--guest-sage-light);
+        color: var(--guest-sage-dark);
+    }
+
+    .guest-notice-error {
+        background: #FAD7D2;
+        color: #7a2e2e;
+    }
+
+    .guest-form-section {
+        @apply rounded-2xl border p-5 sm:p-6;
+        border-color: var(--guest-border);
+        background: rgba(255, 255, 255, 0.6);
+    }
+
+    .guest-form-section-title {
+        @apply flex items-center gap-3 text-sm font-bold mb-5 pb-3 border-b;
+        border-color: var(--guest-border);
+        color: var(--guest-text);
+    }
+
+    .guest-form-step {
+        @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold;
+        background: var(--guest-sage);
+        color: #fff;
+    }
+
+    .guest-benefit-item {
+        @apply flex gap-3 items-start text-sm leading-relaxed;
+        color: var(--guest-text-muted);
+    }
+
+    .guest-benefit-check {
+        @apply flex h-5 w-5 shrink-0 items-center justify-center rounded-full mt-0.5;
+        background: var(--guest-sage-light);
+        color: var(--guest-sage-dark);
+    }
+
     .guest-stat-value {
         @apply text-2xl md:text-3xl font-bold tracking-tight guest-heading;
         color: var(--guest-sage-dark);
