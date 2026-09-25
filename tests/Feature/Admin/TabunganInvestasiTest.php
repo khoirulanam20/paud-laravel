@@ -88,6 +88,7 @@ class TabunganInvestasiTest extends TestCase
         $this->actingAs($admin)->post(route('admin.tabungan-investasi.mutasi'), [
             'aksi' => 'setor',
             'akun_tabungan_id' => $tabungan->id,
+            'akun_rekening_id' => $kas->id,
             'amount' => 250_000,
             'date' => now()->toDateString(),
             'description' => 'Setor tabungan test',

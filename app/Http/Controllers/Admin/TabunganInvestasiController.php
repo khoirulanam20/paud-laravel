@@ -57,6 +57,8 @@ class TabunganInvestasiController extends Controller
         $setting = $this->akuntansiService->getSetting($sekolahId);
         $selectedIds = $akunIds;
 
+        $akunRekeningOptions = $this->akunRekeningOptions($sekolahId, $akunIds);
+
         return view('admin.tabungan-investasi.index', compact(
             'tabunganAkuns',
             'saldos',
@@ -66,6 +68,7 @@ class TabunganInvestasiController extends Controller
             'asetOptions',
             'setting',
             'selectedIds',
+            'akunRekeningOptions',
         ));
     }
 
@@ -107,41 +110,56 @@ class TabunganInvestasiController extends Controller
     public function mutasi(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $setting = $this->akuntansiService->getSetting($sekolahId);
 
         $data = $request->validate([
             'aksi' => 'required|in:setor,tarik',
             'akun_tabungan_id' => 'required|integer|exists:akuns,id',
+            'akun_rekening_id' => 'required|integer|exists:akuns,id',
             'amount' => 'required|numeric|min:0.01',
             'date' => 'required|date',
             'description' => 'nullable|string|max:500',
         ]);
 
-        $isLinked = AkuntansiTabunganAkun::where('sekolah_id', $sekolahId)
-            ->where('akun_id', $data['akun_tabungan_id'])
-            ->exists();
+        $tabunganIds = AkuntansiTabunganAkun::where('sekolah_id', $sekolahId)
+            ->pluck('akun_id')
+            ->all();
 
-        abort_unless($isLinked, 422, 'Akun tabungan tidak terdaftar di pengaturan.');
+        abort_unless(
+            in_array((int) $data['akun_tabungan_id'], $tabunganIds, true),
+            422,
+            'Akun tabungan tidak terdaftar di pengaturan.'
+        );
 
-        $kasId = $setting->akun_kas_id;
-        abort_unless($kasId, 422, 'Akun kas belum dikonfigurasi di setting akuntansi.');
+        $allowedRekening = $this->akunRekeningOptions($sekolahId, $tabunganIds)->pluck('id')->all();
+        abort_unless(
+            in_array((int) $data['akun_rekening_id'], $allowedRekening, true),
+            422,
+            'Akun sumber/tujuan tidak valid.'
+        );
+
+        abort_if(
+            (int) $data['akun_rekening_id'] === (int) $data['akun_tabungan_id'],
+            422,
+            'Akun sumber dan tujuan tidak boleh sama.'
+        );
 
         $tabungan = Akun::where('sekolah_id', $sekolahId)->findOrFail($data['akun_tabungan_id']);
+        $rekening = Akun::where('sekolah_id', $sekolahId)->findOrFail($data['akun_rekening_id']);
 
         $type = $data['aksi'] === 'setor' ? 'out' : 'in';
         $deskripsi = $data['description']
             ?? ($data['aksi'] === 'setor'
-                ? 'Setor ke '.$tabungan->nama
-                : 'Tarik dari '.$tabungan->nama);
+                ? 'Setor ke '.$tabungan->nama.' dari '.$rekening->nama
+                : 'Tarik dari '.$tabungan->nama.' ke '.$rekening->nama);
 
-        DB::transaction(function () use ($sekolahId, $data, $type, $deskripsi, $kasId, $tabungan) {
+        DB::transaction(function () use ($sekolahId, $data, $type, $deskripsi, $tabungan, $rekening) {
             $cashflow = Cashflow::create([
                 'sekolah_id' => $sekolahId,
                 'date' => $data['date'],
                 'type' => $type,
                 'amount' => $data['amount'],
                 'description' => $deskripsi,
-                'akun_id' => $kasId,
+                'akun_id' => $rekening->id,
                 'akun_lawan_id' => $tabungan->id,
             ]);
 
@@ -152,5 +170,23 @@ class TabunganInvestasiController extends Controller
             'bulan' => \Carbon\Carbon::parse($data['date'])->month,
             'tahun' => \Carbon\Carbon::parse($data['date'])->year,
         ])->with('success', 'Mutasi tabungan berhasil dicatat.');
+    }
+
+    /** Kas/bank + akun tabungan terdaftar (untuk sumber setor / tujuan tarik). */
+    private function akunRekeningOptions(int $sekolahId, array $tabunganAkunIds)
+    {
+        return Akun::where('sekolah_id', $sekolahId)
+            ->aktif()
+            ->where('jenis', 'aset')
+            ->where(function ($q) use ($tabunganAkunIds) {
+                $q->where(function ($q2) {
+                    $q2->sistem()->whereIn('kode', ['SYS.KAS', 'SYS.BANK']);
+                });
+                if ($tabunganAkunIds !== []) {
+                    $q->orWhereIn('id', $tabunganAkunIds);
+                }
+            })
+            ->orderBy('kode')
+            ->get();
     }
 }

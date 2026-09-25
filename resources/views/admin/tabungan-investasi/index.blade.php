@@ -11,7 +11,20 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showMutasiModal: false, mutasiAksi: 'setor', mutasiAkunId: '' }">
+         x-data="{
+            showMutasiModal: false,
+            mutasiAksi: 'setor',
+            mutasiAkunId: '',
+            mutasiRekeningId: '{{ $setting->akun_kas_id ?? '' }}',
+            openMutasi(aksi, akunTabunganId) {
+                this.mutasiAksi = aksi;
+                this.mutasiAkunId = String(akunTabunganId);
+                if (!this.mutasiRekeningId) {
+                    this.mutasiRekeningId = '{{ $akunRekeningOptions->first()?->id ?? '' }}';
+                }
+                this.showMutasiModal = true;
+            }
+         }">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -47,9 +60,9 @@
                         <p class="text-xl font-bold tabular-nums whitespace-nowrap mb-4" style="color:#1A6B6B;">Rp&nbsp;{{ number_format($saldos[$row->akun_id] ?? 0, 0, ',', '.') }}</p>
                         <div class="flex flex-wrap gap-2 mt-auto pt-1 border-t" style="border-color:rgba(0,0,0,0.06);">
                             <button type="button" class="btn-secondary text-xs flex-1 min-w-[5.5rem]"
-                                    @click="mutasiAksi='setor'; mutasiAkunId='{{ $row->akun_id }}'; showMutasiModal=true">Setor</button>
+                                    @click="openMutasi('setor', {{ $row->akun_id }})">Setor</button>
                             <button type="button" class="btn-secondary text-xs flex-1 min-w-[5.5rem]"
-                                    @click="mutasiAksi='tarik'; mutasiAkunId='{{ $row->akun_id }}'; showMutasiModal=true">Tarik</button>
+                                    @click="openMutasi('tarik', {{ $row->akun_id }})">Tarik</button>
                         </div>
                     </div>
                 @endforeach
@@ -114,7 +127,22 @@
                     <div class="modal-header"><h3 class="section-title" x-text="mutasiAksi === 'setor' ? 'Setor ke Tabungan' : 'Tarik dari Tabungan'"></h3></div>
                     <div class="modal-body space-y-3">
                         <input type="hidden" name="aksi" :value="mutasiAksi">
-                        <input type="hidden" name="akun_tabungan_id" :value="mutasiAkunId">
+                        <div>
+                            <label class="input-label" x-text="mutasiAksi === 'setor' ? 'Dari (sumber)' : 'Ke (tujuan)'"></label>
+                            <select name="akun_rekening_id" x-model="mutasiRekeningId" required class="input-field">
+                                @foreach($akunRekeningOptions as $a)
+                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ $a->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label" x-text="mutasiAksi === 'setor' ? 'Ke (tabungan/investasi)' : 'Dari (tabungan/investasi)'"></label>
+                            <select name="akun_tabungan_id" x-model="mutasiAkunId" required class="input-field">
+                                @foreach($tabunganAkuns as $row)
+                                    <option value="{{ $row->akun_id }}">{{ $row->akun->kode }} — {{ $row->akun->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div>
                             <label class="input-label">Tanggal</label>
                             <input type="date" name="date" value="{{ now()->toDateString() }}" required class="input-field">
@@ -127,7 +155,7 @@
                             <label class="input-label">Keterangan (opsional)</label>
                             <input type="text" name="description" class="input-field">
                         </div>
-                        <p class="text-xs" style="color:#9E9790;">Kas: {{ $setting->akunKas->nama ?? '—' }} (dari setting akuntansi)</p>
+                        <p class="text-xs" style="color:#9E9790;">Jurnal debit/kredit dibuat otomatis dari pasangan akun di atas.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" @click="showMutasiModal=false" class="btn-secondary">Batal</button>
