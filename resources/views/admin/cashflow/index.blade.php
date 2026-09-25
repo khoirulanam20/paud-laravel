@@ -213,7 +213,7 @@
                                     <option value="{{ $a->id }}" {{ $setting->akun_kas_id == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">Default dari pengaturan: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}. Jurnal dibuat otomatis.</p>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}. Jenis yang tampil diatur di Pengaturan Akuntansi.</p>
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>
@@ -253,7 +253,7 @@
                                     <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
                             </select>
-                            <p class="text-xs mt-1" style="color:#9E9790;">Default dari pengaturan: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}</p>
+                            <p class="text-xs mt-1" style="color:#9E9790;">Default: {{ $setting->akunKas->kode ?? '' }} - {{ $setting->akunKas->nama ?? '-' }}. Jenis yang tampil diatur di Pengaturan Akuntansi.</p>
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>

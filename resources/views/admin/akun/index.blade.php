@@ -136,7 +136,10 @@
                     <div class="modal-header"><h3 class="section-title">Tambah Kode Rekening</h3></div>
                     <div class="modal-body grid grid-cols-2 gap-3">
                         <div><label class="input-label">Kode</label><input type="text" name="kode" required class="input-field"></div>
-                        <div><label class="input-label">Jenis</label><select name="jenis" class="input-field"><option value="beban">Beban</option><option value="pendapatan">Pendapatan</option><option value="aset">Aset</option><option value="liabilitas">Liabilitas</option></select></div>
+                        <div>
+                            <label class="input-label">Jenis</label>
+                            <input type="text" name="jenis" required maxlength="50" list="jenis-akun-list" class="input-field" placeholder="aset" value="{{ old('jenis', 'aset') }}">
+                        </div>
                         <div class="col-span-2"><label class="input-label">Nama</label><input type="text" name="nama" required class="input-field"></div>
                         <div class="col-span-2"><label class="input-label">Uraian</label><textarea name="uraian" rows="2" class="input-field"></textarea></div>
                         <div><label class="input-label">Kelompok</label><input type="text" name="snp" class="input-field" placeholder="SNP / kelompok RKAS"></div>
@@ -156,7 +159,10 @@
                     <div class="modal-header"><h3 class="section-title">Edit Akun</h3></div>
                     <div class="modal-body grid grid-cols-2 gap-3">
                         <div><label class="input-label">Kode</label><input type="text" name="kode" x-model="editData.kode" required class="input-field"></div>
-                        <div><label class="input-label">Jenis</label><select name="jenis" x-model="editData.jenis" :disabled="editData.tipe==='sistem'" class="input-field"><option value="beban">Beban</option><option value="pendapatan">Pendapatan</option><option value="aset">Aset</option><option value="liabilitas">Liabilitas</option><option value="ekuitas">Ekuitas</option></select></div>
+                        <div>
+                            <label class="input-label">Jenis</label>
+                            <input type="text" name="jenis" x-model="editData.jenis" required maxlength="50" list="jenis-akun-list" class="input-field">
+                        </div>
                         <div class="col-span-2"><label class="input-label">Nama</label><input type="text" name="nama" x-model="editData.nama" required class="input-field"></div>
                         <div class="col-span-2"><label class="input-label">Uraian</label><textarea name="uraian" x-model="editData.uraian" rows="2" class="input-field"></textarea></div>
                         <div><label class="input-label">Kelompok</label><input type="text" name="snp" x-model="editData.snp" class="input-field"></div>
@@ -208,6 +214,12 @@
                 </form>
             </div>
         </div>
+
+        <datalist id="jenis-akun-list">
+            @foreach($jenisOptions as $jenis)
+                <option value="{{ $jenis }}"></option>
+            @endforeach
+        </datalist>
 
         <x-confirm-modal
             show="showDeleteModal"

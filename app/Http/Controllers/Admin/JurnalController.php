@@ -142,7 +142,6 @@ class JurnalController extends Controller
             }
 
             $akunKasIds = Akun::where('sekolah_id', $sekolahId)
-                ->where('jenis', 'aset')
                 ->whereIn('kode', StandardCoa::KAS_BANK_KODES)
                 ->pluck('id');
 

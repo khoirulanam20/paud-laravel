@@ -53,9 +53,13 @@ class CashflowController extends Controller
         $kelompokOptions = $this->distinctAkunKelompok($sekolahId);
         $subkelompokOptions = $this->distinctAkunSubkelompok($sekolahId, $request->input('kelompok'));
 
-        $akunAset = Akun::where('sekolah_id', $sekolahId)->aktif()->where('jenis', 'aset')->orderBy('kode')->get();
-        $akunOptions = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode')->get();
         $setting = $this->akuntansiService->getSetting($sekolahId);
+        $akunAset = Akun::where('sekolah_id', $sekolahId)
+            ->aktif()
+            ->whereIn('jenis', $setting->jenisUntukAkunAset())
+            ->orderBy('kode')
+            ->get();
+        $akunOptions = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode')->get();
         $sumberDanas = SumberDana::where('sekolah_id', $sekolahId)->aktif()->orderBy('urutan')->get();
 
         return view('admin.cashflow.index', compact(

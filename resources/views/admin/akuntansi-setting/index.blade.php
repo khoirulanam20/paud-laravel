@@ -30,6 +30,21 @@
         <form action="{{ route('admin.akuntansi-setting.update') }}" method="POST" data-tour="admin-akuntansi-setting-form">
             @csrf @method('PUT')
 
+            <div class="card mb-6">
+                <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                    <h3 class="section-title">Jenis di Akun Aset (Catat Transaksi)</h3>
+                    <p class="section-subtitle">Hanya jenis yang dicentang yang muncul di kolom Akun Aset saat mencatat cashflow. Kosongkan centang tidak bisa — minimal satu.</p>
+                </div>
+                <div class="p-6 flex flex-wrap gap-3">
+                    @foreach($jenisOptions as $jenis)
+                        <label class="flex items-center gap-2 text-sm border rounded-lg px-3 py-2" style="border-color:rgba(0,0,0,0.08);">
+                            <input type="checkbox" name="jenis_akun_aset[]" value="{{ $jenis }}" @checked(in_array($jenis, $jenisAkunAset, true))>
+                            {{ $jenis }}
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
             <!-- Section 2: Default Akun Cashflow -->
             <div class="card mb-6">
                 <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">

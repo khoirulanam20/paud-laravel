@@ -22,11 +22,18 @@ class AkunController extends Controller
         $query = $this->baseQuery($sekolahId, $request);
         $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
+        $jenisOptions = Akun::where('sekolah_id', $sekolahId)
+            ->whereNotNull('jenis')
+            ->distinct()
+            ->orderBy('jenis')
+            ->pluck('jenis');
+
         $kelompokOptions = $this->distinctKelompok($sekolahId);
         $subkelompokOptions = $this->distinctSubkelompok($sekolahId, $request->input('kelompok'));
 
         return view('admin.akun.index', compact(
             'akunList',
+            'jenisOptions',
             'kelompokOptions',
             'subkelompokOptions',
         ));
@@ -258,19 +265,23 @@ class AkunController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'kode' => 'required|string|max:20',
             'nama' => 'required|string|max:200',
             'snp' => 'nullable|string|max:255',
             'komponen' => 'nullable|string|max:255',
             'uraian' => 'nullable|string',
             'tipe' => 'nullable|in:sistem,rkas',
-            'jenis' => 'required|in:aset,liabilitas,ekuitas,pendapatan,beban',
+            'jenis' => 'required|string|max:50',
             'kategori_arus_kas' => 'nullable|in:operasi,investasi,pendanaan',
             'saldo_normal' => 'required|in:debit,kredit',
             'induk_id' => 'nullable|exists:akuns,id',
             'deskripsi' => 'nullable|string',
         ]);
+
+        $data['jenis'] = trim($data['jenis']);
+
+        return $data;
     }
 
     private function kodeExists(int $sekolahId, string $kode, ?string $snp, ?string $komponen, ?int $exceptId = null): bool

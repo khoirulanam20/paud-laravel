@@ -147,8 +147,8 @@ class AkunImport implements ToCollection, WithHeadingRow
         if (mb_strlen($data['nama']) > 200) {
             return 'Nama maksimal 200 karakter.';
         }
-        if (! in_array($data['jenis'], ['aset', 'liabilitas', 'ekuitas', 'pendapatan', 'beban'], true)) {
-            return 'Jenis harus aset, liabilitas, ekuitas, pendapatan, atau beban.';
+        if ($data['jenis'] === '' || mb_strlen($data['jenis']) > 50) {
+            return 'Jenis wajib diisi (maksimal 50 karakter).';
         }
 
         return null;

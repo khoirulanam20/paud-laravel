@@ -22,6 +22,11 @@ class AkuntansiSetting extends Model
         'akun_pendapatan_id',
         'akun_untuk_in',
         'akun_untuk_out',
+        'jenis_akun_aset',
+    ];
+
+    protected $casts = [
+        'jenis_akun_aset' => 'array',
     ];
 
     public function sekolah(): BelongsTo
@@ -52,6 +57,17 @@ class AkuntansiSetting extends Model
     public function akunUntukOut(): BelongsTo
     {
         return $this->belongsTo(Akun::class, 'akun_untuk_out');
+    }
+
+    /** Jenis akun yang tampil di kolom Akun Aset saat catat transaksi. Kosong = aset. */
+    public function jenisUntukAkunAset(): array
+    {
+        $list = array_values(array_filter(array_map(
+            fn ($v) => trim((string) $v),
+            $this->jenis_akun_aset ?? []
+        )));
+
+        return $list !== [] ? $list : ['aset'];
     }
 
     public function isAccrual(): bool
