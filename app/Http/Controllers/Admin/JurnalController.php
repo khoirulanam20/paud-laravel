@@ -9,7 +9,9 @@ use App\Models\Cashflow;
 use App\Models\Jurnal;
 use App\Services\AkuntansiService;
 use App\Support\PaginationPerPage;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class JurnalController extends Controller
 {
@@ -110,42 +112,57 @@ class JurnalController extends Controller
         }
 
         $sekolahId = auth()->user()->sekolah_id;
-        $jurnal = Jurnal::create([
-            'sekolah_id' => $sekolahId,
-            'no_jurnal' => $this->akuntansiService->generateNoJurnal($sekolahId),
-            'tanggal' => $request->tanggal,
-            'deskripsi' => $request->deskripsi,
-            'created_by' => auth()->id(),
-            'source' => 'manual',
-        ]);
+        DB::transaction(function () use ($sekolahId, $request, $lines) {
+            $lastError = null;
+            $jurnal = null;
 
-        foreach ($lines as $line) {
-            $jurnal->lines()->create($line);
-        }
-
-        // Sync ke cashflow jika ada akun Kas
-        $akunKasIds = Akun::where('sekolah_id', $sekolahId)
-            ->where('jenis', 'aset')
-            ->whereIn('kode', ['1-1000', '1-1100'])
-            ->pluck('id');
-
-        foreach ($lines as $line) {
-            if ($akunKasIds->contains($line['akun_id'])) {
-                $type = $line['debit'] > 0 ? 'in' : 'out';
-                $amount = max($line['debit'], $line['kredit']);
-                if ($amount > 0) {
-                    Cashflow::create([
+            for ($attempt = 0; $attempt < 3; $attempt++) {
+                try {
+                    $jurnal = Jurnal::create([
                         'sekolah_id' => $sekolahId,
-                        'akun_id' => $line['akun_id'],
-                        'jurnal_id' => $jurnal->id,
-                        'type' => $type,
-                        'amount' => $amount,
-                        'description' => 'Jurnal: '.$request->deskripsi,
-                        'date' => $request->tanggal,
+                        'no_jurnal' => $this->akuntansiService->generateNoJurnal($sekolahId),
+                        'tanggal' => $request->tanggal,
+                        'deskripsi' => $request->deskripsi,
+                        'created_by' => auth()->id(),
+                        'source' => 'manual',
                     ]);
+                    break;
+                } catch (UniqueConstraintViolationException $e) {
+                    $lastError = $e;
                 }
             }
-        }
+
+            if (! $jurnal) {
+                throw $lastError;
+            }
+
+            foreach ($lines as $line) {
+                $jurnal->lines()->create($line);
+            }
+
+            $akunKasIds = Akun::where('sekolah_id', $sekolahId)
+                ->where('jenis', 'aset')
+                ->whereIn('kode', ['1-1000', '1-1100'])
+                ->pluck('id');
+
+            foreach ($lines as $line) {
+                if ($akunKasIds->contains($line['akun_id'])) {
+                    $type = $line['debit'] > 0 ? 'in' : 'out';
+                    $amount = max($line['debit'], $line['kredit']);
+                    if ($amount > 0) {
+                        Cashflow::create([
+                            'sekolah_id' => $sekolahId,
+                            'akun_id' => $line['akun_id'],
+                            'jurnal_id' => $jurnal->id,
+                            'type' => $type,
+                            'amount' => $amount,
+                            'description' => 'Jurnal: '.$request->deskripsi,
+                            'date' => $request->tanggal,
+                        ]);
+                    }
+                }
+            }
+        });
 
         return redirect()->route('admin.jurnal.index')->with('success', 'Jurnal berhasil dibuat.');
     }

@@ -12,6 +12,7 @@ use App\Services\KwitansiService;
 use App\Support\PaginationPerPage;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -105,18 +106,20 @@ class CashflowController extends Controller
             'sumber_dana_id' => 'nullable|exists:sumber_danas,id',
         ]);
 
-        $cashflow = Cashflow::create([
-            'sekolah_id' => auth()->user()->sekolah_id,
-            'date' => $request->date,
-            'type' => $request->type,
-            'amount' => $request->amount,
-            'description' => $request->description,
-            'akun_id' => $request->akun_id,
-            'akun_lawan_id' => $request->akun_lawan_id,
-            'sumber_dana_id' => $request->type === 'out' ? $request->sumber_dana_id : null,
-        ]);
+        DB::transaction(function () use ($request) {
+            $cashflow = Cashflow::create([
+                'sekolah_id' => auth()->user()->sekolah_id,
+                'date' => $request->date,
+                'type' => $request->type,
+                'amount' => $request->amount,
+                'description' => $request->description,
+                'akun_id' => $request->akun_id,
+                'akun_lawan_id' => $request->akun_lawan_id,
+                'sumber_dana_id' => $request->type === 'out' ? $request->sumber_dana_id : null,
+            ]);
 
-        $this->akuntansiService->buatJurnalDariCashflow($cashflow);
+            $this->akuntansiService->buatJurnalDariCashflow($cashflow);
+        });
 
         $date = Carbon::parse($request->date);
 
@@ -140,22 +143,24 @@ class CashflowController extends Controller
             'sumber_dana_id' => 'nullable|exists:sumber_danas,id',
         ]);
 
-        if ($cashflow->jurnal_id) {
-            $this->akuntansiService->hapusJurnal($cashflow->jurnal);
-        }
+        DB::transaction(function () use ($request, $cashflow) {
+            if ($cashflow->jurnal_id) {
+                $this->akuntansiService->hapusJurnal($cashflow->jurnal);
+            }
 
-        $cashflow->update([
-            'date' => $request->date,
-            'type' => $request->type,
-            'amount' => $request->amount,
-            'description' => $request->description,
-            'akun_id' => $request->akun_id,
-            'akun_lawan_id' => $request->akun_lawan_id,
-            'sumber_dana_id' => $request->type === 'out' ? $request->sumber_dana_id : null,
-            'jurnal_id' => null,
-        ]);
+            $cashflow->update([
+                'date' => $request->date,
+                'type' => $request->type,
+                'amount' => $request->amount,
+                'description' => $request->description,
+                'akun_id' => $request->akun_id,
+                'akun_lawan_id' => $request->akun_lawan_id,
+                'sumber_dana_id' => $request->type === 'out' ? $request->sumber_dana_id : null,
+                'jurnal_id' => null,
+            ]);
 
-        $this->akuntansiService->buatJurnalDariCashflow($cashflow->fresh());
+            $this->akuntansiService->buatJurnalDariCashflow($cashflow->fresh());
+        });
 
         $date = Carbon::parse($request->date);
 

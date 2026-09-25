@@ -8,6 +8,7 @@ use App\Models\Cashflow;
 use App\Models\Jurnal;
 use App\Models\JurnalLine;
 use App\Models\PembayaranBulanan;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class AkuntansiService
@@ -33,10 +34,9 @@ class AkuntansiService
             );
         }
 
-        $jurnal = DB::transaction(function () use ($cashflow, $kas, $counter) {
-            $jurnal = Jurnal::create([
+        return DB::transaction(function () use ($cashflow, $kas, $counter) {
+            $jurnal = $this->insertJurnal([
                 'sekolah_id' => $cashflow->sekolah_id,
-                'no_jurnal' => $this->generateNoJurnal($cashflow->sekolah_id),
                 'tanggal' => $cashflow->date,
                 'deskripsi' => 'Auto: Cashflow '.$cashflow->type.' - '.($cashflow->description),
                 'created_by' => auth()->id(),
@@ -48,12 +48,10 @@ class AkuntansiService
                 [$counter->id, $cashflow->type === 'in' ? 0 : $cashflow->amount, $cashflow->type === 'in' ? $cashflow->amount : 0],
             ]);
 
+            $cashflow->update(['jurnal_id' => $jurnal->id]);
+
             return $jurnal;
         });
-
-        $cashflow->update(['jurnal_id' => $jurnal->id]);
-
-        return $jurnal;
     }
 
     /**
@@ -64,10 +62,9 @@ class AkuntansiService
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
 
-        $jurnal = DB::transaction(function () use ($pembayaran, $setting, $userId) {
-            $jurnal = Jurnal::create([
+        return DB::transaction(function () use ($pembayaran, $setting, $userId) {
+            $jurnal = $this->insertJurnal([
                 'sekolah_id' => $pembayaran->sekolah_id,
-                'no_jurnal' => $this->generateNoJurnal($pembayaran->sekolah_id),
                 'tanggal' => now(),
                 'deskripsi' => 'Auto: Tagihan '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa'),
                 'created_by' => $userId,
@@ -81,12 +78,10 @@ class AkuntansiService
                 [$setting->akun_pendapatan_id, 0, $pembayaran->total_bayar],
             ]);
 
+            $pembayaran->update(['jurnal_id' => $jurnal->id]);
+
             return $jurnal;
         });
-
-        $pembayaran->update(['jurnal_id' => $jurnal->id]);
-
-        return $jurnal;
     }
 
     /**
@@ -98,7 +93,7 @@ class AkuntansiService
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
 
-        $jurnal = DB::transaction(function () use ($pembayaran, $setting, $userId) {
+        return DB::transaction(function () use ($pembayaran, $setting, $userId) {
             $deskripsi = 'Auto: Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa');
 
             if ($setting->isAccrual()) {
@@ -115,9 +110,8 @@ class AkuntansiService
                 ];
             }
 
-            $jurnal = Jurnal::create([
+            $jurnal = $this->insertJurnal([
                 'sekolah_id' => $pembayaran->sekolah_id,
-                'no_jurnal' => $this->generateNoJurnal($pembayaran->sekolah_id),
                 'tanggal' => now(),
                 'deskripsi' => $deskripsi,
                 'created_by' => $userId,
@@ -128,23 +122,20 @@ class AkuntansiService
 
             $this->createLines($jurnal, $lines);
 
+            $pembayaran->update(['jurnal_id' => $jurnal->id]);
+
+            Cashflow::create([
+                'sekolah_id' => $pembayaran->sekolah_id,
+                'akun_id' => $setting->akun_kas_id,
+                'jurnal_id' => $jurnal->id,
+                'type' => 'in',
+                'amount' => $pembayaran->total_bayar,
+                'description' => 'Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa'),
+                'date' => now(),
+            ]);
+
             return $jurnal;
         });
-
-        $pembayaran->update(['jurnal_id' => $jurnal->id]);
-
-        // Sync ke cashflow
-        Cashflow::create([
-            'sekolah_id' => $pembayaran->sekolah_id,
-            'akun_id' => $setting->akun_kas_id,
-            'jurnal_id' => $jurnal->id,
-            'type' => 'in',
-            'amount' => $pembayaran->total_bayar,
-            'description' => 'Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa'),
-            'date' => now(),
-        ]);
-
-        return $jurnal;
     }
 
     public function hapusJurnal(Jurnal $jurnal): void
@@ -168,19 +159,36 @@ class AkuntansiService
 
     public function generateNoJurnal(int $sekolahId): string
     {
-        $prefix = 'JNL-'.now()->format('Ym').'-';
-        $last = Jurnal::where('sekolah_id', $sekolahId)
+        // no_jurnal is unique across all sekolah, so the sekolah id is part of the number.
+        $prefix = 'JNL-'.$sekolahId.'-'.now()->format('Ym').'-';
+        $last = Jurnal::withoutGlobalScope('sekolah')
             ->where('no_jurnal', 'like', $prefix.'%')
             ->orderBy('no_jurnal', 'desc')
-            ->first();
+            ->lockForUpdate()
+            ->value('no_jurnal');
 
-        if ($last) {
-            $num = (int) substr($last->no_jurnal, -4) + 1;
-        } else {
-            $num = 1;
-        }
+        $num = $last ? ((int) substr($last, -4)) + 1 : 1;
 
         return $prefix.str_pad((string) $num, 4, '0', STR_PAD_LEFT);
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function insertJurnal(array $attributes): Jurnal
+    {
+        $sekolahId = (int) $attributes['sekolah_id'];
+        $lastError = null;
+
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            try {
+                $attributes['no_jurnal'] = $this->generateNoJurnal($sekolahId);
+
+                return Jurnal::create($attributes);
+            } catch (UniqueConstraintViolationException $e) {
+                $lastError = $e;
+            }
+        }
+
+        throw $lastError;
     }
 
     /**

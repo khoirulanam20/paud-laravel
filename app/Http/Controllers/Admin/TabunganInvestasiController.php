@@ -134,17 +134,19 @@ class TabunganInvestasiController extends Controller
                 ? 'Setor ke '.$tabungan->nama
                 : 'Tarik dari '.$tabungan->nama);
 
-        $cashflow = Cashflow::create([
-            'sekolah_id' => $sekolahId,
-            'date' => $data['date'],
-            'type' => $type,
-            'amount' => $data['amount'],
-            'description' => $deskripsi,
-            'akun_id' => $kasId,
-            'akun_lawan_id' => $tabungan->id,
-        ]);
+        DB::transaction(function () use ($sekolahId, $data, $type, $deskripsi, $kasId, $tabungan) {
+            $cashflow = Cashflow::create([
+                'sekolah_id' => $sekolahId,
+                'date' => $data['date'],
+                'type' => $type,
+                'amount' => $data['amount'],
+                'description' => $deskripsi,
+                'akun_id' => $kasId,
+                'akun_lawan_id' => $tabungan->id,
+            ]);
 
-        $this->akuntansiService->buatJurnalDariCashflow($cashflow);
+            $this->akuntansiService->buatJurnalDariCashflow($cashflow);
+        });
 
         return redirect()->route('admin.tabungan-investasi.index', [
             'bulan' => \Carbon\Carbon::parse($data['date'])->month,
