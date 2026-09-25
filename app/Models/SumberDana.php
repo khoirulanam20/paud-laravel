@@ -16,6 +16,7 @@ class SumberDana extends Model
         'sekolah_id',
         'kode',
         'nama',
+        'akun_id',
         'urutan',
         'is_aktif',
     ];
@@ -27,6 +28,11 @@ class SumberDana extends Model
     public function sekolah(): BelongsTo
     {
         return $this->belongsTo(Sekolah::class);
+    }
+
+    public function akun(): BelongsTo
+    {
+        return $this->belongsTo(Akun::class);
     }
 
     public function anggarans(): HasMany

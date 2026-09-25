@@ -196,8 +196,8 @@
         </div>
 
         <!-- CREATE MODAL -->
-        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
-            <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;" @click.self="showCreateModal=false">
+            <div x-show="showCreateModal" x-transition class="modal-box">
                 <form action="{{ route('admin.cashflow.store') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Catat Transaksi Kas</h3></div>
@@ -217,16 +217,7 @@
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>
-                            <div x-show="createType === 'in'">
-                                <fieldset :disabled="createType !== 'in'" class="border-0 p-0 m-0 min-w-0">
-                                    <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" />
-                                </fieldset>
-                            </div>
-                            <div x-show="createType === 'out'" style="display:none;">
-                                <fieldset :disabled="createType !== 'out'" class="border-0 p-0 m-0 min-w-0">
-                                    <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" />
-                                </fieldset>
-                            </div>
+                            <x-akun-search-select name="akun_lawan_id" :options="$akunOptions" />
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" required rows="2" placeholder="Pembayaran SPP Bulan Juli..." class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="createType === 'out'">
@@ -245,8 +236,8 @@
         </div>
 
         <!-- EDIT MODAL -->
-        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
-            <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;" @click.self="showEditModal=false">
+            <div x-show="showEditModal" x-transition class="modal-box">
                 <form :action="`/admin/cashflow/${editData.id}`" method="POST">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Transaksi</h3></div>
@@ -266,16 +257,7 @@
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>
-                            <div x-show="editData.type === 'in'">
-                                <fieldset :disabled="editData.type !== 'in'" class="border-0 p-0 m-0 min-w-0">
-                                    <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" watch-parent />
-                                </fieldset>
-                            </div>
-                            <div x-show="editData.type === 'out'" style="display:none;">
-                                <fieldset :disabled="editData.type !== 'out'" class="border-0 p-0 m-0 min-w-0">
-                                    <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" watch-parent />
-                                </fieldset>
-                            </div>
+                            <x-akun-search-select name="akun_lawan_id" :options="$akunOptions" sync-field="akun_lawan_id" />
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" x-model="editData.description" required rows="2" class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="editData.type === 'out'">

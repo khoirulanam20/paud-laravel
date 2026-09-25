@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
+use App\Imports\AkunImport;
 use App\Models\Akun;
 use App\Support\PaginationPerPage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AkunController extends Controller
 {
@@ -16,9 +18,8 @@ class AkunController extends Controller
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $filter = $request->input('filter', 'all');
 
-        $query = $this->baseQuery($sekolahId, $filter, $request);
+        $query = $this->baseQuery($sekolahId, $request);
         $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         $kelompokOptions = $this->distinctKelompok($sekolahId);
@@ -26,7 +27,6 @@ class AkunController extends Controller
 
         return view('admin.akun.index', compact(
             'akunList',
-            'filter',
             'kelompokOptions',
             'subkelompokOptions',
         ));
@@ -35,21 +35,21 @@ class AkunController extends Controller
     public function export(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $filter = $request->input('filter', 'all');
 
-        $rows = $this->baseQuery($sekolahId, $filter, $request)
+        $rows = $this->baseQuery($sekolahId, $request)
             ->get()
             ->map(fn (Akun $a) => [
                 $a->kode,
                 ucfirst($a->jenis ?? '-'),
                 $a->nama,
-                $a->snp ?? '-',
-                $a->komponen ?? '-',
-                $a->uraian ?? '-',
+                $a->snp ?? '',
+                $a->komponen ?? '',
+                $a->uraian ?? '',
+                $a->saldo_normal,
             ])->all();
 
         return $this->downloadExcel(
-            ['Kode Akun', 'Jenis', 'Nama Akun', 'Kelompok', 'Subkelompok', 'Uraian'],
+            ['Kode Akun', 'Jenis', 'Nama Akun', 'Kelompok', 'Subkelompok', 'Uraian', 'Saldo Normal'],
             $rows,
             'kode-rekening-'.now()->format('Y-m-d').'.xlsx',
             'Kode Rekening'
@@ -112,15 +112,96 @@ class AkunController extends Controller
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil dihapus.');
     }
 
-    private function baseQuery(int $sekolahId, string $filter, Request $request): Builder
+    public function importTemplate()
+    {
+        return $this->downloadExcel(
+            ['Kode Akun', 'Jenis', 'Nama Akun', 'Kelompok', 'Subkelompok', 'Uraian', 'Saldo Normal'],
+            [['1101', 'aset', 'Kas Besar', 'Aset Lancar', 'Kas dan Setara Kas', 'Kas utama', 'debit']],
+            'template-kode-rekening.xlsx',
+            'Kode Rekening'
+        );
+    }
+
+    public function testImport(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:5120'],
+        ]);
+
+        $import = new AkunImport((int) auth()->user()->sekolah_id, dryRun: true);
+        Excel::import($import, $request->file('file'));
+
+        $valid = $import->validCount();
+        $duplicate = $import->duplicateCount();
+        $invalid = $import->invalidCount();
+
+        return response()->json([
+            'valid_count' => $valid,
+            'duplicate_count' => $duplicate,
+            'invalid_count' => $invalid,
+            'rows' => $import->rows,
+            'message' => $this->importMessage($valid, $duplicate, $invalid),
+        ]);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:5120'],
+            'ignore_duplicates' => 'nullable|boolean',
+        ]);
+
+        $sekolahId = (int) auth()->user()->sekolah_id;
+        $ignore = $request->boolean('ignore_duplicates');
+        $file = $request->file('file');
+
+        $probe = new AkunImport($sekolahId, dryRun: true);
+        Excel::import($probe, $file);
+
+        if ($probe->duplicateCount() > 0 && ! $ignore) {
+            return back()->withErrors([
+                'file' => 'Ada '.$probe->duplicateCount().' baris duplikat. Centang abaikan duplikat, atau perbaiki file lalu tes ulang.',
+            ]);
+        }
+
+        if ($probe->validCount() === 0) {
+            return back()->withErrors(['file' => 'Tidak ada baris yang bisa diimport.']);
+        }
+
+        $import = new AkunImport($sekolahId, dryRun: false, ignoreDuplicates: true);
+        Excel::import($import, $file);
+
+        $message = $import->imported.' akun diimport.';
+        if ($import->ignored > 0) {
+            $message .= ' '.$import->ignored.' duplikat diabaikan.';
+        }
+        if ($import->invalidCount() > 0) {
+            $message .= ' '.$import->invalidCount().' baris rusak dilewati.';
+        }
+
+        return redirect()->route('admin.akun.index')->with('success', $message);
+    }
+
+    private function importMessage(int $valid, int $duplicate, int $invalid): string
+    {
+        if ($valid === 0 && $duplicate === 0 && $invalid === 0) {
+            return 'Tidak ada baris data. Pastikan file punya header dan isi di bawahnya.';
+        }
+
+        $parts = ["{$valid} siap diimport"];
+        if ($duplicate > 0) {
+            $parts[] = "{$duplicate} duplikat";
+        }
+        if ($invalid > 0) {
+            $parts[] = "{$invalid} rusak";
+        }
+
+        return implode(', ', $parts).'.';
+    }
+
+    private function baseQuery(int $sekolahId, Request $request): Builder
     {
         $query = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode');
-
-        $query = match ($filter) {
-            'sistem' => $query->sistem(),
-            'belanja' => $query->rkas()->where('jenis', 'beban'),
-            default => $query,
-        };
 
         if ($search = $request->input('q')) {
             $query->where(function ($q) use ($search) {

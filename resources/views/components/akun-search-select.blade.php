@@ -4,16 +4,17 @@
     'value' => '',
     'required' => false,
     'placeholder' => 'Ketik kode atau nama akun…',
-    'watchParent' => false,
+    'syncField' => null,
 ])
 
 @php
     $optionsJson = collect($options)->map(function ($a) {
         $text = (string) ($a->uraian ?? $a->nama ?? '');
+
         return [
             'id' => (string) $a->id,
             'label' => $a->kode.' — '.$text,
-            'search' => strtolower($a->kode.' '.$text.' '.($a->nama ?? '')),
+            'search' => strtolower($a->kode.' '.$text.' '.($a->nama ?? '').' '.($a->snp ?? '').' '.($a->komponen ?? '')),
         ];
     })->values()->all();
     $initial = (string) old($name, $value);
@@ -33,10 +34,8 @@
         syncQ() { this.q = this.selected ? this.labelFor(this.selected) : ''; },
         get filteredOptions() {
             const t = this.q.toLowerCase().trim();
-            if (!t) return this.options.slice(0, 80);
-            const exact = this.labelFor(this.selected).toLowerCase();
-            if (t === exact) return this.options.slice(0, 80);
-            return this.options.filter(o => o.search.includes(t) || o.label.toLowerCase().includes(t)).slice(0, 80);
+            if (!t || t === this.labelFor(this.selected).toLowerCase()) return this.options;
+            return this.options.filter(o => o.search.includes(t) || o.label.toLowerCase().includes(t));
         },
         pick(id) {
             this.selected = String(id);
@@ -54,17 +53,18 @@
             const r = el.getBoundingClientRect();
             this.pos = { top: r.bottom + 4, left: r.left, width: r.width };
         },
+        applyParent(id) {
+            this.selected = id ? String(id) : '';
+            this.syncQ();
+        },
     }"
     x-init="
-        @if($watchParent)
-        if ($parent.editData?.akun_lawan_id) {
-            selected = String($parent.editData.akun_lawan_id);
-        }
-        $watch('$parent.editData.akun_lawan_id', id => {
-            if (!$parent.showEditModal) return;
-            selected = id ? String(id) : '';
-            syncQ();
+        @if($syncField)
+        applyParent($parent.editData?.{{ $syncField }});
+        $watch('$parent.showEditModal', (open) => {
+            if (open) applyParent($parent.editData?.{{ $syncField }});
         });
+        $watch('$parent.editData.{{ $syncField }}', (id) => applyParent(id));
         @endif
         syncQ();
     "
@@ -72,7 +72,7 @@
     @click.outside="open = false"
     {{ $attributes->except(['class']) }}
 >
-    <input type="hidden" name="{{ $name }}" x-model="selected" @if($required) required @endif>
+    <input type="hidden" name="{{ $name }}" :value="selected" @if($required) required @endif>
     <input
         type="text"
         x-ref="searchInput"
@@ -87,24 +87,26 @@
         :aria-expanded="open"
     >
     @if(count($optionsJson) === 0)
-        <p class="text-xs mt-1" style="color:#9E9790;">Belum ada akun untuk jenis ini. Cek Kode Rekening / COA.</p>
+        <p class="text-xs mt-1" style="color:#9E9790;">Belum ada akun. Cek Kode Rekening.</p>
     @endif
     <template x-teleport="body">
         <ul
             x-show="open && filteredOptions.length"
             x-cloak
+            x-transition.opacity.duration.100ms
             :style="`position:fixed;top:${pos.top}px;left:${pos.left}px;width:${pos.width}px;z-index:9999`"
-            class="max-h-52 overflow-y-auto rounded-lg border bg-white shadow-lg text-sm list-none p-1"
+            class="max-h-60 overflow-y-auto rounded-lg border bg-white shadow-lg text-sm list-none p-1"
             style="border-color:rgba(0,0,0,0.1);"
             role="listbox"
-            @click.outside="open = false"
+            @mousedown.stop
+            @click.stop
         >
             <template x-for="opt in filteredOptions" :key="opt.id">
                 <li
                     class="px-3 py-2 rounded-md cursor-pointer hover:bg-teal-50"
                     :class="selected === opt.id && 'bg-teal-50 font-medium'"
                     role="option"
-                    @mousedown.prevent="pick(opt.id)"
+                    @mousedown.prevent.stop="pick(opt.id)"
                     x-text="opt.label"
                 ></li>
             </template>

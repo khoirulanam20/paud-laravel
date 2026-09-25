@@ -210,6 +210,9 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::get('sarana/export', [SaranaController::class, 'export'])->name('sarana.export');
     Route::get('sarana/{sarana}/photo/download', [SaranaController::class, 'downloadPhoto'])->name('sarana.photo.download');
     Route::get('akun/export', [AkunController::class, 'export'])->name('akun.export');
+    Route::get('akun/import/template', [AkunController::class, 'importTemplate'])->name('akun.import.template');
+    Route::post('akun/import/test', [AkunController::class, 'testImport'])->name('akun.import.test');
+    Route::post('akun/import', [AkunController::class, 'import'])->name('akun.import');
     Route::get('cashflow/export', [CashflowController::class, 'export'])->name('cashflow.export');
     Route::get('tabungan-investasi', [TabunganInvestasiController::class, 'index'])->name('tabungan-investasi.index');
     Route::put('tabungan-investasi/settings', [TabunganInvestasiController::class, 'updateSettings'])->name('tabungan-investasi.settings');

@@ -11,7 +11,47 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showCreateModal: false, showEditModal: false, showDeleteModal: false, editData: {}, deleteRoute: '' }">
+         x-data="{
+            showCreateModal: false, showEditModal: false, showDeleteModal: false, showImportModal: false,
+            editData: {}, deleteRoute: '',
+            importTesting: false, importTest: null, importTestError: null, ignoreDuplicates: false,
+            canImport() {
+                if (!this.importTest || this.importTest.valid_count < 1) return false;
+                if (this.importTest.duplicate_count > 0 && !this.ignoreDuplicates) return false;
+                return true;
+            },
+            resetImport() { this.importTest = null; this.importTestError = null; this.ignoreDuplicates = false; this.importTesting = false; },
+            async runImportTest() {
+                this.importTestError = null;
+                const form = this.$refs.importForm;
+                const fileInput = form?.querySelector('input[type=file]');
+                if (!fileInput?.files?.length) {
+                    this.importTestError = 'Pilih file Excel terlebih dahulu.';
+                    return;
+                }
+                this.importTesting = true;
+                try {
+                    const res = await fetch('{{ route('admin.akun.import.test') }}', {
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: new FormData(form),
+                    });
+                    const json = await res.json();
+                    if (!res.ok) {
+                        this.importTest = null;
+                        this.importTestError = json.errors?.file?.[0] ?? json.message ?? 'Gagal mengetes file.';
+                        return;
+                    }
+                    this.importTest = json;
+                    this.ignoreDuplicates = false;
+                } catch (e) {
+                    this.importTest = null;
+                    this.importTestError = 'Gagal mengetes file. Coba lagi.';
+                } finally {
+                    this.importTesting = false;
+                }
+            },
+         }">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -24,17 +64,13 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <x-export-excel route="admin.akun.export" />
+                    <button type="button" @click="showImportModal=true; resetImport()" class="btn-secondary text-sm">Import Excel</button>
                     <button @click="showCreateModal=true" class="btn-primary">+ Tambah Akun</button>
                 </div>
             </div>
 
             <div class="px-6 py-3 border-b flex flex-wrap gap-2" data-tour="admin-akun-filter-tabs" style="border-color:rgba(0,0,0,0.06);">
-                @foreach(['all' => 'Semua', 'sistem' => 'Sistem', 'belanja' => 'Belanja'] as $key => $label)
-                    <a href="{{ route('admin.akun.index', array_merge(request()->only(['q', 'kelompok', 'subkelompok']), ['filter' => $key])) }}"
-                       class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ $filter === $key ? 'btn-primary' : 'btn-secondary' }}">{{ $label }}</a>
-                @endforeach
                 <form method="GET" class="ml-auto flex flex-wrap gap-2 items-center">
-                    <input type="hidden" name="filter" value="{{ $filter }}">
                     <select name="kelompok" class="input-field text-sm w-44" onchange="this.form.subkelompok.value=''; this.form.submit()">
                         <option value="">Semua kelompok</option>
                         @foreach($kelompokOptions as $opt)
@@ -128,6 +164,47 @@
                         <div><label class="input-label">Saldo Normal</label><select name="saldo_normal" x-model="editData.saldo_normal" class="input-field"><option value="debit">Debit</option><option value="kredit">Kredit</option></select></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+                </form>
+            </div>
+        </div>
+
+        <div x-show="showImportModal" class="modal-overlay" style="display:none;" @click.self="showImportModal=false">
+            <div x-show="showImportModal" x-transition class="modal-box max-w-lg">
+                <form x-ref="importForm" action="{{ route('admin.akun.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h3 class="section-title">Import Kode Rekening</h3>
+                        <p class="section-subtitle mt-1">Tes dulu sebelum data disimpan. Kolom: Kode Akun, Jenis, Nama Akun, Kelompok, Subkelompok, Uraian, Saldo Normal.</p>
+                    </div>
+                    <div class="modal-body space-y-3">
+                        <a href="{{ route('admin.akun.import.template') }}" class="text-xs font-semibold underline" style="color:#1A6B6B;">Unduh template</a>
+                        <input type="file" name="file" accept=".xlsx,.xls" required class="input-field" @change="resetImport()">
+                        <button type="button" @click="runImportTest()" :disabled="importTesting" class="btn-secondary text-sm">
+                            <span x-text="importTesting ? 'Sedang mengetes...' : 'Tes'"></span>
+                        </button>
+                        <p x-show="importTestError" x-text="importTestError" class="text-xs" style="display:none;color:#C0392B;"></p>
+                        <div x-show="importTest" class="rounded-lg border p-3 text-sm space-y-2" style="display:none;border-color:rgba(0,0,0,0.08);">
+                            <p x-text="importTest?.message"></p>
+                            <p class="text-xs" style="color:#1A6B6B;" x-show="importTest?.valid_count > 0" x-text="`${importTest.valid_count} baris siap`"></p>
+                            <ul class="text-xs max-h-40 overflow-y-auto space-y-1" style="color:#6B6560;">
+                                <template x-for="row in (importTest?.rows || []).filter(r => r.status !== 'ok')" :key="row.row + row.status">
+                                    <li>
+                                        <span class="font-semibold" x-text="`Baris ${row.row}:`"></span>
+                                        <span x-text="row.label"></span>
+                                        — <span x-text="row.message"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                            <label x-show="importTest?.duplicate_count > 0" class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="ignore_duplicates" value="1" x-model="ignoreDuplicates" class="rounded">
+                                Abaikan baris duplikat, import sisanya
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" @click="showImportModal=false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary" :disabled="!canImport()" :class="!canImport() && 'opacity-50 pointer-events-none'">Import</button>
+                    </div>
                 </form>
             </div>
         </div>

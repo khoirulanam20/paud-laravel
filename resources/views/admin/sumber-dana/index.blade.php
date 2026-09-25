@@ -23,12 +23,13 @@
                 </div>
             </div>
             <table class="data-table" data-tour="admin-sumber-dana-table">
-                <thead><tr><th>Kode</th><th>Nama</th><th class="text-center">Urutan</th><th class="text-center">Status</th><th class="text-right">Aksi</th></tr></thead>
+                <thead><tr><th>Kode</th><th>Nama</th><th>Akun</th><th class="text-center">Urutan</th><th class="text-center">Status</th><th class="text-right">Aksi</th></tr></thead>
                 <tbody>
                     @forelse($sumberDanas as $sd)
                         <tr>
                             <td class="font-mono font-semibold">{{ $sd->kode }}</td>
                             <td>{{ $sd->nama }}</td>
+                            <td class="text-xs">{{ $sd->akun ? $sd->akun->kode.' — '.$sd->akun->nama : '—' }}</td>
                             <td class="text-center">{{ $sd->urutan }}</td>
                             <td class="text-center"><span class="badge {{ $sd->is_aktif ? 'badge-green' : 'badge-gray' }}">{{ $sd->is_aktif ? 'Aktif' : 'Nonaktif' }}</span></td>
                             <td class="text-right">
@@ -37,14 +38,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="py-12 text-center" style="color:#9E9790;">Belum ada sumber dana.</td></tr>
+                        <tr><td colspan="6" class="py-12 text-center" style="color:#9E9790;">Belum ada sumber dana.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div x-show="showCreateModal" class="modal-overlay" style="display:none;">
-            <div x-show="showCreateModal" x-transition class="modal-box" @click.away="showCreateModal=false">
+        <div x-show="showCreateModal" class="modal-overlay" style="display:none;" @click.self="showCreateModal=false">
+            <div x-show="showCreateModal" x-transition class="modal-box">
                 <form action="{{ route('admin.sumber-dana.store') }}" method="POST">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Tambah Sumber Dana</h3></div>
@@ -52,14 +53,18 @@
                         <div><label class="input-label">Kode</label><input type="text" name="kode" required class="input-field" placeholder="BOS"></div>
                         <div><label class="input-label">Urutan</label><input type="number" name="urutan" min="0" class="input-field" value="99"></div>
                         <div class="col-span-2"><label class="input-label">Nama</label><input type="text" name="nama" required class="input-field"></div>
+                        <div class="col-span-2">
+                            <label class="input-label">Akun</label>
+                            <x-akun-search-select name="akun_id" :options="$akunOptions" placeholder="Pilih akun sumber dana…" />
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
                 </form>
             </div>
         </div>
 
-        <div x-show="showEditModal" class="modal-overlay" style="display:none;">
-            <div x-show="showEditModal" x-transition class="modal-box" @click.away="showEditModal=false">
+        <div x-show="showEditModal" class="modal-overlay" style="display:none;" @click.self="showEditModal=false">
+            <div x-show="showEditModal" x-transition class="modal-box">
                 <form :action="`{{ url('admin/sumber-dana') }}/${editData.id}`" method="POST">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Sumber Dana</h3></div>
@@ -67,6 +72,10 @@
                         <div><label class="input-label">Kode</label><input type="text" name="kode" x-model="editData.kode" required class="input-field"></div>
                         <div><label class="input-label">Urutan</label><input type="number" name="urutan" x-model="editData.urutan" min="0" class="input-field"></div>
                         <div class="col-span-2"><label class="input-label">Nama</label><input type="text" name="nama" x-model="editData.nama" required class="input-field"></div>
+                        <div class="col-span-2">
+                            <label class="input-label">Akun</label>
+                            <x-akun-search-select name="akun_id" :options="$akunOptions" sync-field="akun_id" placeholder="Pilih akun sumber dana…" />
+                        </div>
                         <div class="col-span-2"><label class="flex items-center gap-2"><input type="checkbox" name="is_aktif" value="1" :checked="editData.is_aktif" class="rounded"><span class="input-label mb-0">Aktif</span></label></div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
