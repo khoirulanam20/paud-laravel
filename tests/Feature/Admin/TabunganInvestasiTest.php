@@ -32,7 +32,7 @@ class TabunganInvestasiTest extends TestCase
             'tipe' => 'sistem',
             'kode' => '1101',
             'nama' => 'Kas',
-            'jenis' => 'aset',
+            'jenis' => 'Assets',
             'saldo_normal' => 'debit',
             'is_aktif' => true,
         ]);
@@ -42,7 +42,7 @@ class TabunganInvestasiTest extends TestCase
             'tipe' => 'sistem',
             'kode' => '1106',
             'nama' => 'Persediaan Tabungan Test',
-            'jenis' => 'aset',
+            'jenis' => 'Assets',
             'kategori_arus_kas' => 'investasi',
             'saldo_normal' => 'debit',
             'is_aktif' => true,
@@ -53,7 +53,7 @@ class TabunganInvestasiTest extends TestCase
             'tipe' => 'sistem',
             'kode' => '4201',
             'nama' => 'Pendapatan Bunga',
-            'jenis' => 'pendapatan',
+            'jenis' => 'Pendapatan',
             'saldo_normal' => 'kredit',
             'is_aktif' => true,
         ]);
@@ -63,7 +63,7 @@ class TabunganInvestasiTest extends TestCase
             'tipe' => 'rkas',
             'kode' => '5101',
             'nama' => 'Beban Gaji',
-            'jenis' => 'beban',
+            'jenis' => 'Beban',
             'saldo_normal' => 'debit',
             'is_aktif' => true,
         ]);

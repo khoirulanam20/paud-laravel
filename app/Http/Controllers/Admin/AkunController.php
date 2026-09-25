@@ -23,18 +23,11 @@ class AkunController extends Controller
         $query = $this->baseQuery($sekolahId, $request);
         $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
-        $jenisOptions = Akun::where('sekolah_id', $sekolahId)
-            ->whereNotNull('jenis')
-            ->distinct()
-            ->orderBy('jenis')
-            ->pluck('jenis');
-
         $kelompokOptions = $this->distinctKelompok($sekolahId);
         $subkelompokOptions = $this->distinctSubkelompok($sekolahId, $request->input('kelompok'));
 
         return view('admin.akun.index', compact(
             'akunList',
-            'jenisOptions',
             'kelompokOptions',
             'subkelompokOptions',
         ));
