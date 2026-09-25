@@ -10,7 +10,15 @@
             showCreateModal:false, showEditModal:false, showDeleteModal:false, showKwitansiModal:false,
             createType:'in', editData:{}, deleteRoute:'',
             kwitansiData:{}, kwitansiJenis:'pembayaran', kwitansiPdfUrl:'', kwitansiLoading:false,
-            openEdit(d){ this.editData=d; this.showEditModal=true },
+            openEdit(d){
+                this.editData = {
+                    ...d,
+                    akun_id: d.akun_id ?? '',
+                    akun_lawan_id: d.akun_lawan_id ?? '',
+                    sumber_dana_id: d.sumber_dana_id ?? '',
+                };
+                this.showEditModal = true;
+            },
             openDelete(r){ this.deleteRoute=r; this.showDeleteModal=true },
             async openKwitansi(defaultsUrl, pdfUrl) {
                 this.kwitansiLoading = true;
@@ -209,18 +217,12 @@
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>
-                            <select :name="createType === 'in' ? 'akun_lawan_id' : '_skip'" x-show="createType === 'in'" class="input-field">
-                                <option value="">— Pilih kode rekening —</option>
-                                @foreach($akunPendapatan as $a)
-                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 50) }}</option>
-                                @endforeach
-                            </select>
-                            <select x-show="createType === 'out'" style="display:none;" :name="createType === 'out' ? 'akun_lawan_id' : '_skip'" class="input-field">
-                                <option value="">— Pilih kode rekening —</option>
-                                @foreach($akunBeban as $a)
-                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 50) }}</option>
-                                @endforeach
-                            </select>
+                            <template x-if="createType === 'in'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" />
+                            </template>
+                            <template x-if="createType === 'out'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" />
+                            </template>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" required rows="2" placeholder="Pembayaran SPP Bulan Juli..." class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="createType === 'out'">
@@ -260,18 +262,12 @@
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>
-                            <select :name="editData.type === 'in' ? 'akun_lawan_id' : '_skip'" x-show="editData.type === 'in'" x-model="editData.akun_lawan_id" class="input-field">
-                                <option value="">— Pilih —</option>
-                                @foreach($akunPendapatan as $a)
-                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 40) }}</option>
-                                @endforeach
-                            </select>
-                            <select :name="editData.type === 'out' ? 'akun_lawan_id' : '_skip'" x-show="editData.type === 'out'" style="display:none;" x-model="editData.akun_lawan_id" class="input-field">
-                                <option value="">— Pilih —</option>
-                                @foreach($akunBeban as $a)
-                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ Str::limit($a->uraian ?? $a->nama, 40) }}</option>
-                                @endforeach
-                            </select>
+                            <template x-if="editData.type === 'in'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" watch-parent />
+                            </template>
+                            <template x-if="editData.type === 'out'">
+                                <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" watch-parent />
+                            </template>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" x-model="editData.description" required rows="2" class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="editData.type === 'out'">
