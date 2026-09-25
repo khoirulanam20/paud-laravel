@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToSekolah;
 use App\Models\Concerns\LogsScopedActivity;
+use App\Support\JenisAkun;
 use App\Support\StandardCoa;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -67,7 +68,7 @@ class AkuntansiSetting extends Model
             $this->jenis_akun_aset ?? []
         )));
 
-        return $list !== [] ? $list : ['aset'];
+        return $list !== [] ? $list : [JenisAkun::ASSETS];
     }
 
     public function isAccrual(): bool

@@ -98,7 +98,7 @@ class RkasController extends Controller
         $rka->load(['lines.anggarans', 'lines.akun']);
 
         $sumberDanas = SumberDana::where('sekolah_id', $rka->sekolah_id)->aktif()->orderBy('urutan')->get();
-        $akunBelanja = Akun::where('sekolah_id', $rka->sekolah_id)->aktif()->rkas()->where('jenis', 'beban')->orderBy('kode')->paginate(PaginationPerPage::resolve($request, 'belanja_per_page'), ['*'], 'belanja_page')->withQueryString();
+        $akunBelanja = Akun::where('sekolah_id', $rka->sekolah_id)->aktif()->rkas()->where('jenis', \App\Support\JenisAkun::BEBAN)->orderBy('kode')->paginate(PaginationPerPage::resolve($request, 'belanja_per_page'), ['*'], 'belanja_page')->withQueryString();
         $selected = $rka->lines->keyBy('akun_id');
 
         return view('admin.rkas.edit', compact('rka', 'sumberDanas', 'akunBelanja', 'selected'));

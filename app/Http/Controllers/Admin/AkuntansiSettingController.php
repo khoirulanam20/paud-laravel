@@ -29,8 +29,8 @@ class AkuntansiSettingController extends Controller
         sort($jenisOptions);
 
         $akunAset = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->whereIn('jenis', $jenisAkunAset)->orderBy('kode')->get();
-        $akunPendapatan = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', 'pendapatan')->orderBy('kode')->get();
-        $akunBeban = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', 'beban')->orderBy('kode')->get();
+        $akunPendapatan = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', \App\Support\JenisAkun::PENDAPATAN)->orderBy('kode')->get();
+        $akunBeban = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', \App\Support\JenisAkun::BEBAN)->orderBy('kode')->get();
 
         return view('admin.akuntansi-setting.index', compact(
             'setting', 'akunAset', 'akunPendapatan', 'akunBeban', 'jenisOptions', 'jenisAkunAset'

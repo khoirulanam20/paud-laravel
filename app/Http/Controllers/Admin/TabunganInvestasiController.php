@@ -51,7 +51,7 @@ class TabunganInvestasiController extends Controller
 
         $asetOptions = Akun::where('sekolah_id', $sekolahId)
             ->aktif()
-            ->where('jenis', 'aset')
+            ->where('jenis', \App\Support\JenisAkun::ASSETS)
             ->orderBy('kode')
             ->get();
 
@@ -86,7 +86,7 @@ class TabunganInvestasiController extends Controller
 
         $validIds = Akun::where('sekolah_id', $sekolahId)
             ->aktif()
-            ->where('jenis', 'aset')
+            ->where('jenis', \App\Support\JenisAkun::ASSETS)
             ->whereIn('id', $ids)
             ->pluck('id')
             ->all();
@@ -178,7 +178,7 @@ class TabunganInvestasiController extends Controller
     {
         return Akun::where('sekolah_id', $sekolahId)
             ->aktif()
-            ->where('jenis', 'aset')
+            ->where('jenis', \App\Support\JenisAkun::ASSETS)
             ->where(function ($q) use ($tabunganAkunIds) {
                 $q->where(function ($q2) {
                     $q2->whereIn('kode', StandardCoa::KAS_BANK_KODES);

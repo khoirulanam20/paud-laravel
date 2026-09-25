@@ -59,7 +59,7 @@ class LaporanController extends Controller
         $sampaiTanggal = $request->input('sampai_tanggal', now()->toDateString());
 
         $asets = Akun::where('sekolah_id', $sekolahId)
-            ->where('jenis', 'aset')
+            ->where('jenis', \App\Support\JenisAkun::ASSETS)
             ->where('is_aktif', true)
             ->orderBy('kode')
             ->get()
@@ -69,7 +69,7 @@ class LaporanController extends Controller
             ]);
 
         $liabilitas = Akun::where('sekolah_id', $sekolahId)
-            ->where('jenis', 'liabilitas')
+            ->where('jenis', \App\Support\JenisAkun::LIABILITAS)
             ->where('is_aktif', true)
             ->orderBy('kode')
             ->get()
@@ -79,7 +79,7 @@ class LaporanController extends Controller
             ]);
 
         $ekuitas = Akun::where('sekolah_id', $sekolahId)
-            ->where('jenis', 'ekuitas')
+            ->where('jenis', \App\Support\JenisAkun::MODAL)
             ->where('is_aktif', true)
             ->orderBy('kode')
             ->get()
@@ -112,7 +112,7 @@ class LaporanController extends Controller
         $end = date('Y-m-t', strtotime($start));
 
         $pendapatan = Akun::where('sekolah_id', $sekolahId)
-            ->where('jenis', 'pendapatan')
+            ->where('jenis', \App\Support\JenisAkun::PENDAPATAN)
             ->where('is_aktif', true)
             ->orderBy('kode')
             ->get()
@@ -127,7 +127,7 @@ class LaporanController extends Controller
             });
 
         $beban = Akun::where('sekolah_id', $sekolahId)
-            ->where('jenis', 'beban')
+            ->where('jenis', \App\Support\JenisAkun::BEBAN)
             ->where('is_aktif', true)
             ->orderBy('kode')
             ->get()

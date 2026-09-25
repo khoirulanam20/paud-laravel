@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Akun;
+use App\Support\JenisAkun;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -118,7 +119,7 @@ class AkunImport implements ToCollection, WithHeadingRow
     /** @return array{kode: string, nama: string, jenis: string, snp: ?string, komponen: ?string, uraian: ?string, saldo_normal: string, kategori_arus_kas: string} */
     private function normalize(Collection $row): array
     {
-        $jenis = strtolower($this->cell($row, ['jenis']));
+        $jenis = JenisAkun::normalize($this->cell($row, ['jenis']));
         $saldo = strtolower($this->cell($row, ['saldo_normal', 'saldo']));
         $snp = $this->cell($row, ['kelompok', 'snp']);
         $komponen = $this->cell($row, ['subkelompok', 'komponen']);
@@ -147,8 +148,8 @@ class AkunImport implements ToCollection, WithHeadingRow
         if (mb_strlen($data['nama']) > 200) {
             return 'Nama maksimal 200 karakter.';
         }
-        if ($data['jenis'] === '' || mb_strlen($data['jenis']) > 50) {
-            return 'Jenis wajib diisi (maksimal 50 karakter).';
+        if (! in_array($data['jenis'], JenisAkun::ALL, true)) {
+            return 'Jenis harus '.implode(', ', JenisAkun::ALL).'.';
         }
 
         return null;
@@ -173,11 +174,11 @@ class AkunImport implements ToCollection, WithHeadingRow
 
     private function defaultSaldo(string $jenis): string
     {
-        return in_array($jenis, ['pendapatan', 'liabilitas', 'ekuitas'], true) ? 'kredit' : 'debit';
+        return in_array($jenis, [JenisAkun::PENDAPATAN, JenisAkun::LIABILITAS, JenisAkun::MODAL], true) ? 'kredit' : 'debit';
     }
 
     private function defaultArus(string $jenis): string
     {
-        return $jenis === 'ekuitas' ? 'pendanaan' : 'operasi';
+        return $jenis === JenisAkun::MODAL ? 'pendanaan' : 'operasi';
     }
 }

@@ -38,10 +38,10 @@ class StandardCoa
         if (str_contains($kelompok, 'jangka panjang')) {
             return 'pendanaan';
         }
-        if ($jenis === 'ekuitas') {
+        if ($jenis === JenisAkun::MODAL) {
             return 'pendanaan';
         }
-        if ($jenis === 'aset' && str_contains($kelompok, 'tetap')) {
+        if ($jenis === JenisAkun::ASSETS && str_contains($kelompok, 'tetap')) {
             return 'investasi';
         }
 

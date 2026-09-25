@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Imports\AkunImport;
 use App\Models\Akun;
+use App\Support\JenisAkun;
 use App\Support\PaginationPerPage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -123,7 +124,7 @@ class AkunController extends Controller
     {
         return $this->downloadExcel(
             ['Kode Akun', 'Jenis', 'Nama Akun', 'Kelompok', 'Subkelompok', 'Uraian', 'Saldo Normal'],
-            [['1101', 'aset', 'Kas Besar', 'Aset Lancar', 'Kas dan Setara Kas', 'Kas utama', 'debit']],
+            [['1101', JenisAkun::ASSETS, 'Kas Besar', 'Aset Lancar', 'Kas dan Setara Kas', 'Kas utama', 'debit']],
             'template-kode-rekening.xlsx',
             'Kode Rekening'
         );
@@ -265,6 +266,10 @@ class AkunController extends Controller
 
     private function validated(Request $request): array
     {
+        $request->merge([
+            'jenis' => JenisAkun::normalize((string) $request->input('jenis')),
+        ]);
+
         $data = $request->validate([
             'kode' => 'required|string|max:20',
             'nama' => 'required|string|max:200',
@@ -272,14 +277,14 @@ class AkunController extends Controller
             'komponen' => 'nullable|string|max:255',
             'uraian' => 'nullable|string',
             'tipe' => 'nullable|in:sistem,rkas',
-            'jenis' => 'required|string|max:50',
+            'jenis' => 'required|in:'.implode(',', JenisAkun::ALL),
             'kategori_arus_kas' => 'nullable|in:operasi,investasi,pendanaan',
             'saldo_normal' => 'required|in:debit,kredit',
             'induk_id' => 'nullable|exists:akuns,id',
             'deskripsi' => 'nullable|string',
         ]);
 
-        $data['jenis'] = trim($data['jenis']);
+        $data['jenis'] = JenisAkun::normalize($data['jenis']);
 
         return $data;
     }
