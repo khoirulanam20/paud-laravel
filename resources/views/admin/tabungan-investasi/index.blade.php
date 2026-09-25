@@ -12,6 +12,7 @@
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
+            showSettingsModal: false,
             showMutasiModal: false,
             mutasiAksi: 'setor',
             mutasiAkunId: '',
@@ -29,26 +30,17 @@
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
-        <div class="card p-6 mb-6">
-            <h3 class="section-title mb-2">Pengaturan Akun</h3>
-            <p class="section-subtitle mb-4">Pilih akun aset dari kode rekening yang dipakai untuk tabungan/deposito/investasi.</p>
-            <form action="{{ route('admin.tabungan-investasi.settings') }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3 mb-4" style="border-color:rgba(0,0,0,0.08);">
-                    @forelse($asetOptions as $akun)
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" name="akun_id[]" value="{{ $akun->id }}"
-                                   @checked(in_array($akun->id, $selectedIds, true))>
-                            <span class="font-mono text-xs" style="color:#1A6B6B;">{{ $akun->kode }}</span>
-                            {{ $akun->nama }}
-                        </label>
-                    @empty
-                        <p class="text-sm" style="color:#9E9790;">Belum ada akun aset aktif.</p>
-                    @endforelse
-                </div>
-                <button type="submit" class="btn-primary text-sm">Simpan Pengaturan</button>
-            </form>
+        <div class="flex justify-end mb-4">
+            <button type="button" @click="showSettingsModal = true"
+                    class="btn-secondary text-sm inline-flex items-center gap-2"
+                    title="Pengaturan akun tabungan/investasi"
+                    aria-label="Pengaturan akun tabungan/investasi">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span class="hidden sm:inline">Pengaturan Akun</span>
+            </button>
         </div>
 
         @if($tabunganAkuns->isNotEmpty())
@@ -118,6 +110,37 @@
                 </table>
             </div>
             <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $mutasi->links() }}</div>
+        </div>
+
+        <div x-show="showSettingsModal" class="modal-overlay" style="display:none;">
+            <div x-show="showSettingsModal" x-transition class="modal-box max-w-lg" @click.away="showSettingsModal=false">
+                <form action="{{ route('admin.tabungan-investasi.settings') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h3 class="section-title">Pengaturan Akun</h3>
+                        <p class="section-subtitle mt-1">Pilih akun aset untuk tabungan, deposito, atau investasi.</p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto border rounded-lg p-3" style="border-color:rgba(0,0,0,0.08);">
+                            @forelse($asetOptions as $akun)
+                                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input type="checkbox" name="akun_id[]" value="{{ $akun->id }}"
+                                           @checked(in_array($akun->id, $selectedIds, true))>
+                                    <span class="font-mono text-xs" style="color:#1A6B6B;">{{ $akun->kode }}</span>
+                                    {{ $akun->nama }}
+                                </label>
+                            @empty
+                                <p class="text-sm" style="color:#9E9790;">Belum ada akun aset aktif.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" @click="showSettingsModal=false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div x-show="showMutasiModal" class="modal-overlay" style="display:none;">
