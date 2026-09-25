@@ -217,12 +217,16 @@
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>
-                            <template x-if="createType === 'in'">
-                                <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" />
-                            </template>
-                            <template x-if="createType === 'out'">
-                                <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" />
-                            </template>
+                            <div x-show="createType === 'in'">
+                                <fieldset :disabled="createType !== 'in'" class="border-0 p-0 m-0 min-w-0">
+                                    <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" />
+                                </fieldset>
+                            </div>
+                            <div x-show="createType === 'out'" style="display:none;">
+                                <fieldset :disabled="createType !== 'out'" class="border-0 p-0 m-0 min-w-0">
+                                    <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" />
+                                </fieldset>
+                            </div>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" required rows="2" placeholder="Pembayaran SPP Bulan Juli..." class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="createType === 'out'">
@@ -262,12 +266,16 @@
                         </div>
                         <div class="col-span-2">
                             <label class="input-label">Kode Rekening (Akun Lawan)</label>
-                            <template x-if="editData.type === 'in'">
-                                <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" watch-parent />
-                            </template>
-                            <template x-if="editData.type === 'out'">
-                                <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" watch-parent />
-                            </template>
+                            <div x-show="editData.type === 'in'">
+                                <fieldset :disabled="editData.type !== 'in'" class="border-0 p-0 m-0 min-w-0">
+                                    <x-akun-search-select name="akun_lawan_id" :options="$akunPendapatan" watch-parent />
+                                </fieldset>
+                            </div>
+                            <div x-show="editData.type === 'out'" style="display:none;">
+                                <fieldset :disabled="editData.type !== 'out'" class="border-0 p-0 m-0 min-w-0">
+                                    <x-akun-search-select name="akun_lawan_id" :options="$akunBeban" watch-parent />
+                                </fieldset>
+                            </div>
                         </div>
                         <div class="col-span-2"><label class="input-label">Keterangan</label><textarea name="description" x-model="editData.description" required rows="2" class="input-field"></textarea></div>
                         <div class="col-span-2" x-show="editData.type === 'out'">

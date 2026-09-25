@@ -26,6 +26,12 @@ class StandardCoa
         return require database_path('data/coa_standard.php');
     }
 
+    /** @return list<string> */
+    public static function kodes(): array
+    {
+        return array_column(self::rows(), 'kode');
+    }
+
     public static function kategoriArusKas(string $jenis, string $kelompok): string
     {
         $kelompok = strtolower($kelompok);
@@ -93,7 +99,7 @@ class StandardCoa
         foreach (self::rows() as $row) {
             $id = DB::table('akuns')->insertGetId([
                 'sekolah_id' => $sekolahId,
-                'tipe' => 'sistem',
+                'tipe' => 'rkas',
                 'kode' => $row['kode'],
                 'nama' => $row['nama'],
                 'snp' => $row['kelompok'],
