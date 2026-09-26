@@ -255,7 +255,7 @@
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         <a @if($loop->first) data-tour="admin-pembayaran-action-edit" @endif href="{{ route('admin.pembayaran-bulanan.show', $p) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</a>
-                                        @if($p->status === 'pending')
+                                        @if($p->canBeDeleted())
                                             <button type="button"
                                                 @if($loop->first) data-tour="admin-pembayaran-action-delete" @endif
                                                 @click="openDelete('{{ route('admin.pembayaran-bulanan.destroy', $p) }}')"

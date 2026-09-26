@@ -182,6 +182,50 @@ class AkuntansiService
         });
     }
 
+    public function jurnalTerikatPembayaranLunas(Jurnal $jurnal): bool
+    {
+        if (PembayaranBulanan::where('jurnal_id', $jurnal->id)->where('status', 'approved')->exists()) {
+            return true;
+        }
+
+        if ($jurnal->sourceable_type !== PembayaranBulanan::class || ! $jurnal->sourceable_id) {
+            return false;
+        }
+
+        $pembayaran = PembayaranBulanan::find($jurnal->sourceable_id);
+
+        return $pembayaran && $pembayaran->isApproved();
+    }
+
+    /** Hanya untuk tagihan pending — bersihkan jurnal tagihan/pelunasan terkait sebelum hapus record. */
+    public function hapusJurnalUntukPembayaranPending(PembayaranBulanan $pembayaran): void
+    {
+        if (! $pembayaran->canBeDeleted()) {
+            throw new \RuntimeException('Tagihan lunas atau ditolak tidak boleh dihapus.');
+        }
+
+        $jurnalIds = Jurnal::query()
+            ->where('sekolah_id', $pembayaran->sekolah_id)
+            ->where(function ($q) use ($pembayaran) {
+                $q->where(function ($q2) use ($pembayaran) {
+                    $q2->where('sourceable_type', PembayaranBulanan::class)
+                        ->where('sourceable_id', $pembayaran->id);
+                });
+                if ($pembayaran->jurnal_id) {
+                    $q->orWhere('id', $pembayaran->jurnal_id);
+                }
+            })
+            ->pluck('id')
+            ->unique();
+
+        foreach ($jurnalIds as $id) {
+            $jurnal = Jurnal::find($id);
+            if ($jurnal) {
+                $this->hapusJurnal($jurnal);
+            }
+        }
+    }
+
     /**
      * Jurnal pembuka: akun ini lawan akun sistem "Saldo Awal" (3999).
      * Nominal 0 menghapus jurnal pembuka akun tersebut.

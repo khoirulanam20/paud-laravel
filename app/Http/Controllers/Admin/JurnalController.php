@@ -180,6 +180,12 @@ class JurnalController extends Controller
     {
         abort_if($jurnal->sekolah_id !== auth()->user()->sekolah_id, 403);
 
+        if ($this->akuntansiService->jurnalTerikatPembayaranLunas($jurnal)) {
+            return back()->withErrors([
+                'jurnal' => 'Jurnal ini terkait tagihan SPP yang sudah lunas dan tidak bisa dihapus.',
+            ]);
+        }
+
         Cashflow::where('jurnal_id', $jurnal->id)->delete();
         $this->akuntansiService->hapusJurnal($jurnal);
 

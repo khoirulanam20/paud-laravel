@@ -15,6 +15,7 @@ use App\Services\RekapBiayaService;
 use App\Support\PaginationPerPage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PembayaranBulananController extends Controller
 {
@@ -361,18 +362,19 @@ class PembayaranBulananController extends Controller
     {
         $this->assertPembayaranAccessible($pembayaran);
 
-        if ($pembayaran->status !== 'pending') {
-            return redirect()
-                ->route('admin.pembayaran-bulanan.index', [
-                    'bulan' => $pembayaran->periode_bulan,
-                    'tahun' => $pembayaran->periode_tahun,
-                ])
-                ->withErrors(['tagihan' => 'Hanya tagihan berstatus Menunggu yang bisa dihapus.']);
-        }
-
         $bulan = $pembayaran->periode_bulan;
         $tahun = $pembayaran->periode_tahun;
-        $pembayaran->delete();
+
+        if (! $pembayaran->canBeDeleted()) {
+            return redirect()
+                ->route('admin.pembayaran-bulanan.index', compact('bulan', 'tahun'))
+                ->withErrors(['tagihan' => 'Tagihan yang sudah lunas atau ditolak tidak bisa dihapus.']);
+        }
+
+        DB::transaction(function () use ($pembayaran) {
+            $this->akuntansiService->hapusJurnalUntukPembayaranPending($pembayaran);
+            $pembayaran->delete();
+        });
 
         return redirect()
             ->route('admin.pembayaran-bulanan.index', compact('bulan', 'tahun'))
@@ -415,6 +417,7 @@ class PembayaranBulananController extends Controller
     public function approve(Request $request, PembayaranBulanan $pembayaran)
     {
         $this->assertPembayaranAccessible($pembayaran);
+        abort_if($pembayaran->isApproved(), 403, 'Tagihan sudah lunas.');
 
         $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
 
