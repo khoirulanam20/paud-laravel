@@ -53,6 +53,11 @@ class CashflowController extends Controller
 
         $netPeriod = $totalIn - $totalOut;
         $filterPeriodLabel = $this->cashflowFilterPeriodLabel($request, $bulan, $tahun);
+        $filterType = $request->input('type', 'all');
+        $arusKasBreakdown = $this->arusKasBreakdown($summaryArusKas)
+            ->where('key', '!=', 'operasi')
+            ->values();
+        $showArusKasBreakdown = $filterType === 'all' && $arusKasBreakdown->isNotEmpty();
 
         $kelompokOptions = $this->distinctAkunKelompok($sekolahId);
         $subkelompokOptions = $this->distinctAkunSubkelompok($sekolahId, $request->input('kelompok'));
@@ -68,7 +73,8 @@ class CashflowController extends Controller
 
         return view('admin.cashflow.index', compact(
             'cashflows', 'totalIn', 'totalOut', 'balance', 'netPeriod', 'filterPeriodLabel',
-            'summaryArusKas', 'bulan', 'tahun', 'akunAset', 'akunOptions', 'setting', 'sumberDanas',
+            'filterType', 'arusKasBreakdown', 'showArusKasBreakdown',
+            'bulan', 'tahun', 'akunAset', 'akunOptions', 'setting', 'sumberDanas',
             'kelompokOptions', 'subkelompokOptions',
         ));
     }
@@ -213,6 +219,30 @@ class CashflowController extends Controller
         $this->applyKelompokFilter($query, $request);
 
         return $query;
+    }
+
+    /** @param  \Illuminate\Support\Collection<string, \Illuminate\Support\Collection<int, Cashflow>>  $summaryArusKas */
+    private function arusKasBreakdown(\Illuminate\Support\Collection $summaryArusKas): \Illuminate\Support\Collection
+    {
+        $labels = [
+            'operasi' => 'Operasi',
+            'investasi' => 'Investasi',
+            'pendanaan' => 'Pendanaan',
+        ];
+
+        return collect($labels)->map(function (string $label, string $key) use ($summaryArusKas) {
+            $group = $summaryArusKas->get($key, collect());
+            $in = (float) $group->where('type', 'in')->sum('amount');
+            $out = (float) $group->where('type', 'out')->sum('amount');
+
+            return [
+                'key' => $key,
+                'label' => $label,
+                'in' => $in,
+                'out' => $out,
+                'net' => $in - $out,
+            ];
+        })->filter(fn (array $r) => $r['in'] >= 0.005 || $r['out'] >= 0.005)->values();
     }
 
     private function cashflowFilterPeriodLabel(Request $request, ?int $bulan, ?int $tahun): string

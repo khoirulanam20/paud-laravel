@@ -52,95 +52,94 @@
         @endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
-        <p class="text-xs mb-4 flex flex-wrap items-center gap-2" style="color:#9E9790;">
-            <span class="font-semibold uppercase tracking-wider">Ringkasan</span>
-            <span class="rounded-full px-2.5 py-0.5" style="background:rgba(0,0,0,0.05);">{{ $filterPeriodLabel }}</span>
-            @if(request()->filled('type') && request('type') !== 'all')
-                <span class="rounded-full px-2.5 py-0.5" style="background:#D0E8E8; color:#1A6B6B;">Jenis: {{ request('type') === 'in' ? 'Pemasukan' : 'Pengeluaran' }}</span>
-            @endif
-        </p>
+        @php
+            $showIn = $filterType !== 'out';
+            $showOut = $filterType !== 'in';
+            $showNet = $filterType === 'all';
+            $mainCols = ($showIn && $showOut ? 2 : 1) + ($showNet ? 1 : 0) + 1;
+        @endphp
 
-        <!-- Summary Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-4" data-tour="admin-cashflow-stats">
-            <div class="stat-card min-w-0">
-                <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12"/></svg></div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1 flex-wrap" style="color:#9E9790;">
-                        Pemasukan
-                        <x-info-tip text="Total uang masuk (transaksi in) sesuai periode dan filter di bawah. Diambil dari tabel cashflow, bukan dari laporan laba rugi." />
-                    </p>
-                    <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:#1A6B6B;">Rp {{ number_format($totalIn, 0, ',', '.') }}</p>
-                </div>
+        <div class="mb-6" data-tour="admin-cashflow-stats">
+            <div class="flex flex-wrap items-center gap-2 mb-3 text-xs" style="color:#9E9790;">
+                <span class="font-semibold uppercase tracking-wider">Ringkasan</span>
+                <span class="rounded-full px-2.5 py-0.5" style="background:rgba(0,0,0,0.05);">{{ $filterPeriodLabel }}</span>
+                @if($filterType !== 'all')
+                    <span class="rounded-full px-2.5 py-0.5" style="background:#D0E8E8; color:#1A6B6B;">{{ $filterType === 'in' ? 'Pemasukan saja' : 'Pengeluaran saja' }}</span>
+                @endif
             </div>
-            <div class="stat-card min-w-0">
-                <div class="stat-icon" style="background:#FAD7D2; color:#C0392B;"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 13l-5 5m0 0l-5-5m5 5V6"/></svg></div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1 flex-wrap" style="color:#9E9790;">
-                        Pengeluaran
-                        <x-info-tip text="Total uang keluar (transaksi out) sesuai periode dan filter. Termasuk pembelian aset dan cadangan kas, tidak hanya beban operasional." />
-                    </p>
-                    <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:#C0392B;">Rp {{ number_format($totalOut, 0, ',', '.') }}</p>
-                </div>
-            </div>
-            <div class="stat-card min-w-0">
-                <div class="stat-icon" style="background:#E8E0D4; color:#6B5B3A;"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1 flex-wrap" style="color:#9E9790;">
-                        Neto periode
-                        <x-info-tip text="Pemasukan dikurangi pengeluaran untuk periode dan filter yang sama. Bisa berbeda dengan surplus laba rugi karena akun lawan bisa bukan beban/pendapatan." />
-                    </p>
-                    <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:{{ $netPeriod >= 0 ? '#1A6B6B' : '#C0392B' }};">Rp {{ number_format($netPeriod, 0, ',', '.') }}</p>
-                </div>
-            </div>
-            <div class="stat-card min-w-0">
-                <div class="stat-icon" style="{{ $balance >= 0 ? '' : 'background:#FAD7D2; color:#C0392B;' }}"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg></div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1 flex-wrap" style="color:#9E9790;">
-                        Saldo kas
-                        <x-info-tip text="Saldo kumulatif semua transaksi kas (masuk − keluar) sejak awal. Tidak mengikuti filter periode di atas." />
-                    </p>
-                    <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:{{ $balance >= 0 ? '#1A6B6B' : '#C0392B' }};">Rp {{ number_format($balance, 0, ',', '.') }}</p>
-                </div>
-            </div>
-            <div class="stat-card min-w-0 sm:col-span-2 xl:col-span-1">
-                <div class="stat-icon" style="background:#D0E8E8; color:#1A6B6B;"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1 flex-wrap" style="color:#9E9790;">
-                        Auto jurnal
-                        <x-info-tip text="Setiap transaksi kas membuat jurnal otomatis: masuk = debit kas / kredit akun lawan; keluar = debit akun lawan / kredit kas." />
-                    </p>
-                    <p class="text-sm font-semibold leading-snug" style="color:#1A6B6B;">{{ $setting->akunKas->kode ?? '—' }} — {{ $setting->akunKas->nama ?? 'Belum diatur' }}</p>
-                </div>
-            </div>
-        </div>
 
-        <!-- Summary per Kategori Arus Kas -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            @foreach([
-                'operasi' => ['label' => 'Operasi', 'hint' => 'Transaksi dengan akun lawan berkategori operasi (SPP, beban harian, dll.). Neto = masuk − keluar pada periode terfilter.'],
-                'investasi' => ['label' => 'Investasi', 'hint' => 'Transaksi terkait aset tetap/peralatan (mis. beli AC, printer) menurut kategori akun lawan.'],
-                'pendanaan' => ['label' => 'Pendanaan', 'hint' => 'Transaksi modal, saldo awal, atau sumber dana jangka panjang menurut kategori akun lawan.'],
-            ] as $key => $meta)
-                @php
-                    $group = $summaryArusKas->get($key, collect());
-                    $in = (float) $group->where('type', 'in')->sum('amount');
-                    $out = (float) $group->where('type', 'out')->sum('amount');
-                    $net = $in - $out;
-                @endphp
-                <div class="stat-card flex-col items-stretch !gap-2">
-                    <p class="text-xs font-bold uppercase tracking-wider flex items-center gap-1 flex-wrap" style="color:#9E9790;">
-                        Arus kas {{ $meta['label'] }}
-                        <x-info-tip :text="$meta['hint']" />
-                    </p>
-                    <p class="text-xl font-bold tabular-nums" style="color:{{ $net >= 0 ? '#1A6B6B' : '#C0392B' }};">
-                        Rp {{ number_format($net, 0, ',', '.') }}
-                    </p>
-                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums pt-1 border-t" style="border-color:rgba(0,0,0,0.06);">
-                        <span style="color:#1A6B6B;">Masuk Rp {{ number_format($in, 0, ',', '.') }}</span>
-                        <span style="color:#C0392B;">Keluar Rp {{ number_format($out, 0, ',', '.') }}</span>
+            <div @class([
+                'grid gap-4',
+                'grid-cols-1 sm:grid-cols-2' => $mainCols <= 2,
+                'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' => $mainCols >= 4,
+                'grid-cols-1 sm:grid-cols-3' => $mainCols === 3,
+            ])>
+                @if($showIn)
+                    <div class="stat-card min-w-0 relative pr-8">
+                        <div class="absolute top-4 right-4 z-10"><x-info-tip align="right" text="Total transaksi masuk sesuai filter tabel di bawah." /></div>
+                        <div class="stat-icon"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12"/></svg></div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Pemasukan</p>
+                            <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:#1A6B6B;">Rp {{ number_format($totalIn, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                @endif
+                @if($showOut)
+                    <div class="stat-card min-w-0 relative pr-8">
+                        <div class="absolute top-4 right-4 z-10"><x-info-tip align="right" text="Total transaksi keluar sesuai filter tabel di bawah." /></div>
+                        <div class="stat-icon" style="background:#FAD7D2; color:#C0392B;"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 13l-5 5m0 0l-5-5m5 5V6"/></svg></div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Pengeluaran</p>
+                            <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:#C0392B;">Rp {{ number_format($totalOut, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                @endif
+                @if($showNet)
+                    <div class="stat-card min-w-0 relative pr-8">
+                        <div class="absolute top-4 right-4 z-10"><x-info-tip align="right" text="Pemasukan dikurangi pengeluaran pada periode terfilter. Bukan angka laba rugi." /></div>
+                        <div class="stat-icon" style="background:#E8E0D4; color:#6B5B3A;"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Neto periode</p>
+                            @if($netPeriod >= 0)
+                                <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:#1A6B6B;">Rp {{ number_format($netPeriod, 0, ',', '.') }}</p>
+                            @else
+                                <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:#C0392B;">Rp {{ number_format(abs($netPeriod), 0, ',', '.') }}</p>
+                                <p class="text-[11px] mt-0.5 font-medium" style="color:#C0392B;">Defisit periode</p>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+                <div class="stat-card min-w-0 relative pr-8">
+                    <div class="absolute top-4 right-4 z-10"><x-info-tip align="right" text="Saldo kas kumulatif semua waktu. Tidak ikut filter periode." /></div>
+                    <div class="stat-icon" style="{{ $balance >= 0 ? '' : 'background:#FAD7D2; color:#C0392B;' }}"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg></div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">Saldo kas</p>
+                        <p class="text-xl md:text-2xl font-bold tabular-nums" style="color:{{ $balance >= 0 ? '#1A6B6B' : '#C0392B' }};">Rp {{ number_format($balance, 0, ',', '.') }}</p>
                     </div>
                 </div>
-            @endforeach
+            </div>
+
+            @if($showArusKasBreakdown)
+                <p class="text-xs font-semibold uppercase tracking-wider mt-5 mb-2 flex items-center gap-1" style="color:#9E9790;">
+                    Arus kas menurut kategori akun lawan
+                    <x-info-tip text="Hanya tampil jika ada transaksi investasi atau pendanaan selain operasional." />
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    @foreach($arusKasBreakdown as $row)
+                        <div class="rounded-xl px-4 py-3 border" style="background:var(--cream-raised); border-color:rgba(0,0,0,0.06);">
+                            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#9E9790;">{{ $row['label'] }}</p>
+                            <p class="text-lg font-bold tabular-nums" style="color:{{ $row['net'] >= 0 ? '#1A6B6B' : '#C0392B' }};">
+                                @if($row['net'] >= 0)
+                                    Rp {{ number_format($row['net'], 0, ',', '.') }}
+                                @else
+                                    Rp {{ number_format(abs($row['net']), 0, ',', '.') }}
+                                    <span class="text-[11px] font-medium block" style="color:#C0392B;">Defisit</span>
+                                @endif
+                            </p>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         <div class="card overflow-hidden">
