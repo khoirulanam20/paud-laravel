@@ -24,6 +24,7 @@
     x-data="{
         selected: @js($initial),
         q: '',
+        _seen: '',
         open: false,
         pos: { top: 0, left: 0, width: 0 },
         options: @js($optionsJson),
@@ -53,21 +54,22 @@
             const r = el.getBoundingClientRect();
             this.pos = { top: r.bottom + 4, left: r.left, width: r.width };
         },
-        applyParent(id) {
-            this.selected = id ? String(id) : '';
-            this.syncQ();
-        },
     }"
-    x-init="
-        @if($syncField)
-        applyParent($parent.editData?.{{ $syncField }});
-        $watch('$parent.showEditModal', (open) => {
-            if (open) applyParent($parent.editData?.{{ $syncField }});
-        });
-        $watch('$parent.editData.{{ $syncField }}', (id) => applyParent(id));
-        @endif
-        syncQ();
+    x-init="syncQ()"
+    @if($syncField)
+    x-effect="
+        const open = !!$parent.showEditModal;
+        const data = $parent.editData || {};
+        const raw = data[@js($syncField)];
+        const next = (raw === null || raw === undefined || raw === '') ? '' : String(raw);
+        const token = (open ? '1' : '0') + ':' + next;
+        if (token === _seen) return;
+        _seen = token;
+        if (!open) return;
+        selected = next;
+        q = labelFor(next) || String(data[@js($syncField.'_label')] || '');
     "
+    @endif
     class="relative"
     @click.outside="open = false"
     {{ $attributes->except(['class']) }}

@@ -44,6 +44,40 @@ class Cashflow extends Model
         return $this->belongsTo(Akun::class, 'akun_lawan_id');
     }
 
+    /** Akun lawan tersimpan, atau lawan di jurnal bila kolomnya masih kosong. */
+    public function akunLawanUntukForm(): ?Akun
+    {
+        if ($this->akunLawan) {
+            return $this->akunLawan;
+        }
+
+        $line = $this->jurnal?->lines?->first(function ($line) {
+            return $this->type === 'in'
+                ? (float) $line->kredit > 0
+                : (float) $line->debit > 0;
+        });
+
+        return $line?->akun;
+    }
+
+    /** @return array<string, mixed> */
+    public function editFormPayload(): array
+    {
+        $lawan = $this->akunLawanUntukForm();
+
+        return [
+            'id' => $this->id,
+            'type' => $this->type,
+            'amount' => $this->amount,
+            'description' => $this->description,
+            'date' => $this->date?->format('Y-m-d'),
+            'akun_id' => $this->akun_id ?? '',
+            'akun_lawan_id' => $lawan?->id ?? '',
+            'akun_lawan_id_label' => $lawan ? $lawan->kode.' — '.$lawan->nama : '',
+            'sumber_dana_id' => $this->sumber_dana_id ?? '',
+        ];
+    }
+
     public function sumberDana(): BelongsTo
     {
         return $this->belongsTo(SumberDana::class);

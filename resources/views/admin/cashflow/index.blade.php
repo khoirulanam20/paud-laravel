@@ -182,7 +182,7 @@
                                         <span>Kuitansi</span>
                                     </button>
                                     <button type="button"
-                                        @click="openEdit({{ json_encode($trx->only(['id','type','amount','description','date','akun_id','akun_lawan_id','sumber_dana_id'])) }})"
+                                        @click="openEdit({{ Js::from($trx->editFormPayload()) }})"
                                         title="Edit transaksi"
                                         class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap"
                                         style="color:#1A6B6B;background:#D0E8E8;">

@@ -33,7 +33,7 @@ class CashflowController extends Controller
         $filtered = $this->filteredCashflowQuery($sekolahId, $request);
 
         $cashflows = (clone $filtered)
-            ->with(['akun', 'akunLawan', 'sumberDana', 'jurnal'])
+            ->with(['akun', 'akunLawan', 'sumberDana', 'jurnal.lines.akun'])
             ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
