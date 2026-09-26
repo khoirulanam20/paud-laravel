@@ -72,6 +72,12 @@
 
             <div class="px-6 py-3 border-b flex flex-wrap gap-2" data-tour="admin-akun-filter-tabs" style="border-color:rgba(0,0,0,0.06);">
                 <form method="GET" class="ml-auto flex flex-wrap gap-2 items-center">
+                    <select name="jenis" class="input-field text-sm w-36">
+                        <option value="">Semua jenis</option>
+                        @foreach($jenisOptions as $jenisOpt)
+                            <option value="{{ $jenisOpt }}" @selected(request('jenis') === $jenisOpt)>{{ $jenisOpt }}</option>
+                        @endforeach
+                    </select>
                     <select name="kelompok" class="input-field text-sm w-44" onchange="this.form.subkelompok.value=''; this.form.submit()">
                         <option value="">Semua kelompok</option>
                         @foreach($kelompokOptions as $opt)

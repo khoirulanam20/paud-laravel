@@ -96,7 +96,17 @@
                                 <button @click="showDiskonModal=true" class="text-xs px-2 py-0.5 rounded" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                             </div>
                             <span class="font-semibold" style="color:#C0392B;">
-                                {{ $pembayaran->diskon ? $pembayaran->diskon->nama_diskon.' (-'.$pembayaran->getNilaiDiskonFormatted().')' : '-' }}
+                                @if($pembayaran->nilai_diskon > 0)
+                                    @if($pembayaran->diskon)
+                                        {{ $pembayaran->diskon->nama_diskon }} (-{{ $pembayaran->getNilaiDiskonFormatted() }})
+                                    @elseif($pembayaran->diskon_keterangan)
+                                        {{ $pembayaran->diskon_keterangan }} (-{{ $pembayaran->getNilaiDiskonFormatted() }})
+                                    @else
+                                        -{{ $pembayaran->getNilaiDiskonFormatted() }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
                             </span>
                         </div>
                         @if($totalTambahan > 0 && $pembayaran->nilai_diskon > 0)

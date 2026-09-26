@@ -214,6 +214,25 @@ class PembayaranBulananController extends Controller
 
             $biayaBulanan = (float) $assignment->biaya_bulanan;
             $hariHadir = $this->rekapBiayaService->hitungHariHadir($anak->id, $bulan, $tahun);
+
+            $existingForPeriod = PembayaranBulanan::where('anak_id', $anak->id)
+                ->where('biaya_bulanan_sekolah_id', $biaya->id)
+                ->where('periode_bulan', $bulan)
+                ->where('periode_tahun', $tahun)
+                ->orderByDesc('id')
+                ->get();
+
+            $pending = $existingForPeriod->first(fn (PembayaranBulanan $p) => $p->status === 'pending');
+            $existingStatus = 'none';
+            if ($pending) {
+                $existingStatus = 'pending';
+            } elseif ($existingForPeriod->isNotEmpty()) {
+                $existingStatus = $existingForPeriod->first()->status;
+            }
+
+            $isTagihanTambahan = $pending === null && in_array($existingStatus, ['approved', 'rejected'], true);
+            $subtotalPreview = $isTagihanTambahan ? 0.0 : $biayaBulanan;
+
             $preview[] = [
                 'key' => $anak->id.'_'.$biaya->id,
                 'anak_id' => $anak->id,
@@ -221,9 +240,10 @@ class PembayaranBulananController extends Controller
                 'kelas_name' => $anak->kelas->name ?? '-',
                 'biaya_id' => $biaya->id,
                 'biaya_name' => $biaya->nama_biaya,
-                'hari_hadir' => $hariHadir,
-                'biaya_bulanan' => $biayaBulanan,
-                'subtotal' => $biayaBulanan,
+                'hari_hadir' => $isTagihanTambahan ? 0 : $hariHadir,
+                'biaya_bulanan' => $isTagihanTambahan ? 0 : $biayaBulanan,
+                'subtotal' => $subtotalPreview,
+                'existing_status' => $existingStatus,
             ];
         }
 
@@ -246,6 +266,9 @@ class PembayaranBulananController extends Controller
             'tagihan.*' => 'required|string|regex:/^\d+_\d+$/',
             'diskon' => 'nullable|array',
             'diskon.*' => 'nullable|exists:diskons,id',
+            'diskon_manual' => 'nullable|array',
+            'diskon_manual.*.nominal' => 'nullable|numeric|min:0',
+            'diskon_manual.*.keterangan' => 'nullable|string|max:255',
             'biaya_tambahan' => 'nullable|array',
         ]);
 
@@ -264,6 +287,30 @@ class PembayaranBulananController extends Controller
                 if ($diskonId && in_array((string) $key, $selectedKeys, true)) {
                     $diskonPerTagihan[(string) $key] = (int) $diskonId;
                 }
+            }
+        }
+
+        $diskonManualPerTagihan = [];
+        if ($request->filled('diskon_manual')) {
+            foreach ($request->diskon_manual as $key => $row) {
+                if (! in_array((string) $key, $selectedKeys, true)) {
+                    continue;
+                }
+                $nominal = (float) ($row['nominal'] ?? 0);
+                $keterangan = trim((string) ($row['keterangan'] ?? ''));
+                if ($nominal <= 0) {
+                    continue;
+                }
+                if ($keterangan === '') {
+                    return back()->withErrors([
+                        'diskon_manual' => 'Keterangan diskon manual wajib diisi jika nominal diskon diisi.',
+                    ])->withInput();
+                }
+                $diskonManualPerTagihan[(string) $key] = [
+                    'nominal' => $nominal,
+                    'keterangan' => $keterangan,
+                ];
+                unset($diskonPerTagihan[(string) $key]);
             }
         }
 
@@ -292,7 +339,8 @@ class PembayaranBulananController extends Controller
             $request->tahun,
             $diskonPerTagihan,
             $selectedKeys,
-            $biayaTambahan
+            $biayaTambahan,
+            $diskonManualPerTagihan
         );
 
         return redirect()

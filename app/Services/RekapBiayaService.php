@@ -64,24 +64,32 @@ class RekapBiayaService
 
     public function hitungBiaya(PembayaranBulanan $pembayaran): PembayaranBulanan
     {
-        $biaya = $this->getBiayaBulanan(
-            $pembayaran->anak_id,
-            $pembayaran->biaya_bulanan_sekolah_id
-        );
+        if ($pembayaran->is_tagihan_tambahan) {
+            $subtotal = 0.0;
+            $biaya = 0.0;
+        } else {
+            $biaya = $this->getBiayaBulanan(
+                $pembayaran->anak_id,
+                $pembayaran->biaya_bulanan_sekolah_id
+            );
 
-        if ($biaya === null) {
-            $biaya = (float) $pembayaran->biaya_per_hari;
+            if ($biaya === null) {
+                $biaya = (float) $pembayaran->biaya_per_hari;
+            }
+
+            $subtotal = $biaya;
         }
 
-        $subtotal = $biaya;
         $totalBiayaTambahan = (float) $pembayaran->items()->sum('jumlah');
 
-        $nilaiDiskon = 0;
+        $nilaiDiskon = 0.0;
         if ($pembayaran->diskon_id) {
             $diskon = Diskon::find($pembayaran->diskon_id);
             if ($diskon && $diskon->is_aktif) {
                 $nilaiDiskon = $diskon->hitungDiskon($subtotal);
             }
+        } elseif ((float) $pembayaran->nilai_diskon > 0 || filled($pembayaran->diskon_keterangan)) {
+            $nilaiDiskon = (float) $pembayaran->nilai_diskon;
         }
 
         $total = max(0, $subtotal + $totalBiayaTambahan - $nilaiDiskon);
@@ -100,6 +108,7 @@ class RekapBiayaService
      * @param  array<string, int|null>  $diskonPerTagihan  "{anak_id}_{biaya_id}" => diskon_id
      * @param  list<string>  $selectedKeys  "{anak_id}_{biaya_id}" — kosong = generate semua + cleanup
      * @param  array<string, list<array{nama_item: string, jumlah: float}>>  $biayaTambahan  "{anak_id}_{biaya_id}" => [{nama_item, jumlah}]
+     * @param  array<string, array{nominal: float, keterangan?: string}>  $diskonManualPerTagihan
      */
     public function generateTagihan(
         int $sekolahId,
@@ -107,7 +116,8 @@ class RekapBiayaService
         int $tahun,
         array $diskonPerTagihan = [],
         array $selectedKeys = [],
-        array $biayaTambahan = []
+        array $biayaTambahan = [],
+        array $diskonManualPerTagihan = []
     ): Collection {
         $assignments = $this->getSiswaDenganBiayaBulanan($sekolahId);
         $hariEfektif = $this->hitungHariEfektif($bulan, $tahun);
@@ -130,15 +140,39 @@ class RekapBiayaService
             }
 
             $biayaBulanan = (float) $assignment->biaya_bulanan;
-            $subtotal = $biayaBulanan;
             $hariHadir = $this->hitungHariHadir($anak->id, $bulan, $tahun);
 
-            $diskonId = $diskonPerTagihan[$key] ?? null;
-            $nilaiDiskon = 0;
-            if ($diskonId) {
+            $existingForPeriod = PembayaranBulanan::where('anak_id', $anak->id)
+                ->where('biaya_bulanan_sekolah_id', $biaya->id)
+                ->where('periode_bulan', $bulan)
+                ->where('periode_tahun', $tahun)
+                ->orderByDesc('id')
+                ->get();
+
+            $pending = $existingForPeriod->first(fn (PembayaranBulanan $p) => $p->status === 'pending');
+            if ($pending) {
+                $isTagihanTambahan = (bool) $pending->is_tagihan_tambahan;
+            } else {
+                $isTagihanTambahan = $existingForPeriod->isNotEmpty();
+            }
+
+            $subtotal = $isTagihanTambahan ? 0.0 : $biayaBulanan;
+            $diskonId = null;
+            $diskonKeterangan = null;
+            $nilaiDiskon = 0.0;
+
+            $manual = $diskonManualPerTagihan[$key] ?? null;
+            $manualNominal = (float) ($manual['nominal'] ?? 0);
+            if ($manualNominal > 0) {
+                $nilaiDiskon = min($manualNominal, $subtotal);
+                $diskonKeterangan = trim((string) ($manual['keterangan'] ?? '')) ?: null;
+            } elseif (($diskonPerTagihan[$key] ?? null) && ! $isTagihanTambahan) {
+                $diskonId = (int) $diskonPerTagihan[$key];
                 $diskon = Diskon::find($diskonId);
                 if ($diskon && $diskon->is_aktif) {
                     $nilaiDiskon = $diskon->hitungDiskon($subtotal);
+                } else {
+                    $diskonId = null;
                 }
             }
 
@@ -150,27 +184,34 @@ class RekapBiayaService
 
             $total = max(0, $subtotal + $totalTambahan - $nilaiDiskon);
 
-            $pembayaran = PembayaranBulanan::updateOrCreate(
-                [
+            $attributes = [
+                'sekolah_id' => $sekolahId,
+                'hari_efektif' => $isTagihanTambahan ? 0 : $hariEfektif,
+                'hari_hadir' => $isTagihanTambahan ? 0 : $hariHadir,
+                'biaya_per_hari' => $isTagihanTambahan ? 0 : round($biayaBulanan, 2),
+                'subtotal' => round($subtotal, 2),
+                'diskon_id' => $diskonId,
+                'nilai_diskon' => round($nilaiDiskon, 2),
+                'diskon_keterangan' => $diskonKeterangan,
+                'total_bayar' => round($total, 2),
+                'is_tagihan_tambahan' => $isTagihanTambahan,
+            ];
+
+            if ($pending) {
+                $pending->update($attributes + ['status' => 'pending']);
+                $pembayaran = $pending->fresh();
+                $wasRecentlyCreated = false;
+            } else {
+                $pembayaran = PembayaranBulanan::create([
                     'anak_id' => $anak->id,
                     'biaya_bulanan_sekolah_id' => $biaya->id,
                     'periode_bulan' => $bulan,
                     'periode_tahun' => $tahun,
-                ],
-                [
-                    'sekolah_id' => $sekolahId,
-                    'hari_efektif' => $hariEfektif,
-                    'hari_hadir' => $hariHadir,
-                    'biaya_per_hari' => round($biayaBulanan, 2),
-                    'subtotal' => round($subtotal, 2),
-                    'diskon_id' => $diskonId,
-                    'nilai_diskon' => round($nilaiDiskon, 2),
-                    'total_bayar' => round($total, 2),
                     'status' => 'pending',
-                ]
-            );
+                ] + $attributes);
+                $wasRecentlyCreated = true;
+            }
 
-            // Simpan biaya tambahan
             $pembayaran->items()->delete();
             foreach ($items as $item) {
                 $namaItem = trim($item['nama_item'] ?? '');
@@ -185,7 +226,7 @@ class RekapBiayaService
 
             // Accrual: buat jurnal saat generate (Piutang / Pendapatan)
             $setting = AkuntansiSetting::forSekolah($sekolahId);
-            if ($setting->isAccrual() && $total > 0 && $pembayaran->wasRecentlyCreated) {
+            if ($setting->isAccrual() && $total > 0 && $wasRecentlyCreated) {
                 $akuntansiService = app(AkuntansiService::class);
                 $akuntansiService->buatJurnalSaatGenerate($pembayaran, auth()->id() ?? 1);
             }

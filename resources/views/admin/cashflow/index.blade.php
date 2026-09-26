@@ -87,17 +87,33 @@
             <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Riwayat Transaksi</h3><p class="section-subtitle">Semua catatan pemasukan dan pengeluaran</p></div>
                 <div class="flex gap-2 flex-wrap">
-                    <form method="GET" class="flex flex-wrap gap-2 items-center">
-                        <select name="bulan" class="input-field w-32 text-sm">
+                    <form method="GET" class="flex flex-wrap gap-2 items-center" id="cashflow-filter-form">
+                        <select name="bulan" class="input-field w-36 text-sm" onchange="syncCashflowPeriodeBulanan()">
+                            <option value="" @selected($bulan === null)>Semua periode</option>
                             @foreach(range(1,12) as $m)
-                                <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->locale('id')->translatedFormat('F') }}</option>
+                                <option value="{{ $m }}" {{ $bulan === $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->locale('id')->translatedFormat('F') }}</option>
                             @endforeach
                         </select>
-                        <select name="tahun" class="input-field w-24 text-sm">
+                        <select name="tahun" id="cashflow-filter-tahun" class="input-field w-24 text-sm" @disabled($bulan === null)>
+                            <option value="">—</option>
                             @foreach(range(now()->year - 2, now()->year + 1) as $y)
-                                <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                <option value="{{ $y }}" {{ $tahun === $y ? 'selected' : '' }}>{{ $y }}</option>
                             @endforeach
                         </select>
+                        <script>
+                            function syncCashflowPeriodeBulanan() {
+                                const form = document.getElementById('cashflow-filter-form');
+                                const bulan = form.querySelector('[name=bulan]');
+                                const tahun = form.querySelector('[name=tahun]');
+                                if (!bulan.value) {
+                                    tahun.value = '';
+                                    tahun.disabled = true;
+                                } else {
+                                    tahun.disabled = false;
+                                    if (!tahun.value) tahun.value = '{{ now()->year }}';
+                                }
+                            }
+                        </script>
                         <input type="date" name="dari" value="{{ request('dari') }}" class="input-field text-sm w-36" title="Opsional: ganti periode bulan">
                         <input type="date" name="sampai" value="{{ request('sampai') }}" class="input-field text-sm w-36">
                         <select name="type" class="input-field text-sm w-32">

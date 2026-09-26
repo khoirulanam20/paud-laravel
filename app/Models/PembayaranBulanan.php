@@ -24,6 +24,8 @@ class PembayaranBulanan extends Model
         'subtotal',
         'diskon_id',
         'nilai_diskon',
+        'diskon_keterangan',
+        'is_tagihan_tambahan',
         'total_bayar',
         'status',
         'bukti_transfer',
@@ -43,6 +45,7 @@ class PembayaranBulanan extends Model
             'biaya_per_hari' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'nilai_diskon' => 'decimal:2',
+            'is_tagihan_tambahan' => 'boolean',
             'total_bayar' => 'decimal:2',
             'approved_at' => 'datetime',
         ];

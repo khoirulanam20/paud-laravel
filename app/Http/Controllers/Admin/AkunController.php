@@ -33,11 +33,13 @@ class AkunController extends Controller
 
         $kelompokOptions = $this->distinctKelompok($sekolahId);
         $subkelompokOptions = $this->distinctSubkelompok($sekolahId, $request->input('kelompok'));
+        $jenisOptions = JenisAkun::ALL;
 
         return view('admin.akun.index', compact(
             'akunList',
             'kelompokOptions',
             'subkelompokOptions',
+            'jenisOptions',
         ));
     }
 
@@ -299,6 +301,10 @@ class AkunController extends Controller
 
         if ($subkelompok = $request->input('subkelompok')) {
             $query->where('komponen', $subkelompok);
+        }
+
+        if ($jenis = $request->input('jenis')) {
+            $query->where('jenis', JenisAkun::normalize($jenis));
         }
 
         return $query;

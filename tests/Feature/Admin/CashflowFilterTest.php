@@ -91,4 +91,32 @@ class CashflowFilterTest extends TestCase
         $response->assertSee('Out Alpha');
         $response->assertDontSee('In Beta');
     }
+
+    public function test_cashflow_index_without_period_shows_all_months(): void
+    {
+        $sekolah = Sekolah::first();
+        $admin = User::where('email', 'admin@example.com')->first();
+
+        Cashflow::create([
+            'sekolah_id' => $sekolah->id,
+            'date' => now()->startOfMonth(),
+            'type' => 'in',
+            'amount' => 10_000,
+            'description' => 'Bulan ini',
+        ]);
+
+        Cashflow::create([
+            'sekolah_id' => $sekolah->id,
+            'date' => now()->subMonth()->startOfMonth(),
+            'type' => 'in',
+            'amount' => 20_000,
+            'description' => 'Bulan lalu',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.cashflow.index'));
+
+        $response->assertOk();
+        $response->assertSee('Bulan ini');
+        $response->assertSee('Bulan lalu');
+    }
 }

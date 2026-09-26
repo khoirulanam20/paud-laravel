@@ -10,7 +10,6 @@ use App\Models\SumberDana;
 use App\Services\AkuntansiService;
 use App\Services\KwitansiService;
 use App\Support\PaginationPerPage;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
@@ -28,14 +27,15 @@ class CashflowController extends Controller
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $bulan = (int) $request->input('bulan', now()->month);
-        $tahun = (int) $request->input('tahun', now()->year);
+        $bulan = $request->filled('bulan') ? (int) $request->input('bulan') : null;
+        $tahun = $request->filled('tahun') ? (int) $request->input('tahun') : null;
 
         $filtered = $this->filteredCashflowQuery($sekolahId, $request);
 
         $cashflows = (clone $filtered)
             ->with(['akun', 'akunLawan', 'sumberDana', 'jurnal'])
             ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         $totalIn = (float) (clone $filtered)->where('type', 'in')->sum('amount');
@@ -72,12 +72,13 @@ class CashflowController extends Controller
     public function export(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $bulan = (int) $request->input('bulan', now()->month);
-        $tahun = (int) $request->input('tahun', now()->year);
+        $bulan = $request->filled('bulan') ? (int) $request->input('bulan') : null;
+        $tahun = $request->filled('tahun') ? (int) $request->input('tahun') : null;
 
         $cashflows = $this->filteredCashflowQuery($sekolahId, $request)
             ->with(['akun', 'akunLawan', 'sumberDana'])
             ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
 
         $rows = $cashflows->map(fn (Cashflow $c) => [
@@ -91,7 +92,9 @@ class CashflowController extends Controller
         return $this->downloadExcel(
             ['Tanggal', 'Akun', 'Keterangan', 'Jenis', 'Nominal (Rp)'],
             $rows,
-            sprintf('cashflow-%02d-%d.xlsx', $bulan, $tahun),
+            $bulan && $tahun
+                ? sprintf('cashflow-%02d-%d.xlsx', $bulan, $tahun)
+                : 'cashflow-semua-'.now()->format('Y-m-d').'.xlsx',
             'Cashflow',
             [4],
         );
@@ -124,12 +127,8 @@ class CashflowController extends Controller
             $this->akuntansiService->buatJurnalDariCashflow($cashflow);
         });
 
-        $date = Carbon::parse($request->date);
-
-        return redirect()->route('admin.cashflow.index', [
-            'bulan' => $date->month,
-            'tahun' => $date->year,
-        ])->with('success', 'Transaksi berhasil ditambahkan.');
+        return redirect()->route('admin.cashflow.index', $this->cashflowIndexQueryFromRequest($request))
+            ->with('success', 'Transaksi berhasil ditambahkan.');
     }
 
     public function update(Request $request, Cashflow $cashflow)
@@ -165,12 +164,8 @@ class CashflowController extends Controller
             $this->akuntansiService->buatJurnalDariCashflow($cashflow->fresh());
         });
 
-        $date = Carbon::parse($request->date);
-
-        return redirect()->route('admin.cashflow.index', [
-            'bulan' => $date->month,
-            'tahun' => $date->year,
-        ])->with('success', 'Transaksi berhasil diperbarui.');
+        return redirect()->route('admin.cashflow.index', $this->cashflowIndexQueryFromRequest($request))
+            ->with('success', 'Transaksi berhasil diperbarui.');
     }
 
     public function destroy(Cashflow $cashflow, Request $request)
@@ -183,10 +178,8 @@ class CashflowController extends Controller
 
         $cashflow->delete();
 
-        return redirect()->route('admin.cashflow.index', [
-            'bulan' => $request->input('bulan', now()->month),
-            'tahun' => $request->input('tahun', now()->year),
-        ])->with('success', 'Transaksi berhasil dihapus.');
+        return redirect()->route('admin.cashflow.index', $this->cashflowIndexQueryFromRequest($request))
+            ->with('success', 'Transaksi berhasil dihapus.');
     }
 
     public function kwitansiDefaults(Cashflow $cashflow): JsonResponse
@@ -226,9 +219,24 @@ class CashflowController extends Controller
             return;
         }
 
-        $bulan = (int) $request->input('bulan', now()->month);
-        $tahun = (int) $request->input('tahun', now()->year);
-        $query->whereYear('date', $tahun)->whereMonth('date', $bulan);
+        if ($request->filled('bulan') && $request->filled('tahun')) {
+            $query->whereYear('date', (int) $request->input('tahun'))
+                ->whereMonth('date', (int) $request->input('bulan'));
+        }
+    }
+
+    /** @return array<string, int|string> */
+    private function cashflowIndexQueryFromRequest(Request $request): array
+    {
+        return array_filter([
+            'bulan' => $request->input('bulan'),
+            'tahun' => $request->input('tahun'),
+            'dari' => $request->input('dari'),
+            'sampai' => $request->input('sampai'),
+            'type' => $request->input('type'),
+            'kelompok' => $request->input('kelompok'),
+            'subkelompok' => $request->input('subkelompok'),
+        ], fn ($v) => $v !== null && $v !== '' && $v !== 'all');
     }
 
     private function applyTypeFilter(Builder $query, Request $request): void

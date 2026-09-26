@@ -38,8 +38,29 @@
              sumTambahan(row) {
                  return (row.biaya_tambahan || []).reduce((s, i) => s + (parseFloat(i.jumlah) || 0), 0);
              },
+             isModeTambahan(row) {
+                 return row.existing_status === 'approved' || row.existing_status === 'rejected';
+             },
+             subtotalBaris(row) {
+                 return this.isModeTambahan(row) ? 0 : (parseFloat(row.subtotal) || 0);
+             },
+             nilaiDiskonRow(row) {
+                 if (row.diskon_mode === 'manual') {
+                     const n = parseFloat(row.diskon_manual_nominal) || 0;
+                     return Math.min(n, this.subtotalBaris(row));
+                 }
+                 if (row.diskon_mode !== 'master' || !row.diskon_id) return 0;
+                 const d = this.diskons.find(x => String(x.id) === String(row.diskon_id));
+                 if (!d) return 0;
+                 const base = this.subtotalBaris(row);
+                 if (d.tipe === 'persentase') return base * (parseFloat(d.nilai) / 100);
+                 return Math.min(parseFloat(d.nilai), base);
+             },
+             totalSetelahDiskon(row) {
+                 return Math.max(0, this.subtotalBaris(row) + this.sumTambahan(row) - this.nilaiDiskonRow(row));
+             },
              totalBaris(row) {
-                 return (parseFloat(row.subtotal) || 0) + this.sumTambahan(row);
+                 return this.subtotalBaris(row) + this.sumTambahan(row);
              },
              openItemModal(row, idx) {
                  this.itemModalRow = row;
@@ -75,7 +96,14 @@
                  try {
                      const res = await fetch(`{{ route('admin.pembayaran-bulanan.generate-preview') }}?bulan=${this.bulan}&tahun=${this.tahun}`);
                      const data = await res.json();
-                     this.previewData = (data.preview || []).map(r => ({ ...r, biaya_tambahan: [] }));
+                     this.previewData = (data.preview || []).map(r => ({
+                         ...r,
+                         biaya_tambahan: [],
+                         diskon_mode: 'none',
+                         diskon_id: '',
+                         diskon_manual_nominal: '',
+                         diskon_manual_keterangan: '',
+                     }));
                      this.selectedKeys = this.previewData.map(r => this.rowKey(r));
                  } catch(e) { console.error(e); }
                  this.loading = false;
@@ -168,7 +196,12 @@
                     <tbody>
                         @forelse($pembayarans as $p)
                             <tr>
-                                <td class="font-medium">{{ $p->anak->name ?? '-' }}</td>
+                                <td class="font-medium">
+                                    {{ $p->anak->name ?? '-' }}
+                                    @if($p->is_tagihan_tambahan)
+                                        <span class="badge badge-blue ml-1">Tambahan</span>
+                                    @endif
+                                </td>
                                 <td>{{ $p->anak->kelas->name ?? '-' }}</td>
                                 <td class="text-xs" style="color:#9E9790;">{{ $p->biayaBulananSekolah->nama_biaya ?? '-' }}</td>
                                 <td class="text-center font-semibold" style="color:#1A6B6B;">{{ $p->hari_hadir }}</td>
@@ -182,7 +215,18 @@
                                     @endif
                                 </td>
                                 <td class="text-right text-xs">{{ $p->getSubtotalFormatted() }}</td>
-                                <td class="text-right text-xs" style="color:#C0392B;">{{ $p->nilai_diskon > 0 ? '-'.$p->getNilaiDiskonFormatted() : '-' }}</td>
+                                <td class="text-right text-xs" style="color:#C0392B;">
+                                    @if($p->nilai_diskon > 0)
+                                        -{{ $p->getNilaiDiskonFormatted() }}
+                                        @if($p->diskon_keterangan)
+                                            <div class="text-[10px] font-normal" style="color:#9E9790;">{{ $p->diskon_keterangan }}</div>
+                                        @elseif($p->diskon)
+                                            <div class="text-[10px] font-normal" style="color:#9E9790;">{{ $p->diskon->nama_diskon }}</div>
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="text-right font-semibold" style="color:#1A6B6B;">{{ $p->getTotalFormatted() }}</td>
                                 <td class="text-center"><span class="badge badge-{{ $p->status_badge }}">{{ $p->status_label }}</span></td>
                                 <td class="text-right">
@@ -253,6 +297,7 @@
                                         <th class="text-center">Hadir</th>
                                         <th class="text-right">Biaya/Bln</th>
                                         <th class="text-right">Subtotal</th>
+                                        <th class="text-right">Total</th>
                                         <th>Diskon</th>
                                         <th>Biaya Lain</th>
                                     </tr>
@@ -265,20 +310,46 @@
                                                        class="rounded border-gray-300"
                                                        x-model="selectedKeys">
                                             </td>
-                                            <td x-text="row.anak_name"></td>
+                                            <td>
+                                                <span x-text="row.anak_name"></span>
+                                                <span x-show="isModeTambahan(row)" class="badge badge-blue ml-1">Tambahan</span>
+                                            </td>
                                             <td x-text="row.kelas_name"></td>
                                             <td x-text="row.biaya_name" class="text-xs" style="color:#9E9790;"></td>
                                             <td class="text-center" x-text="row.hari_hadir"></td>
                                             <td class="text-right" x-text="formatRp(row.biaya_bulanan)"></td>
                                             <td class="text-right" x-text="formatRp(totalBaris(row))"></td>
-                                            <td>
-                                                <select :name="'diskon[' + rowKey(row) + ']'" class="input-field text-xs py-1"
-                                                        :disabled="!selectedKeys.includes(rowKey(row))">
-                                                    <option value="">Tanpa Diskon</option>
-                                                    <template x-for="d in diskons" :key="d.id">
-                                                        <option :value="d.id" x-text="d.nama_diskon + ' (' + (d.tipe === 'persentase' ? d.nilai + '%' : 'Rp ' + new Intl.NumberFormat('id-ID').format(d.nilai)) + ')'"></option>
-                                                    </template>
+                                            <td class="text-right font-semibold" style="color:#1A6B6B;" x-text="formatRp(totalSetelahDiskon(row))"></td>
+                                            <td class="min-w-[200px]">
+                                                <select x-model="row.diskon_mode" class="input-field text-xs py-1 mb-1 w-full"
+                                                        :disabled="!selectedKeys.includes(rowKey(row)) || isModeTambahan(row)">
+                                                    <option value="none">Tanpa diskon</option>
+                                                    <option value="master">Dari master</option>
+                                                    <option value="manual">Manual</option>
                                                 </select>
+                                                <template x-if="row.diskon_mode === 'master'">
+                                                    <select x-model="row.diskon_id" :name="'diskon[' + rowKey(row) + ']'" class="input-field text-xs py-1 w-full"
+                                                            :disabled="!selectedKeys.includes(rowKey(row))">
+                                                        <option value="">Pilih diskon</option>
+                                                        <template x-for="d in diskons" :key="d.id">
+                                                            <option :value="d.id" x-text="d.nama_diskon + ' (' + (d.tipe === 'persentase' ? d.nilai + '%' : 'Rp ' + new Intl.NumberFormat('id-ID').format(d.nilai)) + ')'"></option>
+                                                        </template>
+                                                    </select>
+                                                </template>
+                                                <template x-if="row.diskon_mode === 'manual'">
+                                                    <input type="number" min="0" step="1" placeholder="Nominal diskon"
+                                                           x-model="row.diskon_manual_nominal"
+                                                           class="input-field text-xs py-1 w-full mb-1"
+                                                           :disabled="!selectedKeys.includes(rowKey(row))">
+                                                    <input type="text" placeholder="Keterangan diskon"
+                                                           x-model="row.diskon_manual_keterangan"
+                                                           class="input-field text-xs py-1 w-full"
+                                                           :disabled="!selectedKeys.includes(rowKey(row))">
+                                                    <input type="hidden" :name="'diskon_manual[' + rowKey(row) + '][nominal]'" :value="row.diskon_manual_nominal">
+                                                    <input type="hidden" :name="'diskon_manual[' + rowKey(row) + '][keterangan]'" :value="row.diskon_manual_keterangan">
+                                                </template>
+                                                <p x-show="nilaiDiskonRow(row) > 0" class="text-[10px] mt-1" style="color:#C0392B;"
+                                                   x-text="'-' + formatRp(nilaiDiskonRow(row))"></p>
                                             </td>
                                             <td>
                                                 <div class="flex flex-wrap items-center gap-1 min-w-[160px]">
