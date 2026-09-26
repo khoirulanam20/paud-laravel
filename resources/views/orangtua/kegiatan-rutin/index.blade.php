@@ -63,6 +63,9 @@
                             Filter
                         </button>
                     </div>
+                    <div class="col-span-2 lg:col-auto flex items-end">
+                        <x-filter-reset :href="route('orangtua.kegiatan-rutin.index')" />
+                    </div>
                 </form>
             </div>
 

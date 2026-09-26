@@ -196,6 +196,7 @@
                             <option value="rejected" {{ $status === 'rejected' ? 'selected' : '' }}>Ditolak</option>
                         </select>
                         <button type="submit" class="btn-secondary">Filter</button>
+                        <x-filter-reset :href="route('admin.pembayaran-bulanan.index')" />
                     </form>
                     <x-export-excel route="admin.pembayaran-bulanan.export" />
                     <button data-tour="admin-pembayaran-generate-btn" data-tour-open-modal="generate" @click="openGenerate()" class="btn-primary">Generate Tagihan</button>
@@ -465,7 +466,7 @@
             action-binding="deleteRoute"
             method="DELETE"
             title="Hapus Tagihan?"
-            message="Tagihan yang dihapus tidak bisa dikembalikan."
+            message="Hanya tagihan Menunggu/Ditolak. Status Lunas tidak bisa dihapus — batalkan pelunasan dari halaman detail dulu."
         />
     </div>
 </x-app-layout>

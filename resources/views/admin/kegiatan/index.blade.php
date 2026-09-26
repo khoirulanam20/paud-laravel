@@ -132,11 +132,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="submit" class="btn-secondary h-11">Tampilkan</button>
-                    @if(request()->anyFilled(['kelas_id', 'pengajar_id', 'day', 'matrikulasi_id']))
-                        <a href="{{ route('admin.kegiatan.index') }}" class="btn-secondary h-11 flex items-center justify-center bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700" title="Reset Filter">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </a>
-                    @endif
+                    <x-filter-reset :href="route('admin.kegiatan.index')" compact />
                 </div>
             </form>
             <div class="p-4 md:p-6">

@@ -19,7 +19,7 @@
 
 <div x-show="{{ $show }}" {{ $attributes->merge(['class' => 'modal-overlay']) }} style="display:none;">
     <div x-show="{{ $show }}" x-transition class="modal-box {{ $maxWidth }}" @click.away="{{ $show }} = false">
-        <form @if($action) action="{{ $action }}" @else :action="{{ $actionBinding }}" @endif method="POST">
+        <form @if($action) action="{{ $action }}" @else x-bind:action="{{ $actionBinding }}" @endif method="POST">
             @csrf
             @if(strtoupper($method) !== 'POST')
                 @method($method)

@@ -1,4 +1,4 @@
-@props(['action', 'periode'])
+@props(['action', 'periode', 'resetHref' => null])
 
 <form method="GET" action="{{ $action }}" class="card p-4 mb-6 flex flex-wrap gap-4 items-end" x-data="{ tipe: '{{ $periode['tipe'] }}' }">
     <div>
@@ -34,4 +34,5 @@
     </div>
     {{ $slot }}
     <button type="submit" class="btn-primary text-xs px-4">Tampilkan</button>
+    <x-filter-reset :href="$resetHref ?? $action" />
 </form>

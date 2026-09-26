@@ -70,6 +70,7 @@
                         @endforeach
                     </select>
                 </div>
+                <x-filter-reset :href="route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.show', $masterKegiatanRutin)" />
             </form>
         </div>
 

@@ -78,6 +78,7 @@
                         @endforeach
                     </select>
                 </div>
+                <x-filter-reset :href="route($routePrefix.'kegiatan-rutin.index')" />
             </form>
             @if(auth()->user()->usesAdminKegiatanRutinRoutes())
                 <x-export-excel route="admin.kegiatan-rutin.export" />

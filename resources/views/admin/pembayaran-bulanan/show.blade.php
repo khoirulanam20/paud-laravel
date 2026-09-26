@@ -14,7 +14,7 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false, showItemModal: false, showImageModal: false, activeImage: null, activeDownloadUrl: null, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showItemModal=false">
+         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false, showBatalkanModal: false, showItemModal: false, showImageModal: false, activeImage: null, activeDownloadUrl: null, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showBatalkanModal=false; showItemModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -148,6 +148,11 @@
                         <button data-tour="pembayaran-approve-btn" data-tour-open-modal="approve" @click="showApproveModal=true" class="btn-primary w-full justify-center">Lunas</button>
                         <button data-tour="pembayaran-reject-btn" data-tour-open-modal="reject" @click="showRejectModal=true" class="btn-danger w-full justify-center">Tolak</button>
                     </div>
+                @elseif($pembayaran->isApproved())
+                    <div class="card p-6 space-y-3">
+                        <p class="text-xs" style="color:#9E9790;">Tagihan lunas tidak bisa dihapus langsung. Batalkan pelunasan dulu jika ada kesalahan, lalu hapus dari daftar rekap.</p>
+                        <button type="button" @click="showBatalkanModal=true" class="btn-secondary w-full justify-center">Batalkan pelunasan</button>
+                    </div>
                 @endif
 
                 <a href="{{ route('admin.pembayaran-bulanan.index', ['bulan' => $pembayaran->periode_bulan, 'tahun' => $pembayaran->periode_tahun]) }}" class="btn-secondary w-full justify-center">Kembali</a>
@@ -184,6 +189,23 @@
                         <textarea name="catatan_admin" rows="2" placeholder="Catatan (opsional)" class="input-field mt-4"></textarea>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showApproveModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Ya, Lunas</button></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- BATALKAN LUNAS -->
+        <div x-show="showBatalkanModal" class="modal-overlay" style="display:none;">
+            <div x-show="showBatalkanModal" x-transition class="modal-box max-w-sm" @click.away="showBatalkanModal=false">
+                <form action="{{ route('admin.pembayaran-bulanan.batalkan-lunas', $pembayaran) }}" method="POST">
+                    @csrf @method('PATCH')
+                    <div class="modal-body text-center py-6">
+                        <h3 class="section-title">Batalkan pelunasan?</h3>
+                        <p class="section-subtitle mt-2">Jurnal pelunasan &amp; cashflow akan dihapus. Tagihan kembali ke <strong>Menunggu</strong> (bisa dihapus dari rekap).</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" @click="showBatalkanModal=false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-danger">Ya, batalkan</button>
+                    </div>
                 </form>
             </div>
         </div>

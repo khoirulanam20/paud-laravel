@@ -36,6 +36,7 @@
                 </select>
             </div>
             <button type="submit" class="btn-primary text-sm">Tampilkan</button>
+            <x-filter-reset :href="route('admin.rkas.laporan')" />
         </form>
 
         @if(!$rka)

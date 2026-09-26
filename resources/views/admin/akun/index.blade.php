@@ -139,6 +139,7 @@
                     </select>
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari..." class="input-field text-sm w-40">
                     <button type="submit" class="btn-secondary text-xs">Filter</button>
+                    <x-filter-reset :href="route('admin.akun.index')" />
                 </form>
             </div>
 

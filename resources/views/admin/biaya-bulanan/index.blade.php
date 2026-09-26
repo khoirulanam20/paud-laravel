@@ -94,6 +94,7 @@
                                         <option value="{{ $k->id }}" {{ $k->id == $kelasId ? 'selected' : '' }}>{{ $k->name }}</option>
                                     @endforeach
                                 </select>
+                                <x-filter-reset :href="route('admin.biaya-bulanan.index', ['biaya_id' => $biayaTerpilih->id])" />
                             </form>
                             <x-export-excel route="admin.biaya-bulanan.export" class="text-sm" />
                             <button type="button" data-tour="admin-biaya-add-siswa-btn" data-tour-open-modal="addSiswa" @click="openAddSiswa()" class="btn-primary text-sm">+ Tambah Siswa</button>

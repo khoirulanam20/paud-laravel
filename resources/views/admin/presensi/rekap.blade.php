@@ -74,6 +74,7 @@
                             <input type="week" name="week" value="{{ $presensiFilter['minggu'] ?? '' }}" class="input-field min-w-[11rem]" onchange="this.form.submit()">
                         </div>
                     @endif
+                    <x-filter-reset :href="route('admin.presensi.rekap')" />
                 </form>
                 <x-export-excel route="admin.presensi.rekap.export" />
             </div>

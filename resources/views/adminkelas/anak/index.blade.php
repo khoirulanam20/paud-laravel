@@ -28,11 +28,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            @if(request('kelas_id'))
-                                <a href="{{ route('adminkelas.anak.index') }}" class="inline-flex items-center justify-center px-4 h-11 sm:h-10 rounded-xl bg-white text-gray-400 hover:text-red-500 transition border border-black/10 shadow-sm">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                                </a>
-                            @endif
+                            <x-filter-reset :href="route('adminkelas.anak.index')" class="!h-11 sm:!h-10" />
                         </form>
                         
                         <button data-tour="ak-anak-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary h-11 sm:h-10 px-6 font-bold flex items-center justify-center gap-2 whitespace-nowrap shadow-md shadow-teal-900/10">

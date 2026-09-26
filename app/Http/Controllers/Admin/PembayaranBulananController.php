@@ -368,7 +368,7 @@ class PembayaranBulananController extends Controller
         if (! $pembayaran->canBeDeleted()) {
             return redirect()
                 ->route('admin.pembayaran-bulanan.index', compact('bulan', 'tahun'))
-                ->withErrors(['tagihan' => 'Tagihan yang sudah lunas atau ditolak tidak bisa dihapus.']);
+                ->withErrors(['tagihan' => 'Tagihan lunas tidak bisa dihapus. Buka detail tagihan → Batalkan pelunasan, lalu hapus dari daftar.']);
         }
 
         DB::transaction(function () use ($pembayaran) {
@@ -379,6 +379,23 @@ class PembayaranBulananController extends Controller
         return redirect()
             ->route('admin.pembayaran-bulanan.index', compact('bulan', 'tahun'))
             ->with('success', 'Tagihan berhasil dihapus.');
+    }
+
+    public function batalkanLunas(PembayaranBulanan $pembayaran)
+    {
+        $this->assertPembayaranAccessible($pembayaran);
+
+        try {
+            $this->akuntansiService->batalkanPelunasanPembayaran($pembayaran);
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('admin.pembayaran-bulanan.show', $pembayaran)
+                ->withErrors(['tagihan' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('admin.pembayaran-bulanan.show', $pembayaran)
+            ->with('success', 'Pelunasan dibatalkan. Tagihan kembali Menunggu — bisa dihapus dari daftar jika perlu.');
     }
 
     /** @return list<string> */

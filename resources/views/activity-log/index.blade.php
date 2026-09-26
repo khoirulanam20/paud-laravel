@@ -41,11 +41,9 @@
                     </select>
                 </div>
                 <button type="submit" class="btn-secondary">Filter</button>
+                <x-filter-reset :href="url()->current()" />
                 @if(request()->routeIs('admin.activity-log.*'))
                     <x-export-excel route="admin.activity-log.export" />
-                @endif
-                @if(request()->hasAny(['from', 'to', 'event', 'subject_type']))
-                    <a href="{{ url()->current() }}" class="btn-secondary">Reset</a>
                 @endif
             </form>
         </div>

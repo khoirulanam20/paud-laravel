@@ -148,7 +148,7 @@ class PembayaranBulanan extends Model
 
     public function canBeDeleted(): bool
     {
-        return $this->isPending() && $this->approved_at === null;
+        return ! $this->isApproved();
     }
 
     public function getStatusBadgeAttribute(): string

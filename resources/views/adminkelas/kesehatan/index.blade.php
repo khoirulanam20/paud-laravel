@@ -82,6 +82,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn-primary">Cari</button>
+                    <x-filter-reset :href="route('adminkelas.kesehatan.index')" />
                 </form>
             </div>
 

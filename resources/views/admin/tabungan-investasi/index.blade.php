@@ -79,6 +79,7 @@
                         @endforeach
                     </select>
                     <button type="submit" class="btn-secondary text-xs">Filter</button>
+                    <x-filter-reset :href="route('admin.tabungan-investasi.index')" />
                 </form>
             </div>
             <div class="overflow-x-auto">

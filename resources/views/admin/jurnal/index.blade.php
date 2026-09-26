@@ -55,6 +55,7 @@
                         @endforeach
                     </select>
                     <button type="submit" class="btn-primary text-xs px-4">Filter</button>
+                    <x-filter-reset :href="route('admin.jurnal.index')" />
                 </form>
             </div>
 

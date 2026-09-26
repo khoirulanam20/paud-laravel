@@ -54,6 +54,7 @@
                 @else
                     <input type="week" name="week" value="{{ $filter['minggu'] ?? '' }}" class="input-field py-2 text-sm" onchange="this.form.submit()">
                 @endif
+                <x-filter-reset :href="route('orangtua.presensi.index')" />
             </form>
         </div>
 

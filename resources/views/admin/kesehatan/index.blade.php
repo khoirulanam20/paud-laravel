@@ -91,6 +91,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn-primary">Filter</button>
+                    <x-filter-reset :href="route('admin.kesehatan.index')" />
                     <x-export-excel route="admin.kesehatan.export" />
                 </form>
             </div>

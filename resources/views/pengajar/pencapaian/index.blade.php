@@ -265,6 +265,7 @@
                             <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
+                            <x-filter-reset :href="route('pengajar.pencapaian.index')" compact />
                             <x-download-photos :route="$photoDownloadRoute" :icon-only="true" />
                         </div>
                     </form>

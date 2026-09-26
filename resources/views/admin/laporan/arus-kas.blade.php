@@ -23,6 +23,7 @@
                 @endforeach
             </select>
             <button type="submit" class="btn-primary text-xs px-4">Tampilkan</button>
+            <x-filter-reset :href="url()->current()" />
         </form>
 
         <div class="card overflow-hidden mb-6">

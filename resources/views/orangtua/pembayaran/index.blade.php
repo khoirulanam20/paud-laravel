@@ -26,11 +26,7 @@
                             @endforeach
                         </select>
                     </div>
-                    @if($selectedAnakId !== null)
-                        <div>
-                            <a href="{{ route('orangtua.pembayaran.index') }}" class="btn-secondary">Reset</a>
-                        </div>
-                    @endif
+                    <x-filter-reset :href="route('orangtua.pembayaran.index')" />
                 </form>
             </div>
         @endif

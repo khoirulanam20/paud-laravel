@@ -319,6 +319,7 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::get('pembayaran-bulanan/{pembayaran}/bukti/download', [PembayaranBulananController::class, 'downloadBukti'])->name('pembayaran-bulanan.bukti.download');
     Route::post('pembayaran-bulanan/generate', [PembayaranBulananController::class, 'generate'])->name('pembayaran-bulanan.generate');
     Route::delete('pembayaran-bulanan/{pembayaran}', [PembayaranBulananController::class, 'destroy'])->name('pembayaran-bulanan.destroy');
+    Route::patch('pembayaran-bulanan/{pembayaran}/batalkan-lunas', [PembayaranBulananController::class, 'batalkanLunas'])->name('pembayaran-bulanan.batalkan-lunas');
     Route::patch('pembayaran-bulanan/{pembayaran}/diskon', [PembayaranBulananController::class, 'updateDiskon'])->name('pembayaran-bulanan.update-diskon');
     Route::patch('pembayaran-bulanan/{pembayaran}/approve', [PembayaranBulananController::class, 'approve'])->name('pembayaran-bulanan.approve');
     Route::patch('pembayaran-bulanan/{pembayaran}/reject', [PembayaranBulananController::class, 'reject'])->name('pembayaran-bulanan.reject');

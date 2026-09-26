@@ -188,10 +188,7 @@
                             </select>
                         </div>
                         <button type="submit" class="btn-primary">Cari</button>
-                        @if(request('kelas_id') || request('search'))
-                            <a href="{{ route('admin.anak.index') }}"
-                                class="btn-secondary text-xs h-11 flex items-center">Reset</a>
-                        @endif
+                        <x-filter-reset :href="route('admin.anak.index')" />
                     </form>
                     <x-export-excel route="admin.anak.export" class="h-11" />
                     <button type="button" @click="openImportModal()"

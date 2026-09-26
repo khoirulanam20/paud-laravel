@@ -172,6 +172,34 @@ class AkuntansiService
         });
     }
 
+    /** Kembalikan tagihan lunas ke Menunggu; hapus jurnal pelunasan & cashflow (jurnal tagihan accrual tetap). */
+    public function batalkanPelunasanPembayaran(PembayaranBulanan $pembayaran): void
+    {
+        if (! $pembayaran->isApproved()) {
+            throw new \RuntimeException('Hanya tagihan berstatus lunas yang bisa dibatalkan.');
+        }
+
+        DB::transaction(function () use ($pembayaran) {
+            $pelunasanJurnals = Jurnal::query()
+                ->where('sekolah_id', $pembayaran->sekolah_id)
+                ->where('sourceable_type', PembayaranBulanan::class)
+                ->where('sourceable_id', $pembayaran->id)
+                ->where('deskripsi', 'like', 'Auto: Pembayaran%')
+                ->get();
+
+            foreach ($pelunasanJurnals as $jurnal) {
+                Cashflow::where('jurnal_id', $jurnal->id)->delete();
+                $this->hapusJurnal($jurnal);
+            }
+
+            $pembayaran->update([
+                'status' => 'pending',
+                'approved_by' => null,
+                'approved_at' => null,
+            ]);
+        });
+    }
+
     public function hapusJurnal(Jurnal $jurnal): void
     {
         DB::transaction(function () use ($jurnal) {
@@ -221,6 +249,7 @@ class AkuntansiService
         foreach ($jurnalIds as $id) {
             $jurnal = Jurnal::find($id);
             if ($jurnal) {
+                Cashflow::where('jurnal_id', $jurnal->id)->delete();
                 $this->hapusJurnal($jurnal);
             }
         }

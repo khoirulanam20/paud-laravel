@@ -67,6 +67,7 @@
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
+            <x-filter-reset :href="route('superadmin.ai-setting.index', request('tab') ? ['tab' => request('tab')] : [])" />
         </form>
 
         @if(session('success'))
@@ -318,6 +319,7 @@
                                 </option>
                             @endforeach
                         </select>
+                        <x-filter-reset :href="route('superadmin.ai-setting.index', ['tab' => 'tokens', 'lembaga_id' => $lembaga_id])" />
                     </form>
                 </div>
                 <div class="overflow-x-auto">

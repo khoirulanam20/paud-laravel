@@ -39,6 +39,7 @@
                         <label class="input-label">Tanggal</label>
                         <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field" required onchange="this.form.submit()">
                     </div>
+                    <x-filter-reset :href="route('pengajar.presensi.index')" />
                 </form>
             </div>
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">

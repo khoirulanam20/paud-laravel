@@ -46,7 +46,10 @@
                         <label class="input-label">Periode selesai ≤</label>
                         <input type="date" name="periode_selesai" value="{{ request('periode_selesai') }}" class="input-field w-full">
                     </div>
-                    <div><button type="submit" class="btn-primary w-full">Filter</button></div>
+                    <div class="flex gap-2">
+                        <button type="submit" class="btn-primary flex-1">Filter</button>
+                        <x-filter-reset :href="route('admin.monev-guru.index')" class="!px-3" />
+                    </div>
                 </form>
             </div>
             <div class="overflow-x-auto">

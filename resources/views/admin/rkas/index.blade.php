@@ -26,6 +26,7 @@
                             <option value="{{ $ta }}" @selected($tahunAjaran === $ta)>{{ $ta }}</option>
                         @endforeach
                     </select>
+                    <x-filter-reset :href="route('admin.rkas.index')" />
                 </form>
                 <div class="flex items-center gap-2">
                     <x-export-excel route="admin.rkas.export" />

@@ -50,6 +50,9 @@
                             <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500 @error('tanggal') border-red-500 @enderror" required onchange="this.form.submit()" style="background:white;">
                             @error('tanggal')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        <div class="col-span-2 sm:col-span-1 flex items-end">
+                            <x-filter-reset :href="route('adminkelas.presensi.index')" />
+                        </div>
                     </form>
                 </div>
             </div>
