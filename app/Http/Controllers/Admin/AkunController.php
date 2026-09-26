@@ -6,16 +6,21 @@ use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Imports\AkunImport;
 use App\Models\Akun;
+use App\Models\Jurnal;
 use App\Models\JurnalLine;
+use App\Services\AkuntansiService;
 use App\Support\JenisAkun;
 use App\Support\PaginationPerPage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AkunController extends Controller
 {
     use DownloadsExcel;
+
+    public function __construct(private AkuntansiService $akuntansi) {}
 
     public function index(Request $request)
     {
@@ -24,6 +29,7 @@ class AkunController extends Controller
         $query = $this->baseQuery($sekolahId, $request);
         $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $this->attachSaldo($akunList);
+        $this->attachSaldoAwal($akunList);
 
         $kelompokOptions = $this->distinctKelompok($sekolahId);
         $subkelompokOptions = $this->distinctSubkelompok($sekolahId, $request->input('kelompok'));
@@ -62,17 +68,26 @@ class AkunController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        $saldoAwal = (float) ($data['saldo_awal'] ?? 0);
+        unset($data['saldo_awal']);
         $sekolahId = auth()->user()->sekolah_id;
 
         if ($this->kodeExists($sekolahId, $data['kode'], $data['snp'] ?? null, $data['komponen'] ?? null)) {
             return back()->withErrors(['kode' => 'Kode akun sudah ada.']);
         }
 
-        Akun::create($data + [
-            'sekolah_id' => $sekolahId,
-            'tipe' => $request->input('tipe', 'rkas'),
-            'is_aktif' => true,
-        ]);
+        try {
+            DB::transaction(function () use ($data, $sekolahId, $request, $saldoAwal) {
+                $akun = Akun::create($data + [
+                    'sekolah_id' => $sekolahId,
+                    'tipe' => $request->input('tipe', 'rkas'),
+                    'is_aktif' => true,
+                ]);
+                $this->akuntansi->simpanSaldoAwal($akun, $saldoAwal);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['saldo_awal' => $e->getMessage()])->withInput();
+        }
 
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil ditambahkan.');
     }
@@ -82,6 +97,8 @@ class AkunController extends Controller
         abort_if($akun->sekolah_id !== auth()->user()->sekolah_id, 403);
 
         $data = $this->validated($request);
+        $saldoAwal = (float) ($data['saldo_awal'] ?? 0);
+        unset($data['saldo_awal']);
 
         if ($this->kodeExists($akun->sekolah_id, $data['kode'], $data['snp'] ?? null, $data['komponen'] ?? null, $akun->id)) {
             return back()->withErrors(['kode' => 'Kode akun sudah ada.']);
@@ -91,7 +108,14 @@ class AkunController extends Controller
             unset($data['tipe'], $data['jenis']);
         }
 
-        $akun->update($data);
+        try {
+            DB::transaction(function () use ($akun, $data, $saldoAwal) {
+                $akun->update($data);
+                $this->akuntansi->simpanSaldoAwal($akun->fresh(), $saldoAwal);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['saldo_awal' => $e->getMessage()])->withInput();
+        }
 
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil diperbarui.');
     }
@@ -118,8 +142,8 @@ class AkunController extends Controller
     public function importTemplate()
     {
         return $this->downloadExcel(
-            ['Kode Akun', 'Jenis', 'Nama Akun', 'Kelompok', 'Subkelompok', 'Uraian', 'Saldo Normal'],
-            [['1101', JenisAkun::ASSETS, 'Kas Besar', 'Aset Lancar', 'Kas dan Setara Kas', 'Kas utama', 'debit']],
+            ['Kode Akun', 'Jenis', 'Nama Akun', 'Kelompok', 'Subkelompok', 'Uraian', 'Saldo Normal', 'Saldo Awal'],
+            [['1101', JenisAkun::ASSETS, 'Kas Besar', 'Aset Lancar', 'Kas dan Setara Kas', 'Kas utama', 'debit', 0]],
             'template-kode-rekening.xlsx',
             'Kode Rekening'
         );
@@ -227,6 +251,34 @@ class AkunController extends Controller
         }
     }
 
+    private function attachSaldoAwal($akunList): void
+    {
+        $items = $akunList->getCollection();
+        foreach ($items as $akun) {
+            $akun->setAttribute('saldo_awal', 0);
+        }
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $jurnals = Jurnal::query()
+            ->where('source', 'saldo-awal')
+            ->where('sourceable_type', Akun::class)
+            ->whereIn('sourceable_id', $items->pluck('id'))
+            ->with('lines')
+            ->get();
+
+        foreach ($jurnals as $jurnal) {
+            $akun = $items->firstWhere('id', $jurnal->sourceable_id);
+            $line = $jurnal->lines->firstWhere('akun_id', $jurnal->sourceable_id);
+            if (! $akun || ! $line) {
+                continue;
+            }
+            $amount = $akun->saldo_normal === 'debit' ? (float) $line->debit : (float) $line->kredit;
+            $akun->setAttribute('saldo_awal', $amount);
+        }
+    }
+
     private function baseQuery(int $sekolahId, Request $request): Builder
     {
         $query = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode');
@@ -300,6 +352,7 @@ class AkunController extends Controller
             'jenis' => 'required|in:'.implode(',', JenisAkun::ALL),
             'kategori_arus_kas' => 'nullable|in:operasi,investasi,pendanaan',
             'saldo_normal' => 'required|in:debit,kredit',
+            'saldo_awal' => 'nullable|numeric|min:0',
             'induk_id' => 'nullable|exists:akuns,id',
             'deskripsi' => 'nullable|string',
         ]);

@@ -8,6 +8,7 @@ use App\Models\Cashflow;
 use App\Models\Jurnal;
 use App\Models\JurnalLine;
 use App\Models\PembayaranBulanan;
+use App\Support\JenisAkun;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -146,6 +147,88 @@ class AkuntansiService
             $jurnal->lines()->delete();
             $jurnal->delete();
         });
+    }
+
+    /**
+     * Jurnal pembuka: akun ini lawan akun sistem "Saldo Awal" (3999).
+     * Nominal 0 menghapus jurnal pembuka akun tersebut.
+     */
+    public function simpanSaldoAwal(Akun $akun, float $nominal): void
+    {
+        $nominal = round(max($nominal, 0), 2);
+
+        $existing = Jurnal::where('source', 'saldo-awal')
+            ->where('sourceable_type', Akun::class)
+            ->where('sourceable_id', $akun->id)
+            ->first();
+
+        if ($nominal <= 0) {
+            if ($existing) {
+                $this->hapusJurnal($existing);
+            }
+
+            return;
+        }
+
+        $lawan = $this->akunPenyeimbangSaldoAwal((int) $akun->sekolah_id);
+        if ($lawan->id === $akun->id) {
+            throw new \RuntimeException('Akun Saldo Awal tidak bisa diisi nominal pembuka.');
+        }
+
+        $debit = $akun->saldo_normal === 'debit' ? $nominal : 0;
+        $kredit = $akun->saldo_normal === 'debit' ? 0 : $nominal;
+
+        DB::transaction(function () use ($akun, $existing, $lawan, $debit, $kredit) {
+            if ($existing) {
+                $existing->lines()->delete();
+                $existing->update([
+                    'deskripsi' => 'Saldo awal '.$akun->kode.' — '.$akun->nama,
+                ]);
+                $jurnal = $existing;
+            } else {
+                $jurnal = $this->insertJurnal([
+                    'sekolah_id' => $akun->sekolah_id,
+                    'tanggal' => now()->toDateString(),
+                    'deskripsi' => 'Saldo awal '.$akun->kode.' — '.$akun->nama,
+                    'created_by' => auth()->id(),
+                    'source' => 'saldo-awal',
+                    'sourceable_type' => Akun::class,
+                    'sourceable_id' => $akun->id,
+                ]);
+            }
+
+            $this->createLines($jurnal, [
+                [$akun->id, $debit, $kredit],
+                [$lawan->id, $kredit, $debit],
+            ]);
+        });
+    }
+
+    private function akunPenyeimbangSaldoAwal(int $sekolahId): Akun
+    {
+        $lawan = Akun::where('sekolah_id', $sekolahId)
+            ->where('kode', '3999')
+            ->where('snp', 'Ekuitas')
+            ->where('komponen', 'Saldo Awal')
+            ->first();
+
+        if ($lawan) {
+            return $lawan;
+        }
+
+        return Akun::create([
+            'sekolah_id' => $sekolahId,
+            'tipe' => 'sistem',
+            'kode' => '3999',
+            'nama' => 'Saldo Awal',
+            'jenis' => JenisAkun::MODAL,
+            'snp' => 'Ekuitas',
+            'komponen' => 'Saldo Awal',
+            'uraian' => 'Penyeimbang saldo awal akun',
+            'saldo_normal' => 'kredit',
+            'kategori_arus_kas' => 'pendanaan',
+            'is_aktif' => true,
+        ]);
     }
 
     public function validasiSaldo(array $lines): bool

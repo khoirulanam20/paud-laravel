@@ -3,8 +3,10 @@
 namespace App\Imports;
 
 use App\Models\Akun;
+use App\Services\AkuntansiService;
 use App\Support\JenisAkun;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -79,19 +81,25 @@ class AkunImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
-            Akun::create([
-                'sekolah_id' => $this->sekolahId,
-                'tipe' => 'rkas',
-                'kode' => $data['kode'],
-                'nama' => $data['nama'],
-                'jenis' => $data['jenis'],
-                'snp' => $data['snp'],
-                'komponen' => $data['komponen'],
-                'uraian' => $data['uraian'],
-                'saldo_normal' => $data['saldo_normal'],
-                'kategori_arus_kas' => $data['kategori_arus_kas'],
-                'is_aktif' => true,
-            ]);
+            DB::transaction(function () use ($data) {
+                $akun = Akun::create([
+                    'sekolah_id' => $this->sekolahId,
+                    'tipe' => 'rkas',
+                    'kode' => $data['kode'],
+                    'nama' => $data['nama'],
+                    'jenis' => $data['jenis'],
+                    'snp' => $data['snp'],
+                    'komponen' => $data['komponen'],
+                    'uraian' => $data['uraian'],
+                    'saldo_normal' => $data['saldo_normal'],
+                    'kategori_arus_kas' => $data['kategori_arus_kas'],
+                    'is_aktif' => true,
+                ]);
+
+                if ($data['saldo_awal'] > 0) {
+                    app(AkuntansiService::class)->simpanSaldoAwal($akun, $data['saldo_awal']);
+                }
+            });
             $existing[$key] = true;
             $this->imported++;
         }
@@ -133,6 +141,7 @@ class AkunImport implements ToCollection, WithHeadingRow
             'uraian' => ($u = $this->cell($row, ['uraian'])) !== '' ? $u : null,
             'saldo_normal' => in_array($saldo, ['debit', 'kredit'], true) ? $saldo : $this->defaultSaldo($jenis),
             'kategori_arus_kas' => $this->defaultArus($jenis),
+            'saldo_awal' => $this->nominal($this->cell($row, ['saldo_awal', 'nominal', 'opening_balance'])),
         ];
     }
 
@@ -151,6 +160,12 @@ class AkunImport implements ToCollection, WithHeadingRow
         if (! in_array($data['jenis'], JenisAkun::ALL, true)) {
             return 'Jenis harus '.implode(', ', JenisAkun::ALL).'.';
         }
+        if ($data['saldo_awal'] === null) {
+            return 'Saldo awal harus angka, contoh 7000000.';
+        }
+        if ($data['saldo_awal'] < 0) {
+            return 'Saldo awal tidak boleh minus.';
+        }
 
         return null;
     }
@@ -165,6 +180,27 @@ class AkunImport implements ToCollection, WithHeadingRow
         }
 
         return '';
+    }
+
+    private function nominal(string $raw): ?float
+    {
+        $raw = trim(str_replace(['Rp', 'rp', ' '], '', $raw));
+        if ($raw === '') {
+            return 0.0;
+        }
+        if (preg_match('/^\d{1,3}(\.\d{3})+$/', $raw)) {
+            $raw = str_replace('.', '', $raw);
+        } elseif (str_contains($raw, ',') && str_contains($raw, '.')) {
+            $raw = str_replace('.', '', $raw);
+            $raw = str_replace(',', '.', $raw);
+        } elseif (str_contains($raw, ',')) {
+            $raw = str_replace(',', '.', $raw);
+        }
+        if (! is_numeric($raw)) {
+            return null;
+        }
+
+        return (float) $raw;
     }
 
     private function key(string $kode, ?string $snp, ?string $komponen): string

@@ -12,8 +12,9 @@
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
-            showCreateModal: false, showEditModal: false, showDeleteModal: false, showImportModal: false,
-            editData: {}, deleteRoute: '',
+            showCreateModal: false, showEditModal: false, showDeleteModal: false, showImportModal: false, showDetailModal: false,
+            editData: {}, detailData: {}, deleteRoute: '',
+            rupiah(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n) || 0); },
             importTesting: false, importTest: null, importTestError: null, ignoreDuplicates: false,
             canImport() {
                 if (!this.importTest || this.importTest.valid_count < 1) return false;
@@ -104,6 +105,11 @@
                     </thead>
                     <tbody>
                         @forelse($akunList as $akun)
+                            @php
+                                $rowPayload = $akun->only(['id','kode','nama','snp','komponen','uraian','tipe','jenis','kategori_arus_kas','saldo_normal','deskripsi']);
+                                $rowPayload['saldo'] = (float) ($akun->saldo ?? 0);
+                                $rowPayload['saldo_awal'] = (float) ($akun->saldo_awal ?? 0);
+                            @endphp
                             <tr>
                                 <td class="font-mono font-semibold whitespace-nowrap" style="color:#1A6B6B;">{{ $akun->kode }}</td>
                                 <td class="text-center"><span class="badge badge-gray text-xs">{{ ucfirst($akun->jenis) }}</span></td>
@@ -113,10 +119,19 @@
                                 <td class="text-xs max-w-xs truncate" style="color:#9E9790;" @if($akun->uraian) title="{{ $akun->uraian }}" @endif>{{ $akun->uraian ? Str::limit($akun->uraian, 50) : '-' }}</td>
                                 <td class="text-right font-semibold whitespace-nowrap" style="color:{{ ($akun->saldo ?? 0) < 0 ? '#C0392B' : '#1A6B6B' }};">Rp {{ number_format($akun->saldo ?? 0, 0, ',', '.') }}</td>
                                 <td class="text-right">
-                                    <button @click="editData={{ json_encode($akun->only(['id','kode','nama','snp','komponen','uraian','tipe','jenis','kategori_arus_kas','saldo_normal','deskripsi'])) }}; showEditModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                    @if(!$akun->isSistem())
-                                        <button @click="deleteRoute='{{ route('admin.akun.destroy', $akun) }}'; showDeleteModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
-                                    @endif
+                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                        <button type="button" title="Lihat" @click="detailData={{ json_encode($rowPayload) }}; showDetailModal=true" class="h-8 w-8 rounded-lg flex items-center justify-center" style="color:#1A6B6B;background:#E8F5F5;">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        </button>
+                                        <button type="button" title="Edit" @click="editData={{ json_encode($rowPayload) }}; showEditModal=true" class="h-8 w-8 rounded-lg flex items-center justify-center" style="color:#1A6B6B;background:#D0E8E8;">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </button>
+                                        @if(!$akun->isSistem())
+                                            <button type="button" title="Hapus" @click="deleteRoute='{{ route('admin.akun.destroy', $akun) }}'; showDeleteModal=true" class="h-8 w-8 rounded-lg flex items-center justify-center" style="color:#C0392B;background:#FAD7D2;">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -151,6 +166,10 @@
                         <div><label class="input-label">Kelompok</label><input type="text" name="snp" class="input-field" placeholder="SNP / kelompok RKAS"></div>
                         <div><label class="input-label">Subkelompok</label><input type="text" name="komponen" class="input-field"></div>
                         <div><label class="input-label">Saldo Normal</label><select name="saldo_normal" class="input-field"><option value="debit">Debit</option><option value="kredit">Kredit</option></select></div>
+                        <div>
+                            <label class="input-label">Saldo Awal</label>
+                            <input type="number" name="saldo_awal" min="0" step="1" value="{{ old('saldo_awal', 0) }}" class="input-field" placeholder="7000000">
+                        </div>
                         <input type="hidden" name="tipe" value="rkas">
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
@@ -178,6 +197,10 @@
                         <div><label class="input-label">Kelompok</label><input type="text" name="snp" x-model="editData.snp" class="input-field"></div>
                         <div><label class="input-label">Subkelompok</label><input type="text" name="komponen" x-model="editData.komponen" class="input-field"></div>
                         <div><label class="input-label">Saldo Normal</label><select name="saldo_normal" x-model="editData.saldo_normal" class="input-field"><option value="debit">Debit</option><option value="kredit">Kredit</option></select></div>
+                        <div>
+                            <label class="input-label">Saldo Awal</label>
+                            <input type="number" name="saldo_awal" x-model="editData.saldo_awal" min="0" step="1" class="input-field" placeholder="7000000">
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
                 </form>
@@ -190,7 +213,7 @@
                     @csrf
                     <div class="modal-header">
                         <h3 class="section-title">Import Kode Rekening</h3>
-                        <p class="section-subtitle mt-1">Tes dulu sebelum data disimpan. Kolom: Kode Akun, Jenis, Nama Akun, Kelompok, Subkelompok, Uraian, Saldo Normal.</p>
+                        <p class="section-subtitle mt-1">Tes dulu sebelum data disimpan. Kolom: Kode Akun, Jenis, Nama Akun, Kelompok, Subkelompok, Uraian, Saldo Normal, Saldo Awal.</p>
                     </div>
                     <div class="modal-body space-y-3">
                         <a href="{{ route('admin.akun.import.template') }}" class="text-xs font-semibold underline" style="color:#1A6B6B;">Unduh template</a>
@@ -222,6 +245,27 @@
                         <button type="submit" class="btn-primary" :disabled="!canImport()" :class="!canImport() && 'opacity-50 pointer-events-none'">Import</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
+            <div x-show="showDetailModal" x-transition class="modal-box max-w-lg" @click.away="showDetailModal=false">
+                <div class="modal-header"><h3 class="section-title">Detail Akun</h3></div>
+                <div class="modal-body grid grid-cols-2 gap-3 text-sm">
+                    <div><p class="input-label">Kode</p><p class="font-mono font-semibold" style="color:#1A6B6B;" x-text="detailData.kode"></p></div>
+                    <div><p class="input-label">Jenis</p><p x-text="detailData.jenis"></p></div>
+                    <div class="col-span-2"><p class="input-label">Nama</p><p class="font-medium" x-text="detailData.nama"></p></div>
+                    <div><p class="input-label">Kelompok</p><p x-text="detailData.snp || '-'"></p></div>
+                    <div><p class="input-label">Subkelompok</p><p x-text="detailData.komponen || '-'"></p></div>
+                    <div class="col-span-2"><p class="input-label">Uraian</p><p x-text="detailData.uraian || '-'"></p></div>
+                    <div><p class="input-label">Saldo Normal</p><p class="capitalize" x-text="detailData.saldo_normal"></p></div>
+                    <div><p class="input-label">Saldo Awal</p><p class="font-semibold" x-text="rupiah(detailData.saldo_awal)"></p></div>
+                    <div class="col-span-2"><p class="input-label">Saldo saat ini</p><p class="font-semibold text-base" style="color:#1A6B6B;" x-text="rupiah(detailData.saldo)"></p></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" @click="showDetailModal=false" class="btn-secondary">Tutup</button>
+                    <button type="button" @click="editData=detailData; showDetailModal=false; showEditModal=true" class="btn-primary">Edit</button>
+                </div>
             </div>
         </div>
 
