@@ -62,6 +62,7 @@ class AkuntansiService
     public function buatJurnalSaatGenerate(PembayaranBulanan $pembayaran, int $userId): Jurnal
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
+        $this->assertAkunSppLengkap($setting);
 
         return DB::transaction(function () use ($pembayaran, $setting, $userId) {
             $jurnal = $this->insertJurnal([
@@ -93,6 +94,7 @@ class AkuntansiService
     public function buatJurnalSaatApprove(PembayaranBulanan $pembayaran, int $userId): Jurnal
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
+        $this->assertAkunSppLengkap($setting);
 
         return DB::transaction(function () use ($pembayaran, $setting, $userId) {
             $deskripsi = 'Auto: Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa');
@@ -355,6 +357,13 @@ class AkuntansiService
         }
 
         return 0.0;
+    }
+
+    private function assertAkunSppLengkap(AkuntansiSetting $setting): void
+    {
+        if (! $setting->akun_piutang_id || ! $setting->akun_pendapatan_id) {
+            throw new \RuntimeException('Lengkapi akun piutang SPP dan pendapatan SPP di Pengaturan Akuntansi.');
+        }
     }
 
     /** @param array<array{int, float, float}> $lines [akun_id, debit, kredit] */

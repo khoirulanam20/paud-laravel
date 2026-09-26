@@ -31,18 +31,20 @@ class AkuntansiSettingController extends Controller
         $akunAset = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->whereIn('jenis', $jenisAkunAset)->orderBy('kode')->get();
         $akunPendapatan = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', \App\Support\JenisAkun::PENDAPATAN)->orderBy('kode')->get();
         $akunBeban = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', \App\Support\JenisAkun::BEBAN)->orderBy('kode')->get();
+        $akunPiutangOptions = Akun::where('sekolah_id', $sekolahId)->where('is_aktif', true)->where('jenis', \App\Support\JenisAkun::ASSETS)->orderBy('kode')->get();
 
         return view('admin.akuntansi-setting.index', compact(
-            'setting', 'akunAset', 'akunPendapatan', 'akunBeban', 'jenisOptions', 'jenisAkunAset'
+            'setting', 'akunAset', 'akunPendapatan', 'akunBeban', 'akunPiutangOptions', 'jenisOptions', 'jenisAkunAset'
         ));
     }
 
     public function update(Request $request)
     {
         $request->validate([
+            'metode_pencatatan' => 'required|in:cash,accrual',
             'akun_kas_id' => 'required|exists:akuns,id',
-            'akun_piutang_id' => 'nullable|exists:akuns,id',
-            'akun_pendapatan_id' => 'nullable|exists:akuns,id',
+            'akun_piutang_id' => 'required|exists:akuns,id',
+            'akun_pendapatan_id' => 'required|exists:akuns,id',
             'akun_untuk_in' => 'required|exists:akuns,id',
             'akun_untuk_out' => 'required|exists:akuns,id',
             'jenis_akun_aset' => 'required|array|min:1',
@@ -53,7 +55,7 @@ class AkuntansiSettingController extends Controller
         $setting = AkuntansiSetting::forSekolah($sekolahId);
 
         $setting->update($request->only([
-            'akun_kas_id', 'akun_piutang_id',
+            'metode_pencatatan', 'akun_kas_id', 'akun_piutang_id',
             'akun_pendapatan_id', 'akun_untuk_in', 'akun_untuk_out',
         ]) + [
             'jenis_akun_aset' => array_values(array_unique(array_map('trim', $request->input('jenis_akun_aset', [])))),

@@ -88,36 +88,45 @@
                 </div>
             </div>
 
-            <!-- Section 3: Default Akun Auto-Jurnal Pembayaran -->
+            <!-- SPP / Tagihan Bulanan -->
             <div class="card mb-6">
                 <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                    <h3 class="section-title">Default Akun Auto-Jurnal Pembayaran</h3>
-                    <p class="section-subtitle">Akun yang digunakan saat sistem otomatis membuat jurnal dari pembayaran bulanan.</p>
+                    <h3 class="section-title">Akun SPP (Tagihan Bulanan)</h3>
+                    <p class="section-subtitle">Dipakai otomatis saat generate tagihan dan saat pembayaran disetujui (lunas).</p>
                 </div>
-                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-6 space-y-5">
                     <div>
-                        <label class="input-label">Akun Pendapatan SPP</label>
-                        <select name="akun_pendapatan_id" class="input-field">
-                            <option value="">— Pilih —</option>
-                            @foreach($akunPendapatan as $a)
-                                <option value="{{ $a->id }}" {{ $setting->akun_pendapatan_id == $a->id ? 'selected' : '' }}>
-                                    {{ $a->kode }} - {{ $a->nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="text-xs mt-1" style="color:#9E9790;">Dikredit saat cash basis / accrual basis (generate)</p>
+                        <label class="input-label">Metode pencatatan SPP</label>
+                        <div class="flex flex-wrap gap-4 mt-2">
+                            <label class="flex items-start gap-2 text-sm max-w-md">
+                                <input type="radio" name="metode_pencatatan" value="cash" class="mt-1"
+                                    @checked($setting->metode_pencatatan === 'cash')>
+                                <span>
+                                    <span class="font-semibold" style="color:#2C2C2C;">Tunai (pendapatan saat lunas)</span><br>
+                                    <span style="color:#9E9790;">Tagihan belum lunas: tidak ada jurnal. Saat lunas: debit kas, kredit akun pendapatan SPP.</span>
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-2 text-sm max-w-md">
+                                <input type="radio" name="metode_pencatatan" value="accrual" class="mt-1"
+                                    @checked($setting->metode_pencatatan === 'accrual')>
+                                <span>
+                                    <span class="font-semibold" style="color:#2C2C2C;">Piutang (belum lunas tercatat)</span><br>
+                                    <span style="color:#9E9790;">Saat generate tagihan: debit piutang SPP, kredit pendapatan SPP. Saat lunas: debit kas, kredit piutang SPP.</span>
+                                </span>
+                            </label>
+                        </div>
                     </div>
-                    <div>
-                        <label class="input-label">Akun Piutang SPP <span class="text-xs" style="color:#9E9790;">(hanya accrual)</span></label>
-                        <select name="akun_piutang_id" class="input-field">
-                            <option value="">— Pilih —</option>
-                            @foreach($akunAset as $a)
-                                <option value="{{ $a->id }}" {{ $setting->akun_piutang_id == $a->id ? 'selected' : '' }}>
-                                    {{ $a->kode }} - {{ $a->nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="text-xs mt-1" style="color:#9E9790;">Didebit saat generate tagihan (accrual)</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="input-label">Akun piutang SPP (tagihan belum dibayar)</label>
+                            <x-akun-search-select name="akun_piutang_id" :options="$akunPiutangOptions" :value="$setting->akun_piutang_id" placeholder="Pilih akun piutang…" required />
+                            <p class="text-xs mt-1" style="color:#9E9790;">Didebit saat tagihan dibuat (metode piutang) atau dikredit saat pelunasan.</p>
+                        </div>
+                        <div>
+                            <label class="input-label">Akun pendapatan SPP (sudah dibayar / penghasilan)</label>
+                            <x-akun-search-select name="akun_pendapatan_id" :options="$akunPendapatan" :value="$setting->akun_pendapatan_id" placeholder="Pilih akun pendapatan…" required />
+                            <p class="text-xs mt-1" style="color:#9E9790;">Dikredit saat lunas (metode tunai) atau saat tagihan dibuat (metode piutang).</p>
+                        </div>
                     </div>
                 </div>
             </div>
