@@ -344,12 +344,17 @@ class PembayaranBulananController extends Controller
             $diskonManualPerTagihan
         );
 
+        $setting = \App\Models\AkuntansiSetting::forSekolah($sekolah_id);
+        $catatanAkuntansi = $setting->isCash()
+            ? ' Jurnal & cashflow baru muncul setelah tagihan ditandai lunas (metode Tunai di Pengaturan Akuntansi).'
+            : ' Jurnal tagihan (piutang/pendapatan) dibuat otomatis; cashflow muncul saat lunas.';
+
         return redirect()
             ->route('admin.pembayaran-bulanan.index', [
                 'bulan' => $request->bulan,
                 'tahun' => $request->tahun,
             ])
-            ->with('success', "Berhasil generate {$pembayarans->count()} tagihan.");
+            ->with('success', "Berhasil generate {$pembayarans->count()} tagihan.{$catatanAkuntansi}");
     }
 
     public function destroy(PembayaranBulanan $pembayaran)

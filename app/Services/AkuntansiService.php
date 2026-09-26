@@ -59,12 +59,40 @@ class AkuntansiService
      * Accrual: jurnal saat generate tagihan.
      * Debit Piutang SPP / Kredit Pendapatan SPP
      */
-    public function buatJurnalSaatGenerate(PembayaranBulanan $pembayaran, int $userId): Jurnal
+    /**
+     * Accrual: jurnal tagihan saat generate / generate ulang (pending).
+     * Debit Piutang SPP / Kredit Pendapatan SPP
+     */
+    public function sinkronkanJurnalTagihanGenerate(PembayaranBulanan $pembayaran, int $userId): ?Jurnal
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
-        $this->assertAkunSppLengkap($setting);
+        if (! $setting->isAccrual() || $pembayaran->status !== 'pending' || $pembayaran->total_bayar <= 0) {
+            return null;
+        }
 
-        return DB::transaction(function () use ($pembayaran, $setting, $userId) {
+        $this->assertAkunSppLengkap($setting);
+        $pembayaran->loadMissing('anak');
+
+        $lines = [
+            [$setting->akun_piutang_id, $pembayaran->total_bayar, 0],
+            [$setting->akun_pendapatan_id, 0, $pembayaran->total_bayar],
+        ];
+
+        return DB::transaction(function () use ($pembayaran, $setting, $userId, $lines) {
+            $existing = $pembayaran->jurnal_id
+                ? Jurnal::with('lines')->find($pembayaran->jurnal_id)
+                : null;
+
+            if ($existing && str_contains($existing->deskripsi, 'Tagihan')) {
+                $existing->lines()->delete();
+                $existing->update([
+                    'deskripsi' => 'Auto: Tagihan '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa'),
+                ]);
+                $this->createLines($existing, $lines);
+
+                return $existing;
+            }
+
             $jurnal = $this->insertJurnal([
                 'sekolah_id' => $pembayaran->sekolah_id,
                 'tanggal' => now(),
@@ -75,11 +103,7 @@ class AkuntansiService
                 'sourceable_id' => $pembayaran->id,
             ]);
 
-            $this->createLines($jurnal, [
-                [$setting->akun_piutang_id, $pembayaran->total_bayar, 0],
-                [$setting->akun_pendapatan_id, 0, $pembayaran->total_bayar],
-            ]);
-
+            $this->createLines($jurnal, $lines);
             $pembayaran->update(['jurnal_id' => $jurnal->id]);
 
             return $jurnal;
@@ -95,8 +119,12 @@ class AkuntansiService
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
         $this->assertAkunSppLengkap($setting);
+        if (! $setting->akun_kas_id) {
+            throw new \RuntimeException('Akun kas belum diatur di Pengaturan Akuntansi.');
+        }
 
         return DB::transaction(function () use ($pembayaran, $setting, $userId) {
+            $pembayaran->loadMissing('anak');
             $deskripsi = 'Auto: Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa');
 
             if ($setting->isAccrual()) {
@@ -125,7 +153,10 @@ class AkuntansiService
 
             $this->createLines($jurnal, $lines);
 
-            $pembayaran->update(['jurnal_id' => $jurnal->id]);
+            // ponytail: jurnal tagihan (generate) tetap di jurnal_id; jurnal pelunasan hanya lewat sourceable + cashflow
+            if ($setting->isCash() || ! $pembayaran->jurnal_id) {
+                $pembayaran->update(['jurnal_id' => $jurnal->id]);
+            }
 
             Cashflow::create([
                 'sekolah_id' => $pembayaran->sekolah_id,

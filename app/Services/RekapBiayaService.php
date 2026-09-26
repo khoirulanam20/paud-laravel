@@ -200,7 +200,6 @@ class RekapBiayaService
             if ($pending) {
                 $pending->update($attributes + ['status' => 'pending']);
                 $pembayaran = $pending->fresh();
-                $wasRecentlyCreated = false;
             } else {
                 $pembayaran = PembayaranBulanan::create([
                     'anak_id' => $anak->id,
@@ -209,7 +208,6 @@ class RekapBiayaService
                     'periode_tahun' => $tahun,
                     'status' => 'pending',
                 ] + $attributes);
-                $wasRecentlyCreated = true;
             }
 
             $pembayaran->items()->delete();
@@ -224,11 +222,11 @@ class RekapBiayaService
                 }
             }
 
-            // Accrual: buat jurnal saat generate (Piutang / Pendapatan)
-            $setting = AkuntansiSetting::forSekolah($sekolahId);
-            if ($setting->isAccrual() && $total > 0 && $wasRecentlyCreated) {
-                $akuntansiService = app(AkuntansiService::class);
-                $akuntansiService->buatJurnalSaatGenerate($pembayaran, auth()->id() ?? 1);
+            if ($total > 0 && $pembayaran->status === 'pending') {
+                app(AkuntansiService::class)->sinkronkanJurnalTagihanGenerate(
+                    $pembayaran->fresh(['anak']),
+                    auth()->id() ?? 1
+                );
             }
 
             $pembayarans->push($pembayaran);
