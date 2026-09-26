@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CashflowController;
 use App\Http\Controllers\Admin\TabunganInvestasiController;
 use App\Http\Controllers\Admin\DiskonController;
 use App\Http\Controllers\Admin\JurnalController;
+use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KegiatanRutinController;
 use App\Http\Controllers\Admin\KelasController;
@@ -283,6 +284,17 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
 
     Route::get('jurnal/create', [JurnalController::class, 'create'])->name('jurnal.create');
     Route::resource('jurnal', JurnalController::class)->except(['create', 'edit']);
+
+    Route::get('laporan-keuangan', [LaporanController::class, 'index'])->name('laporan-keuangan.index');
+    Route::get('laporan-keuangan/neraca', [LaporanController::class, 'neraca'])->name('laporan-keuangan.neraca');
+    Route::get('laporan-keuangan/neraca/export', [LaporanController::class, 'neracaExport'])->name('laporan-keuangan.neraca.export');
+    Route::get('laporan-keuangan/neraca/pdf', [LaporanController::class, 'neracaPdf'])->name('laporan-keuangan.neraca.pdf');
+    Route::get('laporan-keuangan/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laporan-keuangan.laba-rugi');
+    Route::get('laporan-keuangan/laba-rugi/export', [LaporanController::class, 'labaRugiExport'])->name('laporan-keuangan.laba-rugi.export');
+    Route::get('laporan-keuangan/laba-rugi/pdf', [LaporanController::class, 'labaRugiPdf'])->name('laporan-keuangan.laba-rugi.pdf');
+    Route::get('laporan-keuangan/buku-besar', [LaporanController::class, 'bukuBesar'])->name('laporan-keuangan.buku-besar');
+    Route::get('laporan-keuangan/buku-besar/export', [LaporanController::class, 'bukuBesarExport'])->name('laporan-keuangan.buku-besar.export');
+    Route::get('laporan-keuangan/buku-besar/pdf', [LaporanController::class, 'bukuBesarPdf'])->name('laporan-keuangan.buku-besar.pdf');
 
     // RKAS
     Route::resource('sumber-dana', SumberDanaController::class)->except(['create', 'edit', 'show']);

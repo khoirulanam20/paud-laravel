@@ -25,6 +25,7 @@ enum AdminMenuPermission: string
     case Cashflow = 'menu.cashflow';
     case TabunganInvestasi = 'menu.tabungan-investasi';
     case JurnalUmum = 'menu.jurnal-umum';
+    case LaporanKeuangan = 'menu.laporan-keuangan';
     case SumberDana = 'menu.sumber-dana';
     case Rkas = 'menu.rkas';
     case LaporanRkas = 'menu.laporan-rkas';

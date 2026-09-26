@@ -333,6 +333,30 @@ class AkuntansiService
         return $totalKredit - $totalDebit;
     }
 
+    /** Saldo sampai hari sebelum tanggal (untuk saldo awal buku besar). */
+    public function saldoAkunSebelum(int $akunId, string $tanggal): float
+    {
+        $sebelum = date('Y-m-d', strtotime($tanggal.' -1 day'));
+
+        return $this->saldoAkun($akunId, $sebelum);
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, JurnalLine>
+     */
+    public function barisJurnalAkun(int $akunId, string $dari, string $sampai)
+    {
+        return JurnalLine::query()
+            ->where('akun_id', $akunId)
+            ->whereHas('jurnal', fn ($q) => $q->whereBetween('tanggal', [$dari, $sampai]))
+            ->with(['jurnal' => fn ($q) => $q->select('id', 'no_jurnal', 'tanggal', 'deskripsi')])
+            ->join('jurnals', 'jurnal_lines.jurnal_id', '=', 'jurnals.id')
+            ->orderBy('jurnals.tanggal')
+            ->orderBy('jurnals.no_jurnal')
+            ->select('jurnal_lines.*')
+            ->get();
+    }
+
     /**
      * Saldo kartu tabungan: jurnal + cashflow yang belum punya jurnal (agar selaras dengan tabel mutasi).
      */

@@ -47,6 +47,7 @@ class PermissionSeeder extends Seeder
                 ['name' => 'menu.cashflow', 'label' => 'Cashflow'],
                 ['name' => 'menu.tabungan-investasi', 'label' => 'Tabungan & Investasi'],
                 ['name' => 'menu.jurnal-umum', 'label' => 'Jurnal Umum'],
+                ['name' => 'menu.laporan-keuangan', 'label' => 'Laporan Keuangan'],
             ],
             'RKAS' => [
                 ['name' => 'menu.sumber-dana', 'label' => 'Sumber Dana'],
