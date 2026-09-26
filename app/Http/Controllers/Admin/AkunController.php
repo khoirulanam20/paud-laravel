@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Imports\AkunImport;
 use App\Models\Akun;
+use App\Models\JurnalLine;
 use App\Support\JenisAkun;
 use App\Support\PaginationPerPage;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +23,7 @@ class AkunController extends Controller
 
         $query = $this->baseQuery($sekolahId, $request);
         $akunList = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
+        $this->attachSaldo($akunList);
 
         $kelompokOptions = $this->distinctKelompok($sekolahId);
         $subkelompokOptions = $this->distinctSubkelompok($sekolahId, $request->input('kelompok'));
@@ -198,6 +200,31 @@ class AkunController extends Controller
         }
 
         return implode(', ', $parts).'.';
+    }
+
+    private function attachSaldo($akunList): void
+    {
+        $items = $akunList->getCollection();
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $totals = JurnalLine::query()
+            ->whereIn('akun_id', $items->pluck('id'))
+            ->selectRaw('akun_id, SUM(debit) as total_debit, SUM(kredit) as total_kredit')
+            ->groupBy('akun_id')
+            ->get()
+            ->keyBy('akun_id');
+
+        foreach ($items as $akun) {
+            $row = $totals->get($akun->id);
+            $debit = (float) ($row->total_debit ?? 0);
+            $kredit = (float) ($row->total_kredit ?? 0);
+            $akun->setAttribute(
+                'saldo',
+                $akun->saldo_normal === 'debit' ? $debit - $kredit : $kredit - $debit
+            );
+        }
     }
 
     private function baseQuery(int $sekolahId, Request $request): Builder

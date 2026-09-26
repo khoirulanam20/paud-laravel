@@ -98,6 +98,7 @@
                             <th>Kelompok</th>
                             <th>Subkelompok</th>
                             <th>Uraian</th>
+                            <th class="text-right">Saldo</th>
                             <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -110,6 +111,7 @@
                                 <td class="text-xs" style="color:#9E9790;">{{ $akun->snp ?? '-' }}</td>
                                 <td class="text-xs" style="color:#9E9790;">{{ $akun->komponen ?? '-' }}</td>
                                 <td class="text-xs max-w-xs truncate" style="color:#9E9790;" @if($akun->uraian) title="{{ $akun->uraian }}" @endif>{{ $akun->uraian ? Str::limit($akun->uraian, 50) : '-' }}</td>
+                                <td class="text-right font-semibold whitespace-nowrap" style="color:{{ ($akun->saldo ?? 0) < 0 ? '#C0392B' : '#1A6B6B' }};">Rp {{ number_format($akun->saldo ?? 0, 0, ',', '.') }}</td>
                                 <td class="text-right">
                                     <button @click="editData={{ json_encode($akun->only(['id','kode','nama','snp','komponen','uraian','tipe','jenis','kategori_arus_kas','saldo_normal','deskripsi'])) }}; showEditModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                     @if(!$akun->isSistem())
@@ -118,7 +120,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="py-12 text-center" style="color:#9E9790;">Belum ada akun.</td></tr>
+                            <tr><td colspan="8" class="py-12 text-center" style="color:#9E9790;">Belum ada akun.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
