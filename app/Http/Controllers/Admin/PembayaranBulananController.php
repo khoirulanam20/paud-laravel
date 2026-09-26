@@ -237,6 +237,7 @@ class PembayaranBulananController extends Controller
                 'key' => $anak->id.'_'.$biaya->id,
                 'anak_id' => $anak->id,
                 'anak_name' => $anak->name,
+                'kelas_id' => $anak->kelas_id,
                 'kelas_name' => $anak->kelas->name ?? '-',
                 'biaya_id' => $biaya->id,
                 'biaya_name' => $biaya->nama_biaya,

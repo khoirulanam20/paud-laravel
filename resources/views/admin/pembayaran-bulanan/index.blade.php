@@ -21,6 +21,8 @@
              itemModalJumlah: 0,
              itemModalEditIdx: null,
              previewData: [],
+             previewFilterKelas: '',
+             previewSearchNama: '',
              selectedKeys: [],
              diskons: @js(\App\Models\Diskon::where('sekolah_id', auth()->user()->sekolah_id)->where('is_aktif', true)->get(['id','nama_diskon','tipe','nilai'])),
              bulan: {{ $bulan }},
@@ -29,11 +31,30 @@
              rowKey(row) {
                  return row.key || (row.anak_id + '_' + row.biaya_id);
              },
+             get filteredPreviewData() {
+                 const q = (this.previewSearchNama || '').trim().toLowerCase();
+                 return this.previewData.filter(row => {
+                     if (this.previewFilterKelas && String(row.kelas_id) !== String(this.previewFilterKelas)) {
+                         return false;
+                     }
+                     if (q && !(row.anak_name || '').toLowerCase().includes(q)) {
+                         return false;
+                     }
+                     return true;
+                 });
+             },
              get isAllSelected() {
-                 return this.previewData.length > 0 && this.selectedKeys.length === this.previewData.length;
+                 const visible = this.filteredPreviewData;
+                 if (visible.length === 0) return false;
+                 return visible.every(r => this.selectedKeys.includes(this.rowKey(r)));
              },
              toggleAll(checked) {
-                 this.selectedKeys = checked ? this.previewData.map(r => this.rowKey(r)) : [];
+                 const keys = this.filteredPreviewData.map(r => this.rowKey(r));
+                 if (checked) {
+                     this.selectedKeys = [...new Set([...this.selectedKeys, ...keys])];
+                 } else {
+                     this.selectedKeys = this.selectedKeys.filter(k => !keys.includes(k));
+                 }
              },
              sumTambahan(row) {
                  return (row.biaya_tambahan || []).reduce((s, i) => s + (parseFloat(i.jumlah) || 0), 0);
@@ -104,6 +125,8 @@
                          diskon_manual_nominal: '',
                          diskon_manual_keterangan: '',
                      }));
+                     this.previewFilterKelas = '';
+                     this.previewSearchNama = '';
                      this.selectedKeys = this.previewData.map(r => this.rowKey(r));
                  } catch(e) { console.error(e); }
                  this.loading = false;
@@ -279,6 +302,23 @@
                         <div x-show="loading" class="text-center py-4 text-sm" style="color:#9E9790;">Memuat data...</div>
 
                         <div x-show="!loading && previewData.length > 0" class="space-y-2" data-tour="modal-generate-checklist">
+                            <div class="flex flex-wrap gap-2 items-end">
+                                <div class="min-w-[140px]">
+                                    <label class="input-label text-xs">Kelas</label>
+                                    <select x-model="previewFilterKelas" class="input-field text-sm w-full">
+                                        <option value="">Semua kelas</option>
+                                        @foreach($kelas as $k)
+                                            <option value="{{ $k->id }}">{{ $k->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="flex-1 min-w-[180px]">
+                                    <label class="input-label text-xs">Cari nama</label>
+                                    <input type="search" x-model="previewSearchNama" placeholder="Ketik nama siswa…" class="input-field text-sm w-full" autocomplete="off">
+                                </div>
+                                <p class="text-xs pb-2" style="color:#9E9790;" x-show="previewFilterKelas || previewSearchNama.trim()"
+                                   x-text="filteredPreviewData.length + ' dari ' + previewData.length + ' siswa'"></p>
+                            </div>
                             <div class="flex items-center justify-between px-1 text-xs font-semibold uppercase tracking-wider" style="color:#9E9790;">
                                 <label class="flex items-center gap-2 cursor-pointer normal-case">
                                     <input type="checkbox" class="rounded border-gray-300"
@@ -303,7 +343,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <template x-for="(row, idx) in previewData" :key="rowKey(row)">
+                                    <template x-if="filteredPreviewData.length === 0">
+                                        <tr>
+                                            <td colspan="10" class="py-8 text-center text-sm" style="color:#9E9790;">Tidak ada siswa yang cocok dengan filter.</td>
+                                        </tr>
+                                    </template>
+                                    <template x-for="(row, idx) in filteredPreviewData" :key="rowKey(row)">
                                         <tr>
                                             <td class="text-center">
                                                 <input type="checkbox" name="tagihan[]" :value="rowKey(row)"
