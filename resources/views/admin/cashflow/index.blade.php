@@ -15,9 +15,17 @@
                     ...d,
                     akun_id: d.akun_id ?? '',
                     akun_lawan_id: d.akun_lawan_id ?? '',
+                    akun_lawan_id_label: d.akun_lawan_id_label ?? '',
                     sumber_dana_id: d.sumber_dana_id ?? '',
                 };
                 this.showEditModal = true;
+                this.$nextTick(() => {
+                    this.$dispatch('akun-search-sync', {
+                        field: 'akun_lawan_id',
+                        id: this.editData.akun_lawan_id,
+                        label: this.editData.akun_lawan_id_label,
+                    });
+                });
             },
             openDelete(r){ this.deleteRoute=r; this.showDeleteModal=true },
             async openKwitansi(defaultsUrl, pdfUrl) {

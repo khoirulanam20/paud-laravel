@@ -24,7 +24,6 @@
     x-data="{
         selected: @js($initial),
         q: '',
-        _seen: '',
         open: false,
         pos: { top: 0, left: 0, width: 0 },
         options: @js($optionsJson),
@@ -54,20 +53,18 @@
             const r = el.getBoundingClientRect();
             this.pos = { top: r.bottom + 4, left: r.left, width: r.width };
         },
+        setFromDetail(detail) {
+            if (!detail) return;
+            const id = (detail.id === null || detail.id === undefined || detail.id === '') ? '' : String(detail.id);
+            this.selected = id;
+            this.q = detail.label || this.labelFor(id);
+        },
     }"
     x-init="syncQ()"
     @if($syncField)
-    x-effect="
-        const open = !!$parent.showEditModal;
-        const data = $parent.editData || {};
-        const raw = data[@js($syncField)];
-        const next = (raw === null || raw === undefined || raw === '') ? '' : String(raw);
-        const token = (open ? '1' : '0') + ':' + next;
-        if (token === _seen) return;
-        _seen = token;
-        if (!open) return;
-        selected = next;
-        q = labelFor(next) || String(data[@js($syncField.'_label')] || '');
+    @akun-search-sync.window="
+        if ($event.detail?.field !== @js($syncField)) return;
+        setFromDetail($event.detail);
     "
     @endif
     class="relative"

@@ -9,7 +9,21 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto"
-         x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'' }">
+         x-data="{
+            showCreateModal:false, showEditModal:false, showDeleteModal:false, editData:{}, deleteRoute:'',
+            openEditSd(sd) {
+                this.editData = sd;
+                this.showEditModal = true;
+                this.$nextTick(() => {
+                    const akun = sd.akun;
+                    this.$dispatch('akun-search-sync', {
+                        field: 'akun_id',
+                        id: sd.akun_id ?? '',
+                        label: akun ? `${akun.kode} — ${akun.nama}` : '',
+                    });
+                });
+            },
+         }">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
@@ -33,7 +47,7 @@
                             <td class="text-center">{{ $sd->urutan }}</td>
                             <td class="text-center"><span class="badge {{ $sd->is_aktif ? 'badge-green' : 'badge-gray' }}">{{ $sd->is_aktif ? 'Aktif' : 'Nonaktif' }}</span></td>
                             <td class="text-right">
-                                <button @click="editData={{ json_encode($sd) }}; showEditModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                <button @click="openEditSd({{ Js::from($sd) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
                                 <button @click="deleteRoute='{{ route('admin.sumber-dana.destroy', $sd) }}'; showDeleteModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                             </td>
                         </tr>

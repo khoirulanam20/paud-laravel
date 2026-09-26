@@ -51,7 +51,13 @@ class Cashflow extends Model
             return $this->akunLawan;
         }
 
-        $line = $this->jurnal?->lines?->first(function ($line) {
+        $kasId = $this->akun_id ? (int) $this->akun_id : null;
+
+        $line = $this->jurnal?->lines?->first(function ($line) use ($kasId) {
+            if ($kasId && (int) $line->akun_id === $kasId) {
+                return false;
+            }
+
             return $this->type === 'in'
                 ? (float) $line->kredit > 0
                 : (float) $line->debit > 0;
