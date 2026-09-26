@@ -13,8 +13,31 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
          x-data="{
             showCreateModal: false, showEditModal: false, showDeleteModal: false, showImportModal: false, showDetailModal: false,
-            editData: {}, detailData: {}, deleteRoute: '',
+            editData: {}, detailData: {}, detailHistory: [], detailHistoryLoading: false, detailHistoryError: null, deleteRoute: '',
             rupiah(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n) || 0); },
+            formatMutasi(n) { const v = Number(n) || 0; return v > 0 ? new Intl.NumberFormat('id-ID').format(v) : '—'; },
+            async openDetail(payload) {
+                this.detailData = payload;
+                this.showDetailModal = true;
+                this.detailHistory = [];
+                this.detailHistoryError = null;
+                this.detailHistoryLoading = true;
+                try {
+                    const res = await fetch(`{{ url('admin/akun') }}/${payload.id}/riwayat-jurnal`, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const json = await res.json();
+                    if (!res.ok) {
+                        this.detailHistoryError = json.message ?? 'Gagal memuat riwayat jurnal.';
+                        return;
+                    }
+                    this.detailHistory = json.rows ?? [];
+                } catch (e) {
+                    this.detailHistoryError = 'Gagal memuat riwayat jurnal.';
+                } finally {
+                    this.detailHistoryLoading = false;
+                }
+            },
             importTesting: false, importTest: null, importTestError: null, ignoreDuplicates: false,
             canImport() {
                 if (!this.importTest || this.importTest.valid_count < 1) return false;
@@ -126,7 +149,7 @@
                                 <td class="text-right font-semibold whitespace-nowrap" style="color:{{ ($akun->saldo ?? 0) < 0 ? '#C0392B' : '#1A6B6B' }};">Rp {{ number_format($akun->saldo ?? 0, 0, ',', '.') }}</td>
                                 <td class="text-right">
                                     <div class="inline-flex items-center justify-end gap-1.5">
-                                        <button type="button" title="Lihat" @click="detailData={{ json_encode($rowPayload) }}; showDetailModal=true" class="h-8 w-8 rounded-lg flex items-center justify-center" style="color:#1A6B6B;background:#E8F5F5;">
+                                        <button type="button" title="Lihat" @click="openDetail({{ json_encode($rowPayload) }})" class="h-8 w-8 rounded-lg flex items-center justify-center" style="color:#1A6B6B;background:#E8F5F5;">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                         </button>
                                         <button type="button" title="Edit" @click="editData={{ json_encode($rowPayload) }}; showEditModal=true" class="h-8 w-8 rounded-lg flex items-center justify-center" style="color:#1A6B6B;background:#D0E8E8;">
@@ -255,20 +278,68 @@
         </div>
 
         <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
-            <div x-show="showDetailModal" x-transition class="modal-box max-w-lg" @click.away="showDetailModal=false">
-                <div class="modal-header"><h3 class="section-title">Detail Akun</h3></div>
-                <div class="modal-body grid grid-cols-2 gap-3 text-sm">
-                    <div><p class="input-label">Kode</p><p class="font-mono font-semibold" style="color:#1A6B6B;" x-text="detailData.kode"></p></div>
-                    <div><p class="input-label">Jenis</p><p x-text="detailData.jenis"></p></div>
-                    <div class="col-span-2"><p class="input-label">Nama</p><p class="font-medium" x-text="detailData.nama"></p></div>
-                    <div><p class="input-label">Kelompok</p><p x-text="detailData.snp || '-'"></p></div>
-                    <div><p class="input-label">Subkelompok</p><p x-text="detailData.komponen || '-'"></p></div>
-                    <div class="col-span-2"><p class="input-label">Uraian</p><p x-text="detailData.uraian || '-'"></p></div>
-                    <div><p class="input-label">Saldo Normal</p><p class="capitalize" x-text="detailData.saldo_normal"></p></div>
-                    <div><p class="input-label">Saldo Awal</p><p class="font-semibold" x-text="rupiah(detailData.saldo_awal)"></p></div>
-                    <div class="col-span-2"><p class="input-label">Saldo saat ini</p><p class="font-semibold text-base" style="color:#1A6B6B;" x-text="rupiah(detailData.saldo)"></p></div>
+            <div x-show="showDetailModal" x-transition class="modal-box max-w-3xl max-h-[90vh] flex flex-col" @click.away="showDetailModal=false">
+                <div class="modal-header shrink-0"><h3 class="section-title">Detail Akun</h3></div>
+                <div class="modal-body overflow-y-auto text-sm space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><p class="input-label">Kode</p><p class="font-mono font-semibold" style="color:#1A6B6B;" x-text="detailData.kode"></p></div>
+                        <div><p class="input-label">Jenis</p><p x-text="detailData.jenis"></p></div>
+                        <div class="col-span-2"><p class="input-label">Nama</p><p class="font-medium" x-text="detailData.nama"></p></div>
+                        <div><p class="input-label">Kelompok</p><p x-text="detailData.snp || '-'"></p></div>
+                        <div><p class="input-label">Subkelompok</p><p x-text="detailData.komponen || '-'"></p></div>
+                        <div class="col-span-2"><p class="input-label">Uraian</p><p x-text="detailData.uraian || '-'"></p></div>
+                        <div><p class="input-label">Saldo Normal</p><p class="capitalize" x-text="detailData.saldo_normal"></p></div>
+                        <div><p class="input-label">Saldo Awal</p><p class="font-semibold" x-text="rupiah(detailData.saldo_awal)"></p></div>
+                        <div class="col-span-2"><p class="input-label">Saldo saat ini</p><p class="font-semibold text-base" style="color:#1A6B6B;" x-text="rupiah(detailData.saldo)"></p></div>
+                    </div>
+
+                    <div class="border-t pt-4" style="border-color:rgba(0,0,0,0.06);">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <p class="input-label mb-0">Riwayat jurnal (50 terbaru)</p>
+                            @can('menu.laporan-keuangan')
+                                <a :href="`{{ route('admin.laporan-keuangan.buku-besar') }}?akun_id=${detailData.id}&tipe=bulanan&tahun={{ now()->year }}&bulan={{ now()->month }}`"
+                                   class="text-xs font-semibold" style="color:#1A6B6B;" x-show="detailData.id">Buku besar lengkap →</a>
+                            @endcan
+                        </div>
+                        <p x-show="detailHistoryLoading" class="text-xs py-4 text-center" style="color:#9E9790;">Memuat riwayat…</p>
+                        <p x-show="detailHistoryError" x-text="detailHistoryError" class="text-xs py-2" style="display:none;color:#C0392B;"></p>
+                        <div x-show="!detailHistoryLoading && !detailHistoryError && detailHistory.length === 0" class="text-xs py-4 text-center" style="color:#9E9790;">
+                            Belum ada mutasi jurnal untuk akun ini.
+                        </div>
+                        <div x-show="detailHistory.length > 0" class="overflow-x-auto rounded-lg border" style="border-color:rgba(0,0,0,0.08);">
+                            <table class="data-table text-xs">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>No. Jurnal</th>
+                                        <th>Keterangan</th>
+                                        <th class="text-right">Debit</th>
+                                        <th class="text-right">Kredit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="row in detailHistory" :key="row.id">
+                                        <tr>
+                                            <td class="whitespace-nowrap" x-text="row.tanggal"></td>
+                                            <td class="whitespace-nowrap">
+                                                <template x-if="row.show_url">
+                                                    <a :href="row.show_url" class="font-mono font-semibold underline" style="color:#1A6B6B;" x-text="row.no_jurnal"></a>
+                                                </template>
+                                                <template x-if="!row.show_url">
+                                                    <span x-text="row.no_jurnal"></span>
+                                                </template>
+                                            </td>
+                                            <td class="max-w-[12rem] truncate" :title="row.deskripsi" x-text="row.deskripsi"></td>
+                                            <td class="text-right whitespace-nowrap" x-text="formatMutasi(row.debit)"></td>
+                                            <td class="text-right whitespace-nowrap" x-text="formatMutasi(row.kredit)"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer shrink-0">
                     <button type="button" @click="showDetailModal=false" class="btn-secondary">Tutup</button>
                     <button type="button" @click="editData=detailData; showDetailModal=false; showEditModal=true" class="btn-primary">Edit</button>
                 </div>

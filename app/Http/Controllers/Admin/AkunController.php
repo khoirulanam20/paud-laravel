@@ -122,6 +122,28 @@ class AkunController extends Controller
         return redirect()->route('admin.akun.index')->with('success', 'Akun berhasil diperbarui.');
     }
 
+    public function riwayatJurnal(Akun $akun)
+    {
+        abort_if($akun->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $rows = $this->akuntansi->riwayatJurnalAkun($akun->id, 50)->map(function (JurnalLine $line) {
+            $jurnal = $line->jurnal;
+
+            return [
+                'id' => $line->id,
+                'jurnal_id' => $line->jurnal_id,
+                'tanggal' => $jurnal?->tanggal?->format('d/m/Y') ?? '—',
+                'no_jurnal' => $jurnal?->no_jurnal ?? '—',
+                'deskripsi' => $jurnal?->deskripsi ?? '—',
+                'debit' => (float) $line->debit,
+                'kredit' => (float) $line->kredit,
+                'show_url' => $jurnal ? route('admin.jurnal.show', $jurnal) : null,
+            ];
+        });
+
+        return response()->json(['rows' => $rows->values()]);
+    }
+
     public function destroy(Akun $akun)
     {
         abort_if($akun->sekolah_id !== auth()->user()->sekolah_id, 403);

@@ -358,6 +358,24 @@ class AkuntansiService
     }
 
     /**
+     * Riwayat mutasi jurnal terbaru untuk satu akun (detail akun / preview).
+     *
+     * @return \Illuminate\Support\Collection<int, JurnalLine>
+     */
+    public function riwayatJurnalAkun(int $akunId, int $limit = 50)
+    {
+        return JurnalLine::query()
+            ->where('akun_id', $akunId)
+            ->join('jurnals', 'jurnal_lines.jurnal_id', '=', 'jurnals.id')
+            ->with(['jurnal' => fn ($q) => $q->select('id', 'no_jurnal', 'tanggal', 'deskripsi')])
+            ->orderByDesc('jurnals.tanggal')
+            ->orderByDesc('jurnals.no_jurnal')
+            ->limit($limit)
+            ->select('jurnal_lines.*')
+            ->get();
+    }
+
+    /**
      * Saldo kartu tabungan: jurnal + cashflow yang belum punya jurnal (agar selaras dengan tabel mutasi).
      */
     public function saldoTabunganAkun(int $sekolahId, int $akunId): float

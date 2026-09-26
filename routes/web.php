@@ -277,6 +277,7 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::resource('diskon', DiskonController::class)->except(['create', 'edit', 'show']);
 
     // Akuntansi PSAK
+    Route::get('akun/{akun}/riwayat-jurnal', [AkunController::class, 'riwayatJurnal'])->name('akun.riwayat-jurnal');
     Route::resource('akun', AkunController::class)->except(['create', 'edit', 'show']);
 
     Route::get('akuntansi-setting', [AkuntansiSettingController::class, 'index'])->name('akuntansi-setting.index');
