@@ -45,10 +45,14 @@ class CashflowController extends Controller
             - (float) Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
 
         $summaryArusKas = (clone $filtered)
-            ->whereNotNull('akun_id')
-            ->with('akun')
+            ->with(['akun', 'akunLawan'])
             ->get()
-            ->groupBy(fn ($c) => $c->akun?->kategori_arus_kas ?? 'tidak_diketahui');
+            ->groupBy(fn (Cashflow $c) => $c->akunLawan?->kategori_arus_kas
+                ?? $c->akun?->kategori_arus_kas
+                ?? 'tidak_diketahui');
+
+        $netPeriod = $totalIn - $totalOut;
+        $filterPeriodLabel = $this->cashflowFilterPeriodLabel($request, $bulan, $tahun);
 
         $kelompokOptions = $this->distinctAkunKelompok($sekolahId);
         $subkelompokOptions = $this->distinctAkunSubkelompok($sekolahId, $request->input('kelompok'));
@@ -63,7 +67,7 @@ class CashflowController extends Controller
         $sumberDanas = SumberDana::where('sekolah_id', $sekolahId)->aktif()->orderBy('urutan')->get();
 
         return view('admin.cashflow.index', compact(
-            'cashflows', 'totalIn', 'totalOut', 'balance',
+            'cashflows', 'totalIn', 'totalOut', 'balance', 'netPeriod', 'filterPeriodLabel',
             'summaryArusKas', 'bulan', 'tahun', 'akunAset', 'akunOptions', 'setting', 'sumberDanas',
             'kelompokOptions', 'subkelompokOptions',
         ));
@@ -209,6 +213,21 @@ class CashflowController extends Controller
         $this->applyKelompokFilter($query, $request);
 
         return $query;
+    }
+
+    private function cashflowFilterPeriodLabel(Request $request, ?int $bulan, ?int $tahun): string
+    {
+        if ($request->filled('dari') && $request->filled('sampai')) {
+            return $request->input('dari').' s/d '.$request->input('sampai');
+        }
+
+        if ($bulan && $tahun) {
+            return \Carbon\Carbon::createFromDate($tahun, $bulan, 1)
+                ->locale('id')
+                ->translatedFormat('F Y');
+        }
+
+        return 'Semua periode';
     }
 
     private function applyPeriodFilter(Builder $query, Request $request): void
