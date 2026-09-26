@@ -82,6 +82,45 @@ class Akun extends Model
         return $this->tipe === 'sistem';
     }
 
+    /** Akun masih direferensikan transaksi atau konfigurasi — jangan hard-delete. */
+    public function masihTerpakai(): bool
+    {
+        if ($this->jurnalLines()->exists()) {
+            return true;
+        }
+
+        $id = $this->id;
+
+        if (AkuntansiSetting::where('sekolah_id', $this->sekolah_id)
+            ->where(function ($q) use ($id) {
+                $q->where('akun_kas_id', $id)
+                    ->orWhere('akun_piutang_id', $id)
+                    ->orWhere('akun_pendapatan_id', $id)
+                    ->orWhere('akun_untuk_in', $id)
+                    ->orWhere('akun_untuk_out', $id);
+            })->exists()) {
+            return true;
+        }
+
+        if (SumberDana::where('sekolah_id', $this->sekolah_id)->where('akun_id', $id)->exists()) {
+            return true;
+        }
+
+        if (AkuntansiTabunganAkun::where('sekolah_id', $this->sekolah_id)->where('akun_id', $id)->exists()) {
+            return true;
+        }
+
+        if (RkasLine::where('akun_id', $id)->exists()) {
+            return true;
+        }
+
+        if (static::where('induk_id', $id)->exists()) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function getLabelAttribute(): string
     {
         return "{$this->kode} — ".($this->uraian ?? $this->nama);

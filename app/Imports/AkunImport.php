@@ -19,6 +19,9 @@ class AkunImport implements ToCollection, WithHeadingRow
     /** @var list<array{row: int, status: string, label: string, message: string}> */
     public array $rows = [];
 
+    /** @var list<array{saldo_awal: float, saldo_normal: string}> */
+    private array $openingPlanned = [];
+
     public function __construct(
         protected int $sekolahId,
         protected bool $dryRun = true,
@@ -76,6 +79,10 @@ class AkunImport implements ToCollection, WithHeadingRow
             }
 
             $this->rows[] = ['row' => $rowNumber, 'status' => 'ok', 'label' => $label, 'message' => 'Siap diimport.'];
+            $this->openingPlanned[] = [
+                'saldo_awal' => $data['saldo_awal'],
+                'saldo_normal' => $data['saldo_normal'],
+            ];
 
             if ($this->dryRun) {
                 continue;
@@ -124,6 +131,38 @@ class AkunImport implements ToCollection, WithHeadingRow
         return count(array_filter($this->rows, fn ($r) => $r['status'] === 'invalid'));
     }
 
+    /**
+     * @return array{total_debit: float, total_kredit: float, balanced: bool, opening_rows: int}
+     */
+    public function openingTrialBalance(): array
+    {
+        $debit = 0.0;
+        $kredit = 0.0;
+        $openingRows = 0;
+
+        foreach ($this->openingPlanned as $row) {
+            $amount = (float) $row['saldo_awal'];
+            if ($amount <= 0) {
+                continue;
+            }
+            $openingRows++;
+            if ($row['saldo_normal'] === 'debit') {
+                $debit += $amount;
+                $kredit += $amount;
+            } else {
+                $kredit += $amount;
+                $debit += $amount;
+            }
+        }
+
+        return [
+            'total_debit' => round($debit, 2),
+            'total_kredit' => round($kredit, 2),
+            'balanced' => abs($debit - $kredit) < 0.01,
+            'opening_rows' => $openingRows,
+        ];
+    }
+
     /** @return array{kode: string, nama: string, jenis: string, snp: ?string, komponen: ?string, uraian: ?string, saldo_normal: string, kategori_arus_kas: string} */
     private function normalize(Collection $row): array
     {
@@ -161,10 +200,13 @@ class AkunImport implements ToCollection, WithHeadingRow
             return 'Jenis harus '.implode(', ', JenisAkun::ALL).'.';
         }
         if ($data['saldo_awal'] === null) {
-            return 'Saldo awal harus angka, contoh 7000000.';
+            return 'Saldo awal harus angka (kosong = 0), contoh 7000000.';
         }
         if ($data['saldo_awal'] < 0) {
             return 'Saldo awal tidak boleh minus.';
+        }
+        if ($data['saldo_awal'] > 0 && in_array($data['jenis'], [JenisAkun::PENDAPATAN, JenisAkun::BEBAN], true)) {
+            return 'Saldo awal hanya untuk akun neraca (Aset/Liabilitas/Modal). Pendapatan & Beban isi 0.';
         }
 
         return null;
