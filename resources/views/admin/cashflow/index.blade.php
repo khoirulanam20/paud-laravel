@@ -102,10 +102,9 @@
                                 <option value="{{ $m }}" {{ $bulan === $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->locale('id')->translatedFormat('F') }}</option>
                             @endforeach
                         </select>
-                        <select name="tahun" id="cashflow-filter-tahun" class="input-field w-24 text-sm" @disabled($bulan === null)>
-                            <option value="">—</option>
+                        <select name="tahun" id="cashflow-filter-tahun" class="input-field w-24 text-sm {{ $bulan === null ? 'hidden' : '' }}" @disabled($bulan === null)>
                             @foreach(range(now()->year - 2, now()->year + 1) as $y)
-                                <option value="{{ $y }}" {{ $tahun === $y ? 'selected' : '' }}>{{ $y }}</option>
+                                <option value="{{ $y }}" {{ ($tahun ?? now()->year) === $y ? 'selected' : '' }}>{{ $y }}</option>
                             @endforeach
                         </select>
                         <script>
@@ -116,8 +115,10 @@
                                 if (!bulan.value) {
                                     tahun.value = '';
                                     tahun.disabled = true;
+                                    tahun.classList.add('hidden');
                                 } else {
                                     tahun.disabled = false;
+                                    tahun.classList.remove('hidden');
                                     if (!tahun.value) tahun.value = '{{ now()->year }}';
                                 }
                             }
