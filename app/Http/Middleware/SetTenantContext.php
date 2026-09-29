@@ -28,11 +28,21 @@ class SetTenantContext
             return $next($request);
         }
 
+        // hasRole() di atas memuat roles saat team masih null (pivot sekolah_id null).
+        $rolesAtNullTeam = $user->roles->count();
+
         $sekolahId = $this->resolveSekolahId($user);
 
         if ($sekolahId !== null) {
             TenantContext::setSekolahId($sekolahId);
             app(PermissionRegistrar::class)->setPermissionsTeamId($sekolahId);
+
+            // Pivot terisi (mis. Admin Kelas) baru ketemu setelah team = sekolah.
+            // Jangan buang cache kalau role global (pivot null) sudah ketemu, supaya Admin Sekolah/Lembaga tetap jalan.
+            if ($rolesAtNullTeam === 0) {
+                $user->unsetRelation('roles');
+                $user->unsetRelation('permissions');
+            }
         }
 
         return $next($request);
