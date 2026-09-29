@@ -62,9 +62,9 @@
                                 <div class="flex items-center justify-end gap-2">
                                     <form method="POST" action="{{ route('admin.pendaftaran.approve', $a) }}">
                                         @csrf
-                                        <button type="submit" @if($loop->first) data-tour="admin-pendaftaran-action-approve" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#1A6B6B;">Setujui</button>
+                                        <button type="submit" @if($loop->first) data-tour="admin-pendaftaran-action-approve" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white row-action" style="background:#1A6B6B;" title="Setujui" aria-label="Setujui"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg><span class="hidden md:inline">Setujui</span></button>
                                     </form>
-                                    <button @if($loop->first) data-tour="admin-pendaftaran-action-reject" data-tour-open-modal="reject" @endif @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Tolak</button>
+                                    <button @if($loop->first) data-tour="admin-pendaftaran-action-reject" data-tour-open-modal="reject" @endif @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#C0392B;background:#FAD7D2;" title="Tolak" aria-label="Tolak"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg><span class="hidden md:inline">Tolak</span></button>
                                 </div>
                             </td>
                         </tr>

@@ -9,7 +9,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         @vite(['resources/css/guest.css', 'resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="guest-body flex min-h-screen items-center justify-center py-10 px-4">
+    <body class="guest-body flex min-h-screen items-center justify-center py-6 md:py-10 px-3 sm:px-4">
         <div class="w-full {{ $maxWidth ?? 'max-w-md' }}">
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center h-16 w-16 rounded-full mb-4" style="background: var(--guest-sage);">
@@ -20,7 +20,7 @@
                 <h1 class="text-2xl guest-heading font-bold" style="color: var(--guest-text);">SIPP</h1>
                 <p class="text-sm mt-1" style="color: var(--guest-text-muted);">Sistem Informasi Pengelolaan PAUD</p>
             </div>
-            <div class="guest-card p-8">
+            <div class="guest-card p-4 sm:p-6 md:p-8">
                 {{ $slot }}
             </div>
         </div>

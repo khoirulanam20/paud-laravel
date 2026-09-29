@@ -29,6 +29,12 @@
         scroll-behavior: smooth;
     }
 
+    @media (max-width: 767px) {
+        html.guest-site {
+            font-size: 14px;
+        }
+    }
+
     body.guest-body {
         font-family: 'Nunito', system-ui, sans-serif;
         background: var(--guest-bg);
@@ -112,7 +118,7 @@
     }
 
     .guest-card {
-        @apply rounded-3xl border bg-white p-6 transition-all duration-200;
+        @apply rounded-2xl md:rounded-3xl border bg-white p-4 md:p-6 transition-all duration-200;
         border-color: var(--guest-border);
     }
 
@@ -128,7 +134,7 @@
     }
 
     .guest-section {
-        @apply py-16 md:py-24 relative;
+        @apply py-12 md:py-24 relative;
     }
 
     .guest-section-alt {

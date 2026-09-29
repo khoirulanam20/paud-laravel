@@ -233,36 +233,36 @@
                     <form data-tour="pg-pencapaian-filter" method="get" action="{{ route('pengajar.pencapaian.index') }}" class="filter-toolbar-inline">
                         <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Dari</label>
-                            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Sampai</label>
-                            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Kelas</label>
-                            <select name="filter_kelas_id" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <select name="filter_kelas_id" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                                 <option value="">Semua Kelas</option>
                                 @foreach($availableKelas as $k)<option value="{{ $k->id }}" @selected($filterKelasId === (int) $k->id)>{{ $k->name }}</option>@endforeach
                             </select>
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Anak</label>
-                            <select name="filter_anak_id" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <select name="filter_anak_id" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                                 <option value="">Semua Anak</option>
                                 @foreach($anaks as $a)<option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>@endforeach
                             </select>
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Aspek</label>
-                            <select name="aspek" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <select name="aspek" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                                 <option value="">Semua Aspek</option>
                                 <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}" @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum / Tanpa Aspek</option>
                                 @foreach($aspekPilihan as $asp)<option value="{{ $asp }}" @selected($filterAspekRaw === $asp)>{{ $asp }}</option>@endforeach
                             </select>
                         </div>
                         <div class="filter-toolbar-actions">
-                            <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
+                            <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
                             <x-filter-reset :href="route('pengajar.pencapaian.index')" compact />
@@ -394,8 +394,8 @@
                                 <td class="whitespace-nowrap text-sm">{{ \Carbon\Carbon::parse($first->created_at)->format('d M Y') }}</td>
                                 <td class="text-right">
                                     <div class="flex flex-wrap items-center justify-end gap-2">
-                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-edit" data-tour-open-modal="edit" @endif @click="openEditBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-delete" data-tour-demo-action="delete" @endif @click="openDeleteBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-edit" data-tour-open-modal="edit" @endif @click="openEditBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span class="hidden md:inline">Edit</span></button>
+                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-delete" data-tour-demo-action="delete" @endif @click="openDeleteBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg><span class="hidden md:inline">Hapus</span></button>
                                     </div>
                                 </td>
                             </tr>

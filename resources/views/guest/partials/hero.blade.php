@@ -1,6 +1,6 @@
 @props(['cms'])
 @php use App\Support\GuestFeatures; @endphp
-<section class="guest-section overflow-hidden relative pt-8 md:pt-12 pb-20 md:pb-28">
+<section class="guest-section overflow-hidden relative pt-6 md:pt-12 pb-14 md:pb-28">
     <div class="guest-hero-hills" aria-hidden="true">
         <svg class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path fill="var(--guest-sage-light)" d="M0,120 C360,200 720,40 1080,120 C1260,160 1380,140 1440,120 L1440,200 L0,200 Z"/>
@@ -10,10 +10,10 @@
     @include('guest.partials.doodles', ['variant' => 'hero'])
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
             <div class="text-center lg:text-left">
                 <span class="guest-badge mb-5" data-guest-animate="hero">Ortu · Sekolah · AI</span>
-                <h1 class="text-3xl sm:text-4xl md:text-5xl guest-heading leading-tight text-[var(--guest-text)]" data-guest-animate="hero">
+                <h1 class="text-2xl sm:text-4xl md:text-5xl guest-heading leading-tight text-[var(--guest-text)]" data-guest-animate="hero">
                     {{ $cms['hero_title'] ?? 'Sistem Informasi PAUD Terpadu (SIPP)' }}
                 </h1>
                 <p class="mt-5 text-base sm:text-lg leading-relaxed text-[var(--guest-text-muted)] max-w-xl mx-auto lg:mx-0" data-guest-animate="hero">

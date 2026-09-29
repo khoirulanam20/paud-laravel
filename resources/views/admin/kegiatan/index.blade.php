@@ -98,21 +98,21 @@
                     <h3 class="section-title">Kalender Agenda Belajar</h3>
                     <p class="section-subtitle">Pilih tanggal dan kelas untuk melihat atau menambah agenda.</p>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="toolbar-actions">
                     <x-export-excel route="admin.kegiatan.export" />
                     <x-download-photos route="admin.kegiatan.photos.download" />
-                    <button data-tour="admin-kegiatan-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
+                    <button data-tour="admin-kegiatan-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary toolbar-primary shrink-0"><svg
                         class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>Buat Jurnal Baru</button>
                 </div>
             </div>
-            <form data-tour="admin-kegiatan-filter" method="get" class="px-6 py-4 flex flex-wrap items-end gap-4 border-b"
+            <form data-tour="admin-kegiatan-filter" method="get" class="card-pad toolbar-form border-b"
                 style="border-color:rgba(0,0,0,0.06);">
                 <input type="hidden" name="year" value="{{ $year }}">
                 <input type="hidden" name="month" value="{{ $month }}">
                 <input type="hidden" name="day" value="{{ request('day') }}">
-                <div class="min-w-[180px]">
+                <div class="toolbar-field">
                     <label class="input-label">Filter Kelas</label>
                     <select name="kelas_id" class="input-field" onchange="this.form.submit()">
                         <option value="">Semua Kelas</option>
@@ -121,7 +121,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="min-w-[180px]">
+                <div class="toolbar-field">
                     <label class="input-label">Filter Pengajar</label>
                     <select name="pengajar_id" class="input-field" onchange="this.form.submit()">
                         <option value="">Semua Pengajar</option>
@@ -130,8 +130,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="btn-secondary h-11">Tampilkan</button>
+                <div class="toolbar-split">
+                    <button type="submit" class="btn-secondary">Tampilkan</button>
                     <x-filter-reset :href="route('admin.kegiatan.index')" compact />
                 </div>
             </form>

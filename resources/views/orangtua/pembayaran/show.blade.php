@@ -13,7 +13,7 @@
         </div>
     </x-slot>
 
-    <div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8"
+    <div class="max-w-4xl mx-auto py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8"
          x-data="{ showBayarModal: false, showImageModal: false, activeImage: null, activeDownloadUrl: null }"
          @tour-close-modals.window="showBayarModal=false">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
@@ -21,7 +21,7 @@
 
         @php $totalTambahan = $pembayaran->getTotalBiayaTambahan(); $items = $pembayaran->items; @endphp
 
-        <div class="card p-6 mb-6">
+        <div class="card card-body-pad mb-6">
             <div class="flex items-center justify-between">
                 <h3 class="section-title">Status</h3>
                 <span class="badge badge-{{ $pembayaran->status_badge }}">{{ $pembayaran->status_label }}</span>
@@ -34,7 +34,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="card p-6" data-tour="ortu-pembayaran-rincian">
+            <div class="card card-body-pad" data-tour="ortu-pembayaran-rincian">
                 <h3 class="section-title mb-4">Rincian Biaya</h3>
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between py-2 border-b"><span style="color:#9E9790;">Biaya Bulanan</span><span class="font-semibold">{{ $pembayaran->getBiayaPerHariFormatted() }}</span></div>
@@ -57,14 +57,14 @@
                     @endif
                     <div class="flex justify-between py-3 px-4 rounded-lg" style="background:#D0E8E8;">
                         <span class="font-bold text-lg" style="color:#1A6B6B;">Total Bayar</span>
-                        <span class="font-bold text-2xl" style="color:#1A6B6B;">{{ $pembayaran->getTotalFormatted() }}</span>
+                        <span class="font-bold text-xl sm:text-2xl break-all sm:break-normal text-right" style="color:#1A6B6B;">{{ $pembayaran->getTotalFormatted() }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="space-y-6">
                 @if($pembayaran->bukti_transfer)
-                    <div class="card p-6" data-tour="ortu-pembayaran-bukti">
+                    <div class="card card-body-pad" data-tour="ortu-pembayaran-bukti">
                         <h3 class="section-title mb-4">Bukti Transfer</h3>
                         <img src="{{ Storage::url($pembayaran->bukti_transfer) }}" alt="Bukti"
                             class="w-full rounded-lg border cursor-pointer"

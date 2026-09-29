@@ -36,32 +36,32 @@
     }
 @endphp
 
-<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-black/5 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] px-1 flex items-end justify-around h-[68px]" style="padding-bottom: max(env(safe-area-inset-bottom), 0.25rem); height: calc(68px + env(safe-area-inset-bottom));">
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-black/5 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] px-1 flex items-end justify-around h-[64px]" style="padding-bottom: max(env(safe-area-inset-bottom), 0.25rem); height: calc(64px + env(safe-area-inset-bottom));">
     @if($showDashboardNav ?? true)
-    <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full h-full {{ $isOrangTua ? 'text-[9px]' : 'text-[10px]' }} font-medium transition-colors pt-1 {{ request()->routeIs('dashboard') ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
-        <svg class="{{ $isOrangTua ? 'h-5 w-5' : 'h-6 w-6' }} mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full h-full text-[9.5px] font-medium transition-colors pt-1 {{ request()->routeIs('dashboard') ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
+        <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
-        <span class="truncate w-full text-center">{{ $homeLabel }}</span>
+        <span class="truncate w-full text-center px-0.5">{{ $homeLabel }}</span>
     </a>
     @endif
 
     @foreach($bottomItems as $item)
         @if(!empty($item['center']))
-        <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full -mt-5">
-            <span class="flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform {{ request()->routeIs($item['pattern']) ? 'bg-[#145252] scale-105' : 'bg-[#1A6B6B]' }}">
-                <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full -mt-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform {{ request()->routeIs($item['pattern']) ? 'bg-[#145252] scale-105' : 'bg-[#1A6B6B]' }}">
+                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
                 </svg>
             </span>
-            <span class="truncate w-full text-center text-[9px] font-semibold mt-1 px-1 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-500' }}">{{ $item['label'] }}</span>
+            <span class="truncate w-full text-center text-[9px] font-semibold mt-0.5 px-0.5 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-500' }}">{{ $item['label'] }}</span>
         </a>
         @else
-        <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full h-full {{ $isOrangTua ? 'text-[9px]' : 'text-[10px]' }} font-medium transition-colors pt-1 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
-            <svg class="{{ $isOrangTua ? 'h-5 w-5' : 'h-6 w-6' }} mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full h-full text-[9.5px] font-medium transition-colors pt-1 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
+            <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
             </svg>
-            <span class="truncate w-full text-center px-1">{{ $item['label'] }}</span>
+            <span class="truncate w-full text-center px-0.5">{{ $item['label'] }}</span>
             @if(!empty($item['badge']) && $item['badge'] > 0)
             <span class="absolute top-1 right-2 inline-flex items-center justify-center h-4 min-w-[1rem] px-1 rounded-full text-white text-[9px] font-bold" style="background:#FF8C42;">{{ $item['badge'] }}</span>
             @endif
@@ -70,11 +70,11 @@
     @endforeach
 
     @if(count($moreItems) > 0)
-    <button @click="moreMenuOpen = true" class="flex flex-col items-center justify-center w-full h-full {{ $isOrangTua ? 'text-[9px]' : 'text-[10px]' }} font-medium text-gray-400 hover:text-gray-600 focus:outline-none transition-colors pt-1">
-        <svg class="{{ $isOrangTua ? 'h-5 w-5' : 'h-6 w-6' }} mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <button @click="moreMenuOpen = true" class="flex flex-col items-center justify-center w-full h-full text-[9.5px] font-medium text-gray-400 hover:text-gray-600 focus:outline-none transition-colors pt-1">
+        <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
-        <span class="truncate w-full text-center px-1">Lainnya</span>
+        <span class="truncate w-full text-center px-0.5">Lainnya</span>
     </button>
     @endif
 </nav>

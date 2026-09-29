@@ -36,7 +36,7 @@
         @if(session('error'))<div class="alert-danger mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>{{ session('error') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="mb-6 page-toolbar">
             <p class="text-sm" style="color:#6B6560;">Riwayat masukan dan <strong>tanggapan sekolah</strong> ditampilkan di bawah. Buka detail untuk membaca penuh.</p>
             <button type="button" data-tour="ortu-kritik-add-btn" data-tour-open-modal="create" @click="initCreate()" class="btn-primary text-sm inline-flex items-center gap-1.5">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
@@ -47,7 +47,7 @@
         <div class="space-y-5" data-tour="ortu-kritik-feed">
             @forelse($feedbacks as $fb)
                 <article class="card overflow-hidden">
-                    <div class="px-5 py-4 border-b flex flex-wrap items-start justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                    <div class="card-pad border-b page-toolbar" style="border-color:rgba(0,0,0,0.06);">
                         <div class="flex items-center gap-3">
                             <div class="shrink-0">
                                 @if($fb->photo)
@@ -78,10 +78,10 @@
                                     </button>
                                 </form>
                             @endif
-                            <a href="{{ route('orangtua.kritik-saran.show', $fb) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Detail</a>
+                            <a href="{{ route('orangtua.kritik-saran.show', $fb) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#D0E8E8;" title="Detail" aria-label="Detail"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><span class="hidden md:inline">Detail</span></a>
                         </div>
                     </div>
-                    <div class="px-5 py-4">
+                    <div class="card-body-pad">
                         <h3 class="text-xs font-bold uppercase tracking-wide mb-1.5" style="color:#6B6560;">Pesan Anda</h3>
                         <p class="text-sm leading-relaxed line-clamp-3" style="color:#2C2C2C;">{{ $fb->message }}</p>
                     </div>

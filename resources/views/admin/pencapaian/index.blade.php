@@ -247,17 +247,17 @@
                         <div class="filter-toolbar-field">
                             <label class="input-label">Dari</label>
                             <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}"
-                                class="input-field w-full h-11 text-xs font-bold border-black/10">
+                                class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10">
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="input-label">Sampai</label>
                             <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}"
-                                class="input-field w-full h-11 text-xs font-bold border-black/10">
+                                class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10">
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="input-label">Kelas</label>
                             <select name="filter_kelas_id"
-                                class="input-field w-full h-11 text-xs font-bold border-black/10">
+                                class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10">
                                 <option value="">Semua Kelas</option>
                                 @foreach($availableKelas as $k)<option value="{{ $k->id }}"
                                 @selected($filterKelasId === (int) $k->id)>{{ $k->name }}</option>@endforeach
@@ -266,14 +266,14 @@
                         <div class="filter-toolbar-field">
                             <label class="input-label">Nama Siswa</label>
                             <select name="filter_anak_id"
-                                class="input-field w-full h-11 text-xs font-bold border-black/10">
+                                class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10">
                                 <option value="">Semua Siswa</option>
                                 @foreach($anaks as $a)<option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>@endforeach
                             </select>
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="input-label">Aspek</label>
-                            <select name="aspek" class="input-field w-full h-11 text-xs font-bold border-black/10">
+                            <select name="aspek" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10">
                                 <option value="">Semua Aspek</option>
                                 <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}"
                                     @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum</option>
@@ -282,7 +282,7 @@
                             </select>
                         </div>
                         <div class="filter-toolbar-actions">
-                            <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
+                            <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
@@ -331,12 +331,58 @@
         </div>
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">Laporan Pencapaian Sekolah</h3>
-                <button type="button" data-tour="admin-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary">Buat Evaluasi</button>
+            <div class="card-pad page-toolbar border-b" style="border-color:rgba(0,0,0,0.06);">
+                <h3 class="section-title mb-0">Laporan Pencapaian Sekolah</h3>
+                <button type="button" data-tour="admin-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary toolbar-primary">Buat Evaluasi</button>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="lg:hidden divide-y" style="border-color:rgba(0,0,0,0.06);">
+                @forelse($groupedPencapaian as $bundleKey => $rows)
+                    @php $first = $rows->first(); @endphp
+                    <article class="p-3 space-y-2.5">
+                        <div class="flex items-start gap-2.5 min-w-0">
+                            @if($first->photo)
+                                <img src="{{ asset('storage/' . $first->photo) }}" alt="" class="h-12 w-12 object-cover rounded-lg shrink-0 cursor-pointer"
+                                    @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; activeDownloadUrl = '{{ route('admin.pencapaian.photos.download-bundle', ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}'; showImageModal = true">
+                            @else
+                                <div class="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 text-gray-300">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </div>
+                            @endif
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <x-foto-profil :path="$first->anak->photo ?? null" :name="$first->anak->name ?? '?'" size="xs" />
+                                    <p class="font-semibold text-sm truncate" style="color:#2C2C2C;">{{ $first->anak->name ?? '-' }}</p>
+                                </div>
+                                <p class="text-xs mt-1 leading-snug break-words" style="color:#1A6B6B;">{{ $first->kegiatan->title ?? '-' }}</p>
+                                <p class="text-[10px] mt-0.5" style="color:#9E9790;">{{ \Carbon\Carbon::parse($first->created_at)->translatedFormat('d M Y') }}</p>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            @foreach($rows->filter(fn($p) => \App\Support\FilterAspekPencapaian::rowMatches($filterAspek, $p)) as $p)
+                                <div class="text-[11px] rounded-lg bg-gray-50 px-2 py-1.5 border border-black/5">
+                                    <p class="font-bold uppercase leading-tight" style="color:#1A6B6B;">{{ $p->matrikulasi->aspek ?: 'Umum' }}</p>
+                                    <p class="mt-0.5 leading-snug break-words" style="color:#5A5A5A;">{{ $p->matrikulasi->indicator ?? '—' }}</p>
+                                    <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                        <span class="font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $sekolahId) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $sekolahId) }}</span>
+                                        @if($p->feedback)<span class="italic break-words" style="color:#6B6560;">"{{ $p->feedback }}"</span>@endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @if($loop->first) data-tour="admin-pencapaian-action-edit" data-tour-open-modal="edit" @endif @click="openEditBundle('{{ $bundleKey }}')" class="btn-primary flex-1">Edit</button>
+                            <button type="button" @if($loop->first) data-tour="admin-pencapaian-action-delete" data-tour-demo-action="delete" @endif @click="openDeleteBundle('{{ $bundleKey }}')" class="h-9 w-9 shrink-0 rounded-lg flex items-center justify-center" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </article>
+                @empty
+                    <p class="px-4 py-10 text-center text-sm" style="color:#9E9790;">Belum ada evaluasi.</p>
+                @endforelse
+            </div>
+
+            <div class="hidden lg:block overflow-x-auto">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -383,15 +429,15 @@
                                     </div>@endif
                                 </td>
                                 <td>
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2 min-w-[10rem]">
                                         <x-foto-profil :path="$first->anak->photo ?? null" :name="$first->anak->name ?? '?'"
                                             size="sm" />
-                                        <span class="font-semibold"
+                                        <span class="font-semibold break-words"
                                             style="color:#2C2C2C;">{{ $first->anak->name ?? '-' }}</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="font-medium" style="color:#2C2C2C;">{{ $first->kegiatan->title ?? '-' }}
+                                    <div class="font-medium break-words min-w-[8rem]" style="color:#2C2C2C;">{{ $first->kegiatan->title ?? '-' }}
                                     </div>
                                 </td>
                                 <td class="min-w-[240px]">

@@ -27,6 +27,12 @@
         font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
     }
 
+    @media (max-width: 767px) {
+        html {
+            font-size: 14px;
+        }
+    }
+
     body {
         background-color: var(--cream);
         color: var(--text-primary);
@@ -40,6 +46,22 @@
         background: var(--cream-raised);
         box-shadow: var(--shadow-raised);
         border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    .card-pad {
+        @apply px-3 py-2 md:px-6 md:py-4;
+    }
+
+    .card-body-pad {
+        @apply p-3 md:p-6;
+    }
+
+    .page-toolbar {
+        @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .table-responsive {
+        @apply overflow-x-auto w-full;
     }
 
     .card:hover {
@@ -56,7 +78,7 @@
     .btn-primary {
         background-color: var(--teal);
         color: #ffffff;
-        @apply inline-flex items-center justify-center px-4 py-2 text-[13px] md:px-5 md:py-2.5 md:text-sm rounded-xl font-semibold transition-all duration-200;
+        @apply inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg md:px-5 md:py-2.5 md:text-sm md:rounded-xl font-semibold transition-all duration-200;
         box-shadow: 2px 4px 10px rgba(26,107,107,0.35);
     }
 
@@ -76,7 +98,7 @@
     .btn-secondary {
         background: var(--cream-raised);
         color: var(--text-primary);
-        @apply inline-flex items-center justify-center px-4 py-2 text-[13px] md:px-5 md:py-2.5 md:text-sm rounded-xl font-medium transition-all duration-200;
+        @apply inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg md:px-5 md:py-2.5 md:text-sm md:rounded-xl font-medium transition-all duration-200;
         border: 1px solid var(--border-regular);
         box-shadow: var(--shadow-raised);
     }
@@ -88,7 +110,7 @@
 
     /* ─── Danger Button ─── */
     .btn-danger {
-        @apply inline-flex items-center justify-center px-4 py-2 text-[13px] md:px-5 md:py-2.5 md:text-sm rounded-xl font-semibold transition-all duration-200;
+        @apply inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg md:px-5 md:py-2.5 md:text-sm md:rounded-xl font-semibold transition-all duration-200;
         background-color: #C0392B;
         color: #ffffff;
         box-shadow: 2px 4px 10px rgba(192,57,43,0.35);
@@ -105,7 +127,7 @@
         border: 1px solid var(--border-thin);
         color: var(--text-primary);
         box-shadow: var(--shadow-inset);
-        @apply block w-full rounded-xl px-3 py-2 text-[13px] md:px-4 md:py-2.5 md:text-sm transition-all duration-200;
+        @apply block w-full rounded-lg px-3 py-1.5 text-xs md:rounded-xl md:px-4 md:py-2.5 md:text-sm transition-all duration-200;
     }
 
     .input-field:focus {
@@ -120,7 +142,7 @@
 
     /* ─── Label ─── */
     .input-label {
-        @apply block text-sm font-medium mb-1.5;
+        @apply block text-xs md:text-sm font-medium mb-1 md:mb-1.5;
         color: var(--text-secondary);
     }
 
@@ -135,7 +157,7 @@
 
     .filter-toolbar-actions .btn-primary,
     .filter-toolbar-actions .btn-secondary {
-        @apply h-11;
+        @apply h-9 md:h-11;
     }
 
     .filter-toolbar-inline {
@@ -150,6 +172,71 @@
         @apply flex shrink-0 items-center gap-2;
     }
 
+    /* Mobile list toolbars: fields stack, actions share one height */
+    .toolbar-form {
+        @apply flex w-full flex-col items-stretch gap-2 md:w-auto md:flex-row md:flex-wrap md:items-end md:gap-3;
+    }
+
+    .toolbar-field {
+        @apply w-full min-w-0 md:w-auto md:min-w-[10rem] md:flex-1;
+    }
+
+    .toolbar-split {
+        @apply grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:gap-3;
+    }
+
+    .toolbar-split > * {
+        @apply w-full justify-center md:w-auto;
+    }
+
+    .toolbar-actions {
+        @apply flex w-full flex-wrap items-center gap-2 md:w-auto md:flex-nowrap;
+    }
+
+    .toolbar-actions > .btn-secondary:not(.toolbar-icon) {
+        @apply h-9 flex-1 md:h-11 md:flex-none;
+    }
+
+    .toolbar-icon {
+        @apply h-9 w-9 shrink-0 md:h-11 md:w-11;
+    }
+
+    .toolbar-primary {
+        @apply w-full justify-center md:w-auto;
+    }
+
+    @media (max-width: 767px) {
+        .page-toolbar form:not(.toolbar-form),
+        .filter-toolbar-inline {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-toolbar form:not(.toolbar-form) > div,
+        .filter-toolbar-inline > .filter-toolbar-field {
+            width: 100%;
+            flex-basis: auto;
+            min-width: 0;
+        }
+
+        .page-toolbar > .btn-primary,
+        .page-toolbar > button.btn-primary,
+        .filter-toolbar-inline .filter-toolbar-actions {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .filter-toolbar-inline .filter-toolbar-actions .btn-primary,
+        .filter-toolbar-inline .filter-toolbar-actions .btn-secondary,
+        .page-toolbar form:not(.toolbar-form) .btn-primary,
+        .page-toolbar form:not(.toolbar-form) .btn-secondary {
+            height: 2.25rem;
+            flex: 1 1 auto;
+            justify-content: center;
+        }
+    }
+
     /* ─── Table ─── */
     .data-table {
         @apply w-full text-[12px] md:text-sm text-left;
@@ -162,11 +249,11 @@
     }
 
     .data-table th {
-        @apply px-3 py-2 md:px-5 md:py-3 font-semibold;
+        @apply px-2.5 py-2 md:px-5 md:py-3 font-semibold;
     }
 
     .data-table td {
-        @apply px-3 py-2.5 md:px-5 md:py-4;
+        @apply px-2.5 py-2 md:px-5 md:py-4;
         color: var(--text-secondary);
     }
 
@@ -227,7 +314,7 @@
 
     /* ─── Stat Card ─── */
     .stat-card {
-        @apply rounded-xl md:rounded-2xl p-4 md:p-6 flex items-start gap-3 md:gap-4;
+        @apply rounded-xl md:rounded-2xl p-2.5 md:p-6 flex items-start gap-2 md:gap-4;
         background: var(--cream-raised);
         box-shadow: var(--shadow-raised);
         border: 1px solid rgba(255,255,255,0.6);
@@ -240,9 +327,13 @@
     }
 
     .stat-icon {
-        @apply h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0;
+        @apply h-7 w-7 md:h-12 md:w-12 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0;
         background: var(--teal-light);
         color: var(--teal);
+    }
+
+    .stat-icon svg {
+        @apply h-3.5 w-3.5 md:h-6 md:w-6;
     }
 
     /* ─── Modal ─── */
@@ -355,7 +446,7 @@
 
     /* ─── Section Title ─── */
     .section-title {
-        @apply text-base md:text-lg font-bold;
+        @apply text-sm md:text-lg font-bold;
         color: var(--text-primary);
     }
 
@@ -589,4 +680,44 @@ body.driver-active .driver-popover {
 body.driver-active .modal-body:has(.driver-active-element),
 body.driver-active .modal-scroll:has(.driver-active-element) {
     overflow-y: auto !important;
+}
+
+@media (max-width: 767px) {
+    .data-table,
+    .table-responsive table,
+    .overflow-x-auto:has(> table) > table {
+        font-size: 10px;
+    }
+
+    .data-table thead,
+    .table-responsive thead,
+    .overflow-x-auto:has(> table) thead {
+        font-size: 9px;
+        letter-spacing: 0.04em;
+    }
+
+    .data-table :is(th, td),
+    .table-responsive :is(th, td),
+    .overflow-x-auto:has(> table) :is(th, td) {
+        padding: 0.375rem 0.5rem;
+        font-size: 10px;
+        line-height: 1.3;
+    }
+
+    .data-table :is(th, td) :is(span, a, button, p),
+    .table-responsive :is(th, td) :is(span, a, button, p),
+    .overflow-x-auto:has(> table) :is(th, td) :is(span, a, button, p) {
+        font-size: inherit;
+        line-height: inherit;
+    }
+
+    :is(a, button).row-action {
+        width: 1.75rem;
+        height: 1.75rem;
+        min-width: 1.75rem;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 }

@@ -18,8 +18,8 @@
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
 
         <div class="card overflow-hidden mb-6">
-            <div class="px-6 py-4 flex flex-wrap gap-3 justify-between items-center border-b" style="border-color:rgba(0,0,0,0.06);">
-                <form method="GET" class="flex gap-2 items-center" data-tour="admin-rkas-filter">
+            <div class="card-pad page-toolbar border-b" style="border-color:rgba(0,0,0,0.06);">
+                <form method="GET" class="flex flex-wrap gap-2 items-end w-full sm:w-auto" data-tour="admin-rkas-filter">
                     <label class="text-sm font-semibold" style="color:#9E9790;">Tahun Ajaran</label>
                     <select name="tahun_ajaran" class="input-field text-sm" onchange="this.form.submit()">
                         @foreach($tahunOptions as $ta)
@@ -28,11 +28,12 @@
                     </select>
                     <x-filter-reset :href="route('admin.rkas.index')" />
                 </form>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end">
                     <x-export-excel route="admin.rkas.export" />
-                    <button @click="showCreateModal=true" class="btn-primary">+ Buat RKAS</button>
+                    <button @click="showCreateModal=true" class="btn-primary w-full sm:w-auto justify-center">+ Buat RKAS</button>
                 </div>
             </div>
+            <div class="table-responsive">
             <table class="data-table" data-tour="admin-rkas-table">
                 <thead><tr><th>Periode</th><th>Status</th><th class="text-center">Baris</th><th>Sync Terakhir</th><th class="text-right">Aksi</th></tr></thead>
                 <tbody>
@@ -44,12 +45,12 @@
                             <td class="text-xs" style="color:#9E9790;">{{ $rkas->synced_at?->format('d M Y H:i') ?? '-' }}</td>
                             <td class="text-right">
                                 <div class="flex items-center justify-end gap-2 flex-wrap">
-                                    <a href="{{ route('admin.rkas.edit', $rkas) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</a>
+                                    <a href="{{ route('admin.rkas.edit', $rkas) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span class="hidden md:inline">Edit</span></a>
                                     <form action="{{ route('admin.rkas.sync', $rkas) }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#145252;background:#B8DEDE;">Sync</button>
+                                        <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#145252;background:#B8DEDE;" title="Sync" aria-label="Sync"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span class="hidden md:inline">Sync</span></button>
                                     </form>
-                                    <a href="{{ route('admin.rkas.laporan', ['tahun_ajaran' => $rkas->tahun_ajaran, 'semester' => $rkas->semester]) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#6B5B3E;background:#FFF8E7;">Laporan</a>
+                                    <a href="{{ route('admin.rkas.laporan', ['tahun_ajaran' => $rkas->tahun_ajaran, 'semester' => $rkas->semester]) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#6B5B3E;background:#FFF8E7;" title="Laporan" aria-label="Laporan"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span class="hidden md:inline">Laporan</span></a>
                                 </div>
                             </td>
                         </tr>
@@ -58,6 +59,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;">

@@ -38,7 +38,7 @@
                     <form data-tour="ak-presensi-filter" method="get" action="{{ route('adminkelas.presensi.index') }}" class="grid grid-cols-2 gap-4 w-full md:w-auto">
                         <div class="col-span-2 sm:col-span-1 lg:w-48">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Pilih Kelas</label>
-                            <select name="filter_kelas_id" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500" onchange="this.form.submit()" style="background:white;">
+                            <select name="filter_kelas_id" class="input-field w-full text-xs font-bold h-9 md:h-11 border-black/10 transition focus:border-teal-500" onchange="this.form.submit()" style="background:white;">
                                 <option value="">Semua Siswa Terdaftar</option>
                                 @foreach($kelas as $k)
                                     <option value="{{ $k->id }}" @selected($filterKelasId == $k->id)>{{ $k->name }}</option>
@@ -47,7 +47,7 @@
                         </div>
                         <div class="col-span-2 sm:col-span-1 lg:w-44">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Pilih Tanggal</label>
-                            <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field w-full text-xs font-bold h-11 border-black/10 transition focus:border-teal-500 @error('tanggal') border-red-500 @enderror" required onchange="this.form.submit()" style="background:white;">
+                            <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field w-full text-xs font-bold h-9 md:h-11 border-black/10 transition focus:border-teal-500 @error('tanggal') border-red-500 @enderror" required onchange="this.form.submit()" style="background:white;">
                             @error('tanggal')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-2 sm:col-span-1 flex items-end">

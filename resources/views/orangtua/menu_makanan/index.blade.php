@@ -9,24 +9,24 @@
          x-data="{ showImageModal: false, activeImage: null, activeDownloadUrl: null }">
 
         <div class="card mb-6">
-            <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
-                <div class="space-y-6">
+            <div class="card-pad border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
+                <div class="space-y-4 md:space-y-6">
                     <div class="space-y-1">
-                        <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Menu Makanan</h3>
+                        <h3 class="text-base sm:text-xl font-bold" style="color:#2C2C2C;">Filter Menu Makanan</h3>
                         <p class="text-sm font-medium" style="color:#9E9790;">Pilih rentang tanggal untuk melihat jadwal menu mingguan</p>
                     </div>
                     
                     <form data-tour="ortu-menu-date-filter" method="get" action="{{ route('orangtua.menu-makanan.index') }}" class="filter-toolbar-inline">
                         <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Tanggal Dari</label>
-                            <input type="date" name="start_date" value="{{ $startDate }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                            <input type="date" name="start_date" value="{{ $startDate }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
                         </div>
                         <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Sampai Dengan</label>
-                            <input type="date" name="end_date" value="{{ $endDate }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                            <input type="date" name="end_date" value="{{ $endDate }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
                         </div>
                         <div class="filter-toolbar-actions">
-                            <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Tampilkan Menu" aria-label="Tampilkan Menu">
+                            <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Tampilkan Menu" aria-label="Tampilkan Menu">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
                             <x-filter-reset :href="route('orangtua.menu-makanan.index')" compact />
@@ -46,7 +46,7 @@
         </div>
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+            <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="section-title">🍱 Jadwal Menu Makanan</h3>
@@ -56,16 +56,16 @@
             </div>
             <div class="divide-y" data-tour="ortu-menu-list" style="divide-color:rgba(0,0,0,0.05);">
                 @forelse($menus as $m)
-                <div class="px-5 sm:px-6 py-5 flex flex-col sm:flex-row gap-4 sm:gap-6">
+                <div class="card-pad flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="flex gap-2 shrink-0 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
                         @if($m->photo)
-                            <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0" 
+                            <div class="h-20 w-20 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0" 
                                  @click="activeImage = '{{ Storage::url($m->photo) }}'; activeDownloadUrl = '{{ route('orangtua.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo']) }}'; showImageModal = true">
                                 <img src="{{ Storage::url($m->photo) }}" class="w-full h-full object-cover">
                             </div>
                         @endif
                         @if($m->photo_kegiatan)
-                            <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0"
+                            <div class="h-20 w-20 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0"
                                  @click="activeImage = '{{ Storage::url($m->photo_kegiatan) }}'; activeDownloadUrl = '{{ route('orangtua.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo_kegiatan']) }}'; showImageModal = true">
                                 <img src="{{ Storage::url($m->photo_kegiatan) }}" class="w-full h-full object-cover">
                             </div>

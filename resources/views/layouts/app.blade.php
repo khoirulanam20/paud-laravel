@@ -377,6 +377,19 @@
                             <div class="flex items-center gap-2 px-3 py-2 min-h-[2.75rem]">
                                 <div class="flex-1 min-w-0 [&>div]:gap-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:leading-tight [&_p]:text-[10px] [&_p]:leading-tight [&_p]:mt-0.5 [&_.h-8]:h-7 [&_.h-8]:w-7 [&_.h-8_svg]:h-3.5 [&_.h-8_svg]:w-3.5">{{ $header }}</div>
                             </div>
+                            @if(($ortuSchools ?? null) && $ortuSchools->count() > 1)
+                            <div class="px-3 pb-2 pt-0.5 border-t border-black/5">
+                                <form action="{{ route('orangtua.active-sekolah.update') }}" method="POST" class="flex items-center gap-2">
+                                    @csrf
+                                    <label class="text-[11px] font-semibold whitespace-nowrap text-[#6B6560]">Sekolah aktif:</label>
+                                    <select name="sekolah_id" class="input-field text-xs py-1 flex-1 min-w-0" onchange="this.form.submit()">
+                                        @foreach($ortuSchools as $s)
+                                            <option value="{{ $s->id }}" @selected(($activeOrtuSekolah?->id ?? null) === $s->id)>{{ $s->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            </div>
+                            @endif
                         </header>
                         @endif
                         {{-- Desktop --}}
@@ -387,10 +400,24 @@
                         </header>
                     @else
                         <header class="page-header sticky top-0 z-20 bg-[#F5F0E8]/90 backdrop-blur-sm border-b border-black/5">
-                            <div class="max-w-7xl mx-auto py-2 px-4 md:py-4 sm:px-6 lg:px-8">
+                            <div class="max-w-7xl mx-auto py-2 px-3 sm:px-6 lg:px-8 [&>div]:gap-2 [&_h2]:text-base sm:[&_h2]:text-xl [&_h2]:font-semibold [&_.h-8]:h-7 [&_.h-8]:w-7 sm:[&_.h-8]:h-8 sm:[&_.h-8]:w-8 [&_.h-8_svg]:h-3.5 [&_.h-8_svg]:w-3.5 sm:[&_.h-8_svg]:h-4 sm:[&_.h-8_svg]:w-4">
                                 {{ $header }}
                             </div>
                         </header>
+                    @endif
+                @else
+                    @if($isOrangTua && ($ortuSchools ?? null) && $ortuSchools->count() > 1 && !request()->routeIs('orangtua.chat.*'))
+                    <header class="lg:hidden sticky top-0 z-20 bg-[#FAF6F0]/95 backdrop-blur-sm border-b border-black/5 pt-[max(env(safe-area-inset-top),0px)] px-3 py-2">
+                        <form action="{{ route('orangtua.active-sekolah.update') }}" method="POST" class="flex items-center gap-2">
+                            @csrf
+                            <label class="text-[11px] font-semibold whitespace-nowrap text-[#6B6560]">Sekolah aktif:</label>
+                            <select name="sekolah_id" class="input-field text-xs py-1 flex-1 min-w-0" onchange="this.form.submit()">
+                                @foreach($ortuSchools as $s)
+                                    <option value="{{ $s->id }}" @selected(($activeOrtuSekolah?->id ?? null) === $s->id)>{{ $s->name }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    </header>
                     @endif
                 @endisset
 

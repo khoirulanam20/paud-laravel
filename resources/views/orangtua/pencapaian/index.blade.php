@@ -11,7 +11,7 @@
     </x-slot>
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showImageModal: false, activeImage: '', activeDownloadUrl: null }">
         <div class="card mb-5">
-            <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="border-color:rgba(0,0,0,0.06);">
+            <div class="card-pad border-b space-y-4 md:space-y-5" style="border-color:rgba(0,0,0,0.06);">
                 <div class="space-y-1">
                     <h3 class="section-title mb-0">Filter laporan</h3>
                     <p class="text-sm leading-relaxed m-0 max-w-3xl" style="color:#9E9790;">Tanggal, anak, dan aspek
@@ -22,7 +22,7 @@
                     @if($anakList->count() > 1)
                         <div class="filter-toolbar-field">
                             <label class="input-label" for="ortu-penc-anak">Anak</label>
-                            <select id="ortu-penc-anak" name="filter_anak_id" class="input-field w-full h-11 min-w-0">
+                            <select id="ortu-penc-anak" name="filter_anak_id" class="input-field w-full h-9 md:h-11 min-w-0">
                                 <option value="">Semua Anak</option>
                                 @foreach($anakList as $anak)
                                     <option value="{{ $anak->id }}" @selected($filterAnakId === $anak->id)>{{ $anak->name }}</option>
@@ -32,15 +32,15 @@
                     @endif
                     <div class="filter-toolbar-field">
                         <label class="input-label" for="ortu-penc-tanggal-dari">Dari</label>
-                        <input id="ortu-penc-tanggal-dari" type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-11 min-w-0">
+                        <input id="ortu-penc-tanggal-dari" type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-9 md:h-11 min-w-0">
                     </div>
                     <div class="filter-toolbar-field">
                         <label class="input-label" for="ortu-penc-tanggal-sampai">Sampai</label>
-                        <input id="ortu-penc-tanggal-sampai" type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-11 min-w-0">
+                        <input id="ortu-penc-tanggal-sampai" type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-9 md:h-11 min-w-0">
                     </div>
                     <div class="filter-toolbar-field">
                         <label class="input-label" for="ortu-penc-aspek">Aspek</label>
-                        <select id="ortu-penc-aspek" name="aspek" class="input-field w-full h-11 min-w-0">
+                        <select id="ortu-penc-aspek" name="aspek" class="input-field w-full h-9 md:h-11 min-w-0">
                             <option value="">Semua aspek</option>
                             <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}"
                                 @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum / tanpa aspek
@@ -51,7 +51,7 @@
                         </select>
                     </div>
                     <div class="filter-toolbar-actions">
-                        <button type="submit" class="btn-primary h-11 w-11 p-0 shrink-0" title="Terapkan" aria-label="Terapkan filter">
+                        <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Terapkan" aria-label="Terapkan filter">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </button>
                         <x-filter-reset :href="route('orangtua.pencapaian.index')" compact />
@@ -59,7 +59,7 @@
                 </form>
             </div>
             @if($filterAktif)
-                <div class="px-6 py-3 text-sm space-y-1" style="background:#FAF6F0; color:#6B6560;">
+                <div class="card-pad py-3 text-sm space-y-1" style="background:#FAF6F0; color:#6B6560;">
                     @if($filterTanggalAktif)
                         <p> Rentang tanggal input: <strong
                                 style="color:#2C2C2C;">{{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }}</strong>
@@ -110,7 +110,7 @@
         </details>
 
         <div class="card overflow-hidden" data-tour="ortu-pencapaian-reports">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+            <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Rapor per kegiatan &amp; aspek</h3>
                 <p class="section-subtitle">Setiap kartu = satu kegiatan; di dalamnya nilai per indikator matrikulasi
                     beserta tujuan &amp; strategi jika tersedia.</p>
@@ -118,7 +118,7 @@
             <div class="divide-y" style="border-color:rgba(0,0,0,0.06);">
                 @forelse($groupedPencapaian as $bundleKey => $rows)
                     @php $first = $rows->first(); @endphp
-                    <div class="px-6 py-5">
+                    <div class="card-pad">
                         <div class="flex flex-col sm:flex-row sm:items-start gap-4">
                             <div class="shrink-0">
                                 @if($first->photo)
@@ -268,7 +268,7 @@
                     <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada laporan evaluasi.</div>
                 @endforelse
             </div>
-            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+            <div class="card-pad border-t" style="border-color:rgba(0,0,0,0.06);">
                 <x-per-page-selector :paginator="$groupedPencapaian" />
                 {{ $groupedPencapaian->links() }}
             </div>

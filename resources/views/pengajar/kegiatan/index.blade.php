@@ -120,23 +120,23 @@
         </div>@endif
 
         <div class="card overflow-hidden mb-6" data-tour="pg-kegiatan-calendar">
-            <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b"
+            <div class="card-pad page-toolbar border-b"
                 style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Kalender Agenda Saya</h3>
                     <p class="section-subtitle">Klik entri untuk detail, edit, atau hapus.</p>
                 </div>
-                <button type="button" data-tour="pg-kegiatan-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
+                <button type="button" data-tour="pg-kegiatan-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary toolbar-primary shrink-0"><svg
                         class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>Buat Entri Jurnal</button>
             </div>
-            <form method="get" class="px-6 py-4 flex flex-wrap items-end gap-4 border-b"
+            <form method="get" class="card-pad toolbar-form border-b"
                 style="border-color:rgba(0,0,0,0.06);">
                 <input type="hidden" name="year" value="{{ $year }}">
                 <input type="hidden" name="month" value="{{ $month }}">
                 <input type="hidden" name="day" value="{{ request('day') }}">
-                <div class="min-w-[200px]">
+                <div class="toolbar-field">
                     <label class="input-label">Filter Kelas</label>
                     <select name="kelas_id" class="input-field" onchange="this.form.submit()">
                         <option value="">Semua Kelas</option>
@@ -145,7 +145,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="min-w-[220px]">
+                <div class="toolbar-field">
                     <label class="input-label">Filter matrikulasi</label>
                     <select name="matrikulasi_id" class="input-field" onchange="this.form.submit()">
                         <option value="">Semua</option>
@@ -156,10 +156,10 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="btn-secondary h-11">Tampilkan</button>
+                <div class="toolbar-actions">
+                    <button type="submit" class="btn-secondary">Tampilkan</button>
                     <x-filter-reset :href="route('pengajar.kegiatan.index')" compact />
-                    <x-download-photos :route="$kegiatanPhotoDownloadRoute" :icon-only="true" class="h-11" />
+                    <x-download-photos :route="$kegiatanPhotoDownloadRoute" :icon-only="true" />
                 </div>
             </form>
             <div class="p-4 md:p-6">

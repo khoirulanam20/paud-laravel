@@ -11,11 +11,11 @@
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
         @forelse($anaks as $anak)
             <div class="card overflow-hidden" data-tour="ortu-kesehatan-metrics">
-                <div class="px-6 py-4 bg-[#F8F5F1] border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
-                    <div class="flex items-center gap-4">
+                <div class="card-pad bg-[#F8F5F1] border-b flex items-center justify-between min-w-0" style="border-color: rgba(0,0,0,0.06);">
+                    <div class="flex items-center gap-3 min-w-0">
                         <x-foto-profil :path="$anak->photo" :name="$anak->name" size="lg" rounded="xl" />
                         <div>
-                            <h3 class="font-bold text-lg text-[#2C2C2C]">{{ $anak->name }}</h3>
+                            <h3 class="font-bold text-base sm:text-lg text-[#2C2C2C] truncate">{{ $anak->name }}</h3>
                             <p class="text-sm text-gray-500">
                                 {{ $anak->kelas ? $anak->kelas->name : 'Belum ada kelas' }}
                                 @if($anak->dob)<span class="ml-1 text-[#1A6B6B] font-bold text-xs">• {{ $anak->age }}</span>@endif
@@ -24,7 +24,7 @@
                     </div>
                 </div>
 
-                <div class="p-6">
+                <div class="card-body-pad">
                     @if($anak->kesehatans->isEmpty())
                         <div class="text-center py-8 text-gray-400">
                             <svg class="h-12 w-12 mx-auto mb-3 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -41,28 +41,28 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                                        <div class="p-2.5 sm:p-3 rounded-xl bg-white border border-gray-100 shadow-sm min-w-0">
                                             <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Berat Badan</p>
                                             <p class="font-bold text-[#2C2C2C]">{{ $record->berat_badan ?? '-' }} <span class="text-xs font-normal text-gray-500">kg</span></p>
                                         </div>
-                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                        <div class="p-2.5 sm:p-3 rounded-xl bg-white border border-gray-100 shadow-sm min-w-0">
                                             <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Tinggi Badan</p>
                                             <p class="font-bold text-[#2C2C2C]">{{ $record->tinggi_badan ?? '-' }} <span class="text-xs font-normal text-gray-500">cm</span></p>
                                         </div>
-                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                        <div class="p-2.5 sm:p-3 rounded-xl bg-white border border-gray-100 shadow-sm min-w-0">
                                             <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Lingkar Kepala</p>
                                             <p class="font-bold text-[#2C2C2C]">{{ $record->lingkar_kepala ?? '-' }} <span class="text-xs font-normal text-gray-500">cm</span></p>
                                         </div>
-                                        <div class="p-3 rounded-xl bg-white border border-gray-100 shadow-sm">
+                                        <div class="p-2.5 sm:p-3 rounded-xl bg-white border border-gray-100 shadow-sm min-w-0 col-span-2 md:col-span-1">
                                             <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Alergi</p>
                                             <p class="font-bold {{ $record->alergi ? 'text-red-600' : 'text-gray-400' }}">{{ $record->alergi ?: 'Tidak ada' }}</p>
                                         </div>
                                     </div>
 
-                                    <div class="mt-4 flex flex-wrap gap-4">
+                                    <div class="mt-4 flex flex-wrap gap-2 sm:gap-3">
                                         @foreach(['gigi' => 'Gigi', 'telinga' => 'Telinga', 'kuku' => 'Kuku'] as $field => $label)
-                                            <div class="flex items-center gap-3 p-2 px-4 rounded-xl bg-gray-50 border border-gray-100 flex-1 min-w-[120px]">
+                                            <div class="flex items-center gap-2 sm:gap-3 p-2 sm:px-3 rounded-xl bg-gray-50 border border-gray-100 min-w-0 basis-full sm:basis-[calc(50%-0.25rem)] lg:flex-1 lg:min-w-[120px]">
                                                 @php 
                                                     $val = $record->$field;
                                                     $isGood = Str::contains(strtolower($val), 'bersih') || Str::contains(strtolower($val), 'rapi');
@@ -70,7 +70,7 @@
                                                     $text = $isGood ? 'text-[#2E7D32]' : 'text-[#C62828]';
                                                     $letter = strtoupper(substr($field, 0, 1));
                                                 @endphp
-                                                <div class="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm {{ $bg }} {{ $text }} border-2 border-white shadow-sm shrink-0">
+                                                <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm {{ $bg }} {{ $text }} border-2 border-white shadow-sm shrink-0">
                                                     {{ $letter }}
                                                 </div>
                                                 <div>
@@ -87,7 +87,7 @@
                 </div>
             </div>
         @empty
-            <div class="card p-12 text-center text-gray-400">
+            <div class="card card-body-pad text-center text-gray-400 py-10 sm:py-12">
                 Data anak tidak ditemukan.
             </div>
         @endforelse

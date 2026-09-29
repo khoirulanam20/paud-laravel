@@ -9,18 +9,18 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kehadiran</h2>
         </div>
     </x-slot>
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="max-w-7xl mx-auto py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8">
+        <div class="mb-6 page-toolbar">
             <div class="hidden lg:block">
                 <h2 class="text-2xl font-bold text-gray-900 leading-tight">Rekap Kehadiran Siswa</h2>
                 <p class="text-sm text-gray-500 mt-1">Pantau kehadiran anak Anda secara berkala.</p>
             </div>
             
-            <form data-tour="ortu-presensi-period-filter" method="GET" action="{{ route('orangtua.presensi.index') }}" class="flex flex-wrap gap-3 items-end">
+            <form data-tour="ortu-presensi-period-filter" method="GET" action="{{ route('orangtua.presensi.index') }}" class="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end w-full">
                 @if($anaks->count() > 1)
                     <div class="w-full sm:w-auto">
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 ml-1">Anak</label>
-                        <select name="anak_id" class="input-field py-2 text-sm min-w-[180px]" onchange="this.form.submit()">
+                        <select name="anak_id" class="input-field py-2 text-sm w-full sm:min-w-[180px]" onchange="this.form.submit()">
                             <option value="">Semua Anak</option>
                             @foreach($anaks as $anak)
                                 <option value="{{ $anak->id }}" @selected($selectedAnakId === $anak->id)>{{ $anak->name }}</option>
@@ -30,14 +30,14 @@
                 @endif
                 <div class="w-full sm:w-auto">
                     <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 ml-1">Rentang</label>
-                    <select name="periode" class="input-field py-2 text-sm min-w-[140px]" onchange="this.form.submit()">
+                    <select name="periode" class="input-field py-2 text-sm w-full sm:min-w-[140px]" onchange="this.form.submit()">
                         <option value="bulan" @selected(($filter['periode'] ?? 'bulan') === 'bulan')>Per Bulan</option>
                         <option value="minggu" @selected(($filter['periode'] ?? '') === 'minggu')>Per Minggu</option>
                     </select>
                 </div>
 
                 @if(($filter['periode'] ?? 'bulan') === 'bulan')
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                         <select name="month" class="input-field py-2 text-sm" onchange="this.form.submit()">
                             @foreach(range(1, 12) as $m)
                                 <option value="{{ $m }}" @selected((int) ($filter['bulan'] ?? now()->month) === $m)>
@@ -68,7 +68,7 @@
                         $hadir = $stats->where('hadir', true)->count();
                         $tidakHadir = $stats->where('hadir', false)->count();
                     @endphp
-                    <div class="card p-5 bg-white shadow-sm border-l-4 border-l-[#1A6B6B]">
+                    <div class="card card-body-pad bg-white shadow-sm border-l-4 border-l-[#1A6B6B]">
                         <div class="flex items-center gap-4 mb-4">
                             <x-foto-profil :path="$anak->photo" :name="$anak->name" size="md" />
                             <div>
@@ -93,11 +93,11 @@
             {{-- Detail List --}}
             <div class="lg:col-span-2">
                 <div class="card overflow-hidden">
-                    <div class="px-6 py-4 border-b flex items-center justify-between">
+                    <div class="card-pad border-b page-toolbar">
                         <h3 class="section-title mb-0">Riwayat Harian</h3>
                         <span class="text-xs font-semibold text-gray-400">{{ $presensis->count() }} Record ditemukan</span>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-responsive">
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="bg-gray-50/50">

@@ -29,13 +29,14 @@
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex justify-between items-center border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div><h3 class="section-title">Daftar Sumber Dana</h3><p class="section-subtitle">BOS, Komite, SPP, dll. per sekolah</p></div>
-                <div class="flex items-center gap-2">
+            <div class="card-pad page-toolbar border-b" style="border-color:rgba(0,0,0,0.06);">
+                <div class="min-w-0"><h3 class="section-title">Daftar Sumber Dana</h3><p class="section-subtitle">BOS, Komite, SPP, dll. per sekolah</p></div>
+                <div class="toolbar-actions">
                     <x-export-excel route="admin.sumber-dana.export" />
-                    <button @click="showCreateModal=true" class="btn-primary">+ Tambah</button>
+                    <button @click="showCreateModal=true" class="btn-primary toolbar-primary">+ Tambah</button>
                 </div>
             </div>
+            <div class="table-responsive">
             <table class="data-table" data-tour="admin-sumber-dana-table">
                 <thead><tr><th>Kode</th><th>Nama</th><th>Akun</th><th class="text-center">Urutan</th><th class="text-center">Status</th><th class="text-right">Aksi</th></tr></thead>
                 <tbody>
@@ -47,8 +48,8 @@
                             <td class="text-center">{{ $sd->urutan }}</td>
                             <td class="text-center"><span class="badge {{ $sd->is_aktif ? 'badge-green' : 'badge-gray' }}">{{ $sd->is_aktif ? 'Aktif' : 'Nonaktif' }}</span></td>
                             <td class="text-right">
-                                <button @click="openEditSd({{ Js::from($sd) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button @click="deleteRoute='{{ route('admin.sumber-dana.destroy', $sd) }}'; showDeleteModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <button @click="openEditSd({{ Js::from($sd) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span class="hidden md:inline">Edit</span></button>
+                                <button @click="deleteRoute='{{ route('admin.sumber-dana.destroy', $sd) }}'; showDeleteModal=true" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg><span class="hidden md:inline">Hapus</span></button>
                             </td>
                         </tr>
                     @empty
@@ -56,6 +57,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;" @click.self="showCreateModal=false">

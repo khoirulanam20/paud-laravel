@@ -18,7 +18,7 @@
             selectedKeg : null
          }">
         <div class="card overflow-hidden">
-            <div class="px-5 py-5 border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF9F6;">
+            <div class="card-pad border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF9F6;">
                 <form data-tour="ortu-rutin-filters" method="GET" class="grid grid-cols-2 lg:flex lg:items-end gap-4">
                     @if($anaks->count() > 1)
                         <div class="col-span-2 lg:col-auto lg:min-w-[160px]">
@@ -69,7 +69,7 @@
                 </form>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="table-responsive">
                 <table class="data-table" data-tour="ortu-rutin-results">
                     <thead>
                         <tr>
