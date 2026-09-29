@@ -110,10 +110,6 @@ class RoleController extends Controller
     {
         $this->authorizeTenantRole($role);
 
-        if (in_array($role->name, $this->defaultRoles)) {
-            return back()->withErrors(['role' => 'Role default tidak dapat diubah.']);
-        }
-
         $sekolahId = TenantContext::requireSekolahId();
 
         $request->validate([

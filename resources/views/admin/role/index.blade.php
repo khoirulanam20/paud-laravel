@@ -100,38 +100,14 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($isDefault)
-                                        <svg class="h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:#9E9790;">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                        </svg>
-                                    @else
-                                        <span class="text-xs font-medium" style="color:#5A5A5A;">{{ count($rolePerms) }} menu</span>
-                                    @endif
+                                    <span class="text-xs font-medium" style="color:#5A5A5A;">{{ count($rolePerms) }} menu</span>
                                 </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        @if($isDefault)
-                                            <span class="text-xs px-3 py-1.5 rounded-lg" style="color:#9E9790;background:#EFECE8;cursor:not-allowed;" title="Role default tidak dapat diubah aksesnya">
-                                                <svg class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                                </svg>
-                                                Akses Menu
-                                            </span>
-                                        @else
                                         <button @click="openPermission({{ json_encode(['id' => $role->id, 'name' => $role->name]) }}, {{ json_encode($rolePerms) }})"
                                             class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#8A6E3A;background:#F0E6D0;">Akses Menu</button>
-                                        @endif
-                                        @if($isDefault)
-                                            <span class="text-xs px-3 py-1.5 rounded-lg" style="color:#9E9790;background:#EFECE8;cursor:not-allowed;" title="Role default tidak dapat diubah">
-                                                <svg class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                                </svg>
-                                                Edit
-                                            </span>
-                                        @else
                                         <button @click="openEdit({{ json_encode(['id' => $role->id, 'name' => $role->name]) }})"
                                             class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                        @endif
                                         @if($isDefault)
                                             <span class="text-xs px-3 py-1.5 rounded-lg" style="color:#9E9790;background:#EFECE8;cursor:not-allowed;" title="Role default tidak dapat dihapus">Hapus</span>
                                         @else

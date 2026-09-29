@@ -83,26 +83,27 @@ class PresensiController extends Controller
         ]);
 
         $queryAnak = Anak::where('sekolah_id', $sekolah_id);
+        $user->applyScopedKelas($queryAnak);
         if ($request->filled('filter_kelas_id')) {
             $queryAnak->where('kelas_id', $request->filter_kelas_id);
         }
         $anakIds = $queryAnak->pluck('id')->all();
 
-        $pageAnakIds = array_map('intval', $validated['page_anak_ids'] ?? []);
-        if ($pageAnakIds !== []) {
-            $anakIds = array_values(array_intersect($anakIds, $pageAnakIds));
+        if (! $request->expectsJson()) {
+            $pageAnakIds = array_map('intval', $validated['page_anak_ids'] ?? []);
+            if ($pageAnakIds !== []) {
+                $anakIds = array_values(array_intersect($anakIds, $pageAnakIds));
+            }
         }
 
-        $this->persistStudentPresensi(
+        return $this->finishPresensiSave(
+            $request,
             $sekolah_id,
             $validated['tanggal'],
             $anakIds,
-            $validated['presensi'] ?? []
+            $validated['presensi'] ?? [],
+            'admin.presensi.index'
         );
-
-        return redirect()
-            ->route('admin.presensi.index', array_filter(['tanggal' => $validated['tanggal'], 'filter_kelas_id' => $request->filter_kelas_id]))
-            ->with('success', 'Presensi tanggal '.Carbon::parse($validated['tanggal'])->translatedFormat('d M Y').' berhasil disimpan.');
     }
 
     public function rekap(Request $request)

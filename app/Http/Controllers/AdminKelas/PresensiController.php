@@ -86,15 +86,13 @@ class PresensiController extends Controller
         }
         $anakIds = $queryAnak->pluck('id')->all();
 
-        $this->persistStudentPresensi(
+        return $this->finishPresensiSave(
+            $request,
             $sekolah_id,
             $validated['tanggal'],
             $anakIds,
-            $validated['presensi'] ?? []
+            $validated['presensi'] ?? [],
+            'adminkelas.presensi.index'
         );
-
-        return redirect()
-            ->route('adminkelas.presensi.index', array_filter(['tanggal' => $validated['tanggal'], 'filter_kelas_id' => $request->filter_kelas_id]))
-            ->with('success', 'Presensi tanggal '.Carbon::parse($validated['tanggal'])->translatedFormat('d M Y').' berhasil disimpan.');
     }
 }

@@ -59,8 +59,8 @@
             <div class="px-6 py-3 text-sm flex flex-wrap gap-4" style="background: #FAF6F0; color: #6B6560;">
                 <span><strong style="color:#2C2C2C;">{{ $tanggal }}</strong></span>
                 <span>Total siswa: <strong style="color:#2C2C2C;">{{ $anaks->count() }}</strong></span>
-                <span>Hadir: <strong style="color:#1A6B6B;">{{ $hadirCount }}</strong></span>
-                <span>Tidak hadir: <strong style="color:#C0392B;">{{ $anaks->count() - $hadirCount }}</strong></span>
+                <span>Hadir: <strong data-presensi-hadir style="color:#1A6B6B;">{{ $hadirCount }}</strong></span>
+                <span>Tidak hadir: <strong data-presensi-absen style="color:#C0392B;">{{ $anaks->count() - $hadirCount }}</strong></span>
                 <span>Rekap: <strong style="color:#6B6560;">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('F Y') }}</strong></span>
             </div>
         </div>
@@ -69,14 +69,14 @@
             <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Checklist kehadiran</h3>
-                    <p class="section-subtitle">Pilih status kehadiran dan isi keterangan jika perlu, lalu simpan</p>
+                    <p class="section-subtitle">Status tersimpan otomatis begitu dipilih atau diubah.</p>
                 </div>
             </div>
 
             @if($anaks->isEmpty())
                 <div class="px-6 py-16 text-center text-sm" style="color:#9E9790;">Belum ada data siswa di kelas ini.</div>
             @else
-                <form data-tour="ak-presensi-checklist" method="post" action="{{ route('adminkelas.presensi.store') }}">
+                <form data-tour="ak-presensi-checklist" data-presensi-form method="post" action="{{ route('adminkelas.presensi.store') }}">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="filter_kelas_id" value="{{ $filterKelasId }}">
@@ -107,20 +107,20 @@
                                             </div>
                                         </td>
                                         <td class="py-4">
-                                            <select name="presensi[{{ $anak->id }}][status]" class="input-field py-2 text-xs w-full min-w-[7rem]">
+                                            <select name="presensi[{{ $anak->id }}][status]" data-presensi-status class="input-field py-2 text-xs w-full min-w-[7rem]">
                                                 @foreach($statusLabels as $value => $label)
                                                     <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
                                                 @endforeach
                                             </select>
                                         </td>
                                         <td class="py-4">
-                                            <input type="text" name="presensi[{{ $anak->id }}][keterangan]" value="{{ $row?->keterangan }}"
+                                            <input type="text" name="presensi[{{ $anak->id }}][keterangan]" data-presensi-note value="{{ $row?->keterangan }}"
                                                 class="input-field py-2 text-xs w-full min-w-[10rem]" maxlength="500"
                                                 placeholder="Catatan opsional">
                                         </td>
                                         <td class="py-4">
                                             <div class="flex flex-col">
-                                                <span class="font-black text-base sm:text-lg tabular-nums leading-none" style="color:#1A6B6B;">{{ (int)($hadirBulanan[$anak->id] ?? 0) }}</span>
+                                                <span data-presensi-bulan class="font-black text-base sm:text-lg tabular-nums leading-none" style="color:#1A6B6B;">{{ (int)($hadirBulanan[$anak->id] ?? 0) }}</span>
                                                 <span class="text-[10px] font-bold uppercase text-gray-400 tracking-widest mt-1">Hari Hadir</span>
                                             </div>
                                         </td>
@@ -129,10 +129,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="px-6 py-4 border-t flex justify-end" style="border-color: rgba(0,0,0,0.06);">
-                        <button type="submit" class="btn-primary">Simpan presensi</button>
-                    </div>
                 </form>
+                <x-presensi-autosave />
             @endif
         </div>
     </div>
