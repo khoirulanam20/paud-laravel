@@ -31,7 +31,7 @@ class PresensiController extends Controller
         }
 
         $filterKelasId = $request->query('filter_kelas_id');
-        $queryAnak = Anak::query()->where('sekolah_id', $sekolah_id);
+        $queryAnak = Anak::query()->where('sekolah_id', $sekolah_id)->where('status', 'approved');
 
         if ($filterKelasId && in_array((int) $filterKelasId, $kelasIds)) {
             $queryAnak->where('kelas_id', $filterKelasId);
@@ -80,7 +80,7 @@ class PresensiController extends Controller
             'filter_kelas_id' => ['nullable', 'integer'],
         ]);
 
-        $queryAnak = Anak::where('sekolah_id', $sekolah_id)->whereIn('kelas_id', $kelasIds);
+        $queryAnak = Anak::where('sekolah_id', $sekolah_id)->where('status', 'approved')->whereIn('kelas_id', $kelasIds);
         if ($request->filled('filter_kelas_id')) {
             $queryAnak->where('kelas_id', $request->filter_kelas_id);
         }

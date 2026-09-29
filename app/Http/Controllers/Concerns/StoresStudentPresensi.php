@@ -26,7 +26,7 @@ trait StoresStudentPresensi
             }
 
             $anak = Anak::find($anakId);
-            if (! $anak) {
+            if (! $anak || $anak->status !== 'approved') {
                 continue;
             }
 

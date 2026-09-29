@@ -82,12 +82,9 @@ class PresensiController extends Controller
             'page_anak_ids.*' => ['integer', 'exists:anaks,id'],
         ]);
 
-        $queryAnak = Anak::where('sekolah_id', $sekolah_id);
-        $user->applyScopedKelas($queryAnak);
-        if ($request->filled('filter_kelas_id')) {
-            $queryAnak->where('kelas_id', $request->filter_kelas_id);
-        }
-        $anakIds = $queryAnak->pluck('id')->all();
+        $anakIds = $this->buildAnaksQuery($sekolah_id, $request->input('filter_kelas_id'))
+            ->pluck('id')
+            ->all();
 
         if (! $request->expectsJson()) {
             $pageAnakIds = array_map('intval', $validated['page_anak_ids'] ?? []);
@@ -216,7 +213,10 @@ class PresensiController extends Controller
 
     protected function buildAnaksQuery(int $sekolah_id, mixed $kelasId)
     {
-        $query = Anak::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->orderBy('name');
+        $query = Anak::where('sekolah_id', $sekolah_id)
+            ->where('status', 'approved')
+            ->with(['user', 'kelas'])
+            ->orderBy('name');
         auth()->user()->applyScopedKelas($query);
         if ($kelasId) {
             $query->where('kelas_id', $kelasId);

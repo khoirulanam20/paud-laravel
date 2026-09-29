@@ -19,6 +19,7 @@ class PresensiController extends Controller
 
         $anaks = Anak::where('user_id', $user->id)
             ->where('sekolah_id', $sekolahId)
+            ->where('status', 'approved')
             ->get();
         $anakIds = $anaks->pluck('id');
         $selectedAnakId = null;
