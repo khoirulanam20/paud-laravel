@@ -149,13 +149,7 @@ class User extends Authenticatable
             return true;
         }
 
-        // Role kustom (mis. Bendahara) — bukan role operasional default
-        $builtinRoles = ['Superadmin', 'Admin Sekolah', 'Wali Kelas', 'Pengajar', 'Lembaga', 'Orang Tua'];
-        $hasCustomRole = $this->roles->contains(
-            fn ($role) => ! in_array($role->name, $builtinRoles, true)
-        );
-
-        return $hasCustomRole && $this->hasAnyMenuPermission();
+        return $this->hasAnyMenuPermission();
     }
 
     public function firstAccessibleAdminRoute(?bool $chatOrangTuaEnabled = null): ?string

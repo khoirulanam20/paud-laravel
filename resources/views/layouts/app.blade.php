@@ -192,6 +192,7 @@
         });
         $roleNavItems = array_values($roleNavItems); // re-index
     }
+    $seesAdminMenus = (bool) ($user?->canAccessAdminPanel());
     if ($user && $user->hasRole('Wali Kelas')) {
         $waliKelasNav = [
             [
@@ -221,11 +222,14 @@
                 ]
             ],
         ];
-        $waliKelasNav = array_map(function ($group) use ($user) {
+        $waliKelasNav = array_map(function ($group) use ($user, $seesAdminMenus) {
             if (! isset($group['items'])) {
                 return $group;
             }
-            $group['items'] = array_values(array_filter($group['items'], function ($item) use ($user) {
+            $group['items'] = array_values(array_filter($group['items'], function ($item) use ($user, $seesAdminMenus) {
+                if ($seesAdminMenus && (str_starts_with($item['route'], 'admin.') || (str_starts_with($item['route'], 'pengajar.') && ! str_starts_with($item['route'], 'pengajar.monev-guru')))) {
+                    return false;
+                }
                 if (! isset($item['perm'])) {
                     return true;
                 }
@@ -239,7 +243,7 @@
         $roleNavItems = array_merge($roleNavItems, $waliKelasNav);
     }
     if ($user && $user->hasRole('Pengajar') && ! $user->hasRole('Wali Kelas')) {
-        $roleNavItems = array_merge($roleNavItems, [
+        $pengajarNav = [
             [
                 'group' => 'Pembelajaran',
                 'items' => [
@@ -255,7 +259,18 @@
                     ['route' => 'pengajar.monev-guru.index', 'label' => 'Monev Saya', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.monev-guru.*'],
                 ]
             ],
-        ]);
+        ];
+        if ($seesAdminMenus) {
+            $pengajarNav = array_values(array_filter(array_map(function ($group) {
+                $group['items'] = array_values(array_filter(
+                    $group['items'],
+                    fn ($item) => str_starts_with($item['route'], 'pengajar.monev-guru')
+                ));
+
+                return $group;
+            }, $pengajarNav), fn ($group) => count($group['items']) > 0));
+        }
+        $roleNavItems = array_merge($roleNavItems, $pengajarNav);
     }
     if ($user && $user->hasRole('Orang Tua')) {
         $chatIcon = 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z';

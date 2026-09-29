@@ -184,13 +184,6 @@ class RoleController extends Controller
 
     private function authorizeTenantRole(Role $role): void
     {
-        if (in_array($role->name, $this->defaultRoles) && $role->sekolah_id === null) {
-            return;
-        }
-
-        abort_unless(
-            (int) $role->sekolah_id === TenantContext::requireSekolahId(),
-            403
-        );
+        abort_unless($this->scopedRolesQuery()->whereKey($role->id)->exists(), 403);
     }
 }
