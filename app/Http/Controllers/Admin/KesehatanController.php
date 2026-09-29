@@ -20,6 +20,7 @@ class KesehatanController extends Controller
         $query = Anak::where('sekolah_id', $user->sekolah_id)->with(['kelas', 'kesehatans' => function ($q) {
             $q->latest('tanggal_pemeriksaan')->limit(1);
         }]);
+        $user->applyScopedKelas($query);
 
         if ($request->filled('kelas_id')) {
             $query->where('kelas_id', $request->kelas_id);
@@ -30,7 +31,7 @@ class KesehatanController extends Controller
         }
 
         $anaks = $query->orderBy('name')->paginate(PaginationPerPage::resolve($request))->withQueryString();
-        $kelas = Kelas::where('sekolah_id', $user->sekolah_id)->orderBy('name')->get();
+        $kelas = $user->applyScopedKelas(Kelas::where('sekolah_id', $user->sekolah_id)->orderBy('name'), 'id')->get();
 
         return view('admin.kesehatan.index', compact('anaks', 'kelas'));
     }
@@ -39,6 +40,7 @@ class KesehatanController extends Controller
     {
         $user = auth()->user();
         $query = Anak::where('sekolah_id', $user->sekolah_id)->with(['kelas', 'kesehatans' => fn ($q) => $q->latest('tanggal_pemeriksaan')->limit(1)]);
+        $user->applyScopedKelas($query);
 
         if ($request->filled('kelas_id')) {
             $query->where('kelas_id', $request->kelas_id);

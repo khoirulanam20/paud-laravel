@@ -31,13 +31,14 @@ class KegiatanController extends Controller
             ->where('sekolah_id', $sekolah_id)
             ->with(['pengajar', 'kelas'])
             ->whereBetween('date', [$from, $to]);
+        auth()->user()->applyScopedKelas($query);
 
         if ($request->filled('pengajar_id')) {
             $pid = $request->integer('pengajar_id');
             $query->where('pengajar_id', $pid);
         }
 
-        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $kelas = auth()->user()->applyScopedKelas(Kelas::where('sekolah_id', $sekolah_id)->orderBy('name'), 'id')->get();
 
         if ($request->filled('kelas_id')) {
             $kid = $request->integer('kelas_id');

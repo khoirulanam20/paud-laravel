@@ -106,6 +106,37 @@ class User extends Authenticatable
         );
     }
 
+    /**
+     * null = seluruh kelas sekolah (admin). List = penempatan guru + kelas yang diwali.
+     *
+     * @return list<int>|null
+     */
+    public function scopedKelasIds(): ?array
+    {
+        if ($this->hasRole(['Admin Sekolah', 'Lembaga', 'Superadmin'])) {
+            return null;
+        }
+
+        $pengajar = $this->pengajar;
+        if (! $pengajar) {
+            return null;
+        }
+
+        return array_map('intval', $pengajar->accessibleKelasIds());
+    }
+
+    public function applyScopedKelas($query, string $column = 'kelas_id')
+    {
+        $ids = $this->scopedKelasIds();
+        if ($ids === null) {
+            return $query;
+        }
+
+        $query->whereIn($column, $ids !== [] ? $ids : [-1]);
+
+        return $query;
+    }
+
     public function approvedSekolahIds(): array
     {
         return $this->anaks()

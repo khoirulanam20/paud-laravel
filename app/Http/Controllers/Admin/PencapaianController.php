@@ -37,7 +37,8 @@ class PencapaianController extends Controller
 
     public function index(Request $request)
     {
-        $sekolah_id = auth()->user()->sekolah_id;
+        $user = auth()->user();
+        $sekolah_id = $user->sekolah_id;
         $skalas = LabelSkorPencapaian::optionsForSekolah((int) $sekolah_id);
 
         $range = TanggalRentang::dariSampaiQuery($request, null);
@@ -45,9 +46,9 @@ class PencapaianController extends Controller
         $tanggalSampai = $range ? $range[1] : null;
 
         $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
-        if ($request->filled('filter_kelas_id')) {
-            $kid = (int) $request->input('filter_kelas_id');
-            $anakQuery->where('kelas_id', $kid);
+        $user->applyScopedKelas($anakQuery);
+        if ($this->kelasFilterInScope($request)) {
+            $anakQuery->where('kelas_id', (int) $request->input('filter_kelas_id'));
         }
         $anaks = $anakQuery->get();
 
@@ -65,15 +66,17 @@ class PencapaianController extends Controller
             $hariQuery->whereDate('created_at', '<=', $tanggalSampai);
         }
 
-        $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
+        $hariQuery->whereHas('anak', function ($q) use ($user, $sekolah_id) {
+            $q->where('sekolah_id', $sekolah_id);
+            $user->applyScopedKelas($q);
+        });
 
         if ($request->filled('filter_anak_id')) {
             $aid = (int) $request->input('filter_anak_id');
             $hariQuery->where('anak_id', $aid);
         }
-        if ($request->filled('filter_kelas_id')) {
-            $kid = (int) $request->input('filter_kelas_id');
-            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', $kid));
+        if ($this->kelasFilterInScope($request)) {
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
         }
 
         $hariAll = $hariQuery->get();
@@ -135,8 +138,9 @@ class PencapaianController extends Controller
         }
 
         $kegiatanQuery = Kegiatan::where('sekolah_id', $sekolah_id)->with('matrikulasis')->orderBy('date', 'desc');
-        if ($request->filled('filter_kelas_id')) {
-            $kegiatanQuery->where('kelas_id', $request->filter_kelas_id);
+        $user->applyScopedKelas($kegiatanQuery);
+        if ($this->kelasFilterInScope($request)) {
+            $kegiatanQuery->where('kelas_id', (int) $request->input('filter_kelas_id'));
         }
         $kegiatans = $kegiatanQuery->get();
 
@@ -149,8 +153,8 @@ class PencapaianController extends Controller
             ->pluck('aspek');
 
         $filterAnakId = $request->filled('filter_anak_id') ? (int) $request->input('filter_anak_id') : null;
-        $filterKelasId = $request->filled('filter_kelas_id') ? (int) $request->input('filter_kelas_id') : null;
-        $availableKelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $filterKelasId = $this->kelasFilterInScope($request) ? (int) $request->input('filter_kelas_id') : null;
+        $availableKelas = $user->applyScopedKelas(Kelas::where('sekolah_id', $sekolah_id)->orderBy('name'), 'id')->get();
 
         $tokenBalance = $this->tokenService->getBalance((int) $sekolah_id);
         $hasTokens = $tokenBalance > 0;
@@ -190,11 +194,15 @@ class PencapaianController extends Controller
             $hariQuery->whereDate('created_at', '>=', $range[0])
                 ->whereDate('created_at', '<=', $range[1]);
         }
-        $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
+        $user = auth()->user();
+        $hariQuery->whereHas('anak', function ($q) use ($user, $sekolah_id) {
+            $q->where('sekolah_id', $sekolah_id);
+            $user->applyScopedKelas($q);
+        });
         if ($request->filled('filter_anak_id')) {
             $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
         }
-        if ($request->filled('filter_kelas_id')) {
+        if ($this->kelasFilterInScope($request)) {
             $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
         }
 
@@ -240,6 +248,7 @@ class PencapaianController extends Controller
     protected function authorizePencapaianBundleAnak(Anak $anak): void
     {
         abort_if($anak->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertKelasInScope($anak->kelas_id);
     }
 
     protected function pencapaianQueryForExport(Request $request)
@@ -256,11 +265,15 @@ class PencapaianController extends Controller
             $hariQuery->whereDate('created_at', '>=', $range[0])
                 ->whereDate('created_at', '<=', $range[1]);
         }
-        $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $sekolah_id));
+        $user = auth()->user();
+        $hariQuery->whereHas('anak', function ($q) use ($user, $sekolah_id) {
+            $q->where('sekolah_id', $sekolah_id);
+            $user->applyScopedKelas($q);
+        });
         if ($request->filled('filter_anak_id')) {
             $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
         }
-        if ($request->filled('filter_kelas_id')) {
+        if ($this->kelasFilterInScope($request)) {
             $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
         }
 
@@ -310,6 +323,9 @@ class PencapaianController extends Controller
         }
 
         $anak = Anak::where('id', $request->integer('anak_id'))->where('sekolah_id', $sekolah_id)->firstOrFail();
+
+        $this->assertKelasInScope($anak->kelas_id);
+        $this->assertKelasInScope($kegiatan->kelas_id);
 
         if ($anak->kelas_id !== $kegiatan->kelas_id) {
             return back()
@@ -395,6 +411,7 @@ class PencapaianController extends Controller
         $sekolah_id = auth()->user()->sekolah_id;
         $pencapaian->loadMissing('anak');
         abort_if($pencapaian->anak?->sekolah_id !== $sekolah_id, 403);
+        $this->assertKelasInScope($pencapaian->anak?->kelas_id);
 
         if ($pencapaian->photo) {
             $stillUsed = Pencapaian::query()
@@ -425,6 +442,8 @@ class PencapaianController extends Controller
 
         $anak = Anak::where('id', $request->integer('anak_id'))->where('sekolah_id', $sekolah_id)->firstOrFail();
         $kegiatan = Kegiatan::where('id', $request->integer('kegiatan_id'))->where('sekolah_id', $sekolah_id)->firstOrFail();
+        $this->assertKelasInScope($anak->kelas_id);
+        $this->assertKelasInScope($kegiatan->kelas_id);
 
         $rows = Pencapaian::query()
             ->where('anak_id', $request->integer('anak_id'))
@@ -447,6 +466,30 @@ class PencapaianController extends Controller
         return redirect()
             ->route('admin.pencapaian.index', $this->pencapaianFilterQuery($request))
             ->with('success', 'Seluruh pencapaian untuk kegiatan ini dihapus.');
+    }
+
+    private function kelasFilterInScope(Request $request): bool
+    {
+        if (! $request->filled('filter_kelas_id')) {
+            return false;
+        }
+
+        $ids = auth()->user()->scopedKelasIds();
+        if ($ids === null) {
+            return true;
+        }
+
+        return in_array((int) $request->input('filter_kelas_id'), $ids, true);
+    }
+
+    private function assertKelasInScope(mixed $kelasId): void
+    {
+        $ids = auth()->user()->scopedKelasIds();
+        if ($ids === null) {
+            return;
+        }
+
+        abort_unless(in_array((int) $kelasId, $ids, true), 403);
     }
 
     /** @return array<string, string> */

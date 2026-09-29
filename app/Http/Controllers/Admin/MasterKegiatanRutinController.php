@@ -339,13 +339,7 @@ class MasterKegiatanRutinController extends Controller
     /** @return list<int>|null */
     private function waliKelasIds(): ?array
     {
-        if (! auth()->user()->hasRole('Wali Kelas') || auth()->user()->hasRole('Admin Sekolah')) {
-            return null;
-        }
-
-        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
-
-        return $pengajar->accessibleKelasIds();
+        return auth()->user()->scopedKelasIds();
     }
 
     /** @param  list<int>|null  $waliKelasIds */

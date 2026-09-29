@@ -36,7 +36,7 @@ class AnakController extends Controller
         $anaks = $this->buildIndexQuery($request, $sekolah_id)
             ->paginate(PaginationPerPage::resolve($request))
             ->withQueryString();
-        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $kelas = auth()->user()->applyScopedKelas(Kelas::where('sekolah_id', $sekolah_id)->orderBy('name'), 'id')->get();
 
         return view('admin.anak.index', compact('anaks', 'kelas'));
     }
@@ -73,6 +73,7 @@ class AnakController extends Controller
             ->where('status', 'approved')
             ->with(['user', 'kelas'])
             ->latest();
+        auth()->user()->applyScopedKelas($query);
 
         if ($request->filled('kelas_id')) {
             $query->where('kelas_id', $request->kelas_id);

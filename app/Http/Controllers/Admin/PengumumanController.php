@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Kelas;
-use App\Models\Pengajar;
 use App\Models\Pengumuman;
 use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
@@ -108,13 +107,7 @@ class PengumumanController extends Controller
     /** @return list<int>|null */
     private function waliKelasIds(): ?array
     {
-        if (! auth()->user()->hasRole('Wali Kelas') || auth()->user()->hasRole('Admin Sekolah')) {
-            return null;
-        }
-
-        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
-
-        return Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->all();
+        return auth()->user()->scopedKelasIds();
     }
 
     /** @param  list<int>|null  $waliKelasIds */

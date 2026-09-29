@@ -36,7 +36,7 @@ class MonevController extends Controller
             $request->integer('bulan') ?: null
         );
 
-        $kelasList = Kelas::where('sekolah_id', $sekolahId)->orderBy('name')->get();
+        $kelasList = $user->applyScopedKelas(Kelas::where('sekolah_id', $sekolahId)->orderBy('name'), 'id')->get();
         $filterKelasId = $request->filled('kelas_id') ? (int) $request->kelas_id : null;
         $search = $request->string('search')->toString();
 

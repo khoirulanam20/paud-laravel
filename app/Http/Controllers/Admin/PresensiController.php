@@ -49,7 +49,7 @@ class PresensiController extends Controller
             ->paginate(PaginationPerPage::resolve($request))
             ->withQueryString();
 
-        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $kelas = auth()->user()->applyScopedKelas(Kelas::where('sekolah_id', $sekolah_id)->orderBy('name'), 'id')->get();
 
         // Rekap bulanan: hadir count for the month of the selected date
         $startOfMonth = Carbon::parse($tanggal)->startOfMonth()->toDateString();
@@ -122,7 +122,7 @@ class PresensiController extends Controller
             ->groupBy('anak_id')
             ->pluck('total', 'anak_id');
 
-        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $kelas = auth()->user()->applyScopedKelas(Kelas::where('sekolah_id', $sekolah_id)->orderBy('name'), 'id')->get();
 
         return view('admin.presensi.rekap', compact('anaks', 'hadirPeriode', 'presensiFilter', 'kelas'));
     }
@@ -216,6 +216,7 @@ class PresensiController extends Controller
     protected function buildAnaksQuery(int $sekolah_id, mixed $kelasId)
     {
         $query = Anak::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->orderBy('name');
+        auth()->user()->applyScopedKelas($query);
         if ($kelasId) {
             $query->where('kelas_id', $kelasId);
         }

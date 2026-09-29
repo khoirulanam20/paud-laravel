@@ -9,7 +9,6 @@ use App\Models\Diskon;
 use App\Models\Kelas;
 use App\Models\PembayaranBulanan;
 use App\Models\PembayaranBulananItem;
-use App\Models\Pengajar;
 use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
 use App\Support\PaginationPerPage;
@@ -30,13 +29,7 @@ class PembayaranBulananController extends Controller
     /** @return list<int>|null null = akses semua kelas sekolah */
     private function waliKelasIds(): ?array
     {
-        if (! auth()->user()->hasRole('Wali Kelas')) {
-            return null;
-        }
-
-        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
-
-        return Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->all();
+        return auth()->user()->scopedKelasIds();
     }
 
     private function assertPembayaranAccessible(PembayaranBulanan $pembayaran): void

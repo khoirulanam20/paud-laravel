@@ -342,6 +342,8 @@ class MonevSummaryService
             $query->where('kelas_id', $kelasId);
         }
 
+        auth()->user()?->applyScopedKelas($query);
+
         $this->applySearchFilter($query, $search);
 
         return $query;
