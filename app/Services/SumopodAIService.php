@@ -45,18 +45,25 @@ class SumopodAIService
 
         $prompt = <<<PROMPT
 {$identity}
-Berikan TEPAT 3 saran umpan balik positif dan konstruktif dalam Bahasa Indonesia untuk dicatat dalam laporan perkembangan siswa.
+Berikan TEPAT 3 saran umpan balik dalam Bahasa Indonesia untuk catatan perkembangan siswa PAUD.
 
 Konteks:
 - Nama Siswa : {$anakName}
 - Judul Kegiatan : {$kegiatanTitle}
-- Aspek / Indikator Matrikulasi : {$matrikulasiLabel}
+- Aspek / Indikator : {$matrikulasiLabel}
 - Skala Capaian : {$scoreLabel}
 
-Instruksi:
-- Setiap saran harus singkat (maks 2 kalimat), positif, spesifik, dan sesuai dengan usia anak PAUD / TK.
-- Gunakan bahasa yang hangat dan mendorong.
-- Jangan mengulang saran yang sama.
+Arti skala (ikuti tingkat yang dipilih, jangan naik atau turun tingkat):
+- Belum Berkembang (BB): perilaku indikator belum tampak. Ajak mulai dari satu langkah kecil.
+- Mulai Berkembang (MB): baru muncul sesekali atau masih perlu bantuan. Pakai "mulai" atau "dengan pendampingan", lalu ajak lebih sering.
+- Berkembang Sesuai Harapan (BSH): sudah tampil sesuai harapan pada kegiatan ini. Apresiasi perilaku yang teramati, lalu minta dipertahankan.
+- Berkembang Sangat Baik (BSB): mandiri dan melampaui harapan. Apresiasi kuat, lalu beri tantangan sedikit lebih jauh.
+
+Aturan isi:
+- Ketiga saran merujuk SATU perilaku yang sama: bagian indikator yang selaras dengan judul kegiatan, pada tingkat skala yang dipilih.
+- Jika indikator memuat beberapa perilaku (koma atau garis miring), pilih hanya bagian yang terjadi di judul kegiatan. Perilaku lain di indikator tidak ditulis seolah sudah teramati.
+- Variasikan rumusan kalimat, bukan topiknya.
+- Maksimal 2 kalimat, hangat, sesuai usia PAUD/TK, sebut nama siswa.
 - Jawab HANYA JSON valid tanpa markdown atau teks lain:
 {"saran":["saran pertama","saran kedua","saran ketiga"]}
 PROMPT;
@@ -69,7 +76,7 @@ PROMPT;
                     ['role' => 'user', 'content' => $prompt],
                 ],
                 'max_tokens' => 512,
-                'temperature' => 0.8,
+                'temperature' => 0.4,
             ]);
 
         if (! $response->successful()) {
