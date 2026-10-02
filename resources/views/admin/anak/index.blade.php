@@ -165,52 +165,54 @@
         </div>@endif
 
         <div class="card overflow-hidden">
-            <div class="card-pad page-toolbar border-b"
-                style="border-color: rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Daftar Siswa &amp; Orang Tua</h3>
+            <div class="card-pad page-toolbar border-b" style="border-color: rgba(0,0,0,0.06);">
+                <div class="min-w-0">
+                    <h3 class="section-title mb-0">Daftar Siswa &amp; Orang Tua</h3>
+                    <p class="section-subtitle mt-1 hidden sm:block">Cari, filter kelas, export, atau tambah siswa baru.</p>
                 </div>
-                <form data-tour="admin-anak-filter" method="get" class="toolbar-form">
-                    <div class="toolbar-field">
-                        <label class="input-label">Cari Nama Siswa</label>
-                        <input type="text" name="search" value="{{ request('search') }}" class="input-field"
-                            placeholder="Ketik nama atau panggilan...">
-                    </div>
-                    <div class="toolbar-field">
-                        <label class="input-label">Filter Kelas</label>
-                        <select name="kelas_id" class="input-field w-full" onchange="this.form.submit()">
-                            <option value="">-- Semua Kelas --</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="toolbar-split">
-                        <button type="submit" class="btn-primary">Cari</button>
-                        <x-filter-reset :href="route('admin.anak.index')" />
-                    </div>
-                </form>
+                <button type="button" data-tour="admin-anak-add-btn" data-tour-open-modal="create" @click="showCreateModal = true"
+                    class="btn-primary toolbar-primary shrink-0 h-9 md:h-11 px-3 md:px-4"
+                    title="Registrasi siswa baru">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="hidden md:inline ml-1.5">Registrasi</span>
+                </button>
+            </div>
+            <form data-tour="admin-anak-filter" method="get" class="card-pad toolbar-form border-b" style="border-color: rgba(0,0,0,0.06);">
+                <div class="toolbar-field md:min-w-[12rem] md:flex-[2]">
+                    <label class="input-label">Cari Nama Siswa</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="input-field"
+                        placeholder="Nama atau panggilan...">
+                </div>
+                <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
+                    <label class="input-label">Filter Kelas</label>
+                    <select name="kelas_id" class="input-field w-full" onchange="this.form.submit()">
+                        <option value="">Semua Kelas</option>
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="toolbar-actions">
-                    <x-export-excel route="admin.anak.export" />
+                    <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Cari" aria-label="Cari">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                    <x-filter-reset :href="route('admin.anak.index')" compact />
+                    <x-export-excel route="admin.anak.export" :icon-only="true" />
                     <button type="button" @click="openImportModal()"
                         class="toolbar-icon shrink-0 rounded-lg flex items-center justify-center transition border"
                         style="color: #1A6B6B; background: #E8F5F5; border-color: #D0E8E8;"
-                        title="Import Excel">
+                        title="Import Excel" aria-label="Import Excel">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </button>
                 </div>
-                <button type="button" data-tour="admin-anak-add-btn" data-tour-open-modal="create" @click="showCreateModal = true" class="btn-primary toolbar-primary">
-                    <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Registrasi Siswa
-                </button>
-            </div>
+            </form>
 
             <div class="overflow-x-auto">
                 <table class="data-table">
