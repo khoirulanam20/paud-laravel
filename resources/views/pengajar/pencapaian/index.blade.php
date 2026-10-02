@@ -318,7 +318,7 @@
                                     @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
                                     <x-documentation-thumbnail
                                         :path="$first->photo"
-                                        class="h-16 w-16 object-cover rounded-xl shadow-sm cursor-pointer"
+                                        class="h-16 w-16 rounded-xl shadow-sm cursor-pointer"
                                         @click="openMedia('{{ $mediaUrl }}', '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')"
                                     />
                                 @else
@@ -359,20 +359,19 @@
             {{-- Desktop Table View --}}
             <div class="hidden lg:block overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Bukti</th><th>Anak</th><th>Kegiatan</th><th>Aspek &amp; Nilai</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th class="w-28 min-w-[7rem]">Bukti</th><th>Anak</th><th>Kegiatan</th><th>Aspek &amp; Nilai</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($groupedPencapaian as $bundleKey => $rows)
                             @php $first = $rows->first(); @endphp
                             <tr>
-                                <td>
+                                <td class="w-28 min-w-[7rem] align-middle">
                                     @if($first->photo)
                                         @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
                                         <div class="flex items-center gap-2">
-                                            <div class="relative group cursor-pointer" @click="openMedia('{{ $mediaUrl }}', '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')">
+                                            <div class="relative group cursor-pointer shrink-0" @click="openMedia('{{ $mediaUrl }}', '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')">
                                                 <x-documentation-thumbnail
                                                     :path="$first->photo"
-                                                    class="h-10 w-10 object-cover rounded"
-                                                    video-class="h-10 w-10 object-cover rounded"
+                                                    class="h-14 w-14 rounded-lg"
                                                 />
                                                 <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded pointer-events-none"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
                                             </div>

@@ -357,7 +357,7 @@
                                 @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
                                 <x-documentation-thumbnail
                                     :path="$first->photo"
-                                    class="h-12 w-12 object-cover rounded-lg cursor-pointer"
+                                    class="h-14 w-14 rounded-lg cursor-pointer"
                                     @click="openMedia('{{ $mediaUrl }}', '{{ route('admin.pencapaian.photos.download-bundle', ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')"
                                 />
                             @else
@@ -402,7 +402,7 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Bukti</th>
+                            <th class="w-28 min-w-[7rem]">Bukti</th>
                             <th>Siswa</th>
                             <th>Kegiatan</th>
                             <th>Aspek / Nilai</th>
@@ -414,16 +414,15 @@
                         @forelse($groupedPencapaian as $bundleKey => $rows)
                             @php $first = $rows->first(); @endphp
                             <tr>
-                                <td>
+                                <td class="w-28 min-w-[7rem] align-middle">
                                     @if($first->photo)
                                         @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
                                         <div class="flex items-center gap-2">
-                                            <div class="relative group cursor-pointer"
+                                            <div class="relative group cursor-pointer shrink-0"
                                                 @click="openMedia('{{ $mediaUrl }}', '{{ route('admin.pencapaian.photos.download-bundle', ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')">
                                                 <x-documentation-thumbnail
                                                     :path="$first->photo"
-                                                    class="h-10 w-10 object-cover rounded"
-                                                    video-class="h-10 w-10 object-cover rounded"
+                                                    class="h-14 w-14 rounded-lg"
                                                 />
                                                 <div
                                                     class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded pointer-events-none">
