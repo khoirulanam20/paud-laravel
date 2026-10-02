@@ -372,6 +372,12 @@
             showActivityModal: false,
             showImageModal: false,
             activeImage: null,
+            activeMediaType: 'image',
+            openMedia(url) {
+                this.activeImage = url;
+                this.activeMediaType = (typeof window.isVideoPath === 'function' && window.isVideoPath(url)) ? 'video' : 'image';
+                this.showImageModal = true;
+            },
             openActivity(k) {
                 this.selectedActivity = k;
                 this.showActivityModal = true;
@@ -458,6 +464,11 @@
                                             <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full {{ ($anak->status ?? '') === 'rejected' ? 'bg-red-500/30 text-red-100' : 'bg-amber-400/25 text-amber-100' }}">{{ $statusLabel }}</span>
                                         @endif
                                     </div>
+                                    @if($anak->kelas?->name)
+                                        <p class="text-[11px] sm:text-xs text-white/75 mt-0.5 font-medium">{{ $anak->kelas->name }}</p>
+                                    @elseif(($anak->status ?? '') === 'approved')
+                                        <p class="text-[11px] sm:text-xs text-white/55 mt-0.5">Belum ada kelas</p>
+                                    @endif
                                     @if($isPending)
                                         <p class="text-xs text-white/70 mt-1 sm:mt-2">Kehadiran akan tampil setelah pendaftaran disetujui admin.</p>
                                     @else
@@ -617,11 +628,11 @@
 
                 <div class="lg:col-span-2 flex flex-col gap-4 sm:gap-5">
                     <div class="card overflow-hidden">
-                        <div class="card-pad border-b flex flex-wrap sm:flex-nowrap items-center justify-between gap-2" style="border-color: rgba(0,0,0,0.06);">
-                            <h3 class="section-title mb-0 text-amber-900">Agenda & Kegiatan</h3>
-                            <div class="flex gap-1.5 sm:gap-2">
-                                <a href="{{ route('orangtua.kegiatan.index') }}" class="text-[11px] sm:text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Agenda</a>
-                                <a href="{{ route('orangtua.kegiatan-rutin.index') }}" class="text-[11px] sm:text-xs font-bold px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Kegiatan</a>
+                        <div class="px-3 py-3 sm:card-pad border-b flex items-center justify-between gap-2" style="border-color: rgba(0,0,0,0.06);">
+                            <h3 class="section-title mb-0 text-base sm:text-lg" style="color:#2C2C2C;">Agenda & Kegiatan</h3>
+                            <div class="flex gap-1 shrink-0">
+                                <a href="{{ route('orangtua.kegiatan.index') }}" class="text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Agenda</a>
+                                <a href="{{ route('orangtua.kegiatan-rutin.index') }}" class="text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 transition" style="color: #1A6B6B;">Kegiatan</a>
                             </div>
                         </div>
                         <div class="divide-y divide-gray-50">
@@ -645,33 +656,39 @@
                                             ])->values()->all()
                                         ];
                                     @endphp
-                                    <div class="px-4 py-3.5 sm:px-6 sm:py-5 flex gap-3 sm:gap-4 cursor-pointer hover:bg-gray-50 transition border-l-4 border-l-indigo-500" @click="openActivity(@js($activityData))">
-                                        <x-foto-profil :path="$keg->pengajar?->photo" :name="$keg->pengajar?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-indigo-100" />
+                                    <div class="px-3 py-3 sm:px-6 sm:py-4 flex gap-2.5 sm:gap-4 cursor-pointer hover:bg-[#FAF9F6] active:bg-[#FAF9F6] transition" @click="openActivity(@js($activityData))">
+                                        <x-foto-profil :path="$keg->pengajar?->photo" :name="$keg->pengajar?->name ?? '?'" size="sm" rounded="full" class="shrink-0 sm:!h-10 sm:!w-10 mt-0.5" />
                                         <div class="flex-1 min-w-0">
-                                            <div class="flex justify-between items-start mb-1">
-                                                <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Jurnal Kegiatan • {{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}</span>
-                                            </div>
-                                            <div class="flex flex-col gap-2.5 sm:gap-3">
-                                                <div class="min-w-0">
-                                                    <h4 class="font-bold text-sm sm:text-[16px] text-gray-900 leading-tight mb-1">{{ $keg->title }}</h4>
-                                                    <p class="text-xs sm:text-sm text-gray-500 leading-relaxed">{{ $keg->description }}</p>
-                                                </div>
-                                                @if(!empty($keg->photos))
-                                                    <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                                            <p class="text-[11px] font-medium mb-1" style="color:#9E9790;">
+                                                <span style="color:#1A6B6B;">Agenda belajar</span>
+                                                <span aria-hidden="true"> · </span>
+                                                {{ \Carbon\Carbon::parse($keg->date)->translatedFormat('d M Y') }}
+                                            </p>
+                                            <h4 class="font-bold text-[13px] sm:text-base text-gray-900 leading-snug">{{ $keg->title }}</h4>
+                                            @if(filled($keg->description) && trim($keg->description) !== trim($keg->title))
+                                                <p class="text-xs text-gray-500 leading-relaxed mt-1 line-clamp-2">{{ $keg->description }}</p>
+                                            @endif
+                                            @if(!empty($keg->photos))
+                                                    <div class="flex gap-1.5 overflow-x-auto pt-2.5 pb-0.5 no-scrollbar -mr-1">
                                                         @foreach(collect($keg->photos)->take(4) as $photo)
-                                                            <div class="h-20 w-20 sm:h-28 sm:w-28 rounded-xl border border-gray-100 overflow-hidden shadow-sm shrink-0 cursor-pointer hover:opacity-90 transition"
-                                                                 @click.stop="activeImage = '{{ Storage::url($photo) }}'; showImageModal = true">
-                                                                <img src="{{ Storage::url($photo) }}" class="h-full w-full object-cover">
+                                                            @php $photoUrl = Storage::url($photo); $isVid = \App\Support\DocumentationMedia::isVideoPath($photo); @endphp
+                                                            <div class="h-16 w-16 sm:h-24 sm:w-24 rounded-lg border border-gray-100 overflow-hidden shrink-0 cursor-pointer hover:opacity-90 transition relative"
+                                                                 @click.stop="openMedia('{{ $photoUrl }}')">
+                                                                @if($isVid)
+                                                                    <video src="{{ $photoUrl }}" class="h-full w-full object-cover" muted playsinline></video>
+                                                                    <span class="absolute inset-0 flex items-center justify-center text-white text-xl bg-black/25">▶</span>
+                                                                @else
+                                                                    <img src="{{ $photoUrl }}" class="h-full w-full object-cover">
+                                                                @endif
                                                             </div>
                                                         @endforeach
                                                         @if(count($keg->photos) > 4)
-                                                            <div class="h-20 w-20 sm:h-28 sm:w-28 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center text-gray-500 text-xs sm:text-sm font-bold shadow-sm shrink-0">
+                                                            <div class="h-16 w-16 sm:h-24 sm:w-24 rounded-lg border border-gray-100 bg-gray-50 flex items-center justify-center text-gray-500 text-xs font-semibold shrink-0">
                                                                 +{{ count($keg->photos) - 4 }}
                                                             </div>
                                                         @endif
                                                     </div>
-                                                @endif
-                                            </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @elseif($item['type'] === 'kegiatan_rutin')
@@ -685,42 +702,31 @@
                                         'keterangan' => $kr->keterangan ?? null,
                                     ];
                                     @endphp
-                                    <div class="px-4 py-3.5 sm:px-6 sm:py-5 flex gap-3 sm:gap-4 border-l-4 border-l-blue-500 cursor-pointer hover:bg-blue-50/40 transition" @click="openRutin(@js($rutinData))">
-                                        <x-foto-profil :path="$kr->anak?->photo" :name="$kr->anak?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-blue-100" />
+                                    <div class="px-3 py-3 sm:px-6 sm:py-4 flex gap-2.5 sm:gap-4 cursor-pointer hover:bg-[#FAF9F6] active:bg-[#FAF9F6] transition" @click="openRutin(@js($rutinData))">
+                                        <x-foto-profil :path="$kr->anak?->photo" :name="$kr->anak?->name ?? '?'" size="sm" rounded="full" class="shrink-0 sm:!h-10 sm:!w-10 mt-0.5" />
                                         <div class="flex-1 min-w-0">
-                                            <div class="flex justify-between items-start mb-1">
-                                                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-600">Kegiatan Rutin • {{ \Carbon\Carbon::parse($kr->tanggal)->translatedFormat('d M Y') }}</span>
-                                            </div>
-                                            <p class="text-xs font-semibold text-gray-500 mb-0.5">{{ $kr->anak->name ?? '' }}</p>
-                                            <h4 class="font-bold text-sm sm:text-[15px] text-gray-900 leading-tight mb-1">{{ $kr->kegiatan }}</h4>
-                                            <div class="flex items-center gap-1.5 flex-wrap">
-                                                <span class="inline-block px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold" style="border: none;">{{ $kr->aspek }}</span>
+                                            <p class="text-[11px] font-medium mb-1" style="color:#9E9790;">
+                                                <span style="color:#1A6B6B;">Kegiatan rutin</span>
+                                                <span aria-hidden="true"> · </span>
+                                                {{ \Carbon\Carbon::parse($kr->tanggal)->translatedFormat('d M Y') }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 truncate">{{ $kr->anak->name ?? '' }}</p>
+                                            <h4 class="font-bold text-[13px] sm:text-base text-gray-900 leading-snug mt-0.5">{{ $kr->kegiatan }}</h4>
+                                            <div class="flex items-center gap-1.5 flex-wrap mt-1.5">
+                                                <span class="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-[10px] font-semibold">{{ $kr->aspek }}</span>
                                                 @if($kr->status_pencapaian)
-                                                    <span class="inline-block px-2 py-0.5 rounded bg-[#E8F5E9] text-[#2E7D32] text-[10px] font-bold">{{ $kr->status_pencapaian }}</span>
+                                                    <span class="inline-block px-2 py-0.5 rounded-md bg-[#E8F5E9] text-[#2E7D32] text-[10px] font-semibold">{{ $kr->status_pencapaian }}</span>
                                                 @endif
                                             </div>
                                             @if($kr->keterangan)
-                                                <p class="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-1">{{ $kr->keterangan }}</p>
+                                                <p class="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">{{ $kr->keterangan }}</p>
                                             @endif
-                                        </div>
-                                    </div>
-                                @else
-                                    @php $p = $item['data']; @endphp
-                                    <div class="px-4 py-3.5 sm:px-6 sm:py-5 flex gap-3 sm:gap-4 border-l-4 border-l-amber-500">
-                                        <x-foto-profil :path="$p->anak?->photo" :name="$p->anak?->name ?? '?'" size="md" rounded="full" class="shrink-0 ring-2 ring-amber-100" />
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex justify-between items-start mb-1">
-                                                <span class="text-[10px] font-bold uppercase tracking-widest text-amber-600">Pencapaian • {{ \Carbon\Carbon::parse($p->created_at)->translatedFormat('d M Y') }}</span>
-                                            </div>
-                                            <p class="text-xs font-semibold text-gray-500 mb-0.5">{{ $p->anak->name ?? '' }}</p>
-                                            <h4 class="font-bold text-sm sm:text-[15px] text-gray-900 leading-tight mb-1.5">@if($p->matrikulasi){{ $p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '' }}{{ $p->matrikulasi->indicator }}@else{{ $p->kegiatan?->title ?? 'Evaluasi' }}@endif</h4>
-                                            <span class="inline-block badge shrink-0 text-center text-[10px] font-bold py-0.5 px-2 rounded-full" style="background: {{ \App\Support\LabelSkorPencapaian::color($p->score, $p->anak?->sekolah_id) }}; color: white; border: none;">{{ \App\Support\LabelSkorPencapaian::label($p->score, $p->anak?->sekolah_id) }}</span>
                                         </div>
                                     </div>
                                 @endif
                             @empty
                                 <div class="px-6 py-12 text-center">
-                                    <p class="text-sm" style="color: #9E9790;">Belum ada aktivitas terbaru hari ini.</p>
+                                    <p class="text-sm" style="color: #9E9790;">Belum ada agenda belajar atau kegiatan rutin hari ini.</p>
                                 </div>
                             @endforelse
                         </div>
@@ -747,33 +753,52 @@
 
                         <template x-if="selectedActivity?.photos?.length > 0">
                             <div class="space-y-3">
-                                <h4 class="text-xs font-bold uppercase tracking-widest" style="color: #9E9790;">Dokumentasi Foto</h4>
+                                <h4 class="text-xs font-bold uppercase tracking-widest" style="color: #9E9790;">Dokumentasi</h4>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     <template x-for="(url, index) in selectedActivity.photos" :key="index">
-                                        <div class="aspect-square rounded-xl overflow-hidden ring-1 ring-black/5 cursor-pointer hover:opacity-90 transition">
-                                            <img :src="url" class="w-full h-full object-cover" @click="activeImage = url; showImageModal = true">
+                                        <div class="aspect-square rounded-xl overflow-hidden ring-1 ring-black/5 cursor-pointer hover:opacity-90 transition relative" @click="openMedia(url)">
+                                            <template x-if="typeof window.isVideoPath === 'function' && window.isVideoPath(url)">
+                                                <video :src="url" class="w-full h-full object-cover" muted playsinline></video>
+                                                <span class="absolute inset-0 flex items-center justify-center text-white text-2xl bg-black/25">▶</span>
+                                            </template>
+                                            <template x-if="!(typeof window.isVideoPath === 'function' && window.isVideoPath(url))">
+                                                <img :src="url" class="w-full h-full object-cover">
+                                            </template>
                                         </div>
                                     </template>
                                 </div>
                             </div>
                         </template>
 
-                        <div class="space-y-4 pt-4 border-t" style="border-color: rgba(0,0,0,0.06);">
-                            <h4 class="text-xs font-bold uppercase tracking-widest" style="color: #975A16;">Laporan Perkembangan Anak</h4>
-                            <div class="space-y-3">
-                                <template x-for="(p, pi) in selectedActivity?.pencapaians" :key="pi">
-                                    <div class="rounded-xl p-4 border" style="background:#FFFBF0; border-color:rgba(151,90,22,0.1);">
-                                        <div class="flex items-start justify-between gap-3 mb-2">
-                                            <div class="min-w-0">
-                                                <p class="text-[11px] font-bold uppercase tracking-wider text-amber-800" x-text="p.aspek || 'Evaluasi'"></p>
-                                                <p class="text-sm font-bold text-gray-900 mt-0.5" x-text="p.indicator"></p>
+                        <template x-if="(selectedActivity?.pencapaians?.length ?? 0) > 0">
+                            <div class="space-y-3 pt-4 border-t" style="border-color: rgba(0,0,0,0.06);">
+                                <h4 class="text-xs font-bold uppercase tracking-widest" style="color: #975A16;">Laporan Perkembangan Anak</h4>
+                                <div class="space-y-2">
+                                    <template x-for="(p, pi) in selectedActivity.pencapaians" :key="pi">
+                                        <details class="rounded-xl border overflow-hidden group/ind" style="background:#FFFBF0; border-color:rgba(151,90,22,0.12);">
+                                            <summary class="p-3 sm:p-3.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                                                <div class="flex items-start justify-between gap-2">
+                                                    <p class="text-[10px] font-bold uppercase tracking-wide text-amber-800/90 leading-tight" x-text="p.aspek || 'Evaluasi'"></p>
+                                                    <svg class="h-4 w-4 shrink-0 text-amber-700/50 transition-transform duration-200 group-open/ind:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                                </div>
+                                                <p class="text-[13px] sm:text-sm font-semibold text-gray-900 mt-1 line-clamp-2 leading-snug" x-text="p.indicator || 'Indikator'"></p>
+                                                <p class="text-[11px] text-gray-500 mt-1 truncate" x-show="p.anak_name" x-text="p.anak_name"></p>
+                                                <span class="inline-block mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full leading-snug" :style="'background:'+p.score_color+';color:white;'" x-text="p.score_label"></span>
+                                            </summary>
+                                            <div class="px-3 sm:px-3.5 pb-3 pt-0 border-t text-sm leading-relaxed space-y-2" style="border-color:rgba(151,90,22,0.08); color:#5A5A5A;">
+                                                <p class="pt-2.5 text-gray-800" x-text="p.indicator"></p>
+                                                <template x-if="p.feedback">
+                                                    <p class="text-xs sm:text-sm italic border-l-2 pl-2.5" style="border-color:rgba(151,90,22,0.25);"><span class="font-semibold not-italic text-gray-500">Catatan guru:</span> <span x-text="p.feedback"></span></p>
+                                                </template>
                                             </div>
-                                            <span class="badge shrink-0 text-xs py-1 px-2.5" :style="'background:'+p.score_color+';color:white;border:none;'" x-text="p.score_label"></span>
-                                        </div>
-                                    </div>
-                                </template>
+                                        </details>
+                                    </template>
+                                </div>
                             </div>
-                        </div>
+                        </template>
+                        <template x-if="!(selectedActivity?.pencapaians?.length)">
+                            <p class="text-sm pt-4 border-t" style="border-color: rgba(0,0,0,0.06); color: #9E9790;">Belum ada laporan perkembangan untuk kegiatan ini.</p>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -846,7 +871,12 @@
                         <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
                         <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
-                    <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
+                    <template x-if="activeMediaType === 'video'">
+                        <video :src="activeImage" class="w-full h-auto max-h-[85vh] rounded-2xl shadow-2xl bg-black shadow-black/20" controls playsinline></video>
+                    </template>
+                    <template x-if="activeMediaType !== 'video'">
+                        <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
+                    </template>
                 </div>
             </div>
         </div>

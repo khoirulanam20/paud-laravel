@@ -4,20 +4,21 @@ namespace App\Http\Controllers\Pengajar;
 
 use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
 use App\Http\Controllers\Controller;
-use App\Http\Traits\CanUploadImage;
+use App\Http\Traits\StoresDocumentationMedia;
 use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
-use App\Support\KegiatanCalendar;
 use App\Services\PhotoArchiveService;
+use App\Support\DocumentationMedia;
+use App\Support\KegiatanCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class KegiatanController extends Controller
 {
-    use CanUploadImage;
     use DownloadsPhotoArchive;
+    use StoresDocumentationMedia;
 
     private function getPengajar()
     {
@@ -77,7 +78,7 @@ class KegiatanController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'photos' => 'nullable|array',
-            'photos.*' => 'image|max:2048',
+            'photos.*' => DocumentationMedia::multiFileItemRules(),
             'kelas_id' => 'required|exists:kelas,id',
             'matrikulasi_ids' => 'required|array|min:1',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
@@ -98,7 +99,7 @@ class KegiatanController extends Controller
         if ($request->hasFile('photos')) {
             $photos = [];
             foreach ($request->file('photos') as $file) {
-                $photos[] = $this->uploadImage($file, 'kegiatan');
+                $photos[] = $this->storeDocumentationMedia($file, 'kegiatan', 'kegiatan-videos');
             }
             $data['photos'] = $photos;
         }
@@ -123,7 +124,7 @@ class KegiatanController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'photos' => 'nullable|array',
-            'photos.*' => 'image|max:2048',
+            'photos.*' => DocumentationMedia::multiFileItemRules(),
             'kelas_id' => 'required|exists:kelas,id',
             'matrikulasi_ids' => 'required|array|min:1',
             'matrikulasi_ids.*' => 'exists:matrikulasis,id',
@@ -151,7 +152,7 @@ class KegiatanController extends Controller
         // Handle new uploads
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $file) {
-                $currentPhotos[] = $this->uploadImage($file, 'kegiatan');
+                $currentPhotos[] = $this->storeDocumentationMedia($file, 'kegiatan', 'kegiatan-videos');
             }
         }
 

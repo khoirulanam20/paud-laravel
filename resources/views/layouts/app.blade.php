@@ -354,7 +354,10 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
         rel="stylesheet">
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/tour.js'])
+    <script>
+        window.documentationMediaConfig = @json(\App\Support\DocumentationMedia::clientConfig());
+    </script>
+    @vite(['resources/css/app.css', 'resources/js/tour.js'])
 </head>
 
 <body class="font-sans antialiased text-[#2C2C2C] bg-[#F5F0E8]">
@@ -472,7 +475,107 @@
                 reader.onerror = reject;
             });
         };
+
+        (function () {
+            const videoExtensions = ['mp4', 'mov', 'webm'];
+
+            window.isVideoFile = function (file) {
+                if (!file) {
+                    return false;
+                }
+                if (file.type && file.type.startsWith('video/')) {
+                    return true;
+                }
+                const ext = (file.name || '').split('.').pop()?.toLowerCase();
+
+                return videoExtensions.includes(ext);
+            };
+
+            window.isVideoPath = function (url) {
+                if (!url) {
+                    return false;
+                }
+                const path = String(url).split('?')[0].split('#')[0];
+                const ext = path.split('.').pop()?.toLowerCase();
+
+                return videoExtensions.includes(ext);
+            };
+
+            window.__docMediaReady = new Promise(function (resolve) {
+                window.__resolveDocMediaReady = resolve;
+            });
+
+            window.prepareDocumentationFile = async function (file, onProgress) {
+                const report = function (p) {
+                    if (onProgress && p) {
+                        onProgress(p);
+                    }
+                };
+
+                if (!window.isVideoFile(file)) {
+                    report({ percent: 15, message: 'Mengompres gambar...' });
+                    const out = typeof window.compressImage === 'function'
+                        ? await window.compressImage(file)
+                        : file;
+                    report({ percent: 100, message: 'Selesai' });
+
+                    return out;
+                }
+
+                if (typeof window.compressVideo === 'function') {
+                    return window.compressVideo(file, onProgress);
+                }
+
+                await Promise.race([
+                    window.__docMediaReady,
+                    new Promise(function (_, reject) {
+                        setTimeout(function () {
+                            reject(new Error('Modul kompresi video belum dimuat. Jalankan npm run dev atau npm run build lalu muat ulang halaman.'));
+                        }, 15000);
+                    }),
+                ]);
+
+                if (typeof window.compressVideo !== 'function') {
+                    throw new Error('Modul kompresi video belum dimuat. Jalankan npm run dev atau npm run build lalu muat ulang halaman.');
+                }
+
+                return window.compressVideo(file, onProgress);
+            };
+
+            window.documentationUploadProcess = async function (file, state, options) {
+                const fileIndex = options?.fileIndex ?? 0;
+                const fileTotal = options?.fileTotal ?? 1;
+                const isFirst = fileIndex === 0;
+                const isLast = fileIndex === fileTotal - 1;
+                const prefix = fileTotal > 1 ? 'File ' + (fileIndex + 1) + '/' + fileTotal + ' — ' : '';
+
+                if (isFirst) {
+                    state.docUploadActive = true;
+                    state.docUploadProgress = 0;
+                    state.docUploadLabel = prefix + 'Memulai...';
+                }
+
+                const report = function (p) {
+                    const slice = 100 / fileTotal;
+                    const base = slice * fileIndex;
+                    const percent = Math.round(base + (p.percent / 100) * slice);
+                    state.docUploadProgress = Math.min(100, percent);
+                    state.docUploadLabel = prefix + (p.message || 'Memproses...');
+                };
+
+                try {
+                    return await window.prepareDocumentationFile(file, report);
+                } finally {
+                    if (isLast) {
+                        state.docUploadActive = false;
+                        state.docUploadProgress = 0;
+                        state.docUploadLabel = '';
+                    }
+                }
+            };
+        })();
     </script>
+    @vite(['resources/js/app.js'])
     @auth
     <script>
         window.__tourContext = {

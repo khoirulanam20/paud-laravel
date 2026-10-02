@@ -124,6 +124,7 @@ class DashboardController extends Controller
             $data['anaks'] = Anak::withoutSekolahScope()
                 ->where('user_id', $user->id)
                 ->when($sekolahId, fn ($q) => $q->where('sekolah_id', $sekolahId))
+                ->with('kelas')
                 ->orderBy('name')
                 ->get();
             $approvedAnaks = $data['anaks']->where('status', 'approved')->values();
@@ -145,7 +146,7 @@ class DashboardController extends Controller
                 }
             }
 
-            // Combine Activities and Achievements into a single feed
+            // Agenda belajar + kegiatan rutin hari ini (tanpa pencapaian)
             $feeds = collect();
 
             if ($sekolahId && $data['anakIds']->isNotEmpty()) {
@@ -187,24 +188,6 @@ class DashboardController extends Controller
                     }
                 }
 
-                $pencapaians = Pencapaian::whereIn('anak_id', $data['anakIds'])
-                    ->whereDate('created_at', Carbon::today())
-                    ->with(['matrikulasi', 'kegiatan', 'anak'])
-                    ->latest()
-                    ->get();
-
-                foreach ($pencapaians as $p) {
-                    // Avoid duplicating if it's already linked to a kegiatan in today's list
-                    if ($p->kegiatan_id && $kegiatans->contains('id', $p->kegiatan_id)) {
-                        continue;
-                    }
-                    $feeds->push([
-                        'type' => 'pencapaian',
-                        'time' => $p->created_at,
-                        'data' => $p,
-                    ]);
-                }
-
                 $kegiatansRutin = KegiatanRutin::query()
                     ->whereIn('anak_id', $data['anakIds'])
                     ->whereDate('tanggal', Carbon::today())
@@ -222,8 +205,7 @@ class DashboardController extends Controller
             }
 
             $data['dashboardFeed'] = $feeds->sort(function ($a, $b) {
-                // Primary sort: type weight (rutin = 0, kegiatan = 1, pencapaian = 2)
-                $weights = ['kegiatan_rutin' => 0, 'kegiatan' => 1, 'pencapaian' => 2];
+                $weights = ['kegiatan_rutin' => 0, 'kegiatan' => 1];
                 $wa = $weights[$a['type']] ?? 99;
                 $wb = $weights[$b['type']] ?? 99;
 

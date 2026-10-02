@@ -23,9 +23,11 @@
 @endphp
 @if(filled($path))
     <img
-        src="{{ \Illuminate\Support\Facades\Storage::url($path) }}"
+        src="{{ \App\Support\DocumentationMedia::publicAssetPath($path) }}"
         alt="{{ $nm }}"
         class="{{ $dim }} {{ $round }} object-cover shrink-0 border border-black/[0.06] {{ $class }}"
+        loading="lazy"
+        decoding="async"
     />
 @else
     <div

@@ -24,9 +24,6 @@
             <div class="px-5 sm:px-6 py-5 border-b space-y-5" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
                 <div class="space-y-1">
                     <h3 class="text-xl font-bold" style="color:#2C2C2C;">Ringkasan Perkembangan</h3>
-                    <p class="text-sm leading-relaxed m-0 max-w-3xl" style="color:#9E9790;">
-                        Laporan monitoring matrikulasi dari sekolah untuk periode yang dipilih.
-                    </p>
                 </div>
 
                 <form data-tour="ortu-monev-filters" method="get" action="{{ route('orangtua.monev.index') }}"

@@ -13,7 +13,6 @@
                 <div class="space-y-4 md:space-y-6">
                     <div class="space-y-1">
                         <h3 class="text-base sm:text-xl font-bold" style="color:#2C2C2C;">Filter Menu Makanan</h3>
-                        <p class="text-sm font-medium" style="color:#9E9790;">Pilih rentang tanggal untuk melihat jadwal menu mingguan</p>
                     </div>
                     
                     <form data-tour="ortu-menu-date-filter" method="get" action="{{ route('orangtua.menu-makanan.index') }}" class="filter-toolbar-inline">
@@ -49,8 +48,8 @@
             <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="section-title">🍱 Jadwal Menu Makanan</h3>
-                        <p class="section-subtitle">Menu gizi seimbang untuk tumbuh kembang ananda</p>
+                        <h3 class="section-title">Jadwal Menu Makanan</h3>
+                        
                     </div>
                 </div>
             </div>

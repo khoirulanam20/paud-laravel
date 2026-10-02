@@ -5,6 +5,8 @@
         showImageModal: false,
         activeImage: null,
         activeDownloadUrl: null,
+        activeMediaType: 'image',
+        docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
         selectedAnak: null, 
         statusValue: '',
         keteranganValue: '',
@@ -12,6 +14,32 @@
         filterMulai: '{{ date('Y-m-01') }}',
         filterSampai: '{{ date('Y-m-t') }}',
         isLoadingDetail: false,
+        openMedia(url, downloadUrl) {
+            this.activeImage = url;
+            this.activeDownloadUrl = downloadUrl ?? null;
+            this.activeMediaType = (typeof window.isVideoPath === 'function' && window.isVideoPath(url)) ? 'video' : 'image';
+            this.showImageModal = true;
+        },
+        async onRutinPhotoChange(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+                const prepared = await window.documentationUploadProcess(file, this);
+                const dt = new DataTransfer();
+                dt.items.add(prepared);
+                e.target.files = dt.files;
+            } catch (err) {
+                alert(err?.message || 'Gagal memproses file.');
+                e.target.value = '';
+            }
+        },
+        submitRutinForm(event) {
+            if (this.docUploadActive) {
+                event.preventDefault();
+                return;
+            }
+            event.target.submit();
+        },
         initAnak(id, name, status, keterangan) {
             this.selectedAnak = { id, name };
             this.statusValue = status || '';
@@ -154,7 +182,7 @@
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <form action="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                <form action="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 relative" @submit.prevent="submitRutinForm($event)">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="kelas_id" value="{{ $kelasId }}">
@@ -182,13 +210,15 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Foto Dokumentasi (Opsional)</label>
-                            <input type="file" name="photo" class="input-field w-full text-xs" accept="image/*">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Foto / Video Dokumentasi (Opsional)</label>
+                            <input type="file" name="photo" class="input-field w-full text-xs" accept="image/*,video/*" :disabled="docUploadActive" @change="onRutinPhotoChange($event)">
+                            <x-documentation-upload-progress />
+                            <p class="text-[10px] text-gray-400 mt-1">Foto & video dikompres di perangkat Anda sebelum diunggah.</p>
                         </div>
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20">
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20" :disabled="docUploadActive">
                             Simpan Perubahan
                         </button>
                     </div>
@@ -246,8 +276,14 @@
                                 
                                 <div class="flex flex-col sm:flex-row gap-4">
                                     <template x-if="item.photo_url">
-                                        <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = item.photo_url; activeDownloadUrl = item.photo_download_url; showImageModal = true">
-                                            <img :src="item.photo_url" class="w-full h-full object-cover">
+                                        <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer relative" @click="openMedia(item.photo_url, item.photo_download_url)">
+                                            <template x-if="item.photo_url && typeof window.isVideoPath === 'function' && window.isVideoPath(item.photo_url)">
+                                                <video :src="item.photo_url" class="w-full h-full object-cover" muted playsinline></video>
+                                                <span class="absolute inset-0 flex items-center justify-center text-white text-lg bg-black/30">▶</span>
+                                            </template>
+                                            <template x-if="!(item.photo_url && typeof window.isVideoPath === 'function' && window.isVideoPath(item.photo_url))">
+                                                <img :src="item.photo_url" class="w-full h-full object-cover">
+                                            </template>
                                         </div>
                                     </template>
                                     <template x-if="item.keterangan">

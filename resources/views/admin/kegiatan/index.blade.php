@@ -10,8 +10,9 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
-            tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false, isCompressing: false,
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, activeMediaType:'image', compressLabel:'Memproses media...', editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
+            tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false,
+            docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
             photoToDelete: {id:null, path:''},
             openEdit(d){ 
                 this.editData = JSON.parse(JSON.stringify(d)); 
@@ -38,18 +39,30 @@
                 this.tempNewPhotos = [];
                 this.$nextTick(() => { this.submitDoc(); });
             },
+            isVideoUrl(url) {
+                return typeof window.isVideoPath === 'function' && window.isVideoPath(url);
+            },
+            openMedia(url, downloadUrl) {
+                this.activeImage = url;
+                this.activeDownloadUrl = downloadUrl ?? null;
+                this.activeMediaType = this.isVideoUrl(url) ? 'video' : 'image';
+                this.showImageModal = true;
+            },
             async addPhotos(e) {
                 const files = Array.from(e.target.files);
                 if (files.length === 0) return;
-                this.isCompressing = true;
                 try {
-                    for (let file of files) {
-                        const compressedBlob = await window.compressImage(file);
-                        const fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
-                        const compressedFile = new File([compressedBlob], fileName, { type: 'image/jpeg' });
-                        this.tempNewPhotos.push({ file: compressedFile, preview: URL.createObjectURL(compressedFile) });
+                    for (let i = 0; i < files.length; i++) {
+                        const prepared = await window.documentationUploadProcess(files[i], this, {
+                            fileIndex: i,
+                            fileTotal: files.length,
+                        });
+                        const kind = (window.isVideoFile && window.isVideoFile(prepared)) ? 'video' : 'image';
+                        this.tempNewPhotos.push({ file: prepared, preview: URL.createObjectURL(prepared), kind });
                     }
-                } finally { this.isCompressing = false; }
+                } catch (err) {
+                    alert(err?.message || 'Gagal memproses file.');
+                }
                 e.target.value = '';
             },
             removeNewPhoto(index) {
@@ -173,7 +186,16 @@
                             <template x-for="(url, idx) in detailData.photo_urls" :key="url">
                                 <div class="relative aspect-square rounded-xl overflow-hidden border bg-gray-100 shadow-sm flex flex-col group transition-all hover:shadow-md">
                                     <div class="h-full w-full overflow-hidden">
-                                        <img :src="url" class="w-full h-full object-cover cursor-pointer" @click.stop="activeImage = url; activeDownloadUrl = `{{ url('admin/kegiatan') }}/${detailData.id}/photos/download?index=${idx}`; showImageModal = true">
+                                        <template x-if="isVideoUrl(url)">
+                                            <div class="w-full h-full bg-gray-900 flex items-center justify-center cursor-pointer relative"
+                                                @click.stop="openMedia(url, `{{ url('admin/kegiatan') }}/${detailData.id}/photos/download?index=${idx}`)">
+                                                <video :src="url" class="w-full h-full object-cover opacity-80" muted playsinline></video>
+                                                <span class="absolute inset-0 flex items-center justify-center text-white text-3xl drop-shadow">▶</span>
+                                            </div>
+                                        </template>
+                                        <template x-if="!isVideoUrl(url)">
+                                            <img :src="url" class="w-full h-full object-cover cursor-pointer" @click.stop="openMedia(url, `{{ url('admin/kegiatan') }}/${detailData.id}/photos/download?index=${idx}`)">
+                                        </template>
                                     </div>
                                     <button type="button" @click="confirmDeletePhoto(detailData.id, detailData.photo_urls_raw[idx])"
                                         class="absolute -top-1 -right-1 p-2 bg-red-600 rounded-bl-xl text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -365,7 +387,7 @@
         {{-- DOC MODAL (Documentation) --}}
         <div x-show="showDocModal || isUploading" class="modal-overlay" style="display:none;">
             <div x-show="showDocModal || isUploading" x-transition class="modal-box max-w-2xl" @click.away="!isUploading && (showDocModal=false)">
-                <div x-show="isUploading || isCompressing" class="absolute inset-0 z-[60] bg-white/80 flex flex-col items-center justify-center">
+                <div x-show="isUploading" class="absolute inset-0 z-[60] bg-white/80 flex flex-col items-center justify-center">
                     <div class="h-10 w-10 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
                     <p class="mt-3 text-sm font-bold text-teal-800">Memproses...</p>
                 </div>
@@ -386,17 +408,21 @@
 
                     <div class="modal-header"><h3 class="section-title">Kelola Dokumentasi</h3></div>
                     <div class="modal-body space-y-6">
-                        <div class="p-6 border-2 border-dashed border-teal-200 bg-teal-50/30 rounded-2xl flex flex-col items-center">
-                            <label class="btn-primary cursor-pointer">
+                        <div class="p-6 border-2 border-dashed border-teal-200 bg-teal-50/30 rounded-2xl flex flex-col items-center w-full">
+                            <label class="btn-primary cursor-pointer" :class="docUploadActive ? 'opacity-60 pointer-events-none' : ''">
                                 <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                                Tambah Foto
-                                <input type="file" multiple accept="image/*" class="hidden" @change="addPhotos($event)">
+                                Tambah Foto / Video
+                                <input type="file" multiple accept="image/*,video/*" class="hidden" :disabled="docUploadActive" @change="addPhotos($event)">
                             </label>
+                            <div class="w-full max-w-md mt-4">
+                                <x-documentation-upload-progress />
+                            </div>
                         </div>
                         <div class="grid grid-cols-4 gap-2">
                             <template x-for="(p, i) in tempNewPhotos" :key="i">
                                 <div class="relative aspect-square border-2 border-teal-400 rounded-lg overflow-hidden group">
-                                    <img :src="p.preview" class="w-full h-full object-cover">
+                                    <video x-show="p.kind === 'video'" :src="p.preview" class="w-full h-full object-cover" muted playsinline></video>
+                                    <img x-show="p.kind !== 'video'" :src="p.preview" class="w-full h-full object-cover">
                                     <button type="button" @click="removeNewPhoto(i)" class="absolute top-0 right-0 p-1 bg-red-600 text-white opacity-0 group-hover:opacity-100"><svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
                                 </div>
                             </template>

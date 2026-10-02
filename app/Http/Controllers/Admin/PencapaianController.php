@@ -6,7 +6,7 @@ use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
 use App\Http\Controllers\Concerns\ResolvesPencapaianBundlePhoto;
 use App\Http\Controllers\Controller;
-use App\Http\Traits\CanUploadImage;
+use App\Http\Traits\StoresDocumentationMedia;
 use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Kelas;
@@ -15,6 +15,7 @@ use App\Models\Pencapaian;
 use App\Services\AiTokenService;
 use App\Services\PhotoArchiveService;
 use App\Support\AiTokenFeature;
+use App\Support\DocumentationMedia;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
 use App\Support\PaginationPerPage;
@@ -26,10 +27,10 @@ use Illuminate\Validation\Rule;
 
 class PencapaianController extends Controller
 {
-    use CanUploadImage;
     use DownloadsExcel;
     use DownloadsPhotoArchive;
     use ResolvesPencapaianBundlePhoto;
+    use StoresDocumentationMedia;
 
     public function __construct(
         protected AiTokenService $tokenService
@@ -110,6 +111,7 @@ class PencapaianController extends Controller
             $nilai = [];
             $catatan = [];
             $photoUrl = null;
+            $photoPath = null;
             foreach ($rows as $r) {
                 if ($r->matrikulasi_id) {
                     $key = (string) $r->matrikulasi_id;
@@ -117,7 +119,8 @@ class PencapaianController extends Controller
                     $catatan[$key] = $r->feedback ?? '';
                 }
                 if (filled($r->photo) && ! $photoUrl) {
-                    $photoUrl = asset('storage/'.$r->photo);
+                    $photoPath = $r->photo;
+                    $photoUrl = DocumentationMedia::publicAssetPath($r->photo);
                 }
             }
             $editBundles[$k] = [
@@ -127,6 +130,7 @@ class PencapaianController extends Controller
                 'nilai' => $nilai,
                 'catatan' => $catatan,
                 'has_photo' => (bool) $photoUrl,
+                'is_video' => $photoPath ? DocumentationMedia::isVideoPath($photoPath) : false,
                 'photo_url' => $photoUrl,
                 'photo_download_url' => $photoUrl
                     ? route('admin.pencapaian.photos.download-bundle', [
@@ -299,7 +303,7 @@ class PencapaianController extends Controller
             'nilai.*' => ['required', 'string', Rule::in($scoreCodes)],
             'catatan' => 'nullable|array',
             'catatan.*' => 'nullable|string|max:2000',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => DocumentationMedia::singleFileRules(),
         ]);
 
         $kegiatan = Kegiatan::query()
@@ -365,7 +369,7 @@ class PencapaianController extends Controller
             if ($existing?->photo) {
                 Storage::disk('public')->delete($existing->photo);
             }
-            $photoPath = $this->uploadImage($request->file('photo'), 'pencapaian');
+            $photoPath = $this->storeDocumentationMedia($request->file('photo'), 'pencapaian', 'pencapaian-videos');
         } else {
             $photoPath = Pencapaian::query()
                 ->where('anak_id', $anak->id)

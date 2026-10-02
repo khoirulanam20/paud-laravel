@@ -4,21 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
-use App\Http\Traits\CanUploadImage;
+use App\Http\Traits\StoresDocumentationMedia;
 use App\Models\Anak;
 use App\Models\KegiatanRutin;
 use App\Models\Kelas;
 use App\Models\MasterKegiatanRutin;
 use App\Models\Matrikulasi;
 use App\Models\Pengajar;
+use App\Support\DocumentationMedia;
 use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class MasterKegiatanRutinController extends Controller
 {
-    use CanUploadImage;
     use DownloadsExcel;
+    use StoresDocumentationMedia;
 
     public function index(Request $request)
     {
@@ -210,7 +211,7 @@ class MasterKegiatanRutinController extends Controller
             'anak_id' => 'required|exists:anaks,id',
             'status_pencapaian' => 'required|string',
             'keterangan' => 'nullable|string',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => DocumentationMedia::singleFileRules(),
         ]);
 
         $user = auth()->user();
@@ -245,7 +246,7 @@ class MasterKegiatanRutinController extends Controller
             if ($rutin && $rutin->photo) {
                 Storage::disk('public')->delete($rutin->photo);
             }
-            $data['photo'] = $this->uploadImage($request->file('photo'), 'kegiatan-rutin');
+            $data['photo'] = $this->storeDocumentationMedia($request->file('photo'), 'kegiatan-rutin', 'kegiatan-rutin-videos');
         }
 
         if ($rutin) {

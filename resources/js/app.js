@@ -1,4 +1,5 @@
 import './bootstrap';
+import './documentation-media';
 
 import Alpine from 'alpinejs';
 

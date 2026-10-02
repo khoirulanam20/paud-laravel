@@ -78,20 +78,32 @@
             tokenFallbackPencapaian: @js($tokenFallbackPencapaian ?? 'Maaf, fitur ini sedang terbatas.'),
             skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
-            showImageModal: false, activeImage: null, activeDownloadUrl: null,
+            showImageModal: false, activeImage: null, activeDownloadUrl: null, activeMediaType: 'image',
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
             selectedKelasId: '', selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
             editBundleKey: null, editNilai: {}, editCatatan: {}, createNilai: {}, createCatatan: {},
-            isCompressing: false, compressedFile: null,
+            docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
+            compressedFile: null,
             aiLoading: {}, aiSuggestions: {},
             init() {
                 const el = document.getElementById('pencapaian-payload-json');
                 if (el) { try { this.payload = JSON.parse(el.textContent); } catch (e) { this.payload = { kegiatanData: {}, anakMap: {}, editBundles: {} }; } }
             },
+            openMedia(url, downloadUrl) {
+                this.activeImage = url;
+                this.activeDownloadUrl = downloadUrl ?? null;
+                this.activeMediaType = (typeof window.isVideoPath === 'function' && window.isVideoPath(url)) ? 'video' : 'image';
+                this.showImageModal = true;
+            },
             async handleFile(e) {
                 const file = e.target.files[0]; if (!file) return;
-                this.isCompressing = true;
-                try { this.compressedFile = await window.compressImage(file); } finally { this.isCompressing = false; }
+                try {
+                    this.compressedFile = await window.documentationUploadProcess(file, this);
+                } catch (err) {
+                    alert(err?.message || 'Gagal memproses file.');
+                    e.target.value = '';
+                    this.compressedFile = null;
+                }
             },
             submitWithCompression(formRef) {
                 const form = this.$refs[formRef];
@@ -303,7 +315,12 @@
                         <div class="relative rounded-2xl bg-white border border-black/5 shadow-sm p-4 hover:shadow-md transition">
                             <div class="flex items-start gap-3 mb-4">
                                 @if($first->photo)
-                                    <img src="{{ asset('storage/' . $first->photo) }}" class="h-16 w-16 object-cover rounded-xl shadow-sm shrink-0 cursor-pointer" @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; activeDownloadUrl = '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}'; showImageModal = true">
+                                    @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
+                                    <x-documentation-thumbnail
+                                        :path="$first->photo"
+                                        class="h-16 w-16 object-cover rounded-xl shadow-sm cursor-pointer"
+                                        @click="openMedia('{{ $mediaUrl }}', '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')"
+                                    />
                                 @else
                                     <div class="h-16 w-16 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-black/5"><svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
                                 @endif
@@ -349,10 +366,15 @@
                             <tr>
                                 <td>
                                     @if($first->photo)
+                                        @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
                                         <div class="flex items-center gap-2">
-                                            <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" @click="activeImage = '{{ asset('storage/' . $first->photo) }}'; activeDownloadUrl = '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}'; showImageModal = true">
-                                                <img src="{{ asset('storage/' . $first->photo) }}" class="h-full w-full object-cover">
-                                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
+                                            <div class="relative group cursor-pointer" @click="openMedia('{{ $mediaUrl }}', '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')">
+                                                <x-documentation-thumbnail
+                                                    :path="$first->photo"
+                                                    class="h-10 w-10 object-cover rounded"
+                                                    video-class="h-10 w-10 object-cover rounded"
+                                                />
+                                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded pointer-events-none"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
                                             </div>
                                             <a href="{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}"
                                                 class="text-[10px] font-bold uppercase tracking-wide text-teal-700 hover:underline"
@@ -413,12 +435,8 @@
 
         {{-- CREATE MODAL --}}
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;"
-            @click.self="!isCompressing && (showCreateModal=false)">
+            @click.self="!docUploadActive && (showCreateModal=false)">
             <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
-                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
-                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
-                    <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
-                </div>
                 <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data" x-ref="createForm" @submit.prevent="submitWithCompression('createForm')">
                     @csrf
                     <input type="hidden" name="tanggal_dari" value="{{ $tanggalDari }}">
@@ -513,24 +531,21 @@
                             </div>
                         </template>
                         <div data-tour="modal-create-section-evidence">
-                            <label class="input-label">Foto bukti (opsional, berlaku untuk seluruh aspek)</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror" @change="handleFile($event)">
+                            <label class="input-label">Foto / video bukti (opsional)</label>
+                            <input type="file" name="photo" accept="image/*,video/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror" :disabled="docUploadActive" @change="handleFile($event)">
+                            <x-documentation-upload-progress />
                             @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary" :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0">Simpan Evaluasi</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary" :disabled="docUploadActive">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary" :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0 || docUploadActive">Simpan Evaluasi</button></div>
                 </form>
             </div>
         </div>
 
         {{-- EDIT MODAL --}}
         <div x-show="showEditModal" class="modal-overlay" style="display:none;"
-            @click.self="!isCompressing && (showEditModal=false)">
+            @click.self="!docUploadActive && (showEditModal=false)">
             <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
-                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
-                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
-                    <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
-                </div>
                 <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data" x-ref="editForm" @submit.prevent="submitWithCompression('editForm')">
                     <input type="hidden" name="_is_edit" value="1">
                     @csrf
@@ -617,16 +632,28 @@
                                             class="text-[10px] font-bold uppercase tracking-wide underline hover:no-underline"
                                             x-show="editBundles[editBundleKey]?.photo_download_url">Unduh</a>
                                     </div>
-                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group" style="border-color:#1A6B6B22;">
-                                        <img :src="editBundles[editBundleKey].photo_url" class="w-full h-full object-cover cursor-pointer" @click="activeImage = editBundles[editBundleKey].photo_url; activeDownloadUrl = editBundles[editBundleKey].photo_download_url; showImageModal = true">
+                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group cursor-pointer"
+                                        style="border-color:#1A6B6B22;"
+                                        @click="openMedia(editBundles[editBundleKey].photo_url, editBundles[editBundleKey].photo_download_url)">
+                                        <video x-show="editBundles[editBundleKey]?.is_video"
+                                            :src="editBundles[editBundleKey].photo_url"
+                                            class="w-full h-full object-cover bg-gray-900"
+                                            muted playsinline preload="metadata"></video>
+                                        <img x-show="!editBundles[editBundleKey]?.is_video"
+                                            :src="editBundles[editBundleKey].photo_url"
+                                            class="w-full h-full object-cover"
+                                            alt="">
+                                        <span x-show="editBundles[editBundleKey]?.is_video"
+                                            class="absolute inset-0 flex items-center justify-center text-white text-lg bg-black/25 pointer-events-none">▶</span>
                                     </div>
                                     <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Upload file baru untuk mengganti foto.</p>
                                 </div>
                             </template>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs" @change="handleFile($event)">
+                            <input type="file" name="photo" accept="image/*,video/*" class="input-field py-1.5 text-xs" :disabled="docUploadActive" @change="handleFile($event)">
+                            <x-documentation-upload-progress />
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Update Evaluasi</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary" :disabled="docUploadActive">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary" :disabled="docUploadActive">Update Evaluasi</button></div>
                 </form>
             </div>
         </div>
