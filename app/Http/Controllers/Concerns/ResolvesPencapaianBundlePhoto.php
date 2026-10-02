@@ -29,10 +29,11 @@ trait ResolvesPencapaianBundlePhoto
             ->whereNotNull('photo')
             ->value('created_at');
 
-        $filename = $photoArchive->slugFilename(
+        $filename = $photoArchive->slugFilenameForStoragePath(
             $date ? Carbon::parse($date)->format('Y-m-d') : now()->format('Y-m-d'),
             ($anak->name ?? 'siswa').'-'.($kegiatanTitle ?? 'kegiatan'),
-            1
+            1,
+            $photoPath
         );
 
         return $photoArchive->downloadPublicFile($photoPath, $filename);

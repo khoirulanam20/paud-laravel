@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\DocumentationMedia;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -71,6 +72,22 @@ class PhotoArchiveService
         return sprintf('%s_%s_%02d.%s', $date, $slug, $index, ltrim($ext, '.'));
     }
 
+    public function downloadExtensionForPath(string $path): string
+    {
+        if (DocumentationMedia::isVideoPath($path)) {
+            return 'mp4';
+        }
+
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION) ?: 'jpg');
+
+        return $ext === 'jpeg' ? 'jpg' : $ext;
+    }
+
+    public function slugFilenameForStoragePath(string $date, string $label, int $index, string $path): string
+    {
+        return $this->slugFilename($date, $label, $index, $this->downloadExtensionForPath($path));
+    }
+
     /** @param  list<string>  $usedNames */
     private function uniqueFilename(string $filename, array $usedNames): string
     {
@@ -113,7 +130,7 @@ class PhotoArchiveService
             $label = ($pencapaian->anak?->name ?? 'siswa').'-'.($pencapaian->kegiatan?->title ?? 'kegiatan');
             $entries[] = [
                 'path' => $pencapaian->photo,
-                'filename' => $this->slugFilename($date, $label, count($entries) + 1),
+                'filename' => $this->slugFilenameForStoragePath($date, $label, count($entries) + 1, $pencapaian->photo),
             ];
         }
 
@@ -136,7 +153,7 @@ class PhotoArchiveService
             foreach ($photos as $index => $path) {
                 $entries[] = [
                     'path' => $path,
-                    'filename' => $this->slugFilename($date, $label, $index + 1),
+                    'filename' => $this->slugFilenameForStoragePath($date, $label, $index + 1, $path),
                 ];
             }
         }
@@ -161,7 +178,7 @@ class PhotoArchiveService
             $label = ($record->anak?->name ?? 'siswa').'-'.($record->masterKegiatanRutin?->nama_kegiatan ?? 'rutin');
             $entries[] = [
                 'path' => $record->photo,
-                'filename' => $this->slugFilename($date, $label, count($entries) + 1),
+                'filename' => $this->slugFilenameForStoragePath($date, $label, count($entries) + 1, $record->photo),
             ];
         }
 

@@ -203,7 +203,7 @@ class KegiatanController extends Controller
         abort_if(! isset($photos[$index]), 404, 'Foto dokumentasi tidak ditemukan.');
 
         $date = $kegiatan->date?->format('Y-m-d') ?? now()->format('Y-m-d');
-        $filename = $photoArchive->slugFilename($date, $kegiatan->title ?? 'kegiatan', $index + 1);
+        $filename = $photoArchive->slugFilenameForStoragePath($date, $kegiatan->title ?? 'kegiatan', $index + 1, $photos[$index]);
 
         return $photoArchive->downloadPublicFile($photos[$index], $filename);
     }
