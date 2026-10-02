@@ -735,7 +735,8 @@
             </div>
 
             {{-- Detail Activity Modal --}}
-            <div x-show="showActivityModal" class="modal-overlay" style="display:none;">
+            <template x-teleport="body">
+            <div x-show="showActivityModal" class="modal-overlay modal-overlay--blur" style="display:none;">
                 <div x-show="showActivityModal" x-transition class="modal-box max-w-2xl w-full" @click.away="showActivityModal=false">
                     <div class="modal-header flex justify-between items-center">
                         <h3 class="section-title mb-0" x-text="selectedActivity?.title || 'Detail Kegiatan'"></h3>
@@ -802,9 +803,11 @@
                     </div>
                 </div>
             </div>
+            </template>
 
             {{-- Modal Kegiatan Rutin --}}
-            <div x-show="showRutinModal" class="modal-overlay" style="display:none;">
+            <template x-teleport="body">
+            <div x-show="showRutinModal" class="modal-overlay modal-overlay--blur" style="display:none;">
                 <div x-show="showRutinModal" x-transition class="modal-box max-w-lg w-full" @click.away="showRutinModal=false">
                     <div class="modal-header flex justify-between items-center" style="border-bottom: 2px solid #3B82F6;">
                         <div class="flex items-center gap-2">
@@ -859,8 +862,10 @@
                     </div>
                 </div>
             </div>
+            </template>
 
             {{-- Modal Preview Gambar --}}
+            <template x-teleport="body">
             <div x-show="showImageModal" 
                  class="modal-overlay modal-overlay--elevated modal-overlay--dark"
                  style="display: none;"
@@ -879,6 +884,7 @@
                     </template>
                 </div>
             </div>
+            </template>
         </div>
 
         <x-pengumuman-popup :pengumumans="$pengumumans ?? collect()" />

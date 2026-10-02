@@ -409,14 +409,14 @@
                     <div class="modal-header"><h3 class="section-title">Kelola Dokumentasi</h3></div>
                     <div class="modal-body space-y-6">
                         <div class="p-6 border-2 border-dashed border-teal-200 bg-teal-50/30 rounded-2xl flex flex-col items-center w-full">
+                            <div class="w-full max-w-md mb-4">
+                                <x-documentation-upload-progress />
+                            </div>
                             <label class="btn-primary cursor-pointer" :class="docUploadActive ? 'opacity-60 pointer-events-none' : ''">
                                 <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                                 Tambah Foto / Video
                                 <input type="file" multiple accept="image/*,video/*" class="hidden" :disabled="docUploadActive" @change="addPhotos($event)">
                             </label>
-                            <div class="w-full max-w-md mt-4">
-                                <x-documentation-upload-progress />
-                            </div>
                         </div>
                         <div class="grid grid-cols-4 gap-2">
                             <template x-for="(p, i) in tempNewPhotos" :key="i">

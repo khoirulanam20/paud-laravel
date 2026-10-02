@@ -130,6 +130,7 @@
         </div>
 
         {{-- Modal Detail --}}
+        <template x-teleport="body">
         <div x-show="showDetailModal"
             class="modal-overlay modal-overlay--blur"
             style="display:none;" x-transition>
@@ -193,8 +194,10 @@
                 </div>
             </div>
         </div>
+        </template>
 
         {{-- Modal Preview Gambar --}}
+        <template x-teleport="body">
         <div x-show="showImageModal"
             class="modal-overlay modal-overlay--elevated modal-overlay--dark"
             style="display: none;" x-transition @keydown.escape.window="showImageModal = false">
@@ -213,5 +216,6 @@
                     class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
             </div>
         </div>
+        </template>
     </div>
 </x-app-layout>

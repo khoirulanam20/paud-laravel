@@ -613,9 +613,9 @@
                         </template>
                         <div data-tour="modal-create-section-evidence">
                             <label class="input-label">Unggah dokumentasi (foto / video)</label>
+                            <x-documentation-upload-progress />
                             <input type="file" name="photo" accept="image/*,video/*" class="input-field py-1"
                                 :disabled="docUploadActive" @change="handleFile($event)">
-                            <x-documentation-upload-progress />
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showCreateModal=false"
@@ -739,27 +739,32 @@
                                             class="text-[10px] font-bold uppercase tracking-wide underline hover:no-underline"
                                             x-show="editBundles[editBundleKey]?.photo_download_url">Unduh</a>
                                     </div>
-                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group cursor-pointer"
+                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group cursor-pointer bg-stone-200"
                                         style="border-color:#1A6B6B22;"
                                         @click="openMedia(editBundles[editBundleKey].photo_url, editBundles[editBundleKey].photo_download_url)">
-                                        <video x-show="editBundles[editBundleKey]?.is_video"
-                                            :src="editBundles[editBundleKey].photo_url"
-                                            class="w-full h-full object-cover bg-gray-900"
-                                            muted playsinline preload="metadata"></video>
-                                        <img x-show="!editBundles[editBundleKey]?.is_video"
-                                            :src="editBundles[editBundleKey].photo_url"
-                                            class="w-full h-full object-cover"
-                                            alt="">
+                                        <template x-if="showEditModal && editBundles[editBundleKey]?.is_video">
+                                            <video
+                                                :src="(editBundles[editBundleKey].photo_url || '') + '#t=0.1'"
+                                                class="w-full h-full object-cover bg-stone-300"
+                                                muted playsinline preload="metadata"
+                                                @loadedmetadata="window.seekDocumentationVideoPreview($event.target)"></video>
+                                        </template>
+                                        <template x-if="!editBundles[editBundleKey]?.is_video">
+                                            <img
+                                                :src="editBundles[editBundleKey].photo_url"
+                                                class="w-full h-full object-cover"
+                                                alt="">
+                                        </template>
                                         <span x-show="editBundles[editBundleKey]?.is_video"
-                                            class="absolute inset-0 flex items-center justify-center text-white text-lg bg-black/25 pointer-events-none">▶</span>
+                                            class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded bg-black/55 text-white text-[10px] pointer-events-none">▶</span>
                                     </div>
                                     <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Pilih file baru di bawah
                                         ini jika ingin mengganti foto.</p>
                                 </div>
                             </template>
+                            <x-documentation-upload-progress />
                             <input type="file" name="photo" accept="image/*,video/*" class="input-field"
                                 :disabled="docUploadActive" @change="handleFile($event)">
-                            <x-documentation-upload-progress />
                         </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showEditModal=false"

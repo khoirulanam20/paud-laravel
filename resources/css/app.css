@@ -338,12 +338,15 @@
 
     /* ─── Modal ─── */
     .modal-overlay {
-        @apply fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto;
+        @apply fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto;
+        width: 100%;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
         background: rgba(0, 0, 0, 0.45);
     }
 
     .modal-overlay--elevated {
-        @apply z-[60];
+        @apply z-[110];
     }
 
     .modal-overlay--blur {

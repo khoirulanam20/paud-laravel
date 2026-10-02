@@ -1,3 +1,4 @@
+<template x-teleport="body">
 <div x-show="showImageModal"
      class="modal-overlay modal-overlay--elevated modal-overlay--dark"
      style="display: none;"
@@ -28,3 +29,4 @@
         </template>
     </div>
 </div>
+</template>

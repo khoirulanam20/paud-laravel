@@ -89,7 +89,8 @@
             </div>
         </div>
 
-        <div x-show="showBayarModal" class="modal-overlay" style="display:none;">
+        <template x-teleport="body">
+        <div x-show="showBayarModal" class="modal-overlay modal-overlay--blur" style="display:none;">
             <div x-show="showBayarModal" x-transition class="modal-box" @click.away="showBayarModal=false">
                 <form action="{{ route('orangtua.pembayaran.bayar', $pembayaran) }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -103,6 +104,7 @@
                 </form>
             </div>
         </div>
+        </template>
 
         <x-image-lightbox />
     </div>

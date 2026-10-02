@@ -112,7 +112,8 @@
             </div>
 
         <!-- Modal kirim/edit masukan -->
-        <div x-show="showModal" class="modal-overlay" style="display:none;">
+        <template x-teleport="body">
+        <div x-show="showModal" class="modal-overlay modal-overlay--blur" style="display:none;">
             <div x-show="showModal" x-transition class="modal-box max-w-lg w-full" @click.away="showModal = false">
                 <form method="POST" :action="isEdit ? '/orangtua/kritik-saran/' + editId : '{{ route('orangtua.kritik-saran.store') }}'" enctype="multipart/form-data">
                     @csrf
@@ -145,6 +146,7 @@
                 </form>
             </div>
         </div>
+        </template>
 
         <x-image-lightbox />
     </div>

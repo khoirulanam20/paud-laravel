@@ -112,7 +112,7 @@ export async function compressVideo(file, onProgress) {
     const maxW = cfg.video_max_width || 1280;
     const progressHandler = ({ progress }) => {
         const ratio = typeof progress === 'number' ? progress : 0;
-        reportProgress(onProgress, 20 + Math.round(ratio * 75), 'Mengompres video...');
+        reportProgress(onProgress, 20 + Math.round(ratio * 75), 'Sedang mengupload media');
     };
     ffmpeg.on('progress', progressHandler);
 

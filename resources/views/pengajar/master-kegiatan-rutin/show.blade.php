@@ -211,8 +211,8 @@
 
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Foto / Video Dokumentasi (Opsional)</label>
-                            <input type="file" name="photo" class="input-field w-full text-xs" accept="image/*,video/*" :disabled="docUploadActive" @change="onRutinPhotoChange($event)">
                             <x-documentation-upload-progress />
+                            <input type="file" name="photo" class="input-field w-full text-xs" accept="image/*,video/*" :disabled="docUploadActive" @change="onRutinPhotoChange($event)">
                             <p class="text-[10px] text-gray-400 mt-1">Foto & video dikompres di perangkat Anda sebelum diunggah.</p>
                         </div>
                     </div>

@@ -548,6 +548,9 @@
                     <div class="modal-body space-y-6 pt-2">
                         <div
                             class="p-6 rounded-2xl border-2 border-dashed bg-teal-50/30 flex flex-col items-center justify-center border-teal-200/50">
+                            <div class="w-full max-w-md mb-4 px-2">
+                                <x-documentation-upload-progress />
+                            </div>
                             <label
                                 class="btn-primary cursor-pointer px-8 py-3 shadow-md hover:shadow-lg transition-all scale-105 active:scale-95"
                                 :class="docUploadActive ? 'opacity-60 pointer-events-none' : ''"
@@ -561,9 +564,6 @@
                             </label>
                             <p class="text-[12px] font-bold text-teal-800 mt-4 text-center">Bisa pilih lebih dari satu
                                 foto atau video sekaligus</p>
-                            <div class="w-full max-w-md mt-4 px-2">
-                                <x-documentation-upload-progress />
-                            </div>
                         </div>
 
                         <div class="space-y-6">

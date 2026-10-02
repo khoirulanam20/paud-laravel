@@ -501,6 +501,27 @@
                 return videoExtensions.includes(ext);
             };
 
+            window.seekDocumentationVideoPreview = function (video) {
+                if (!video) {
+                    return;
+                }
+                const seek = function () {
+                    if (!video.duration || !Number.isFinite(video.duration)) {
+                        return;
+                    }
+                    try {
+                        video.currentTime = Math.min(0.25, video.duration * 0.05);
+                    } catch (e) {
+                        /* ponytail: ignore seek errors on unsupported codecs */
+                    }
+                };
+                if (video.readyState >= 1) {
+                    seek();
+                } else {
+                    video.addEventListener('loadedmetadata', seek, { once: true });
+                }
+            };
+
             window.__docMediaReady = new Promise(function (resolve) {
                 window.__resolveDocMediaReady = resolve;
             });
@@ -547,12 +568,10 @@
                 const fileTotal = options?.fileTotal ?? 1;
                 const isFirst = fileIndex === 0;
                 const isLast = fileIndex === fileTotal - 1;
-                const prefix = fileTotal > 1 ? 'File ' + (fileIndex + 1) + '/' + fileTotal + ' — ' : '';
 
                 if (isFirst) {
                     state.docUploadActive = true;
                     state.docUploadProgress = 0;
-                    state.docUploadLabel = prefix + 'Memulai...';
                 }
 
                 const report = function (p) {
@@ -560,7 +579,6 @@
                     const base = slice * fileIndex;
                     const percent = Math.round(base + (p.percent / 100) * slice);
                     state.docUploadProgress = Math.min(100, percent);
-                    state.docUploadLabel = prefix + (p.message || 'Memproses...');
                 };
 
                 try {
@@ -569,7 +587,6 @@
                     if (isLast) {
                         state.docUploadActive = false;
                         state.docUploadProgress = 0;
-                        state.docUploadLabel = '';
                     }
                 }
             };
