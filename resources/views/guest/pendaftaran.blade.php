@@ -1,8 +1,13 @@
-<x-guest-layout max-width="max-w-lg">
+<x-guest-layout max-width="max-w-xl">
     <x-auth-session-status class="mb-5" :status="session('status')" />
 
-    <h2 class="text-2xl font-bold mb-1" style="color: #2C2C2C;">Pendaftaran Orang Tua</h2>
-    <p class="text-sm mb-6" style="color: #9E9790;">Daftarkan akun orang tua dan data anak untuk bergabung dengan sekolah mitra {{ \App\Support\GuestBrand::NAME }}. Sudah punya akun? <a href="{{ route('login') }}" class="font-semibold underline cursor-pointer" style="color: #1A6B6B;">Masuk di sini</a>.</p>
+    <p class="text-secondary-foreground font-bubblegum-sans text-[19px]">Pendaftaran</p>
+    <h2 class="text-2xl lg:text-[28px] font-bold leading-tight mt-1 mb-1">Orang tua &amp; anak</h2>
+    <p class="text-sm text-muted-foreground mb-6">
+        Daftarkan akun untuk sekolah mitra {{ \App\Support\GuestBrand::NAME }}.
+        Sudah punya akun?
+        <a href="{{ route('login') }}" class="font-semibold text-green-foreground hover:underline">Masuk di sini</a>.
+    </p>
 
     @include('auth.partials.pendaftaran-form', [
         'action' => route('guest.pendaftaran.store'),

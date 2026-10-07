@@ -1,39 +1,45 @@
 <x-guest-layout>
     <x-auth-session-status class="mb-5" :status="session('status')" />
-    
-    <h2 class="text-2xl font-bold mb-1" style="color: #2C2C2C;">Selamat Datang</h2>
-    <p class="text-sm mb-6" style="color: #9E9790;">Masuk ke akun Anda untuk melanjutkan</p>
+
+    <p class="text-secondary-foreground font-bubblegum-sans text-[19px]">Masuk</p>
+    <h2 class="text-2xl lg:text-[28px] font-bold leading-tight mt-1 mb-1">Selamat datang kembali</h2>
+    <p class="text-sm text-muted-foreground mb-6">Masuk ke akun Anda untuk melanjutkan</p>
 
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
         <div>
             <x-input-label for="email" :value="__('Alamat Email')" />
-            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="email@contoh.com" />
+            <x-auth-field-wrap icon="fa-solid fa-envelope">
+                <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="email@contoh.com" />
+            </x-auth-field-wrap>
             <x-input-error :messages="$errors->get('email')" class="mt-1" />
         </div>
 
         <div>
             <x-input-label for="password" :value="__('Kata Sandi')" />
-            <x-text-input id="password" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+            <x-auth-field-wrap icon="fa-solid fa-lock">
+                <x-text-input id="password" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+            </x-auth-field-wrap>
             <x-input-error :messages="$errors->get('password')" class="mt-1" />
         </div>
 
-        <div class="flex items-center justify-between">
+        <div class="mb-10 flex items-center justify-between gap-3 flex-wrap">
             <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
-                <input id="remember_me" type="checkbox" class="rounded text-teal-600 border-gray-300 shadow-sm" name="remember" style="accent-color: #1A6B6B;">
-                <span class="text-sm" style="color: #6B6560;">Ingat Saya</span>
+                <input id="remember_me" type="checkbox" class="rounded border-[#F2F2F2]" name="remember">
+                <span class="text-sm text-muted-foreground">Ingat saya</span>
             </label>
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" class="text-sm font-medium hover:underline" style="color: #1A6B6B;">Lupa password?</a>
+                <a href="{{ route('password.request') }}" class="text-sm font-semibold text-green-foreground hover:underline">Lupa kata sandi?</a>
             @endif
         </div>
 
-        <x-primary-button class="w-full justify-center py-3">
+        <x-ascent-button>
+            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
             Masuk ke Sistem
-        </x-primary-button>
-        <div class="text-center">
-            <a href="{{ route('guest.pendaftaran') }}" class="text-sm font-medium hover:underline" style="color: #1A6B6B;">Belum punya akun? Daftar</a>
+        </x-ascent-button>
+        <div class="text-center pt-1">
+            <a href="{{ route('guest.pendaftaran') }}" class="text-sm font-semibold text-green-foreground hover:underline">Belum punya akun? Daftar</a>
         </div>
     </form>
 </x-guest-layout>

@@ -111,11 +111,48 @@ final class GuestFeatures
             ],
             [
                 'title' => 'Mudah kelola multi-cabang',
-                'quote' => 'Sebagai lembaga dengan tiga cabang, SIPP membantu kami memantau operasional dan komunikasi orang tua secara terpusat.',
+                'quote' => 'Sebagai lembaga dengan tiga cabang, DaycareAI membantu kami memantau operasional dan komunikasi orang tua secara terpusat.',
                 'name' => 'Dewi Lestari',
                 'role' => 'Ketua Lembaga',
                 'rating' => 5,
             ],
         ];
+    }
+
+    /**
+     * Kartu layanan halaman Fitur (gaya services.html): CMS facility + pilar produk.
+     *
+     * @param  array<string, string>  $cms
+     * @return list<array{icon: string, title: string, desc: string}>
+     */
+    public static function servicePageCards(array $cms): array
+    {
+        $icons = ['icon-car-toy', 'icon-toys', 'icon-feeder', 'icon-book', 'icon-mat', 'icon-baby-body'];
+        $cards = [];
+
+        for ($i = 1; $i <= 4; $i++) {
+            $title = trim($cms["facility_{$i}_title"] ?? '');
+            if ($title === '') {
+                continue;
+            }
+            $cards[] = [
+                'icon' => $icons[$i - 1],
+                'title' => $title,
+                'desc' => trim($cms["facility_{$i}_desc"] ?? ''),
+            ];
+        }
+
+        foreach (self::pillars() as $pillar) {
+            if (count($cards) >= 6) {
+                break;
+            }
+            $cards[] = [
+                'icon' => $icons[count($cards)] ?? 'icon-blocks',
+                'title' => $pillar['title'],
+                'desc' => $pillar['desc'],
+            ];
+        }
+
+        return array_slice($cards, 0, 6);
     }
 }

@@ -226,7 +226,7 @@
     @endif
 
     <div class="footer">
-        Dokumen ini dibuat otomatis oleh sistem SIPP. Invoice berlaku sebagai bukti pembayaran yang telah lunas.
+        Dokumen ini dibuat otomatis oleh sistem DaycareAI. Invoice berlaku sebagai bukti pembayaran yang telah lunas.
     </div>
 </body>
 </html>

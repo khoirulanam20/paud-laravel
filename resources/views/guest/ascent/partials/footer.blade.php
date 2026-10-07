@@ -1,5 +1,4 @@
 @php
-    use App\Support\GuestAscent;
     use App\Support\GuestBrand;
     use App\Support\GuestWhatsApp;
     $brand = GuestBrand::name();
@@ -8,10 +7,7 @@
     <div class="container">
         <div class="grid lg:grid-cols-[370px_auto_auto] sm:grid-cols-2 grid-cols-1 justify-between gap-7.5">
             <div class="wow fadeInUp" data-wow-delay=".3s">
-                <a href="{{ route('guest.beranda') }}" class="flex items-center gap-2">
-                    <img src="{{ GuestAscent::asset('images/logo/logo.png') }}" alt="Logo {{ $brand }}" class="h-10">
-                    <span class="font-bold text-xl sm:text-2xl">{{ $brand }}</span>
-                </a>
+                <a href="{{ route('guest.beranda') }}" class="font-bold text-xl sm:text-2xl">{{ $brand }}</a>
                 <p class="pt-4 text-sm text-muted-foreground leading-relaxed">{{ $cms['footer_text'] ?? '' }}</p>
             </div>
             <div class="wow fadeInUp" data-wow-delay=".5s">

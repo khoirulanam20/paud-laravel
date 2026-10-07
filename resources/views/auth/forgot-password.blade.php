@@ -1,25 +1,30 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+    <p class="text-secondary-foreground font-bubblegum-sans text-[19px]">Reset</p>
+    <h2 class="text-2xl lg:text-[28px] font-bold leading-tight mt-1 mb-1">Lupa kata sandi?</h2>
+    <p class="text-sm text-muted-foreground mb-6">
+        Masukkan email terdaftar. Kami akan mengirim tautan reset kata sandi ke email Anda.
+    </p>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status class="mb-5" :status="session('status')" />
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
         @csrf
 
-        <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="email" :value="__('Alamat Email')" />
+            <x-auth-field-wrap icon="fa-solid fa-envelope">
+                <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="email@contoh.com" />
+            </x-auth-field-wrap>
+            <x-input-error :messages="$errors->get('email')" class="mt-1" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
+        <x-ascent-button>
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+            Kirim tautan reset
+        </x-ascent-button>
+
+        <div class="text-center">
+            <a href="{{ route('login') }}" class="text-sm font-semibold text-green-foreground hover:underline">Kembali ke masuk</a>
         </div>
     </form>
 </x-guest-layout>

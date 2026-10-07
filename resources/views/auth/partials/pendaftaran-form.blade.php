@@ -1,18 +1,23 @@
 {{-- Form pendaftaran orang tua + anak; dipakai di /register dan /pendaftaran ($action, $sekolahs) --}}
 
 @if($sekolahs->isEmpty())
-    <div class="mb-5 rounded-xl px-4 py-3 text-sm" style="background: #FAD7D2; color: #7a2e2e;">
-        Belum ada data sekolah di sistem. Hubungi pengelola PAUD atau jalankan seeder agar pendaftaran bisa diproses.
+    <div class="auth-callout auth-callout--danger" role="alert">
+        <span class="auth-callout__icon"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></span>
+        <span>Belum ada data sekolah di sistem. Hubungi pengelola PAUD agar pendaftaran bisa diproses.</span>
     </div>
 @endif
 
-<div class="mb-5 rounded-xl px-4 py-3 text-sm" style="background: #EDE8DF; color: #6B6560;">
-    Pendaftaran akan ditinjau oleh Admin Sekolah. Anda bisa masuk setelah akun disetujui.
+<div class="auth-callout auth-callout--warm" role="note">
+    <span class="auth-callout__icon"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></span>
+    <span>Pendaftaran akan ditinjau Admin Sekolah. Anda bisa masuk setelah akun disetujui.</span>
 </div>
 
-<div class="mb-5 rounded-xl px-4 py-3 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" style="background: #E8F4F4; color: #1A6B6B;">
-    <span>Sudah punya akun dan ingin mendaftarkan anak lain?</span>
-    <a href="{{ route('orangtua.anak.create') }}" class="font-semibold hover:underline whitespace-nowrap">Masuk untuk menambah anak →</a>
+<div class="auth-callout auth-callout--muted auth-callout--row" role="note">
+    <span class="text-muted-foreground">Sudah punya akun dan ingin mendaftarkan anak lain?</span>
+    <a href="{{ route('orangtua.anak.create') }}" class="auth-callout-link">
+        Masuk untuk menambah anak
+        <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+    </a>
 </div>
 
 <form method="POST" action="{{ $action }}" class="space-y-5" enctype="multipart/form-data">
@@ -124,10 +129,11 @@
         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1" />
     </div>
 
-    <x-primary-button class="w-full justify-center py-3" :disabled="$sekolahs->isEmpty()">
+    <x-ascent-button :disabled="$sekolahs->isEmpty()">
+        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
         Kirim pendaftaran
-    </x-primary-button>
+    </x-ascent-button>
     <div class="text-center">
-        <a href="{{ route('login') }}" class="text-sm font-medium hover:underline" style="color: #1A6B6B;">Sudah punya akun? Masuk</a>
+        <a href="{{ route('login') }}" class="text-sm font-semibold text-green-foreground hover:underline">Sudah punya akun? Masuk</a>
     </div>
 </form>

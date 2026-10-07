@@ -12,7 +12,7 @@
                 </div>
                 @php
                     $faqs = [
-                        ['q' => 'Apa itu daycare.ai.id?', 'a' => 'Platform terpadu untuk operasional PAUD: data siswa, presensi, komunikasi orang tua, keuangan, dan dokumentasi kegiatan dalam satu sistem.'],
+                        ['q' => 'Apa itu DaycareAI?', 'a' => 'Platform terpadu untuk operasional PAUD: data siswa, presensi, komunikasi orang tua, keuangan, dan dokumentasi kegiatan dalam satu sistem.'],
                         ['q' => 'Bagaimana cara mendaftarkan sekolah?', 'a' => 'Klik Daftar Sekolah di halaman ini, isi formulir, lalu tim kami akan menghubungi Anda untuk onboarding dan demo.'],
                         ['q' => 'Apakah orang tua punya akses aplikasi?', 'a' => 'Ya. Orang tua dapat memantau kehadiran, pencapaian, pembayaran, dan berkomunikasi dengan sekolah melalui portal khusus.'],
                     ];

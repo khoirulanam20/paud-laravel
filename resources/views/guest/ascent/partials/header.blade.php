@@ -60,9 +60,6 @@
                                     <a href="{{ route('guest.fasilitas') }}" class="font-semibold text-lg font-jost group-hover:text-primary-foreground transition-all duration-500 {{ $navActive('guest.fasilitas') }}">Fitur</a>
                                 </li>
                                 <li class="leading-[164%] relative group">
-                                    <a href="{{ route('guest.galeri') }}" class="font-semibold text-lg font-jost group-hover:text-primary-foreground transition-all duration-500 {{ $navActive('guest.galeri') }}">Galeri</a>
-                                </li>
-                                <li class="leading-[164%] relative group">
                                     <a href="{{ route('guest.kontak') }}" class="font-semibold text-lg font-jost group-hover:text-primary-foreground transition-all duration-500 {{ $navActive('guest.kontak') }}">Kontak</a>
                                 </li>
                             </ul>
@@ -81,7 +78,6 @@
                                         ['route' => 'guest.beranda', 'label' => 'Beranda'],
                                         ['route' => 'guest.tentang', 'label' => 'Tentang'],
                                         ['route' => 'guest.fasilitas', 'label' => 'Fitur'],
-                                        ['route' => 'guest.galeri', 'label' => 'Galeri'],
                                         ['route' => 'guest.kontak', 'label' => 'Kontak'],
                                     ] as $item)
                                     <li class="leading-[164%] relative w-full">
@@ -115,17 +111,19 @@
                                     <a href="{{ route('dashboard') }}" class="bg-primary text-cream-foreground rounded-md btn whitespace-nowrap">Dashboard</a>
                                 @else
                                     <a href="{{ route('login') }}" class="border border-gray-200 rounded-md btn hover:text-cream-foreground whitespace-nowrap">Masuk</a>
-                                    <div class="relative guest-daftar-dropdown min-w-[8.5rem]">
-                                        <button type="button" class="guest-daftar-toggle w-full justify-center bg-secondary text-cream-foreground rounded-md btn whitespace-nowrap gap-2 inline-flex items-center px-5 after:bg-green" aria-expanded="false" aria-haspopup="true">
+                                    <div class="relative guest-daftar-dropdown">
+                                        <button type="button" class="guest-daftar-toggle bg-secondary text-cream-foreground rounded-md btn whitespace-nowrap gap-1.5 inline-flex items-center after:bg-green" aria-expanded="false" aria-haspopup="true">
                                             <span>Daftar</span>
-                                            <i class="fa-solid fa-angle-down text-xs guest-daftar-chevron transition-transform" aria-hidden="true"></i>
+                                            <i class="fa-solid fa-angle-down text-sm guest-daftar-chevron transition-transform duration-500" aria-hidden="true"></i>
                                         </button>
-                                        <div class="guest-daftar-menu absolute left-0 right-0 top-full z-50 pt-2 min-w-full">
-                                            <ul class="bg-background shadow-sm border border-[#F2F2F2] rounded-md overflow-hidden min-w-full">
-                                                <li><a href="{{ route('guest.pendaftaran') }}" class="guest-daftar-link block py-3.5 px-5 font-semibold font-jost text-[#385469] hover:text-cream-foreground hover:bg-primary border-b border-b-slate-300 text-center">Ortu</a></li>
-                                                <li><a href="{{ route('guest.daftar-sekolah') }}" class="guest-daftar-link block py-3.5 px-5 font-semibold font-jost text-[#385469] hover:text-cream-foreground hover:bg-primary text-center">Sekolah</a></li>
-                                            </ul>
-                                        </div>
+                                        <ul class="guest-daftar-menu absolute top-full right-0 z-10 bg-background shadow-sm min-w-56 transition-all duration-500 opacity-0 invisible translate-y-5">
+                                            <li>
+                                                <a href="{{ route('guest.pendaftaran') }}" class="guest-daftar-link font-semibold font-jost hover:text-cream-foreground hover:bg-primary transition-all duration-500 py-3 px-2.5 block border-b border-b-slate-300">Ortu</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('guest.daftar-sekolah') }}" class="guest-daftar-link font-semibold font-jost hover:text-cream-foreground hover:bg-primary transition-all duration-500 py-3 px-2.5 block border-b border-b-slate-300">Sekolah</a>
+                                            </li>
+                                        </ul>
                                     </div>
                                 @endauth
                             </div>

@@ -72,7 +72,7 @@
                     </div>
                     <div>
                         <label class="input-label">Teks Alt Foto Hero</label>
-                        <input type="text" name="hero_photo_alt" value="{{ $cms['hero_photo_alt'] }}" class="input-field" placeholder="Ilustrasi dashboard SIPP untuk PAUD">
+                        <input type="text" name="hero_photo_alt" value="{{ $cms['hero_photo_alt'] }}" class="input-field" placeholder="Ilustrasi dashboard DaycareAI untuk PAUD">
                     </div>
                 </div>
             </div>
@@ -91,7 +91,7 @@
                     <div>
                         <label class="input-label">Isi Teks (gunakan Enter untuk paragraf baru)</label>
                         <textarea name="about_text" rows="6" class="input-field">{{ $cms['about_text'] }}</textarea>
-                        <p class="text-xs mt-1" style="color:#9E9790;">400–800 karakter total. Paragraf pertama = ringkasan nilai SIPP.</p>
+                        <p class="text-xs mt-1" style="color:#9E9790;">400–800 karakter total. Paragraf pertama = ringkasan nilai DaycareAI.</p>
                     </div>
                     <div>
                         <label class="input-label">Foto</label>
