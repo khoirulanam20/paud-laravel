@@ -1,6 +1,7 @@
 @php
     use App\Support\GuestAscent;
     use App\Support\GuestBrand;
+    use App\Support\GuestCmsImage;
     use App\Support\GuestSeo;
     use Illuminate\Support\Facades\Storage;
     $showLearnMore = $showLearnMore ?? true;
@@ -19,7 +20,7 @@
             <div class="relative">
                 @if($cmsAboutPhoto !== '')
                     <div class="wow fadeInUp" data-wow-delay=".3s">
-                        <img src="{{ Storage::url($cmsAboutPhoto) }}" alt="{{ GuestSeo::aboutPhotoAlt($cms) }}" class="w-full rounded-[11px] object-cover aspect-[4/3]">
+                        <img src="{{ Storage::url($cmsAboutPhoto) }}" alt="{{ GuestSeo::aboutPhotoAlt($cms) }}" class="guest-cms-img--about rounded-[11px]">
                     </div>
                 @else
                 <div class="flex sm:flex-row flex-col sm:items-end gap-6">
@@ -28,7 +29,7 @@
                             <img src="{{ GuestAscent::asset('images/about/shap-1.png') }}" alt="" aria-hidden="true">
                         </div>
                         <div class="ml-9">
-                            <img src="{{ GuestAscent::asset('images/about/about-1.png') }}" alt="{{ GuestSeo::aboutPhotoAlt($cms) }}" class="w-full">
+                            <img src="{{ GuestCmsImage::url($cms, 'about_collage_image', 'images/about/about-1.png') }}" alt="{{ GuestSeo::aboutPhotoAlt($cms) }}" class="guest-cms-img--about-collage">
                         </div>
                         @if($pageLayout)
                         <div class="absolute -bottom-12.5 left-0 bg-primary rounded-[10px] py-4 px-[22px] flex items-center gap-3">

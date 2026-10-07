@@ -1,66 +1,58 @@
-<x-guest-public :cms="$cms" title="Galeri">
-    @include('guest.partials.page-header', [
-        'badge' => 'Galeri Produk',
-        'title' => 'Tampilan Antarmuka '.\App\Support\GuestBrand::NAME,
-        'subtitle' => 'Cuplikan dashboard dan modul yang digunakan sehari-hari oleh lembaga, admin, pengajar, dan orang tua.',
+@php
+    use App\Support\GuestSeo;
+    use Illuminate\Support\Facades\Storage;
+    $pageSeo = GuestSeo::forInnerPage(
+        $cms,
+        'galeri',
+        'Galeri',
+        route('guest.galeri'),
+        $cms['seo_galeri_description'] ?? '',
+    );
+    $galleries = [];
+    for ($gi = 1; $gi <= 6; $gi++) {
+        if (!empty($cms['gallery_'.$gi])) {
+            $galleries[] = ['path' => $cms['gallery_'.$gi], 'index' => $gi];
+        }
+    }
+@endphp
+<x-guest-ascent :cms="$cms" title="Galeri" :metaDesc="$pageSeo['description']" :canonical="route('guest.galeri')">
+    @include('guest.ascent.partials.page-hero', [
+        'title' => $pageSeo['h1'],
+        'breadcrumbLabel' => 'Galeri',
+        'subtitle' => $cms['page_galeri_intro'] ?? '',
     ])
-
-    @php
-        $galleries = array_filter([
-            $cms['gallery_1'] ?? null,
-            $cms['gallery_2'] ?? null,
-            $cms['gallery_3'] ?? null,
-            $cms['gallery_4'] ?? null,
-            $cms['gallery_5'] ?? null,
-            $cms['gallery_6'] ?? null,
-        ]);
-    @endphp
-
-    <section class="guest-section" x-data="{ lightbox: null }">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <section class="lg:pb-15 pb-10" aria-labelledby="gallery-page-heading">
+        <div class="container">
+            <div class="text-center flex flex-col items-center mb-10">
+                <h2 id="gallery-page-heading" class="font-bold lg:text-[32px] text-2xl max-w-[630px]">{{ $cms['section_gallery_title'] }}</h2>
+                <p class="mt-3 max-w-xl text-muted-foreground">{{ $cms['section_gallery_subtitle'] }}</p>
+            </div>
             @if(count($galleries))
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6" data-guest-stagger>
-                @foreach($galleries as $photo)
-                <button type="button"
-                        @click="lightbox = '{{ Storage::url($photo) }}'"
-                        class="overflow-hidden rounded-3xl aspect-square cursor-pointer group focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white"
-                        style="--tw-ring-color: var(--guest-sage);"
-                        data-guest-stagger-item>
-                    <img src="{{ Storage::url($photo) }}" alt="Screenshot {{ \App\Support\GuestBrand::NAME }}"
-                         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                </button>
-                @endforeach
-            </div>
-            @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" data-guest-stagger>
-                @foreach([
-                    ['title' => 'Dashboard Admin', 'desc' => 'Ringkasan siswa, kegiatan, dan keuangan.', 'blob' => 'var(--guest-blob-pink)', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
-                    ['title' => 'Portal Orang Tua', 'desc' => 'Pantau anak, bayar tagihan, chat AI.', 'blob' => 'var(--guest-blob-yellow)', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z'],
-                    ['title' => 'Laporan Monev', 'desc' => 'Export PDF perkembangan siswa otomatis.', 'blob' => 'var(--guest-blob-blue)', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
-                ] as $mock)
-                <div class="guest-card" data-guest-hover data-guest-stagger-item>
-                    <div class="aspect-video rounded-3xl mb-4 flex items-center justify-center" style="background: {{ $mock['blob'] }};">
-                        @include('guest.partials.icon', ['path' => $mock['icon'], 'class' => 'h-12 w-12'])
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6" x-data="{ lightbox: null }">
+                    @foreach($galleries as $photo)
+                        @php $alt = GuestSeo::galleryAlt($cms, $photo['index']); @endphp
+                        <button type="button"
+                                @click="lightbox = '{{ Storage::url($photo['path']) }}'"
+                                class="overflow-hidden rounded-[10px] aspect-square cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary/40"
+                                aria-label="{{ $alt }}">
+                            <img src="{{ Storage::url($photo['path']) }}" alt="{{ $alt }}"
+                                 class="w-full h-full max-h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                        </button>
+                    @endforeach
+                    <div x-show="lightbox" x-transition x-cloak
+                         @click="lightbox = null" @keydown.escape.window="lightbox = null"
+                         class="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer bg-black/75"
+                         style="display: none;">
+                        <img :src="lightbox" alt="Preview" class="max-w-full max-h-[90vh] rounded-[10px] shadow-2xl" @click.stop>
                     </div>
-                    <h3 class="font-bold guest-heading">{{ $mock['title'] }}</h3>
-                    <p class="mt-1 text-sm text-[var(--guest-text-muted)]">{{ $mock['desc'] }}</p>
                 </div>
-                @endforeach
-            </div>
-            <p class="text-center text-sm text-[var(--guest-text-muted)] mt-8" data-guest-animate="fade-up">Upload screenshot melalui CMS Lembaga untuk menampilkan galeri kustom.</p>
+            @else
+                <div class="text-center max-w-lg mx-auto py-10">
+                    <p class="text-muted-foreground">{{ $cms['section_gallery_subtitle'] }}</p>
+                    <a href="{{ route('guest.kontak') }}" class="btn-rounded-full inline-flex mt-8">Hubungi Kami</a>
+                </div>
             @endif
         </div>
-
-        <div x-show="lightbox" x-transition x-cloak
-             @click="lightbox = null" @keydown.escape.window="lightbox = null"
-             class="fixed inset-0 z-[100] flex items-center justify-center p-4 cursor-pointer"
-             style="background: rgba(44,44,44,0.75); display: none;">
-            <img :src="lightbox" alt="Preview" class="max-w-full max-h-[90vh] rounded-3xl shadow-2xl" @click.stop>
-        </div>
     </section>
-
-    @include('guest.partials.cta-banner', [
-        'title' => 'Ingin melihat demo langsung?',
-        'subtitle' => 'Hubungi kami untuk walkthrough platform sesuai peran pengguna Anda.',
-    ])
-</x-guest-public>
+    @include('guest.ascent.partials.stay-cta', ['cms' => $cms])
+</x-guest-ascent>

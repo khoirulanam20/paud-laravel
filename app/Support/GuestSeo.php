@@ -71,4 +71,26 @@ final class GuestSeo
             'canonical' => $canonical,
         ];
     }
+
+    /**
+     * @param  array<string, string>  $cms
+     * @return array{title: string, description: string, og_image_url: string|null, canonical: string, h1: string}
+     */
+    public static function forInnerPage(array $cms, string $pageSlug, string $h1Fallback, string $canonical, string $descriptionFallback = ''): array
+    {
+        $homeSeo = self::forHome($cms);
+        $h1 = trim($cms["page_{$pageSlug}_h1"] ?? '') ?: $h1Fallback;
+        $descKey = "seo_{$pageSlug}_description";
+        $description = trim($cms[$descKey] ?? '');
+        if ($description === '') {
+            $description = $descriptionFallback !== ''
+                ? $descriptionFallback
+                : GuestBrand::name().' — Sistem Informasi PAUD terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
+        }
+
+        $page = self::forPage($h1, $description, $canonical, $homeSeo['og_image_url']);
+        $page['h1'] = $h1;
+
+        return $page;
+    }
 }

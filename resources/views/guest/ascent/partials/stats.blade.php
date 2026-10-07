@@ -12,7 +12,7 @@
                 <a href="{{ route('guest.kontak') }}" class="border border-gray-200 rounded-md lg:mt-10 mt-7 btn inline-block wow fadeInUp" data-wow-delay=".5s">Hubungi Kami</a>
             </div>
             <div class="grid sm:grid-cols-2 grid-cols-1 gap-7.5">
-                @foreach(GuestFeatures::landingValues() as $i => $item)
+                @foreach(GuestFeatures::landingValues($cms) as $i => $item)
                 <div class="rounded-lg border border-gray-200 px-[18px] lg:py-7.5 py-5 flex items-center gap-5 wow fadeInUp" data-wow-delay="{{ number_format(0.3 + ($i * 0.1), 1) }}s">
                     <div class="rounded-full {{ $circleBgs[$i] ?? 'bg-primary' }} lg:w-20 lg:h-20 w-16 h-16 flex items-center justify-center shrink-0">
                         <i class="{{ $item['icon'] }} lg:text-[40px] text-3xl text-cream-foreground" aria-hidden="true"></i>

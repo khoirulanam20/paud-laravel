@@ -88,6 +88,82 @@
         .guest-daftar-dropdown.is-open .guest-daftar-chevron {
             transform: rotate(180deg);
         }
+        /* ponytail: batas ukuran upload CMS per section layout Ascent */
+        .guest-hero-side {
+            width: 100%;
+            max-width: 9.5rem;
+        }
+        .guest-cms-img--hero-side {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 10.5rem;
+            object-fit: contain;
+        }
+        @media (min-width: 1280px) {
+            .guest-hero-side {
+                max-width: 11rem;
+            }
+            .guest-cms-img--hero-side {
+                max-height: 12rem;
+            }
+        }
+        .guest-cms-img--about {
+            width: 100%;
+            max-width: 36rem;
+            aspect-ratio: 4 / 3;
+            max-height: 440px;
+            object-fit: cover;
+        }
+        .guest-cms-img--about-collage {
+            width: 100%;
+            max-width: 17.5rem;
+            aspect-ratio: 3 / 4;
+            max-height: 360px;
+            object-fit: cover;
+        }
+        .guest-cms-img--faq {
+            width: 100%;
+            max-width: 528px;
+            aspect-ratio: 4 / 3;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .guest-cms-img--blog-thumb {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            max-height: 10rem;
+            object-fit: cover;
+            border-radius: 0.375rem;
+        }
+        .guest-cms-img--blog-feature {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            max-height: 22rem;
+            object-fit: cover;
+            border-radius: 0.375rem;
+        }
+        .guest-cms-img--newsletter {
+            display: block;
+            width: auto;
+            max-width: 100%;
+            max-height: 340px;
+            margin-inline: auto;
+            object-fit: contain;
+        }
+        .guest-cms-img--gallery-slide {
+            width: 100%;
+            height: 16rem;
+            max-height: 20rem;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        @media (min-width: 640px) {
+            .guest-cms-img--gallery-slide {
+                height: 20rem;
+            }
+        }
     </style>
 </head>
 <body data-ascent-assets="{{ asset('ascent/assets') }}">

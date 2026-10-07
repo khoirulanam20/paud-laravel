@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Services\SekolahProvisioningService;
+use App\Support\GuestCms;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -18,7 +19,9 @@ class SekolahRegistrationController extends Controller
 
     public function create(): View
     {
-        return view('guest.daftar-sekolah');
+        $cms = GuestCms::data();
+
+        return view('guest.daftar-sekolah', compact('cms'));
     }
 
     public function store(Request $request): RedirectResponse

@@ -11,7 +11,7 @@
         @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-guest-stagger>
-            @foreach(GuestFeatures::pillars() as $i => $pillar)
+            @foreach(GuestFeatures::pillars($cms ?? []) as $i => $pillar)
             @php $blobs = ['var(--guest-blob-pink)', 'var(--guest-blob-yellow)', 'var(--guest-blob-blue)']; @endphp
             <div class="guest-card flex flex-col h-full" data-guest-hover data-guest-stagger-item>
                 <div class="guest-service-blob guest-service-blob-lg mb-4" style="background: {{ $blobs[$i % 3] }}; margin-left: 0;">

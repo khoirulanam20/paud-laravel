@@ -45,7 +45,10 @@
     <div class="container">
         <div class="max-w-[546px] mx-auto text-center">
             <p class="text-secondary-foreground font-bubblegum-sans text-[19px]">Kontak</p>
-            <h2 id="contact-form-heading" class="font-bold lg:text-[32px] md:text-[28px] text-2xl lg:leading-[130%] wow fadeInUp" data-wow-delay=".3s">Minta demo &amp; penawaran</h2>
+            <h2 id="contact-form-heading" class="font-bold lg:text-[32px] md:text-[28px] text-2xl lg:leading-[130%] wow fadeInUp" data-wow-delay=".3s">{{ $cms['contact_form_h2'] ?? 'Minta demo & penawaran' }}</h2>
+            @if(!empty($cms['contact_form_lead']))
+                <p class="mt-3 text-muted-foreground wow fadeInUp" data-wow-delay=".4s">{{ $cms['contact_form_lead'] }}</p>
+            @endif
         </div>
         <div class="mt-15">
             <div class="grid lg:grid-cols-2 grid-cols-1 items-center gap-7.5">

@@ -23,7 +23,7 @@
             <div class="swiper-wrapper">
                 @foreach($items as $item)
                 <div class="swiper-slide">
-                    <img src="{{ $item['url'] }}" alt="{{ $item['alt'] }}" class="w-full h-64 sm:h-80 object-cover rounded-[10px]" loading="lazy" decoding="async">
+                    <img src="{{ $item['url'] }}" alt="{{ $item['alt'] }}" class="guest-cms-img--gallery-slide" loading="lazy" decoding="async">
                 </div>
                 @endforeach
             </div>

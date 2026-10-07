@@ -15,7 +15,7 @@
             <div class="py-10">
                 <div class="swiper testimonial-swiper max-w-[630px] w-full ml-auto mr-0">
                     <div class="swiper-wrapper">
-                        @foreach(GuestFeatures::testimonials() as $review)
+                        @foreach(GuestFeatures::testimonials($cms) as $review)
                         <div class="swiper-slide">
                             <article class="lg:p-10 sm:p-8 py-8 sm:py-0 sm:-mr-10">
                                 <div class="bg-background border border-[#F2F2F2] lg:p-10 p-5 max-w-[630px] w-full rounded-[10px] ml-auto shadow-[0px_0px_60px_0px_rgba(0,0,0,0.05)]">

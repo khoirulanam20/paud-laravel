@@ -1,4 +1,4 @@
-@props(['title', 'breadcrumbLabel' => null])
+@props(['title', 'breadcrumbLabel' => null, 'subtitle' => null])
 @php
     use App\Support\GuestAscent;
     $crumbLabel = $breadcrumbLabel ?? $title;
@@ -9,6 +9,9 @@
             <div class="flex md:flex-row flex-col justify-between items-center gap-10">
                 <div>
                     <h1 class="xl:text-[70px] lg:text-6xl md:text-5xl text-4xl font-bold leading-[117%]">{{ $title }}</h1>
+                    @if($subtitle)
+                        <p class="lg:pt-4 pt-3 max-w-xl text-muted-foreground">{{ $subtitle }}</p>
+                    @endif
                     <ul class="lg:pt-5 pt-3 flex items-center lg:gap-5 gap-2" aria-label="Breadcrumb">
                         <li>
                             <a href="{{ route('guest.beranda') }}" class="lg:text-[28px] text-xl font-bold hover:text-primary-foreground transition-colors">Beranda</a>

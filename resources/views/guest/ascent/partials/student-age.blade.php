@@ -6,9 +6,9 @@
                 <div>
                     <div class="lg:max-w-[460px]">
                         <p class="text-secondary-foreground font-bubblegum-sans text-[19px] wow fadeInUp">Usia peserta didik</p>
-                        <h2 id="student-age-heading" class="font-bold lg:text-[32px] text-2xl lg:leading-[130%] wow fadeInUp" data-wow-delay=".3s">{{ \App\Support\GuestBrand::name() }} mendukung pengelolaan PAUD dan jenjang usia dini</h2>
+                        <h2 id="student-age-heading" class="font-bold lg:text-[32px] text-2xl lg:leading-[130%] wow fadeInUp" data-wow-delay=".3s">{{ $cms['section_student_age_title'] }}</h2>
                     </div>
-                    <p class="pt-5 pb-7.5 wow fadeInUp" data-wow-delay=".4s">Kelola kelompok usia, rombel, dan perkembangan anak dengan data yang rapi dan mudah diakses guru serta orang tua.</p>
+                    <p class="pt-5 pb-7.5 wow fadeInUp" data-wow-delay=".4s">{{ $cms['section_student_age_text'] }}</p>
                     <a href="{{ route('guest.tentang') }}" class="btn-rounded-full bg-destructive hover:border-destructive hover:text-destructive-foreground wow fadeInUp" data-wow-delay=".5s">Pelajari Lebih Lanjut</a>
                 </div>
                 <div class="relative flex justify-center flex-wrap sm:flex-nowrap lg:justify-between md:gap-7.5 sm:gap-4 gap-3" aria-hidden="true">

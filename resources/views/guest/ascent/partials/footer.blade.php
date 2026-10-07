@@ -48,6 +48,14 @@
                         </p>
                     </li>
                     @endif
+                    @if(!empty($cms['kontak_jam']))
+                    <li>
+                        <p class="text-[#686868] flex items-center gap-4">
+                            <span class="w-11 h-11 rounded-full border border-gray-200 flex justify-center items-center text-green-foreground shrink-0"><i class="fa-regular fa-clock"></i></span>
+                            <span>{{ $cms['kontak_jam'] }}</span>
+                        </p>
+                    </li>
+                    @endif
                 </ul>
             </div>
         </div>

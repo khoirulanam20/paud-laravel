@@ -7,7 +7,7 @@
             <p class="mt-3 text-white/80 max-w-xl mx-auto">Cerita dari admin sekolah, lembaga, dan orang tua yang memakai {{ \App\Support\GuestBrand::NAME }}.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8" data-guest-stagger>
-            @foreach(GuestFeatures::testimonials() as $review)
+            @foreach(GuestFeatures::testimonials($cms ?? []) as $review)
             <div data-guest-stagger-item>
                 <div class="guest-speech-bubble mb-6">
                     <h3 class="font-bold text-[var(--guest-text)] guest-heading text-lg mb-2">{{ $review['title'] }}</h3>

@@ -1,10 +1,16 @@
 @php
-    use App\Support\GuestBrand;
-    $metaDesc = 'Fitur lengkap '.GuestBrand::NAME.' — portal orang tua, operasional sekolah, keuangan PSAK, presensi, dan asisten AI.';
+    use App\Support\GuestSeo;
+    $pageSeo = GuestSeo::forInnerPage(
+        $cms,
+        'fasilitas',
+        'Fitur',
+        route('guest.fasilitas'),
+        $cms['seo_fasilitas_description'] ?? '',
+    );
 @endphp
-<x-guest-ascent :cms="$cms" title="Fitur" :metaDesc="$metaDesc" :canonical="route('guest.fasilitas')">
+<x-guest-ascent :cms="$cms" title="Fitur" :metaDesc="$pageSeo['description']" :canonical="route('guest.fasilitas')">
     @include('guest.ascent.partials.page-hero', [
-        'title' => 'Fitur',
+        'title' => $pageSeo['h1'],
         'breadcrumbLabel' => 'Fitur',
     ])
     @include('guest.ascent.partials.services-page', ['cms' => $cms])

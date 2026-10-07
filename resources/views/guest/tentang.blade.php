@@ -1,10 +1,16 @@
 @php
-    use App\Support\GuestBrand;
-    $metaDesc = 'Kenali '.GuestBrand::NAME.' — platform PAUD yang menghubungkan orang tua dan sekolah, mempermudah operasional, didukung AI.';
+    use App\Support\GuestSeo;
+    $pageSeo = GuestSeo::forInnerPage(
+        $cms,
+        'tentang',
+        'Tentang Kami',
+        route('guest.tentang'),
+        $cms['seo_tentang_description'] ?? '',
+    );
 @endphp
-<x-guest-ascent :cms="$cms" title="Tentang" :metaDesc="$metaDesc" :canonical="route('guest.tentang')">
+<x-guest-ascent :cms="$cms" title="Tentang" :metaDesc="$pageSeo['description']" :canonical="route('guest.tentang')">
     @include('guest.ascent.partials.page-hero', [
-        'title' => 'Tentang Kami',
+        'title' => $pageSeo['h1'],
         'breadcrumbLabel' => 'Tentang',
     ])
     @include('guest.ascent.partials.about', ['cms' => $cms, 'pageLayout' => true, 'showLearnMore' => false])

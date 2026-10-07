@@ -1,8 +1,9 @@
+@php $cms = $cms ?? \App\Support\GuestCms::data(); @endphp
 <x-guest-layout>
     <div class="max-w-3xl mx-auto py-10 px-4">
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-[#2C2C2C]">Daftarkan Lembaga Anda</h1>
-            <p class="text-sm text-[#6B6560] mt-2">Isi formulir di bawah. Tim kami akan meninjau pendaftaran sebelum akun diaktifkan.</p>
+            <h1 class="text-2xl font-bold text-[#2C2C2C]">{{ $cms['page_daftar_lembaga_h1'] }}</h1>
+            <p class="text-sm text-[#6B6560] mt-2">{{ $cms['page_daftar_lembaga_intro'] }}</p>
         </div>
 
         @if($errors->any())

@@ -11,7 +11,7 @@
             <p class="mt-3 text-muted-foreground wow fadeInUp" data-wow-delay=".3s">Bukan sekadar banyak fitur — {{ GuestBrand::name() }} fokus menghubungkan orang tua, mempermudah kerja tim sekolah, dan mengotomasi pekerjaan rutin dengan AI.</p>
         </div>
         <div class="grid lg:grid-cols-3 grid-cols-1 gap-7.5 lg:pt-15 pt-10">
-            @foreach(GuestFeatures::pillars() as $i => $pillar)
+            @foreach(GuestFeatures::pillars($cms ?? []) as $i => $pillar)
             <article class="rounded-[10px] bg-background border-2 border-[#F2F2F2] lg:p-8 p-6 flex flex-col h-full group/card hover:shadow-3xl hover:border-transparent transition-all duration-500 wow fadeInUp" data-wow-delay="{{ number_format(0.3 + ($i * 0.1), 1) }}s">
                 <div class="w-16 h-16 rounded-[10px] border border-[#F2F2F2] flex items-center justify-center text-green-foreground group-hover/card:bg-green group-hover/card:text-cream-foreground transition-all duration-500">
                     <i class="{{ $pillarIcons[$i % 3] }} text-4xl" aria-hidden="true"></i>

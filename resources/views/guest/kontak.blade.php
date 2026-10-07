@@ -1,10 +1,16 @@
 @php
-    use App\Support\GuestBrand;
-    $metaDesc = 'Hubungi tim '.GuestBrand::NAME.' untuk demo, penawaran, dan konsultasi implementasi platform PAUD Anda.';
+    use App\Support\GuestSeo;
+    $pageSeo = GuestSeo::forInnerPage(
+        $cms,
+        'kontak',
+        'Hubungi Kami',
+        route('guest.kontak'),
+        $cms['seo_kontak_description'] ?? '',
+    );
 @endphp
-<x-guest-ascent :cms="$cms" title="Kontak" :metaDesc="$metaDesc" :canonical="route('guest.kontak')">
+<x-guest-ascent :cms="$cms" title="Kontak" :metaDesc="$pageSeo['description']" :canonical="route('guest.kontak')">
     @include('guest.ascent.partials.page-hero', [
-        'title' => 'Hubungi Kami',
+        'title' => $pageSeo['h1'],
         'breadcrumbLabel' => 'Kontak',
     ])
     @include('guest.ascent.partials.contact', ['cms' => $cms])

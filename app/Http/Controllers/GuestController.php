@@ -40,9 +40,10 @@ class GuestController extends Controller
 
     public function pendaftaran()
     {
+        $cms = GuestCms::data();
         $sekolahs = Sekolah::active()->orderBy('name')->get();
 
-        return view('guest.pendaftaran', compact('sekolahs'));
+        return view('guest.pendaftaran', compact('cms', 'sekolahs'));
     }
 
     public function kontak()
