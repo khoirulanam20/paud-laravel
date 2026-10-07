@@ -1,6 +1,6 @@
 @props([
     'title' => 'Siap Digitalisasi PAUD Anda?',
-    'subtitle' => 'Hubungi tim kami untuk demo platform SIPP dan konsultasi kebutuhan sekolah Anda.',
+    'subtitle' => 'Hubungi tim kami untuk demo platform '.\App\Support\GuestBrand::NAME.' dan konsultasi kebutuhan sekolah Anda.',
     'primaryLabel' => 'Hubungi untuk Demo',
     'primaryRoute' => 'guest.kontak',
     'secondaryLabel' => 'Masuk',

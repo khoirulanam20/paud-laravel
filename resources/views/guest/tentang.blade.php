@@ -1,6 +1,6 @@
 <x-guest-public :cms="$cms" title="Tentang">
     @include('guest.partials.page-header', [
-        'badge' => 'Tentang SIPP',
+        'badge' => 'Tentang '. \App\Support\GuestBrand::NAME,
         'title' => $cms['about_title'] ?? 'Tentang Platform Kami',
         'subtitle' => 'Platform yang menghubungkan orang tua dan sekolah, mempermudah operasional, didukung AI.',
     ])
@@ -10,7 +10,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div data-guest-animate="fade-up">
                     <div class="text-[var(--guest-text-muted)] leading-relaxed space-y-4">
-                        {!! nl2br(e($cms['about_text'] ?? 'SIPP hadir untuk tiga hal penting: menjembatani komunikasi orang tua dan sekolah secara transparan, menyederhanakan operasional harian tim admin dan guru, serta memanfaatkan AI untuk mengurangi pekerjaan dokumentasi yang repetitif.')) !!}
+                        {!! nl2br(e($cms['about_text'] ?? \App\Support\GuestBrand::NAME.' hadir untuk tiga hal penting: menjembatani komunikasi orang tua dan sekolah secara transparan, menyederhanakan operasional harian tim admin dan guru, serta memanfaatkan AI untuk mengurangi pekerjaan dokumentasi yang repetitif.')) !!}
                     </div>
                     <div class="mt-8 flex flex-wrap gap-3">
                         <a href="{{ route('guest.kontak') }}" class="guest-btn guest-btn-primary cursor-pointer">Minta Demo</a>
@@ -19,7 +19,7 @@
                 </div>
                 <div data-guest-animate="fade-up">
                     @if(!empty($cms['about_photo']))
-                        <img src="{{ Storage::url($cms['about_photo']) }}" alt="Tentang SIPP" class="w-full rounded-3xl object-cover aspect-[4/3]">
+                        <img src="{{ Storage::url($cms['about_photo']) }}" alt="Tentang {{ \App\Support\GuestBrand::NAME }}" class="w-full rounded-3xl object-cover aspect-[4/3]">
                     @else
                         <div class="guest-card p-8 text-center">
                             @include('guest.partials.illustration', [

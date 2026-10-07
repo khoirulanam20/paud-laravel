@@ -14,7 +14,7 @@
             <div class="text-center lg:text-left">
                 <span class="guest-badge mb-5" data-guest-animate="hero">Ortu · Sekolah · AI</span>
                 <h1 class="text-2xl sm:text-4xl md:text-5xl guest-heading leading-tight text-[var(--guest-text)]" data-guest-animate="hero">
-                    {{ $cms['hero_title'] ?? 'Sistem Informasi PAUD Terpadu (SIPP)' }}
+                    {{ $cms['hero_title'] ?? 'Sistem Informasi PAUD Terpadu ('.\App\Support\GuestBrand::NAME.')' }}
                 </h1>
                 <p class="mt-5 text-base sm:text-lg leading-relaxed text-[var(--guest-text-muted)] max-w-xl mx-auto lg:mx-0" data-guest-animate="hero">
                     {{ $cms['hero_subtitle'] ?? 'Menghubungkan orang tua dan sekolah, mempermudah operasional internal, dan mengotomasi pekerjaan rutin dengan AI dalam satu platform PAUD.' }}
@@ -35,12 +35,12 @@
             </div>
             <div class="flex justify-center lg:justify-end" data-guest-animate="hero">
                 @if(!empty($cms['hero_photo']))
-                    <img src="{{ Storage::url($cms['hero_photo']) }}" alt="SIPP Dashboard" class="w-full max-w-lg rounded-3xl object-cover" style="aspect-ratio: 4/3;">
+                    <img src="{{ Storage::url($cms['hero_photo']) }}" alt="Dashboard {{ \App\Support\GuestBrand::NAME }}" class="w-full max-w-lg rounded-3xl object-cover" style="aspect-ratio: 4/3;">
                 @else
                     <div class="w-full max-w-lg rounded-3xl p-6 bg-white border overflow-hidden" style="border-color: var(--guest-border);">
                         @include('guest.partials.illustration', [
                             'name' => 'placeholder.hero',
-                            'alt' => 'SIPP Dashboard',
+                            'alt' => 'Dashboard '.\App\Support\GuestBrand::NAME,
                             'class' => 'guest-illustration guest-illustration-hero mx-auto',
                             'eager' => true,
                         ])

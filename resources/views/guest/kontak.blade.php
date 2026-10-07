@@ -2,7 +2,7 @@
 <x-guest-public :cms="$cms" title="Kontak">
     @include('guest.partials.page-header', [
         'badge' => 'Hubungi Kami',
-        'title' => 'Minta Demo & Penawaran SIPP',
+        'title' => 'Minta Demo & Penawaran '.\App\Support\GuestBrand::NAME,
         'subtitle' => 'Isi formulir di bawah — permintaan akan dibuka langsung di WhatsApp kami.',
     ])
 

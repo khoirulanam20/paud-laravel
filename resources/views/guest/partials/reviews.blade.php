@@ -4,7 +4,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-8">
         <div class="text-center mb-10 md:mb-14" data-guest-animate="fade-up">
             <h2 class="text-3xl sm:text-4xl guest-heading text-white">Apa Kata Pengguna</h2>
-            <p class="mt-3 text-white/80 max-w-xl mx-auto">Cerita dari admin sekolah, lembaga, dan orang tua yang memakai SIPP.</p>
+            <p class="mt-3 text-white/80 max-w-xl mx-auto">Cerita dari admin sekolah, lembaga, dan orang tua yang memakai {{ \App\Support\GuestBrand::NAME }}.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8" data-guest-stagger>
             @foreach(GuestFeatures::testimonials() as $review)

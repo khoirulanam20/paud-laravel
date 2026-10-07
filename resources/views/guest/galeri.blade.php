@@ -1,7 +1,7 @@
 <x-guest-public :cms="$cms" title="Galeri">
     @include('guest.partials.page-header', [
         'badge' => 'Galeri Produk',
-        'title' => 'Tampilan Antarmuka SIPP',
+        'title' => 'Tampilan Antarmuka '.\App\Support\GuestBrand::NAME,
         'subtitle' => 'Cuplikan dashboard dan modul yang digunakan sehari-hari oleh lembaga, admin, pengajar, dan orang tua.',
     ])
 
@@ -26,7 +26,7 @@
                         class="overflow-hidden rounded-3xl aspect-square cursor-pointer group focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white"
                         style="--tw-ring-color: var(--guest-sage);"
                         data-guest-stagger-item>
-                    <img src="{{ Storage::url($photo) }}" alt="Screenshot SIPP"
+                    <img src="{{ Storage::url($photo) }}" alt="Screenshot {{ \App\Support\GuestBrand::NAME }}"
                          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
                 </button>
                 @endforeach

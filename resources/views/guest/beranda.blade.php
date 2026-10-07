@@ -1,15 +1,12 @@
-<x-guest-public :cms="$cms" title="Beranda">
-    @include('guest.partials.hero', ['cms' => $cms])
-    @include('guest.partials.about-snippet', ['cms' => $cms])
-    @include('guest.partials.services-grid', ['cms' => $cms, 'title' => 'Layanan SIPP', 'subtitle' => 'Empat pilar yang mendukung operasional PAUD Anda setiap hari.'])
-    @include('guest.partials.reviews')
-    @include('guest.partials.onboarding')
-
-   
-
-
-    @include('guest.partials.cta-banner', [
-        'tertiaryLabel' => 'Daftar Sekolah Gratis',
-        'tertiaryRoute' => 'guest.daftar-sekolah',
-    ])
-</x-guest-public>
+<x-guest-ascent :cms="$cms" title="Beranda">
+    @include('guest.ascent.partials.banner', ['cms' => $cms])
+    @include('guest.ascent.partials.stats', ['cms' => $cms])
+    @include('guest.ascent.partials.about', ['cms' => $cms])
+    @include('guest.ascent.partials.programs', ['cms' => $cms])
+    @include('guest.ascent.partials.services', ['cms' => $cms])
+    @include('guest.ascent.partials.faq', ['cms' => $cms])
+    @include('guest.ascent.partials.student-age', ['cms' => $cms])
+    @include('guest.ascent.partials.testimonials', ['cms' => $cms])
+    @include('guest.ascent.partials.blog', ['cms' => $cms])
+    @include('guest.ascent.partials.newsletter', ['cms' => $cms])
+</x-guest-ascent>

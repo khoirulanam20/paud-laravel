@@ -22,11 +22,11 @@ final class GuestWhatsApp
 
     public static function demoIntro(): string
     {
-        return 'Halo, saya ingin bertanya tentang SIPP PAUD.';
+        return 'Halo, saya ingin bertanya tentang '.GuestBrand::NAME.'.';
     }
 
     public static function demoRequest(string $nama, string $email, string $pesan): string
     {
-        return "Halo SIPP, saya ingin minta demo.\n\nNama: {$nama}\nEmail: {$email}\n\n{$pesan}";
+        return 'Halo '.GuestBrand::NAME.", saya ingin minta demo.\n\nNama: {$nama}\nEmail: {$email}\n\n{$pesan}";
     }
 }

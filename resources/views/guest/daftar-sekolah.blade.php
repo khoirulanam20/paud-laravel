@@ -19,7 +19,7 @@
                     <div class="guest-card p-6 text-center lg:text-left" data-guest-stagger-item>
                         @include('guest.partials.illustration', [
                             'name' => 'placeholder.hero',
-                            'alt' => 'SIPP untuk sekolah',
+                            'alt' => \App\Support\GuestBrand::NAME.' untuk sekolah',
                             'class' => 'guest-illustration guest-illustration-hero mx-auto lg:mx-0 mb-4',
                         ])
                         <h2 class="text-lg guest-heading font-bold text-[var(--guest-text)]">Satu platform untuk seluruh operasional PAUD</h2>

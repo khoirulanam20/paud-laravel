@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/guest.css',
                 'resources/js/app.js',
                 'resources/js/guest.js',
+                'resources/js/guest-ascent.js',
                 'resources/js/tour.js',
                 'resources/js/kegiatan-calendar.js',
             ],

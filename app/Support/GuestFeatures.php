@@ -11,8 +11,21 @@ final class GuestFeatures
     {
         return [
             ['value' => 'Real-time', 'label' => 'Transparansi ortu–sekolah'],
-            ['value' => 'Mudah', 'label' => 'Memudahkan operasional'],
-            ['value' => 'AI', 'label' => 'Asisten cerdas bawaan'],
+            ['value' => 'Terpadu', 'label' => 'Satu platform operasional'],
+            ['value' => 'Mudah', 'label' => 'Memudahkan admin & guru'],
+        ];
+    }
+
+    /**
+     * @return list<array{icon: string, icon_color: string, value: string, label: string}>
+     */
+    public static function landingValues(): array
+    {
+        return [
+            ['icon' => 'icon-kindergarden', 'icon_color' => 'text-destructive-foreground', 'value' => 'Real-time', 'label' => 'Transparansi ortu–sekolah'],
+            ['icon' => 'icon-book', 'icon_color' => 'text-secondary-foreground', 'value' => 'Terpadu', 'label' => 'Satu platform operasional'],
+            ['icon' => 'icon-blocks', 'icon_color' => 'text-primary-foreground', 'value' => 'Mudah', 'label' => 'Memudahkan admin & guru'],
+            ['icon' => 'icon-baby-body', 'icon_color' => 'text-green-foreground', 'value' => 'Aman', 'label' => 'Data sekolah terkelola'],
         ];
     }
 

@@ -1,12 +1,19 @@
-@php use App\Support\GuestWhatsApp; @endphp
-@props(['cms' => [], 'title' => 'SIPP', 'metaDesc' => ''])
+@props(['cms' => [], 'title' => null, 'metaDesc' => '', 'canonical' => null])
+@php
+    use App\Support\GuestBrand;
+    use App\Support\GuestSeo;
+    use App\Support\GuestWhatsApp;
+    $brand = GuestBrand::name();
+    $pageTitle = $title ?? $brand;
+    $pageDesc = $metaDesc ?: $brand.' — Sistem Informasi PAUD Terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
+    $canonicalUrl = $canonical ?? url()->current();
+@endphp
 <!DOCTYPE html>
 <html lang="id" class="guest-site scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="{{ $metaDesc ?: 'SIPP — Sistem Informasi PAUD Terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.' }}">
-    <title>{{ $title }} — SIPP PAUD Manager</title>
+    <x-guest-seo-head :cms="$cms" :page-title="$pageTitle" :meta-description="$pageDesc" :canonical="$canonicalUrl" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     @vite(['resources/css/guest.css', 'resources/js/guest.js'])
@@ -21,7 +28,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                     </svg>
                 </div>
-                <span class="text-xl guest-heading" style="color: var(--guest-sage-dark);">SIPP</span>
+                <span class="text-lg sm:text-xl guest-heading" style="color: var(--guest-sage-dark);">{{ $brand }}</span>
             </a>
 
             <div class="hidden md:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
@@ -85,7 +92,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                             </svg>
                         </div>
-                        <span class="text-xl guest-heading text-[var(--guest-text)]">SIPP</span>
+                        <span class="text-lg sm:text-xl guest-heading text-[var(--guest-text)]">{{ $brand }}</span>
                     </div>
                     <p class="text-sm leading-relaxed">{{ $cms['footer_text'] ?? 'Platform manajemen PAUD terpadu untuk lembaga multi-cabang di Indonesia.' }}</p>
                 </div>
@@ -117,7 +124,7 @@
             </div>
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mt-6">
                 <div class="text-center sm:text-left">
-                    <p>© {{ date('Y') }} SIPP PAUD Manager</p>
+                    <p>© {{ date('Y') }} {{ $brand }}</p>
                     <p class="mt-1 opacity-80">Illustrations by <a href="https://storyset.com/education" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--guest-sage-dark)]">Storyset</a></p>
                 </div>
                 <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">

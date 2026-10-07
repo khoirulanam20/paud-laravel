@@ -48,6 +48,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Guest\LembagaRegistrationController;
 use App\Http\Controllers\Guest\SekolahRegistrationController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\GuestSitemapController;
 use App\Http\Controllers\Lembaga\AdminSekolahController;
 use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranController;
 use App\Http\Controllers\Lembaga\SchoolSwitcherController;
@@ -83,6 +84,7 @@ use Illuminate\Support\Facades\Route;
 // ─────────────────────────────────────────────
 // PUBLIC GUEST ROUTES
 // ─────────────────────────────────────────────
+Route::get('/sitemap.xml', [GuestSitemapController::class, 'index'])->name('guest.sitemap');
 Route::get('/', [GuestController::class, 'beranda'])->name('guest.beranda');
 Route::get('/tentang', [GuestController::class, 'tentang'])->name('guest.tentang');
 Route::get('/fasilitas', [GuestController::class, 'fasilitas'])->name('guest.fasilitas');

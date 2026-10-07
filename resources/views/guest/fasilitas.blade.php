@@ -1,6 +1,6 @@
 <x-guest-public :cms="$cms" title="Fitur">
     @include('guest.partials.page-header', [
-        'badge' => 'Fitur SIPP',
+        'badge' => 'Fitur '.\App\Support\GuestBrand::NAME,
         'title' => 'Tiga Pilar yang Menyatukan Sekolah',
         'subtitle' => 'Penghubung orang tua–sekolah, operasional internal yang efisien, dan kemudahan berkat AI.',
     ])
