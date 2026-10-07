@@ -88,24 +88,77 @@
         .guest-daftar-dropdown.is-open .guest-daftar-chevron {
             transform: rotate(180deg);
         }
-        /* ponytail: batas ukuran upload CMS per section layout Ascent */
-        .guest-hero-side {
+        /* ponytail: hero fullscreen + frame ring mengikuti ukuran img (bukan h-full + pb template painting) */
+        .guest-hero-section {
+            box-sizing: border-box;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            padding: 5.5rem 0 2rem;
+        }
+        .guest-hero-container {
             width: 100%;
-            max-width: 9.5rem;
+            min-height: min(32rem, 72vh);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .guest-hero-side-left,
+        .guest-hero-side-right {
+            position: absolute;
+            z-index: 1;
+        }
+        .guest-hero-side-left {
+            left: 0.625rem;
+            top: 14%;
+        }
+        .guest-hero-side-right {
+            right: 0;
+            bottom: 12%;
+        }
+        .guest-hero-side-frame {
+            position: relative;
+            display: inline-block;
+            width: 8.75rem;
+            max-width: 36vw;
+        }
+        .guest-hero-side-ring {
+            position: absolute;
+            left: -0.625rem;
+            top: 0.5625rem;
+            width: 100%;
+            height: 100%;
+            border-width: 2px;
+            border-style: solid;
+            border-radius: 125px;
+            pointer-events: none;
         }
         .guest-cms-img--hero-side {
             display: block;
             width: 100%;
             height: auto;
-            max-height: 10.5rem;
+            max-height: 8.75rem;
             object-fit: contain;
         }
-        @media (min-width: 1280px) {
-            .guest-hero-side {
-                max-width: 11rem;
+        @media (min-width: 1024px) {
+            .guest-hero-side-left {
+                top: 12%;
+            }
+            .guest-hero-side-right {
+                bottom: 10%;
+            }
+            .guest-hero-side-frame {
+                width: 10rem;
+            }
+            .guest-hero-side-frame--right {
+                width: 11rem;
             }
             .guest-cms-img--hero-side {
-                max-height: 12rem;
+                max-height: 10rem;
+            }
+            .guest-cms-img--hero-side-right {
+                max-height: 11rem;
             }
         }
         .guest-cms-img--about {
