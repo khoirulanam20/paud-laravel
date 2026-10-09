@@ -14,7 +14,7 @@
                     '@type' => 'Organization',
                     'name' => $brand,
                     'url' => url('/'),
-                    'logo' => asset('images/brand/scandinavian-logo.png'),
+                    'logo' => asset('images/logo/logo.png'),
                     'description' => $cms['footer_text'] ?? '',
                     'email' => $cms['kontak_email'] ?? null,
                     'telephone' => $cms['kontak_telepon'] ?? null,
@@ -56,7 +56,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <x-guest-seo-head :cms="$cms" :page-title="$seo['title']" :meta-description="$seo['description']"
         :canonical="$seo['canonical']" :og-image-url="$seo['og_image_url']" :json-ld="$jsonLd" />
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 
     <!-- Fonts: EB Garamond & Plus Jakarta Sans + Material Symbols -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

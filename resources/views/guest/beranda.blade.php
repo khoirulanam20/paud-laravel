@@ -361,8 +361,8 @@
                                     <h3 class="text-base sm:text-lg font-semibold text-text-primary leading-snug">
                                         {{ $faq['q'] }}
                                     </h3>
-                                    <div class="w-8 h-8 rounded-full bg-surface-mint flex items-center justify-center shrink-0 text-forest-deep transition-transform duration-200"
-                                        :class="activeFaq === {{ $i }} ? 'rotate-180 bg-forest-deep text-white' : ''">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200"
+                                        :class="activeFaq === {{ $i }} ? 'rotate-180 bg-forest-deep text-white' : 'bg-surface-mint text-forest-deep'">
                                         <span class="material-symbols-outlined text-[18px]">expand_more</span>
                                     </div>
                                 </button>

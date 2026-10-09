@@ -16,6 +16,7 @@
     $ogImage = $ogImageUrl ?? $seo['og_image_url'];
     $fullTitle = str_contains($title, GuestBrand::NAME) ? $title : $title.' | '.GuestBrand::NAME;
 @endphp
+<x-guest-favicon />
 <title>{{ $fullTitle }}</title>
 <meta name="description" content="{{ Str::limit(strip_tags($description), 320, '') }}">
 <meta name="robots" content="index,follow">
