@@ -200,7 +200,6 @@ final class GuestCms
             'kontak_cta_title' => CmsContent::get('kontak_cta_title', 'Mulai registrasi lembaga Anda'),
             'kontak_cta_body' => CmsContent::get('kontak_cta_body', 'Langkah awal digitalisasi yang didampingi tim kami  dari onboarding hingga portal orang tua aktif.'),
             'nav_label_features' => CmsContent::get('nav_label_features', 'Fitur'),
-            'auth_brand_tagline' => CmsContent::get('auth_brand_tagline', 'Sistem operasional & portal orang tua untuk PAUD'),
             'auth_highlight_1_title' => CmsContent::get('auth_highlight_1_title', 'Portal orang tua real-time'),
             'auth_highlight_1_desc' => CmsContent::get('auth_highlight_1_desc', 'Presensi, kegiatan, monev, dan pembayaran  langsung dari ponsel.'),
             'auth_highlight_2_title' => CmsContent::get('auth_highlight_2_title', 'Operasional terpusat'),

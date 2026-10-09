@@ -374,7 +374,6 @@
             <div class="card overflow-hidden">
                 <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06); background:#FFFBF0;"><h3 class="section-title">Masuk &amp; pendaftaran (sidebar)</h3></div>
                 <div class="px-6 py-6 space-y-4">
-                    <input type="text" name="auth_brand_tagline" value="{{ $cms['auth_brand_tagline'] }}" class="input-field" placeholder="Tagline di bawah logo auth">
                     @foreach([1,2,3] as $hi)
                     <div class="grid sm:grid-cols-2 gap-2">
                         <input type="text" name="auth_highlight_{{ $hi }}_title" value="{{ $cms['auth_highlight_'.$hi.'_title'] }}" class="input-field text-sm" placeholder="Highlight {{ $hi }} judul">

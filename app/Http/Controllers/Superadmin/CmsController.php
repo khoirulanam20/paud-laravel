@@ -68,7 +68,6 @@ class CmsController extends Controller
         'student_age_4_kicker', 'student_age_4_range', 'student_age_4_desc',
         'page_kontak_hero_lead', 'kontak_cta_eyebrow', 'kontak_cta_title', 'kontak_cta_body',
         'nav_label_features',
-        'auth_brand_tagline',
         'auth_highlight_1_title', 'auth_highlight_1_desc', 'auth_highlight_2_title', 'auth_highlight_2_desc',
         'auth_highlight_3_title', 'auth_highlight_3_desc', 'auth_quote',
     ];

@@ -201,15 +201,10 @@
                 <img src="{{ asset('images/logo/logo.png') }}" alt="{{ $brand }}"
                     class="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105"
                     onerror="this.style.display='none'">
-                <div class="flex flex-col">
-                    <span
-                        class="font-serif text-xl sm:text-2xl font-bold text-forest-deep tracking-tight leading-none group-hover:text-forest-mid transition-colors">
-                        {{ $brand }}
-                    </span>
-                    <span class="text-[10px] font-semibold text-text-secondary tracking-widest uppercase mt-0.5">
-                        {{ $cms['auth_brand_tagline'] ?? 'Sistem operasional & portal orang tua untuk PAUD' }}
-                    </span>
-                </div>
+                <span
+                    class="font-serif text-xl sm:text-2xl font-bold text-forest-deep tracking-tight leading-none group-hover:text-forest-mid transition-colors">
+                    {{ $brand }}
+                </span>
             </a>
             <div class="flex items-center gap-2 sm:gap-3">
                 <a href="{{ route('guest.beranda') }}"
