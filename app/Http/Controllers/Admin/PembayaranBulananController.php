@@ -388,7 +388,7 @@ class PembayaranBulananController extends Controller
 
         return redirect()
             ->route('admin.pembayaran-bulanan.show', $pembayaran)
-            ->with('success', 'Pelunasan dibatalkan. Tagihan kembali Menunggu — bisa dihapus dari daftar jika perlu.');
+            ->with('success', 'Pelunasan dibatalkan. Tagihan kembali Menunggu  bisa dihapus dari daftar jika perlu.');
     }
 
     /** @return list<string> */

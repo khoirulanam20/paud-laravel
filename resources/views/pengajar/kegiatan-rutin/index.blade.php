@@ -168,7 +168,7 @@
                                                     data-anak-id="{{ $anak->id }}"
                                                     data-master-id="{{ $master->id }}"
                                                     class="input-field w-full text-xs py-1.5 {{ $currentStatus ? 'border-[#D0E8E8]' : '' }}">
-                                                    <option value="">—</option>
+                                                    <option value=""></option>
                                                     @foreach($statusOptions as $status)
                                                         <option value="{{ $status }}" @selected($currentStatus === $status)>{{ $status }}</option>
                                                     @endforeach

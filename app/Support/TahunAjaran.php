@@ -52,7 +52,7 @@ class TahunAjaran
     {
         $namaSem = $semester === 1 ? 'Semester 1 (Jul–Des)' : 'Semester 2 (Jan–Jun)';
 
-        return "TA {$tahunAjaran} — {$namaSem}";
+        return "TA {$tahunAjaran}  {$namaSem}";
     }
 
     /** @return list<string> */

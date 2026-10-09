@@ -160,7 +160,7 @@
                             <div>
                                 <label class="input-label">Pendidikan terakhir</label>
                                 <select name="pendidikan" class="input-field" x-model="editData.pendidikan">
-                                    <option value="">— Pilih —</option>
+                                    <option value=""> Pilih </option>
                                     @foreach($pendidikanOptions as $opt)
                                         <option value="{{ $opt }}">{{ $opt }}</option>
                                     @endforeach

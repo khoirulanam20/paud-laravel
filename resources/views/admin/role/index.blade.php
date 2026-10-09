@@ -170,7 +170,7 @@
                 <form :action="`/admin/role/${permissionData.id}/update-permissions`" method="POST">
                     @csrf
                     <div class="modal-header">
-                        <h3 class="section-title">Akses Menu — <span x-text="permissionData.name"></span></h3>
+                        <h3 class="section-title">Akses Menu  <span x-text="permissionData.name"></span></h3>
                     </div>
                     <div class="modal-body max-h-[60vh] overflow-y-auto space-y-5">
                         <p class="text-xs" style="color:#9E9790;">Centang menu yang boleh diakses oleh role ini.</p>

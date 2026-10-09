@@ -6,7 +6,7 @@
         <div class="text-center mb-10 md:mb-14" data-guest-animate="fade-up">
             <span class="guest-badge mb-3">Nilai Utama</span>
             <h2 class="text-3xl sm:text-4xl guest-heading text-[var(--guest-text)]">Tiga Alasan Sekolah Memilih {{ \App\Support\GuestBrand::NAME }}</h2>
-            <p class="mt-3 text-[var(--guest-text-muted)] max-w-2xl mx-auto">Bukan sekadar banyak fitur — {{ \App\Support\GuestBrand::NAME }} fokus menghubungkan orang tua, mempermudah kerja tim sekolah, dan mengotomasi pekerjaan rutin dengan AI.</p>
+            <p class="mt-3 text-[var(--guest-text-muted)] max-w-2xl mx-auto">Bukan sekadar banyak fitur  {{ \App\Support\GuestBrand::NAME }} fokus menghubungkan orang tua, mempermudah kerja tim sekolah, dan mengotomasi pekerjaan rutin dengan AI.</p>
         </div>
         @endif
 

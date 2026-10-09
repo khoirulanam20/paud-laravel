@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 
 /**
- * Akuntansi — COA dan sumber dana default per sekolah yang ada.
+ * Akuntansi  COA dan sumber dana default per sekolah yang ada.
  *
  *   php artisan db:seed --class=Database\Seeders\AccountingSeeder
  *

@@ -233,7 +233,7 @@ class LaporanKeuanganService
         return $baris
             ->groupBy(fn ($row) => $row['akun']->snp ?: 'Lainnya')
             ->map(fn ($bySnp) => $bySnp
-                ->groupBy(fn ($row) => $row['akun']->komponen ?: '—')
+                ->groupBy(fn ($row) => $row['akun']->komponen ?: '')
                 ->map(fn ($items) => $items->values()));
     }
 

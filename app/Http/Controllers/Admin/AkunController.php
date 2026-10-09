@@ -115,9 +115,9 @@ class AkunController extends Controller
             return [
                 'id' => $line->id,
                 'jurnal_id' => $line->jurnal_id,
-                'tanggal' => $jurnal?->tanggal?->format('d/m/Y') ?? '—',
-                'no_jurnal' => $jurnal?->no_jurnal ?? '—',
-                'deskripsi' => $jurnal?->deskripsi ?? '—',
+                'tanggal' => $jurnal?->tanggal?->format('d/m/Y') ?? '',
+                'no_jurnal' => $jurnal?->no_jurnal ?? '',
+                'deskripsi' => $jurnal?->deskripsi ?? '',
                 'debit' => (float) $line->debit,
                 'kredit' => (float) $line->kredit,
                 'show_url' => $jurnal ? route('admin.jurnal.show', $jurnal) : null,

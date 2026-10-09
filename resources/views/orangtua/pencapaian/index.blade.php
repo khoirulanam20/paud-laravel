@@ -75,7 +75,7 @@
                     @endif
                     @if($filterAnakId)
                         <p>Anak: <strong
-                                style="color:#2C2C2C;">{{ $anakList->firstWhere('id', $filterAnakId)?->name ?? '—' }}</strong>
+                                style="color:#2C2C2C;">{{ $anakList->firstWhere('id', $filterAnakId)?->name ?? '' }}</strong>
                         </p>
                     @endif
                     @if($filterAspek)
@@ -106,7 +106,7 @@
                         <span class="inline-block font-bold px-2 py-0.5 rounded text-xs mr-2 leading-snug"
                             style="background:{{ $sk->color }};">{{ $sk->label }}</span>
                         <span class="text-gray-500">({{ $sk->code }})</span>
-                        — Penilaian capaian pada indikator matrikulasi.
+                         Penilaian capaian pada indikator matrikulasi.
                     </li>
                     @empty
                     <li class="text-gray-500">Belum ada skala capaian yang dikonfigurasi sekolah.</li>
@@ -228,7 +228,7 @@
                                                                 style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $p->anak?->sekolah_id) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $p->anak?->sekolah_id) }}</span>
                                                         </td>
                                                         <td class="px-3 py-2 text-xs align-top" style="color:#6B6560;">
-                                                            {{ $p->feedback ?: '—' }}</td>
+                                                            {{ $p->feedback ?: '' }}</td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>

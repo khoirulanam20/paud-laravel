@@ -8,7 +8,7 @@
         <div class="text-center flex flex-col items-center max-w-2xl mx-auto">
             <p class="text-primary-foreground font-bubblegum-sans text-[19px] wow fadeInUp">Nilai Utama</p>
             <h2 id="pillars-heading" class="font-bold lg:text-[32px] md:text-[28px] text-2xl lg:leading-[130%] mt-2.5 wow fadeInUp" data-wow-delay=".2s">Tiga Alasan Sekolah Memilih {{ GuestBrand::name() }}</h2>
-            <p class="mt-3 text-muted-foreground wow fadeInUp" data-wow-delay=".3s">Bukan sekadar banyak fitur — {{ GuestBrand::name() }} fokus menghubungkan orang tua, mempermudah kerja tim sekolah, dan mengotomasi pekerjaan rutin dengan AI.</p>
+            <p class="mt-3 text-muted-foreground wow fadeInUp" data-wow-delay=".3s">Bukan sekadar banyak fitur  {{ GuestBrand::name() }} fokus menghubungkan orang tua, mempermudah kerja tim sekolah, dan mengotomasi pekerjaan rutin dengan AI.</p>
         </div>
         <div class="grid lg:grid-cols-3 grid-cols-1 gap-7.5 lg:pt-15 pt-10">
             @foreach(GuestFeatures::pillars($cms ?? []) as $i => $pillar)

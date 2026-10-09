@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>{{ $sekolah->name ?? 'Sekolah' }}</h1>
-    <p class="muted">Laporan Posisi Keuangan (Neraca) — {{ $periode['label'] }}</p>
+    <p class="muted">Laporan Posisi Keuangan (Neraca)  {{ $periode['label'] }}</p>
     <p class="muted">Per {{ \Carbon\Carbon::parse($periode['neracaSampai'])->format('d/m/Y') }}</p>
 
     <table>
@@ -29,7 +29,7 @@
             <tr><td colspan="2"><strong>Aset</strong></td></tr>
             @foreach($aset as $item)
                 <tr>
-                    <td>{{ $item['akun']->kode }} — {{ $item['akun']->nama }}</td>
+                    <td>{{ $item['akun']->kode }}  {{ $item['akun']->nama }}</td>
                     <td class="text-right">{{ number_format($item['saldo'], 0, ',', '.') }}</td>
                 </tr>
             @endforeach
@@ -38,7 +38,7 @@
             <tr><td colspan="2"><strong>Liabilitas</strong></td></tr>
             @foreach($liabilitas as $item)
                 <tr>
-                    <td>{{ $item['akun']->kode }} — {{ $item['akun']->nama }}</td>
+                    <td>{{ $item['akun']->kode }}  {{ $item['akun']->nama }}</td>
                     <td class="text-right">{{ number_format($item['saldo'], 0, ',', '.') }}</td>
                 </tr>
             @endforeach
@@ -47,7 +47,7 @@
             <tr><td colspan="2"><strong>Ekuitas</strong></td></tr>
             @foreach($ekuitas as $item)
                 <tr>
-                    <td>{{ $item['akun']->kode }} — {{ $item['akun']->nama }}</td>
+                    <td>{{ $item['akun']->kode }}  {{ $item['akun']->nama }}</td>
                     <td class="text-right">{{ number_format($item['saldo'], 0, ',', '.') }}</td>
                 </tr>
             @endforeach

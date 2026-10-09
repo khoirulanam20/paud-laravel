@@ -4,7 +4,7 @@
         <div class="text-center mb-10 md:mb-14" data-guest-animate="fade-up">
             <span class="guest-badge mb-3">Cara Mulai</span>
             <h2 class="text-3xl sm:text-4xl guest-heading text-[var(--guest-text)]">Live dalam 3 Langkah</h2>
-            <p class="mt-3 text-[var(--guest-text-muted)]">Dari setup sekolah hingga orang tua terhubung — tanpa proses rumit.</p>
+            <p class="mt-3 text-[var(--guest-text-muted)]">Dari setup sekolah hingga orang tua terhubung  tanpa proses rumit.</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5" data-guest-stagger>
             @foreach(GuestFeatures::onboardingSteps() as $i => $step)

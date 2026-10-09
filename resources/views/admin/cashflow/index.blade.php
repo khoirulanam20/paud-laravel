@@ -285,7 +285,7 @@
                         <div class="col-span-2">
                             <label class="input-label">Akun Aset</label>
                             <select name="akun_id" class="input-field">
-                                <option value="">— Gunakan Default Setting —</option>
+                                <option value=""> Gunakan Default Setting </option>
                                 @foreach($akunAset as $a)
                                     <option value="{{ $a->id }}" {{ $setting->akun_kas_id == $a->id ? 'selected' : '' }}>{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
@@ -300,9 +300,9 @@
                         <div class="col-span-2" x-show="createType === 'out'">
                             <label class="input-label">Sumber Dana <span class="text-xs font-normal" style="color:#9E9790;">(untuk RKAS)</span></label>
                             <select name="sumber_dana_id" class="input-field">
-                                <option value="">— Belum dialokasikan —</option>
+                                <option value=""> Belum dialokasikan </option>
                                 @foreach($sumberDanas as $sd)
-                                    <option value="{{ $sd->id }}">{{ $sd->kode }} — {{ $sd->nama }}</option>
+                                    <option value="{{ $sd->id }}">{{ $sd->kode }}  {{ $sd->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -325,7 +325,7 @@
                         <div class="col-span-2">
                             <label class="input-label">Akun Aset</label>
                             <select name="akun_id" x-model="editData.akun_id" class="input-field">
-                                <option value="">— Gunakan Default —</option>
+                                <option value=""> Gunakan Default </option>
                                 @foreach($akunAset as $a)
                                     <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
                                 @endforeach
@@ -340,9 +340,9 @@
                         <div class="col-span-2" x-show="editData.type === 'out'">
                             <label class="input-label">Sumber Dana</label>
                             <select name="sumber_dana_id" x-model="editData.sumber_dana_id" class="input-field">
-                                <option value="">— Belum dialokasikan —</option>
+                                <option value=""> Belum dialokasikan </option>
                                 @foreach($sumberDanas as $sd)
-                                    <option value="{{ $sd->id }}">{{ $sd->kode }} — {{ $sd->nama }}</option>
+                                    <option value="{{ $sd->id }}">{{ $sd->kode }}  {{ $sd->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -365,7 +365,7 @@
                 <form :action="kwitansiPdfUrl" method="POST" target="_blank">
                     @csrf
                     <div class="modal-header">
-                        <h3 class="section-title" x-text="kwitansiJenis === 'penerimaan' ? 'Kuitansi BOP-12 — Bukti Penerimaan' : 'Kuitansi BOP-12 — Bukti Pembayaran'"></h3>
+                        <h3 class="section-title" x-text="kwitansiJenis === 'penerimaan' ? 'Kuitansi BOP-12  Bukti Penerimaan' : 'Kuitansi BOP-12  Bukti Pembayaran'"></h3>
                         <p class="section-subtitle" x-text="kwitansiJenis === 'penerimaan' ? 'Formulir penerimaan dana (pemasukan kas). Periksa dan edit sebelum unduh PDF.' : 'Formulir pengeluaran dana. Periksa dan edit sebelum unduh PDF.'"></p>
                     </div>
                     <div class="modal-body">

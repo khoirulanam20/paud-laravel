@@ -125,7 +125,7 @@
                                     </div>
                                     <div>
                                         <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#9E9790;">Aspek / Indikator</p>
-                                        <span class="font-semibold text-sm text-[#1A6B6B] block" x-text="pc.aspek || '—'"></span>
+                                        <span class="font-semibold text-sm text-[#1A6B6B] block" x-text="pc.aspek || ''"></span>
                                         <span x-show="pc.indicator" class="block mt-1 text-xs leading-relaxed break-words" style="color:#5A5A5A;"
                                             x-text="pc.indicator"></span>
                                     </div>
@@ -179,7 +179,7 @@
                                             </td>
                                             <td class="px-4 py-3 text-xs" style="color:#5A5A5A;">
                                                 <span class="font-semibold text-[#1A6B6B]"
-                                                    x-text="pc.aspek || '—'"></span>
+                                                    x-text="pc.aspek || ''"></span>
                                                 <span x-show="pc.indicator" class="block mt-0.5"
                                                     x-text="pc.indicator"></span>
                                             </td>

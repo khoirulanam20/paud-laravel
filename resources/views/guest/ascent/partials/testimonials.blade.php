@@ -22,7 +22,7 @@
                                     <div class="flex justify-between items-center relative z-10 lg:pb-7.5 pb-5">
                                         <div>
                                             <h3 class="md:text-xl text-lg font-semibold">{{ $review['title'] }}</h3>
-                                            <p class="text-sm text-muted-foreground">{{ $review['name'] }} — {{ $review['role'] }}</p>
+                                            <p class="text-sm text-muted-foreground">{{ $review['name'] }}  {{ $review['role'] }}</p>
                                         </div>
                                         <div class="absolute right-0 z-[-1]">
                                             <img src="{{ GuestAscent::asset('images/testimonial/quotation.png') }}" alt="" class="lg:w-auto w-9" aria-hidden="true">

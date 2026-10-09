@@ -33,7 +33,7 @@
             <div class="card mb-6">
                 <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                     <h3 class="section-title">Jenis di Akun Aset (Catat Transaksi)</h3>
-                    <p class="section-subtitle">Hanya jenis yang dicentang yang muncul di kolom Akun Aset saat mencatat cashflow. Kosongkan centang tidak bisa — minimal satu.</p>
+                    <p class="section-subtitle">Hanya jenis yang dicentang yang muncul di kolom Akun Aset saat mencatat cashflow. Kosongkan centang tidak bisa  minimal satu.</p>
                 </div>
                 <div class="p-6 flex flex-wrap gap-3">
                     @foreach($jenisOptions as $jenis)

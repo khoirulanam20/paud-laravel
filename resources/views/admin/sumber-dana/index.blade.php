@@ -19,7 +19,7 @@
                     this.$dispatch('akun-search-sync', {
                         field: 'akun_id',
                         id: sd.akun_id ?? '',
-                        label: akun ? `${akun.kode} — ${akun.nama}` : '',
+                        label: akun ? `${akun.kode}  ${akun.nama}` : '',
                     });
                 });
             },
@@ -44,7 +44,7 @@
                         <tr>
                             <td class="font-mono font-semibold">{{ $sd->kode }}</td>
                             <td>{{ $sd->nama }}</td>
-                            <td class="text-xs">{{ $sd->akun ? $sd->akun->kode.' — '.$sd->akun->nama : '—' }}</td>
+                            <td class="text-xs">{{ $sd->akun ? $sd->akun->kode.'  '.$sd->akun->nama : '' }}</td>
                             <td class="text-center">{{ $sd->urutan }}</td>
                             <td class="text-center"><span class="badge {{ $sd->is_aktif ? 'badge-green' : 'badge-gray' }}">{{ $sd->is_aktif ? 'Aktif' : 'Nonaktif' }}</span></td>
                             <td class="text-right">

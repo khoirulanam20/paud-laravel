@@ -58,14 +58,14 @@
                     <tbody>
                         @forelse($evaluasis as $e)
                         <tr>
-                            <td class="font-semibold">{{ $e->pengajar->name ?? '—' }}</td>
+                            <td class="font-semibold">{{ $e->pengajar->name ?? '' }}</td>
                             <td>
                                 <div>{{ $e->judul ?: 'Evaluasi Guru' }}</div>
                                 <div class="text-xs" style="color:#9E9790;">{{ $e->periodeLabel() }}</div>
                             </td>
-                            <td>@if($e->skor_keseluruhan !== null)<span class="font-bold" style="color:#1A6B6B;">{{ $e->skor_keseluruhan }}</span>@else—@endif</td>
+                            <td>@if($e->skor_keseluruhan !== null)<span class="font-bold" style="color:#1A6B6B;">{{ $e->skor_keseluruhan }}</span>@else@endif</td>
                             <td>@if($e->isFinal())<span class="badge badge-teal">Final</span>@else<span class="badge" style="background:#FDE9BC;color:#8B6914;">Draft</span>@endif</td>
-                            <td class="text-sm">{{ $e->evaluator->name ?? '—' }}</td>
+                            <td class="text-sm">{{ $e->evaluator->name ?? '' }}</td>
                             <td class="text-right">
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('admin.monev-guru.show', $e) }}" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#D0E8E8;" title="Detail" aria-label="Detail"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><span class="hidden md:inline">Detail</span></a>

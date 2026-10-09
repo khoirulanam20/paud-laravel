@@ -46,7 +46,7 @@
         $pageTitle = $title;
         $description = trim($metaDesc) !== ''
             ? $metaDesc
-            : $brand.' — Sistem Informasi PAUD terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
+            : $brand.'  Sistem Informasi PAUD terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
         $seo = GuestSeo::forPage(
             $pageTitle,
             $description,

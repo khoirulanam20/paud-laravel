@@ -155,7 +155,7 @@
                             <label class="input-label" x-text="mutasiAksi === 'setor' ? 'Dari (sumber)' : 'Ke (tujuan)'"></label>
                             <select name="akun_rekening_id" x-model="mutasiRekeningId" required class="input-field">
                                 @foreach($akunRekeningOptions as $a)
-                                    <option value="{{ $a->id }}">{{ $a->kode }} — {{ $a->nama }}</option>
+                                    <option value="{{ $a->id }}">{{ $a->kode }}  {{ $a->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -163,7 +163,7 @@
                             <label class="input-label" x-text="mutasiAksi === 'setor' ? 'Ke (tabungan/investasi)' : 'Dari (tabungan/investasi)'"></label>
                             <select name="akun_tabungan_id" x-model="mutasiAkunId" required class="input-field">
                                 @foreach($tabunganAkuns as $row)
-                                    <option value="{{ $row->akun_id }}">{{ $row->akun->kode }} — {{ $row->akun->nama }}</option>
+                                    <option value="{{ $row->akun_id }}">{{ $row->akun->kode }}  {{ $row->akun->nama }}</option>
                                 @endforeach
                             </select>
                         </div>

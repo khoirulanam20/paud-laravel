@@ -205,9 +205,9 @@ class AiSettingTest extends TestCase
             ->get(route('superadmin.ai-setting.index', ['lembaga_id' => $fixtures['lembaga']->id]));
 
         $response->assertOk();
-        $response->assertSee('Slot 1 — Utama');
-        $response->assertSee('Slot 2 — Backup 1');
-        $response->assertSee('Slot 3 — Backup 2');
+        $response->assertSee('Slot 1  Utama');
+        $response->assertSee('Slot 2  Backup 1');
+        $response->assertSee('Slot 3  Backup 2');
     }
 
     public function test_superadmin_can_top_up_tokens_for_school(): void

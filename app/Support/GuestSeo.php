@@ -85,7 +85,7 @@ final class GuestSeo
         if ($description === '') {
             $description = $descriptionFallback !== ''
                 ? $descriptionFallback
-                : GuestBrand::name().' — Sistem Informasi PAUD terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
+                : GuestBrand::name().'  Sistem Informasi PAUD terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
         }
 
         $page = self::forPage($h1, $description, $canonical, $homeSeo['og_image_url']);

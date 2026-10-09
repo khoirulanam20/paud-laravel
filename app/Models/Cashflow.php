@@ -79,7 +79,7 @@ class Cashflow extends Model
             'date' => $this->date?->format('Y-m-d'),
             'akun_id' => $this->akun_id ?? '',
             'akun_lawan_id' => $lawan?->id ?? '',
-            'akun_lawan_id_label' => $lawan ? $lawan->kode.' — '.$lawan->nama : '',
+            'akun_lawan_id_label' => $lawan ? $lawan->kode.'  '.$lawan->nama : '',
             'sumber_dana_id' => $this->sumber_dana_id ?? '',
         ];
     }

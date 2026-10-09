@@ -16,7 +16,7 @@
             editData: {}, detailData: {}, detailHistory: [], detailHistoryLoading: false, detailHistoryError: null, deleteRoute: '',
             importFileName: null,
             rupiah(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n) || 0); },
-            formatMutasi(n) { const v = Number(n) || 0; return v > 0 ? new Intl.NumberFormat('id-ID').format(v) : '—'; },
+            formatMutasi(n) { const v = Number(n) || 0; return v > 0 ? new Intl.NumberFormat('id-ID').format(v) : ''; },
             openImportModal() {
                 this.importTest = null;
                 this.importTestError = null;
@@ -108,7 +108,7 @@
             <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Daftar Kode Rekening & Akun</h3>
-                    <p class="section-subtitle">Kode akun, jenis, nama, kelompok/subkelompok (SNP), dan uraian — untuk RKAS, cashflow, dan jurnal</p>
+                    <p class="section-subtitle">Kode akun, jenis, nama, kelompok/subkelompok (SNP), dan uraian  untuk RKAS, cashflow, dan jurnal</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <x-export-excel route="admin.akun.export" />
@@ -352,7 +352,7 @@
                                         <template x-for="row in (importTest?.rows || []).filter(r => r.status !== 'ok')" :key="row.row + row.status">
                                             <li>
                                                 <span class="font-semibold" x-text="`Baris ${row.row}:`"></span>
-                                                <span x-text="row.label"></span> — <span x-text="row.message"></span>
+                                                <span x-text="row.label"></span>  <span x-text="row.message"></span>
                                             </li>
                                         </template>
                                     </ul>

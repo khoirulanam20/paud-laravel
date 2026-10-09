@@ -120,7 +120,7 @@
             </div>
             <div>
                 <div class="font-bold text-sm" style="color:#2C2C2C;">
-                    {{ $aiSetting?->hasValidApiKey() ? 'AI Aktif — '.$configuredSlots.' slot siap dipakai' : 'AI Belum Dikonfigurasi' }}
+                    {{ $aiSetting?->hasValidApiKey() ? 'AI Aktif  '.$configuredSlots.' slot siap dipakai' : 'AI Belum Dikonfigurasi' }}
                 </div>
                 <div class="text-xs mt-1" style="color:#6B6560;">
                     @if($aiSetting?->hasValidApiKey())
@@ -184,7 +184,7 @@
                     @include('superadmin.ai_setting._slot_fields', [
                         'slotNumber' => 1,
                         'slot' => $slotsByNumber->get(1),
-                        'title' => 'Slot 1 — Utama',
+                        'title' => 'Slot 1  Utama',
                         'subtitle' => 'Provider utama yang selalu dicoba terlebih dahulu.',
                         'required' => true,
                         'providers' => $providers,
@@ -193,7 +193,7 @@
                     @include('superadmin.ai_setting._slot_fields', [
                         'slotNumber' => 2,
                         'slot' => $slotsByNumber->get(2),
-                        'title' => 'Slot 2 — Backup 1',
+                        'title' => 'Slot 2  Backup 1',
                         'subtitle' => 'Dipakai otomatis jika Slot 1 gagal.',
                         'required' => false,
                         'providers' => $providers,
@@ -202,7 +202,7 @@
                     @include('superadmin.ai_setting._slot_fields', [
                         'slotNumber' => 3,
                         'slot' => $slotsByNumber->get(3),
-                        'title' => 'Slot 3 — Backup 2',
+                        'title' => 'Slot 3  Backup 2',
                         'subtitle' => 'Cadangan terakhir jika Slot 1 dan 2 gagal.',
                         'required' => false,
                         'providers' => $providers,

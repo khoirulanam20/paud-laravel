@@ -65,12 +65,12 @@
                                 <td class="font-mono text-sm font-semibold" style="color: #1A6B6B;">{{ $line->akun->kode ?? '-' }}</td>
                                 <td class="font-medium" style="color: #2C2C2C;">{{ $line->akun->nama ?? '-' }}</td>
                                 <td class="text-right font-semibold {{ $line->debit > 0 ? 'text-green-700' : '' }}">
-                                    {{ $line->debit > 0 ? number_format($line->debit, 0, ',', '.') : '—' }}
+                                    {{ $line->debit > 0 ? number_format($line->debit, 0, ',', '.') : '' }}
                                 </td>
                                 <td class="text-right font-semibold {{ $line->kredit > 0 ? 'text-red-700' : '' }}">
-                                    {{ $line->kredit > 0 ? number_format($line->kredit, 0, ',', '.') : '—' }}
+                                    {{ $line->kredit > 0 ? number_format($line->kredit, 0, ',', '.') : '' }}
                                 </td>
-                                <td style="color: #9E9790;">{{ $line->keterangan ?? '—' }}</td>
+                                <td style="color: #9E9790;">{{ $line->keterangan ?? '' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

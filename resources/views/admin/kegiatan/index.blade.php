@@ -230,7 +230,7 @@
                                                 </div>
                                             </td>
                                             <td class="px-4 py-3 text-xs" style="color:#5A5A5A;">
-                                                <span class="font-semibold text-[#1A6B6B]" x-text="pc.aspek || '—'"></span>
+                                                <span class="font-semibold text-[#1A6B6B]" x-text="pc.aspek || ''"></span>
                                                 <span x-show="pc.indicator" class="block mt-0.5" x-text="pc.indicator"></span>
                                             </td>
                                             <td class="px-4 py-3">

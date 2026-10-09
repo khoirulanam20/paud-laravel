@@ -19,7 +19,7 @@
             <div class="px-6 py-4 text-center border-b" style="border-color:rgba(0,0,0,0.06);">
                 <p class="font-bold text-lg" style="color:#2C2C2C;">{{ auth()->user()->sekolah->name ?? 'Sekolah' }}</p>
                 <p class="section-title text-base">Laporan Posisi Keuangan (Neraca)</p>
-                <p class="section-subtitle">Per {{ \Carbon\Carbon::parse($periode['neracaSampai'])->translatedFormat('d F Y') }} — {{ $periode['label'] }}</p>
+                <p class="section-subtitle">Per {{ \Carbon\Carbon::parse($periode['neracaSampai'])->translatedFormat('d F Y') }}  {{ $periode['label'] }}</p>
             </div>
 
             <div class="overflow-x-auto">

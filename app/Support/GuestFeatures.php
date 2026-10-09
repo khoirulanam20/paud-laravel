@@ -53,7 +53,7 @@ final class GuestFeatures
                 'id' => 'ortu-sekolah',
                 'title' => 'Penghubung Ortu & Sekolah',
                 'tagline' => 'Komunikasi dua arah, tanpa jarak',
-                'desc' => 'Orang tua selalu tahu perkembangan anak — kehadiran, pencapaian, monev, tagihan — tanpa harus menunggu rapat atau chat manual.',
+                'desc' => 'Orang tua selalu tahu perkembangan anak  kehadiran, pencapaian, monev, tagihan  tanpa harus menunggu rapat atau chat manual.',
                 'illustration' => 'pillar.ortu',
                 'highlights' => [
                     'Portal orang tua: presensi, pencapaian, monev PDF',
@@ -66,7 +66,7 @@ final class GuestFeatures
                 'id' => 'operasional',
                 'title' => 'Operasional Internal',
                 'tagline' => 'Admin & guru bekerja lebih cepat',
-                'desc' => 'Satu dashboard untuk mengelola siswa, kelas, kegiatan harian, presensi, menu makanan, hingga keuangan PSAK — tanpa spreadsheet terpisah.',
+                'desc' => 'Satu dashboard untuk mengelola siswa, kelas, kegiatan harian, presensi, menu makanan, hingga keuangan PSAK  tanpa spreadsheet terpisah.',
                 'illustration' => 'pillar.operasional',
                 'highlights' => [
                     'Siswa, kelas & approval pendaftaran',
@@ -79,7 +79,7 @@ final class GuestFeatures
                 'id' => 'ai',
                 'title' => 'Kemudahan dengan AI',
                 'tagline' => 'Otomasi yang menghemat waktu guru',
-                'desc' => 'Asisten AI bantu jawab pertanyaan orang tua, generate ringkasan monev, dan sarankan umpan balik pencapaian — berbasis data sekolah yang nyata.',
+                'desc' => 'Asisten AI bantu jawab pertanyaan orang tua, generate ringkasan monev, dan sarankan umpan balik pencapaian  berbasis data sekolah yang nyata.',
                 'illustration' => 'pillar.ai',
                 'highlights' => [
                     'Chat AI orang tua berbasis data anak',
@@ -121,7 +121,7 @@ final class GuestFeatures
     public static function onboardingSteps(): array
     {
         return [
-            ['step' => '01', 'title' => 'Setup Sekolah & Tim', 'desc' => 'Daftarkan cabang, kelas, pengajar, dan admin — siap operasional dalam hitungan jam.'],
+            ['step' => '01', 'title' => 'Setup Sekolah & Tim', 'desc' => 'Daftarkan cabang, kelas, pengajar, dan admin  siap operasional dalam hitungan jam.'],
             ['step' => '02', 'title' => 'Aktifkan Portal Orang Tua', 'desc' => 'Orang tua daftar online, pantau anak, bayar tagihan, dan kirim masukan langsung dari HP.'],
             ['step' => '03', 'title' => 'Manfaatkan AI & Laporan', 'desc' => 'Generate monev PDF, aktifkan chat AI, dan biarkan sistem yang mengurus dokumentasi rutin.'],
         ];

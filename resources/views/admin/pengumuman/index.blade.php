@@ -153,24 +153,24 @@
                     </div>
                     <div>
                         <span class="text-xs font-semibold uppercase tracking-wide mb-1 block" style="color:#9E9790;">Kategori</span>
-                        <span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50" x-text="detailData.kategori || '—'"></span>
+                        <span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50" x-text="detailData.kategori || ''"></span>
                     </div>
                     <div>
                         <span class="text-xs font-semibold uppercase tracking-wide mb-1 block" style="color:#9E9790;">Judul</span>
-                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.judul || '—'"></p>
+                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.judul || ''"></p>
                     </div>
                     <div>
                         <span class="text-xs font-semibold uppercase tracking-wide mb-1 block" style="color:#9E9790;">Isi</span>
-                        <p class="text-sm whitespace-pre-wrap" style="color:#4A4540;" x-text="detailData.isi || '—'"></p>
+                        <p class="text-sm whitespace-pre-wrap" style="color:#4A4540;" x-text="detailData.isi || ''"></p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <span class="text-xs font-semibold uppercase tracking-wide mb-1 block" style="color:#9E9790;">Mulai Tayang</span>
-                            <p class="text-sm" x-text="detailData.mulai_tayang || '—'"></p>
+                            <p class="text-sm" x-text="detailData.mulai_tayang || ''"></p>
                         </div>
                         <div>
                             <span class="text-xs font-semibold uppercase tracking-wide mb-1 block" style="color:#9E9790;">Selesai Tayang</span>
-                            <p class="text-sm" x-text="detailData.selesai_tayang || '—'"></p>
+                            <p class="text-sm" x-text="detailData.selesai_tayang || ''"></p>
                         </div>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
                             <input type="hidden" name="kelas_id" x-model="editData.kelas_id">
                             <div>
                                 <label class="input-label">Kelas</label>
-                                <p class="text-sm font-semibold" style="color:#2C2C2C;" x-text="editData.kelas_name || '—'"></p>
+                                <p class="text-sm font-semibold" style="color:#2C2C2C;" x-text="editData.kelas_name || ''"></p>
                             </div>
                         @endif
                         <div><label class="input-label">Isi / Info Lainnya</label><textarea name="isi" rows="5" x-model="editData.isi" required class="input-field"></textarea></div>

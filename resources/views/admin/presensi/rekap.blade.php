@@ -143,7 +143,7 @@
                                 </td>
                                 <td class="whitespace-nowrap">
                                     @if($anak->kelas)<span class="badge badge-teal whitespace-nowrap">{{ $anak->kelas->name }}</span>
-                                    @else<span class="text-xs italic" style="color:#9E9790;">—</span>@endif
+                                    @else<span class="text-xs italic" style="color:#9E9790;"></span>@endif
                                 </td>
                                 <td class="text-center md:text-left">
                                     <span class="font-bold text-sm tabular-nums" style="color:#1A6B6B;">{{ (int)($hadirPeriode[$anak->id] ?? 0) }}</span>

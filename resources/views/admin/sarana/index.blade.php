@@ -92,7 +92,7 @@
                     </div>
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Nama Sarana</p>
-                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.name || '—'"></p>
+                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.name || ''"></p>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div>
@@ -105,11 +105,11 @@
                         </div>
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Jumlah</p>
-                            <span class="badge badge-teal" x-text="detailData.quantity ?? '—'"></span>
+                            <span class="badge badge-teal" x-text="detailData.quantity ?? ''"></span>
                         </div>
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Kondisi</p>
-                            <span class="badge badge-green" x-text="detailData.condition || '—'"></span>
+                            <span class="badge badge-green" x-text="detailData.condition || ''"></span>
                         </div>
                     </div>
                 </div>

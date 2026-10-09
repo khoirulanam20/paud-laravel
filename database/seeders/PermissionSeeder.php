@@ -7,7 +7,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 /**
- * Referensi — permission menu dan mapping hak akses per role.
+ * Referensi  permission menu dan mapping hak akses per role.
  *
  *   php artisan db:seed --class=Database\Seeders\PermissionSeeder
  *

@@ -82,7 +82,7 @@ class Akun extends Model
         return $this->tipe === 'sistem';
     }
 
-    /** Akun masih direferensikan transaksi atau konfigurasi — jangan hard-delete. */
+    /** Akun masih direferensikan transaksi atau konfigurasi  jangan hard-delete. */
     public function masihTerpakai(): bool
     {
         if ($this->jurnalLines()->exists()) {
@@ -123,6 +123,6 @@ class Akun extends Model
 
     public function getLabelAttribute(): string
     {
-        return "{$this->kode} — ".($this->uraian ?? $this->nama);
+        return "{$this->kode}  ".($this->uraian ?? $this->nama);
     }
 }

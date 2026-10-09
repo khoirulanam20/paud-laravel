@@ -24,7 +24,7 @@
                         @endif
                     </p>
                 </div>
-                <span class="badge badge-teal">{{ $kritik_saran->status ?? '—' }}</span>
+                <span class="badge badge-teal">{{ $kritik_saran->status ?? '' }}</span>
             </div>
             <div class="card-body-pad">
                 <div class="flex flex-col sm:flex-row gap-5">

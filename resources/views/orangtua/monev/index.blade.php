@@ -14,7 +14,7 @@
                 </svg>
             </div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">
-                Monev{{ $selectedAnak ? ' — ' . $selectedAnak->name : '' }}
+                Monev{{ $selectedAnak ? '  ' . $selectedAnak->name : '' }}
             </h2>
         </div>
     </x-slot>

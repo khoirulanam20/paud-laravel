@@ -99,7 +99,7 @@
                 </div>
             </div>
             <p class="text-center mt-10">
-                <a href="{{ route('guest.galeri') }}" class="border border-gray-200 rounded-md px-6 py-3 btn inline-block">Lihat Semua Galeri</a>
+                <a href="{{ route('guest.harga') }}" class="border border-gray-200 rounded-md px-6 py-3 btn inline-block">Lihat Harga</a>
             </p>
         </div>
     </div>

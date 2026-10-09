@@ -41,7 +41,7 @@
                 <div>
                     <h3 class="text-xl font-bold" style="color:#2C2C2C;">{{ $anak->name }}</h3>
                     <p class="text-sm mt-1" style="color:#6B6560;">
-                        Kelas {{ $anak->kelas?->name ?? '—' }} · {{ $anak->age }} · Periode {{ $summary->periodeLabel() }}
+                        Kelas {{ $anak->kelas?->name ?? '' }} · {{ $anak->age }} · Periode {{ $summary->periodeLabel() }}
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-2">

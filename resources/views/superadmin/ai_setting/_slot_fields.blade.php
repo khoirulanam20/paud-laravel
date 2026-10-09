@@ -60,7 +60,7 @@
                 @change="onProviderChange()"
                 @if($required) required @endif>
                 @unless($required)
-                    <option value="">— Pilih provider —</option>
+                    <option value=""> Pilih provider </option>
                 @endunless
                 @foreach($providers as $key => $providerMeta)
                     <option value="{{ $key }}" @selected($provider === $key)>{{ $providerMeta['label'] }}</option>
@@ -91,7 +91,7 @@
             <input type="password" id="slot_{{ $slotNumber }}_api_key"
                 name="slots[{{ $slotNumber }}][ai_api_key]"
                 class="input-field @error('slots.'.$slotNumber.'.ai_api_key') border-red-500 @enderror"
-                placeholder="{{ $slot?->apiKeyNeedsReentry() ? 'Masukkan ulang API Key' : ($slot?->hasValidApiKey() ? '••••••••••••••••••• (terisi — kosongkan jika tidak ingin mengubah)' : 'Masukkan API Key') }}"
+                placeholder="{{ $slot?->apiKeyNeedsReentry() ? 'Masukkan ulang API Key' : ($slot?->hasValidApiKey() ? '••••••••••••••••••• (terisi  kosongkan jika tidak ingin mengubah)' : 'Masukkan API Key') }}"
                 autocomplete="new-password">
             @error('slots.'.$slotNumber.'.ai_api_key')
                 <p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>

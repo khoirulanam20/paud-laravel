@@ -69,7 +69,7 @@ class RegisteredUserController extends Controller
 
                 return redirect()->route('login')->with(
                     'status',
-                    'Akun sudah terdaftar. Pendaftaran anak baru dikirim — silakan masuk untuk melanjutkan.'
+                    'Akun sudah terdaftar. Pendaftaran anak baru dikirim  silakan masuk untuk melanjutkan.'
                 );
             }
 

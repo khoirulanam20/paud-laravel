@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Default seeder — tidak mengubah data.
+     * Default seeder  tidak mengubah data.
      *
      * Panggil seeder spesifik sesuai kebutuhan:
      *
@@ -21,10 +21,10 @@ class DatabaseSeeder extends Seeder
         $this->command->warn('DatabaseSeeder tidak menjalankan seeder apa pun (aman untuk DB real).');
         $this->command->line('');
         $this->command->line('Seeder yang tersedia:');
-        $this->command->line('  ReferenceSeeder  — role + permission');
-        $this->command->line('  AccountingSeeder — COA + sumber dana per sekolah');
-        $this->command->line('  DemoSeeder       — data demo (local/staging saja)');
-        $this->command->line('  DevSetupSeeder   — setup dev lengkap (pengganti db:seed lama)');
+        $this->command->line('  ReferenceSeeder   role + permission');
+        $this->command->line('  AccountingSeeder  COA + sumber dana per sekolah');
+        $this->command->line('  DemoSeeder        data demo (local/staging saja)');
+        $this->command->line('  DevSetupSeeder    setup dev lengkap (pengganti db:seed lama)');
         $this->command->line('');
         $this->command->line('Contoh: php artisan db:seed --class=Database\\Seeders\\DevSetupSeeder');
     }

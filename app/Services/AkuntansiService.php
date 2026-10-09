@@ -225,7 +225,7 @@ class AkuntansiService
         return $pembayaran && $pembayaran->isApproved();
     }
 
-    /** Hanya untuk tagihan pending — bersihkan jurnal tagihan/pelunasan terkait sebelum hapus record. */
+    /** Hanya untuk tagihan pending  bersihkan jurnal tagihan/pelunasan terkait sebelum hapus record. */
     public function hapusJurnalUntukPembayaranPending(PembayaranBulanan $pembayaran): void
     {
         if (! $pembayaran->canBeDeleted()) {
@@ -288,14 +288,14 @@ class AkuntansiService
             if ($existing) {
                 $existing->lines()->delete();
                 $existing->update([
-                    'deskripsi' => 'Saldo awal '.$akun->kode.' — '.$akun->nama,
+                    'deskripsi' => 'Saldo awal '.$akun->kode.'  '.$akun->nama,
                 ]);
                 $jurnal = $existing;
             } else {
                 $jurnal = $this->insertJurnal([
                     'sekolah_id' => $akun->sekolah_id,
                     'tanggal' => now()->toDateString(),
-                    'deskripsi' => 'Saldo awal '.$akun->kode.' — '.$akun->nama,
+                    'deskripsi' => 'Saldo awal '.$akun->kode.'  '.$akun->nama,
                     'created_by' => auth()->id(),
                     'source' => 'saldo-awal',
                     'sourceable_type' => Akun::class,

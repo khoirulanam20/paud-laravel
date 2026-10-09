@@ -121,7 +121,7 @@
                 const resolvedScore = score || nilaiMap[String(optId)] || '';
                 if (!resolvedScore) { alert('Pilih skala capaian terlebih dahulu sebelum meminta saran AI.'); return; }
                 const key = mode + '_' + optId;
-                // Tutup semua saran aspek lain — hanya tampilkan untuk aspek yang diklik
+                // Tutup semua saran aspek lain  hanya tampilkan untuk aspek yang diklik
                 this.aiSuggestions = {};
                 this.aiLoading = { ...this.aiLoading, [key]: true };
                 try {
@@ -378,7 +378,7 @@
                             @foreach($rows->filter(fn($p) => \App\Support\FilterAspekPencapaian::rowMatches($filterAspek, $p)) as $p)
                                 <div class="text-[11px] rounded-lg bg-gray-50 px-2 py-1.5 border border-black/5">
                                     <p class="font-bold uppercase leading-tight" style="color:#1A6B6B;">{{ $p->matrikulasi->aspek ?: 'Umum' }}</p>
-                                    <p class="mt-0.5 leading-snug break-words" style="color:#5A5A5A;">{{ $p->matrikulasi->indicator ?? '—' }}</p>
+                                    <p class="mt-0.5 leading-snug break-words" style="color:#5A5A5A;">{{ $p->matrikulasi->indicator ?? '' }}</p>
                                     <div class="mt-1 flex flex-wrap items-center gap-1.5">
                                         <span class="font-bold px-1.5 py-0.5 rounded" style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $sekolahId) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $sekolahId) }}</span>
                                         @if($p->feedback)<span class="italic break-words" style="color:#6B6560;">"{{ $p->feedback }}"</span>@endif
@@ -465,7 +465,7 @@
                                             <div class="text-[11px] rounded bg-gray-50 p-1.5 border border-black/5">
                                                 <span class="font-bold text-teal-700 uppercase"
                                                     x-text="'{{ $p->matrikulasi->aspek ?: 'Umum' }}'"></span>:
-                                                {{ $p->matrikulasi->indicator ?? '—' }}
+                                                {{ $p->matrikulasi->indicator ?? '' }}
                                                 <div class="mt-1 flex items-center gap-2">
                                                     <span class="font-bold px-1.5 py-0.5 rounded"
                                                         style="background:{{ \App\Support\LabelSkorPencapaian::color($p->score, $sekolahId) }};">{{ \App\Support\LabelSkorPencapaian::label($p->score, $sekolahId) }}</span>
@@ -515,7 +515,7 @@
                             <label class="input-label">Filter Kelas</label>
                             <select class="input-field" x-model="selectedKelasIdCreate"
                                 @change="selectedAnakId = ''; selectedKegiatanId = ''">
-                                <option value="">— Semua Kelas —</option>
+                                <option value=""> Semua Kelas </option>
                                 @foreach($availableKelas as $k)
                                     <option value="{{ $k->id }}">{{ $k->name }}</option>
                                 @endforeach
@@ -525,7 +525,7 @@
                             <label class="input-label">Target Siswa</label>
                             <select name="anak_id" required class="input-field" x-model="selectedAnakId"
                                 @change="selectedKegiatanId = ''">
-                                <option value="">— Pilih Siswa —</option>
+                                <option value=""> Pilih Siswa </option>
                                 <template x-for="a in filteredAnaks" :key="a.id">
                                     <option :value="a.id" x-text="a.display_label"></option>
                                 </template>
@@ -533,14 +533,14 @@
                             <p class="text-xs mt-1.5" style="color:#6B6560;" x-show="selectedAnakId && anakMap[selectedAnakId]?.nickname">
                                 <span class="font-semibold">Nama panggilan:</span>
                                 <span x-text="anakMap[selectedAnakId]?.nickname"></span>
-                                <span class="text-[10px] italic" style="color:#9E9790;"> — dipakai saran AI</span>
+                                <span class="text-[10px] italic" style="color:#9E9790;">  dipakai saran AI</span>
                             </p>
                         </div>
                         <div data-tour="modal-create-section-kegiatan" x-show="selectedAnakId">
                             <label class="input-label">Jurnal Kegiatan</label>
                             <select name="kegiatan_id" required class="input-field" x-model="selectedKegiatanId"
                                 @change="resetCreateMatrices()">
-                                <option value="">— Pilih Kegiatan —</option>
+                                <option value=""> Pilih Kegiatan </option>
                                 <template x-for="k in filteredKegiatans" :key="k.id">
                                     <option :value="k.id" x-text="k.date_label + ' : ' + k.title"></option>
                                 </template>
@@ -559,7 +559,7 @@
                                 <div :data-tour="index === 0 ? 'modal-create-section-skala' : null">
                                     <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'"
                                         x-model="createNilai[String(opt.id)]">
-                                        <option value="">— Skala Capaian —</option>
+                                        <option value=""> Skala Capaian </option>
                                         <template x-for="sk in skalaOptions" :key="sk.code">
                                             <option :value="sk.code" x-text="sk.code + ' (' + sk.label + ')'"></option>
                                         </template>
@@ -672,9 +672,9 @@
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'"
                                     x-model="editNilai[String(opt.id)]">
-                                    <option value="" disabled>— Pilih Capaian —</option>
+                                    <option value="" disabled> Pilih Capaian </option>
                                     <template x-for="sk in skalaOptions" :key="'edit-' + sk.code">
-                                        <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                        <option :value="sk.code" x-text="sk.code + '  ' + sk.label"></option>
                                     </template>
                                 </select>
                                 <div class="space-y-1.5">

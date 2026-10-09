@@ -16,7 +16,7 @@
                     <li><a href="{{ route('guest.beranda') }}" class="text-[#686868] transition-all duration-500 hover:ml-1 hover:text-primary-foreground">Beranda</a></li>
                     <li><a href="{{ route('guest.tentang') }}" class="text-[#686868] transition-all duration-500 hover:ml-1 hover:text-primary-foreground">Tentang</a></li>
                     <li><a href="{{ route('guest.fasilitas') }}" class="text-[#686868] transition-all duration-500 hover:ml-1 hover:text-primary-foreground">Fitur</a></li>
-                    <li><a href="{{ route('guest.galeri') }}" class="text-[#686868] transition-all duration-500 hover:ml-1 hover:text-primary-foreground">Galeri</a></li>
+                    <li><a href="{{ route('guest.harga') }}" class="text-[#686868] transition-all duration-500 hover:ml-1 hover:text-primary-foreground">Harga</a></li>
                     <li><a href="{{ route('guest.kontak') }}" class="text-[#686868] transition-all duration-500 hover:ml-1 hover:text-primary-foreground">Kontak</a></li>
                     <li><a href="{{ route('guest.daftar-sekolah') }}" class="text-[#686868] transition-all duration-500 hover:ml-1 hover:text-primary-foreground">Daftar Sekolah</a></li>
                 </ul>

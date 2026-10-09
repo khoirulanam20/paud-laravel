@@ -95,7 +95,7 @@
                                                 @if($anak->dob)<span class="text-[10px] font-bold text-[#1A6B6B]">({{ $anak->age }})</span>@endif
                                             </div>
                                         </td>
-                                        <td style="color:#6B6560;">{{ $anak->user->name ?? '—' }}</td>
+                                        <td style="color:#6B6560;">{{ $anak->user->name ?? '' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

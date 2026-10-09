@@ -30,7 +30,7 @@
             <div class="gallery-pagination mt-6 flex justify-center"></div>
         </div>
         <p class="text-center mt-8">
-            <a href="{{ route('guest.galeri') }}" class="btn-rounded-full">Lihat Semua Galeri</a>
+            <a href="{{ route('guest.harga') }}" class="btn-rounded-full">Lihat Harga</a>
         </p>
     </div>
 </section>

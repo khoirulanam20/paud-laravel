@@ -394,7 +394,7 @@
                                 </td>
                                 <td>
                                     @if($first->kegiatan)<div class="font-medium text-sm" style="color:#2C2C2C;">{{ $first->kegiatan->title }}</div><div class="text-xs" style="color:#9E9790;">{{ \Carbon\Carbon::parse($first->kegiatan->date)->format('d M Y') }}</div>
-                                    @else—@endif
+                                    @else@endif
                                 </td>
                                 <td class="min-w-[240px]">
                                     <div class="space-y-2">
@@ -447,7 +447,7 @@
                         <div x-show="kelasOptions.length > 1">
                             <label class="input-label">Kelas <span class="text-red-500">*</span></label>
                             <select class="input-field" x-model="selectedKelasId" @change="selectedAnakId = ''; selectedKegiatanId = ''; resetCreateMatrices()">
-                                <option value="">— Pilih Kelas —</option>
+                                <option value=""> Pilih Kelas </option>
                                 <template x-for="kelas in kelasOptions" :key="kelas.id">
                                     <option :value="kelas.id" x-text="kelas.name"></option>
                                 </template>
@@ -457,7 +457,7 @@
                         <div data-tour="modal-create-section-siswa">
                             <label class="input-label">Target Siswa <span class="text-red-500">*</span></label>
                             <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''" :disabled="kelasOptions.length > 1 && !selectedKelasId">
-                                <option value="">— Pilih Siswa —</option>
+                                <option value=""> Pilih Siswa </option>
                                 <template x-for="anak in filteredAnaks" :key="anak.id">
                                     <option :value="anak.id" x-text="anak.display_label"></option>
                                 </template>
@@ -466,15 +466,15 @@
                             <p class="text-xs mt-1.5" style="color:#6B6560;" x-show="selectedAnakId && anakMap[selectedAnakId]?.nickname">
                                 <span class="font-semibold">Nama panggilan:</span>
                                 <span x-text="anakMap[selectedAnakId]?.nickname"></span>
-                                <span class="text-[10px] italic" style="color:#9E9790;"> — dipakai saran AI</span>
+                                <span class="text-[10px] italic" style="color:#9E9790;">  dipakai saran AI</span>
                             </p>
                         </div>
                         <div data-tour="modal-create-section-kegiatan" x-show="selectedAnakId">
                             <label class="input-label">Jurnal Kegiatan <span class="text-red-500">*</span></label>
                             <select name="kegiatan_id" required class="input-field" x-model="selectedKegiatanId" @change="resetCreateMatrices()">
-                                <option value="">— Pilih —</option>
+                                <option value=""> Pilih </option>
                                 <template x-for="k in filteredKegiatans" :key="k.id">
-                                    <option :value="k.id" x-text="k.date_label + ' — ' + k.title"></option>
+                                    <option :value="k.id" x-text="k.date_label + '  ' + k.title"></option>
                                 </template>
                             </select>
                             <p class="text-xs mt-1" style="color:#9E9790;">Hanya menampilkan kegiatan yang sudah memiliki dokumentasi foto (sudah dilaksanakan), belum ada pencapaiannya, dan siswa <strong>hadir</strong> (sudah dipresensi) pada kegiatan tersebut.</p>
@@ -488,9 +488,9 @@
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <div :data-tour="index === 0 ? 'modal-create-section-skala' : null">
                                     <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="createNilai[String(opt.id)]">
-                                        <option value="">— Skala Capaian —</option>
+                                        <option value=""> Skala Capaian </option>
                                         <template x-for="sk in skalaOptions" :key="sk.code">
-                                            <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                            <option :value="sk.code" x-text="sk.code + '  ' + sk.label"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -577,9 +577,9 @@
                             <div class="p-3 bg-gray-50 rounded-xl border border-black/5 space-y-2">
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="editNilai[String(opt.id)]">
-                                    <option value="" disabled>— Pilih Capaian —</option>
+                                    <option value="" disabled> Pilih Capaian </option>
                                     <template x-for="sk in skalaOptions" :key="'edit-' + sk.code">
-                                        <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                        <option :value="sk.code" x-text="sk.code + '  ' + sk.label"></option>
                                     </template>
                                 </select>
                                 <div class="space-y-1.5">

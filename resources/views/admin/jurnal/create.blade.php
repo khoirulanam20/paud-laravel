@@ -72,7 +72,7 @@
                                 <tr>
                                     <td class="pr-2">
                                         <select :name="`lines[${i}][akun_id]`" x-model="line.akun_id" required class="input-field text-sm w-full" style="min-width:150px;">
-                                            <option value="">— Pilih Akun —</option>
+                                            <option value=""> Pilih Akun </option>
                                             @foreach($akuns as $jenis => $group)
                                                 <optgroup label="{{ ucfirst($jenis) }}">
                                                     @foreach($group as $a)

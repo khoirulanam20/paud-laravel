@@ -466,7 +466,7 @@
             action-binding="deleteRoute"
             method="DELETE"
             title="Hapus Tagihan?"
-            message="Hanya tagihan Menunggu/Ditolak. Status Lunas tidak bisa dihapus — batalkan pelunasan dari halaman detail dulu."
+            message="Hanya tagihan Menunggu/Ditolak. Status Lunas tidak bisa dihapus  batalkan pelunasan dari halaman detail dulu."
         />
     </div>
 </x-app-layout>

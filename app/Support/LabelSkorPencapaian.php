@@ -41,7 +41,7 @@ final class LabelSkorPencapaian
     public static function label(?string $code, ?int $sekolahId = null): string
     {
         if ($code === null || $code === '') {
-            return '—';
+            return '';
         }
 
         if ($sekolahId !== null) {
@@ -73,7 +73,7 @@ final class LabelSkorPencapaian
     public static function scoreLabelForAi(?string $code, ?int $sekolahId = null): string
     {
         if ($code === null || $code === '') {
-            return '—';
+            return '';
         }
 
         $label = self::label($code, $sekolahId);

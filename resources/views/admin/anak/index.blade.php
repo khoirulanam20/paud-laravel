@@ -460,7 +460,7 @@
                             <ul class="mt-2 space-y-1.5 list-disc pl-4 leading-relaxed">
                                 <li>Email wali yang sudah terdaftar akan otomatis ditautkan ke akun yang ada.</li>
                                 <li>Akun wali baru memakai password awal: <code>password123</code></li>
-                                <li>Jangan ubah format kolom NIK — biarkan sebagai teks agar tidak rusak.</li>
+                                <li>Jangan ubah format kolom NIK  biarkan sebagai teks agar tidak rusak.</li>
                             </ul>
                         </details>
                     </div>
@@ -504,7 +504,7 @@
                             <label class="input-label">Nama Panggilan</label>
                             <input type="text" name="nickname" maxlength="50"
                                 class="input-field @error('nickname') border-red-500 @enderror"
-                                placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian"
+                                placeholder="Opsional, maks. 50 karakter  dipakai saran AI pencapaian"
                                 value="{{ old('nickname') }}">
                             @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
@@ -666,7 +666,7 @@
                             <label class="input-label">Nama Panggilan</label>
                             <input type="text" name="nickname" maxlength="50" x-model="editData.nickname"
                                 class="input-field @error('nickname') border-red-500 @enderror"
-                                placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian">
+                                placeholder="Opsional, maks. 50 karakter  dipakai saran AI pencapaian">
                             @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="col-span-1">

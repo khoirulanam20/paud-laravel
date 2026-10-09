@@ -10,7 +10,7 @@
                     <i class="icon-kindergarden text-3xl text-destructive-foreground" aria-hidden="true"></i>
                 </div>
                 <h3 class="font-semibold lg:text-2xl text-xl">Visi</h3>
-                <p class="mt-4 text-muted-foreground leading-relaxed">Setiap orang tua PAUD di Indonesia dapat terhubung erat dengan sekolah anaknya — transparan, mudah, dan didukung teknologi cerdas.</p>
+                <p class="mt-4 text-muted-foreground leading-relaxed">Setiap orang tua PAUD di Indonesia dapat terhubung erat dengan sekolah anaknya  transparan, mudah, dan didukung teknologi cerdas.</p>
             </article>
             <article class="rounded-[10px] bg-background border-2 border-[#F2F2F2] lg:p-10 p-6 wow fadeInUp" data-wow-delay=".4s">
                 <div class="w-14 h-14 rounded-[10px] bg-green/20 flex items-center justify-center mb-5">

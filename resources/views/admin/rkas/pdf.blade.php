@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h1>Laporan RKAS — {{ \App\Support\TahunAjaran::label($rka->tahun_ajaran, $rka->semester) }}</h1>
+    <h1>Laporan RKAS  {{ \App\Support\TahunAjaran::label($rka->tahun_ajaran, $rka->semester) }}</h1>
     <p>Periode: {{ $rka->tanggal_mulai->format('d/m/Y') }} – {{ $rka->tanggal_akhir->format('d/m/Y') }}</p>
     <table>
         <thead>

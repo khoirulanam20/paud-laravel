@@ -222,7 +222,7 @@
                                     @change="toggleOne({{ $anak->id }}, $event.target.checked)">
                             </td>
                             <td class="px-4 py-3 font-medium" style="color:#2C2C2C;">{{ $anak->name }}</td>
-                            <td class="px-4 py-3" style="color:#6B6560;">{{ $anak->kelas?->name ?? '—' }}</td>
+                            <td class="px-4 py-3" style="color:#6B6560;">{{ $anak->kelas?->name ?? '' }}</td>
                             <td class="px-4 py-3">
                                 @if(!$summary)
                                     <span class="text-xs font-medium px-2 py-1 rounded" style="background:#F5F5F5; color:#9E9790;">Belum ada</span>
@@ -233,14 +233,14 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3" style="color:#6B6560;">
-                                {{ $summary?->generated_at?->translatedFormat('d M Y H:i') ?? '—' }}
+                                {{ $summary?->generated_at?->translatedFormat('d M Y H:i') ?? '' }}
                             </td>
                             <td class="px-4 py-3 text-right">
                                 @if($summary)
                                     <a href="{{ route($showRouteName, ['anak' => $anak->id, 'tahun' => $tahun, 'bulan' => $bulan]) }}"
                                        class="text-sm font-semibold" style="color:#1A6B6B;">Lihat</a>
                                 @else
-                                    <span class="text-xs" style="color:#C0BAB4;">—</span>
+                                    <span class="text-xs" style="color:#C0BAB4;"></span>
                                 @endif
                             </td>
                         </tr>

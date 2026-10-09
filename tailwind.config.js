@@ -12,9 +12,34 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['DM Sans', 'Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['"Plus Jakarta Sans"', 'DM Sans', 'Inter', ...defaultTheme.fontFamily.sans],
+                serif: ['"EB Garamond"', 'Fraunces', 'Georgia', ...defaultTheme.fontFamily.serif],
+                'display-hero': ['"EB Garamond"', 'Georgia', 'serif'],
+                'headline-lg': ['"EB Garamond"', 'Georgia', 'serif'],
+                'headline-md': ['"EB Garamond"', 'Georgia', 'serif'],
+                'headline-sm': ['"EB Garamond"', 'Georgia', 'serif'],
+                'body-lg': ['"Plus Jakarta Sans"', 'sans-serif'],
+                'body-md': ['"Plus Jakarta Sans"', 'sans-serif'],
+                'body-sm': ['"Plus Jakarta Sans"', 'sans-serif'],
+                'label-md': ['"Plus Jakarta Sans"', 'sans-serif'],
+                'label-sm': ['"Plus Jakarta Sans"', 'sans-serif'],
+                'title-card': ['"Plus Jakarta Sans"', 'sans-serif'],
             },
             colors: {
+                // Scandinavian Daycare (Stitch) palette
+                'canvas-cream': '#FBFBF7',
+                'surface-mint': '#E8F1E4',
+                'surface-sage': '#C8DEC2',
+                'surface-forest': '#587E6C',
+                'surface-card': '#FFFFFF',
+                'forest-deep': '#496C5C',
+                'forest-mid': '#5E8570',
+                'forest-high': '#436556',
+                'text-primary': '#2D3F35',
+                'text-secondary': '#586B60',
+                'text-inverse': '#FFFFFF',
+                'border-subtle': '#D5E2D1',
+                // Existing palette
                 cream: {
                     DEFAULT: '#F5F0E8',
                     raised: '#FAF6F0',

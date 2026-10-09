@@ -233,12 +233,12 @@
                 </div>
                 <div class="modal-body space-y-5" data-tour="modal-detail-content">
                     <div class="flex items-center gap-2">
-                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.date || '—'"></p>
+                        <p class="text-lg font-bold" style="color:#2C2C2C;" x-text="detailData.date || ''"></p>
                         <span x-show="detailData.is_today" class="badge badge-green">Hari Ini</span>
                     </div>
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:#9E9790;">Daftar Menu</p>
-                        <p class="text-sm whitespace-pre-line leading-relaxed" style="color:#2C2C2C;" x-text="detailData.menu || '—'"></p>
+                        <p class="text-sm whitespace-pre-line leading-relaxed" style="color:#2C2C2C;" x-text="detailData.menu || ''"></p>
                     </div>
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#9E9790;">Informasi Gizi</p>

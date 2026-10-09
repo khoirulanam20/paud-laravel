@@ -54,7 +54,7 @@ final class HariLiburIndonesia
             '2025-01-28', // Isra Mi'raj Nabi Muhammad SAW
             '2025-03-28', // Hari Suci Nyepi (Tahun Baru Saka 1947)
             '2025-03-30', // Hari Paskah
-            '2025-04-01', // Wafat Isa Al Masih (Good Friday) — dikonfirmasi
+            '2025-04-01', // Wafat Isa Al Masih (Good Friday)  dikonfirmasi
             '2025-03-31', // Wafat Isa Al Masih
             '2025-04-01', // Hari Paskah
             '2025-03-31', // Hari Raya Idul Fitri 1446 H
@@ -90,7 +90,7 @@ final class HariLiburIndonesia
             '2026-03-22', // Hari Suci Nyepi (Tahun Baru Saka 1948)
             '2026-04-03', // Wafat Isa Al Masih (Good Friday)
             '2026-04-05', // Hari Paskah
-            '2026-04-10', // Isra Mi'raj — sesuai kalender 2026
+            '2026-04-10', // Isra Mi'raj  sesuai kalender 2026
             '2026-05-01', // Hari Buruh Internasional
             '2026-05-14', // Kenaikan Isa Al Masih
             '2026-05-27', // Hari Raya Idul Adha 1447 H

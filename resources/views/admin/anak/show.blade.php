@@ -275,7 +275,7 @@
                                                             </span>
                                                         </div>
                                                         <p class="text-xs font-medium text-gray-600 leading-tight">
-                                                            {{ $p->matrikulasi->indicator ?? '—' }}
+                                                            {{ $p->matrikulasi->indicator ?? '' }}
                                                         </p>
                                                         @if($p->feedback)
                                                             <p class="text-[11px] italic text-gray-400 mt-1">"{{ $p->feedback }}"</p>

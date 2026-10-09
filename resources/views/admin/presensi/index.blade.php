@@ -141,7 +141,7 @@
                                         </td>
                                         <td class="py-4 whitespace-nowrap">
                                             @if($anak->kelas)<span class="badge badge-teal whitespace-nowrap">{{ $anak->kelas->name }}</span>
-                                            @else<span class="text-xs italic" style="color:#9E9790;">—</span>@endif
+                                            @else<span class="text-xs italic" style="color:#9E9790;"></span>@endif
                                         </td>
                                         <td class="py-4">
                                             <select name="presensi[{{ $anak->id }}][status]" data-presensi-status class="input-field py-2 text-xs w-full min-w-[7rem]">

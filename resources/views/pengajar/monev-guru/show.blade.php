@@ -12,7 +12,7 @@
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <p class="text-sm" style="color:#9E9790;">Periode: {{ $evaluasi->periodeLabel() }}</p>
-                    <p class="text-sm" style="color:#9E9790;">Evaluator: {{ $evaluasi->evaluator->name ?? '—' }}</p>
+                    <p class="text-sm" style="color:#9E9790;">Evaluator: {{ $evaluasi->evaluator->name ?? '' }}</p>
                     @if($evaluasi->finalized_at)
                         <p class="text-sm" style="color:#9E9790;">Dipublikasikan: {{ $evaluasi->finalized_at->format('d M Y') }}</p>
                     @endif
@@ -32,8 +32,8 @@
                 @foreach($evaluasi->items->filter(fn ($i) => $i->kriteria?->is_active)->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
                 <div class="px-6 py-4">
                     <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
-                        <div class="font-semibold">{{ $item->kriteria->nama ?? '—' }}</div>
-                        <div class="text-lg font-bold" style="color:#1A6B6B;">{{ $item->skor ?? '—' }}</div>
+                        <div class="font-semibold">{{ $item->kriteria->nama ?? '' }}</div>
+                        <div class="text-lg font-bold" style="color:#1A6B6B;">{{ $item->skor ?? '' }}</div>
                     </div>
                     @if($item->kriteria?->deskripsi)<p class="text-xs mb-2" style="color:#9E9790;">{{ $item->kriteria->deskripsi }}</p>@endif
                     @if($item->catatan)<p class="text-sm" style="color:#555;">{{ $item->catatan }}</p>@endif

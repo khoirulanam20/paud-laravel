@@ -143,7 +143,7 @@
             </div>
             <div>
                 <div class="font-bold text-sm" style="color:#2C2C2C;">
-                    {{ $aiConfigured ? 'AI Aktif — siap generate persona' : 'AI Belum Dikonfigurasi' }}
+                    {{ $aiConfigured ? 'AI Aktif  siap generate persona' : 'AI Belum Dikonfigurasi' }}
                 </div>
                 <div class="text-xs mt-1" style="color:#6B6560;">
                     Setiap tab punya persona sendiri untuk fungsi AI berbeda. Nonaktifkan persona jika ingin pakai default sistem.
@@ -195,8 +195,8 @@
                                         <td class="px-4 py-3 font-semibold" style="color:{{ $tx->amount >= 0 ? '#1A6B6B' : '#DC2626' }};">
                                             {{ $tx->amount >= 0 ? '+' : '' }}{{ number_format($tx->amount) }}
                                         </td>
-                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->description ?? '—' }}</td>
-                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->createdBy?->name ?? '—' }}</td>
+                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->description ?? '' }}</td>
+                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->createdBy?->name ?? '' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -231,7 +231,7 @@
 
                 <div class="card overflow-hidden mb-6">
                     <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                        <h3 class="section-title">Generate — {{ AiPersonaScope::label($scope) }}</h3>
+                        <h3 class="section-title">Generate  {{ AiPersonaScope::label($scope) }}</h3>
                         <p class="section-subtitle mt-1">{{ AiPersonaScope::generateContext($scope) }}</p>
                     </div>
                     <div class="px-6 py-6 space-y-4">
@@ -372,7 +372,7 @@
 
                 <div class="card overflow-hidden">
                     <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                        <h3 class="section-title">Pengaturan — {{ AiPersonaScope::label($scope) }}</h3>
+                        <h3 class="section-title">Pengaturan  {{ AiPersonaScope::label($scope) }}</h3>
                     </div>
                     <form data-tour="admin-ai-persona-form" action="{{ route('admin.ai-persona.update') }}" method="POST">
                         @csrf
@@ -410,7 +410,7 @@
                                 <div>
                                     <label class="input-label">4. Jenis Kelamin</label>
                                     <select name="gender" class="input-field" x-model="fields['{{ $scope }}'].gender">
-                                        <option value="">— Pilih —</option>
+                                        <option value=""> Pilih </option>
                                         <option value="perempuan">Perempuan</option>
                                         <option value="laki_laki">Laki-laki</option>
                                         <option value="netral">Netral</option>

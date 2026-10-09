@@ -803,7 +803,7 @@ class MonevSummaryService
 
                     if ($remaining > 0) {
                         $generation->failed += $remaining;
-                        $generation->appendError('Proses generate timeout — beberapa siswa tidak selesai diproses.');
+                        $generation->appendError('Proses generate timeout  beberapa siswa tidak selesai diproses.');
                     }
 
                     $status = $generation->failed > 0 && $generation->completed === 0 && $generation->skipped === 0

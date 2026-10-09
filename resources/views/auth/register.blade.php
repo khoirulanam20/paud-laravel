@@ -1,9 +1,18 @@
 <x-guest-layout max-width="max-w-xl">
     <x-auth-session-status class="mb-5" :status="session('status')" />
 
-    <p class="text-secondary-foreground font-bubblegum-sans text-[19px]">Daftar</p>
-    <h2 class="text-2xl lg:text-[28px] font-bold leading-tight mt-1 mb-1">Daftar orang tua</h2>
-    <p class="text-sm text-muted-foreground mb-6">Lengkapi data Anda dan data anak. Akun aktif setelah disetujui admin sekolah.</p>
+    <div class="mb-6">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-mint text-forest-deep text-xs font-semibold tracking-wide uppercase">
+            <span class="material-symbols-outlined text-[15px]">person_add</span>
+            Daftar Orang Tua
+        </span>
+        <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-text-primary tracking-tight mt-2.5">
+            Daftar Orang Tua &amp; Anak
+        </h1>
+        <p class="text-sm text-text-secondary mt-1.5 leading-relaxed">
+            Lengkapi data diri Anda dan ananda. Akun akan aktif setelah ditinjau oleh pihak sekolah.
+        </p>
+    </div>
 
     @include('auth.partials.pendaftaran-form', [
         'action' => route('register'),

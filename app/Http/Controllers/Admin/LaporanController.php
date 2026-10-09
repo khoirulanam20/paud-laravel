@@ -123,7 +123,7 @@ class LaporanController extends Controller
             ->where('is_aktif', true)
             ->orderBy('kode')
             ->get()
-            ->map(fn (Akun $a) => ['id' => $a->id, 'label' => $a->kode.' — '.$a->nama])
+            ->map(fn (Akun $a) => ['id' => $a->id, 'label' => $a->kode.'  '.$a->nama])
             ->values()
             ->all();
 

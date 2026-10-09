@@ -31,11 +31,11 @@ class GuestController extends Controller
         return view('guest.fasilitas', compact('cms'));
     }
 
-    public function galeri()
+    public function harga()
     {
         $cms = GuestCms::data();
 
-        return view('guest.galeri', compact('cms'));
+        return view('guest.harga', compact('cms'));
     }
 
     public function pendaftaran()

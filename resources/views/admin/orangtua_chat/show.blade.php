@@ -17,7 +17,7 @@
             <div class="min-w-0">
                 <h2 class="font-bold text-lg truncate" style="color: #2C2C2C;">Chat {{ $chat->user?->name ?? 'Orang Tua' }}</h2>
                 <p class="text-xs truncate" style="color:#9E9790;">
-                    Anak: {{ $chat->user?->anaks?->pluck('name')->filter()->unique()->implode(', ') ?: '—' }}
+                    Anak: {{ $chat->user?->anaks?->pluck('name')->filter()->unique()->implode(', ') ?: '' }}
                 </p>
             </div>
         </div>

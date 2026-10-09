@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // ponytail: FK anak_id sering memakai unique composite sebagai backing index — buat index sendiri dulu
+        // ponytail: FK anak_id sering memakai unique composite sebagai backing index  buat index sendiri dulu
         if (! $this->hasIndex('pembayaran_bulanans', 'pembayaran_bulanans_anak_id_index')) {
             Schema::table('pembayaran_bulanans', function (Blueprint $table) {
                 $table->index('anak_id', 'pembayaran_bulanans_anak_id_index');

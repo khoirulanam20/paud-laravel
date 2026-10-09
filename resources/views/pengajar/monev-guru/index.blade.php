@@ -17,7 +17,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <div class="font-semibold" style="color:#2C2C2C;">{{ $e->judul ?: 'Evaluasi Guru' }}</div>
-                            <div class="text-sm mt-1" style="color:#9E9790;">{{ $e->periodeLabel() }} · Evaluator: {{ $e->evaluator->name ?? '—' }}</div>
+                            <div class="text-sm mt-1" style="color:#9E9790;">{{ $e->periodeLabel() }} · Evaluator: {{ $e->evaluator->name ?? '' }}</div>
                         </div>
                         @if($e->skor_keseluruhan !== null)
                             <div class="text-2xl font-bold" style="color:#1A6B6B;">{{ $e->skor_keseluruhan }}</div>

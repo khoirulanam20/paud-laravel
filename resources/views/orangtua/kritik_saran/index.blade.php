@@ -62,7 +62,7 @@
                             </div>
                             <div>
                                 <p class="text-xs font-semibold" style="color:#9E9790;">{{ $fb->created_at->format('d M Y, H:i') }}</p>
-                                <span class="badge badge-teal mt-0.5">{{ $fb->status ?? '—' }}</span>
+                                <span class="badge badge-teal mt-0.5">{{ $fb->status ?? '' }}</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">

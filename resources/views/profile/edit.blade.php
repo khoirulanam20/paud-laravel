@@ -153,7 +153,7 @@
                     'approved' => 'Disetujui',
                     'pending' => 'Menunggu persetujuan',
                     'rejected' => 'Ditolak',
-                    default => $anak->status ? ucfirst((string) $anak->status) : '—',
+                    default => $anak->status ? ucfirst((string) $anak->status) : '',
                 };
                 $statusClass = match ($anak->status ?? '') {
                     'approved' => 'badge-teal',
@@ -205,10 +205,10 @@
                     <div class="border-t" style="border-color:rgba(0,0,0,0.06);">
                         <div class="px-6 py-4 bg-gray-50/80 border-b text-sm space-y-2" style="border-color:rgba(0,0,0,0.06);">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#2C2C2C]">
-                                <div><span class="text-gray-500">Sekolah:</span> <span class="font-medium">{{ $anak->sekolah->name ?? '—' }}</span></div>
+                                <div><span class="text-gray-500">Sekolah:</span> <span class="font-medium">{{ $anak->sekolah->name ?? '' }}</span></div>
                                 <div><span class="text-gray-500">Kelas:</span> <span class="font-medium">{{ $anak->kelas->name ?? 'Tanpa kelas' }}</span></div>
                                 <div><span class="text-gray-500">Status pendaftaran:</span> <span class="font-medium">{{ $statusLabel }}</span></div>
-                                <div><span class="text-gray-500">Usia:</span> <span class="font-medium">{{ $anak->dob ? $anak->age : '—' }}</span></div>
+                                <div><span class="text-gray-500">Usia:</span> <span class="font-medium">{{ $anak->dob ? $anak->age : '' }}</span></div>
                                 @if(filled($anak->parent_name))
                                     <div class="sm:col-span-2"><span class="text-gray-500">Nama wali (di data anak):</span> <span class="font-medium">{{ $anak->parent_name }}</span></div>
                                 @endif
@@ -220,7 +220,7 @@
                                 <div class="col-span-2"><label class="input-label">Nama Lengkap Anak</label><input type="text" name="name" value="{{ old('name', $anak->name) }}" required class="input-field"></div>
                                 <div class="col-span-2">
                                     <label class="input-label">Nama Panggilan</label>
-                                    <input type="text" name="nickname" maxlength="50" value="{{ old('nickname', $anak->nickname) }}" class="input-field @error('nickname') border-red-500 @enderror" placeholder="Opsional, maks. 50 karakter — dipakai saran AI pencapaian">
+                                    <input type="text" name="nickname" maxlength="50" value="{{ old('nickname', $anak->nickname) }}" class="input-field @error('nickname') border-red-500 @enderror" placeholder="Opsional, maks. 50 karakter  dipakai saran AI pencapaian">
                                     @error('nickname')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                                 </div>
                                 <div><label class="input-label">Tanggal Lahir</label><input type="date" name="dob" value="{{ old('dob', $anak->dob?->format('Y-m-d')) }}" required class="input-field"></div>

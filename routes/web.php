@@ -88,7 +88,8 @@ Route::get('/sitemap.xml', [GuestSitemapController::class, 'index'])->name('gues
 Route::get('/', [GuestController::class, 'beranda'])->name('guest.beranda');
 Route::get('/tentang', [GuestController::class, 'tentang'])->name('guest.tentang');
 Route::get('/fasilitas', [GuestController::class, 'fasilitas'])->name('guest.fasilitas');
-Route::get('/galeri', [GuestController::class, 'galeri'])->name('guest.galeri');
+Route::get('/harga', [GuestController::class, 'harga'])->name('guest.harga');
+Route::redirect('/galeri', '/harga', 301);
 Route::get('/pendaftaran', [GuestController::class, 'pendaftaran'])->name('guest.pendaftaran');
 Route::post('/pendaftaran', [RegisteredUserController::class, 'store'])
     ->middleware('guest')

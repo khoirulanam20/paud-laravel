@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Monev Guru — {{ $evaluasi->pengajar->name ?? 'Guru' }}</title>
+    <title>Monev Guru  {{ $evaluasi->pengajar->name ?? 'Guru' }}</title>
     <style>
         * { box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #2C2C2C; line-height: 1.5; margin: 0; padding: 24px; }
@@ -24,12 +24,12 @@
     <div class="header">
         <h1>Laporan Monev Guru</h1>
         <p class="meta">{{ $evaluasi->sekolah->name ?? 'Sekolah' }}</p>
-        <p class="meta">Periode: {{ $evaluasi->periodeLabel() }}@if($evaluasi->judul) — {{ $evaluasi->judul }}@endif</p>
+        <p class="meta">Periode: {{ $evaluasi->periodeLabel() }}@if($evaluasi->judul)  {{ $evaluasi->judul }}@endif</p>
     </div>
 
-    <p><strong>Nama Guru:</strong> {{ $evaluasi->pengajar->name ?? '—' }}</p>
-    <p><strong>Jabatan:</strong> {{ $evaluasi->pengajar->jabatan ?? '—' }}</p>
-    <p><strong>Evaluator:</strong> {{ $evaluasi->evaluator->name ?? '—' }}</p>
+    <p><strong>Nama Guru:</strong> {{ $evaluasi->pengajar->name ?? '' }}</p>
+    <p><strong>Jabatan:</strong> {{ $evaluasi->pengajar->jabatan ?? '' }}</p>
+    <p><strong>Evaluator:</strong> {{ $evaluasi->evaluator->name ?? '' }}</p>
     @if($evaluasi->finalized_at)
         <p><strong>Tanggal Final:</strong> {{ $evaluasi->finalized_at->format('d M Y H:i') }}</p>
     @endif
@@ -50,10 +50,10 @@
             <tbody>
                 @foreach($evaluasi->items->filter(fn ($i) => $i->kriteria?->is_active)->sortBy(fn($i) => $i->kriteria?->urutan ?? 999) as $item)
                 <tr>
-                    <td>{{ $item->kriteria->nama ?? '—' }}</td>
-                    <td>{{ $item->kriteria->bobot ?? '—' }}%</td>
-                    <td><strong>{{ $item->skor ?? '—' }}</strong></td>
-                    <td>{{ $item->catatan ?: '—' }}</td>
+                    <td>{{ $item->kriteria->nama ?? '' }}</td>
+                    <td>{{ $item->kriteria->bobot ?? '' }}%</td>
+                    <td><strong>{{ $item->skor ?? '' }}</strong></td>
+                    <td>{{ $item->catatan ?: '' }}</td>
                 </tr>
                 @endforeach
             </tbody>

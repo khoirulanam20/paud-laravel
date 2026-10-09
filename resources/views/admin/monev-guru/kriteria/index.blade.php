@@ -34,7 +34,7 @@
                         @forelse($kriterias as $k)
                         <tr>
                             <td class="font-semibold">{{ $k->nama }}</td>
-                            <td class="text-sm max-w-xs truncate" title="{{ $k->deskripsi }}">{{ $k->deskripsi ?: '—' }}</td>
+                            <td class="text-sm max-w-xs truncate" title="{{ $k->deskripsi }}">{{ $k->deskripsi ?: '' }}</td>
                             <td>{{ $k->bobot }}%</td>
                             <td>{{ $k->urutan }}</td>
                             <td>@if($k->is_active)<span class="badge badge-teal">Aktif</span>@else<span class="badge" style="background:#eee;color:#666;">Nonaktif</span>@endif</td>

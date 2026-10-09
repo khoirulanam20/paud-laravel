@@ -19,7 +19,7 @@
                 <div class="w-full min-w-0 sm:min-w-[12rem] sm:flex-1">
                     <label class="input-label">Akun</label>
                     <select name="akun_id" class="input-field w-full" required>
-                        <option value="">— Pilih akun —</option>
+                        <option value=""> Pilih akun </option>
                         @foreach($akunOptions as $opt)
                             <option value="{{ $opt['id'] }}" @selected($akunId == $opt['id'])>{{ $opt['label'] }}</option>
                         @endforeach
@@ -33,7 +33,7 @@
             <div class="card overflow-hidden mb-6">
                 <div class="px-6 py-4 text-center border-b" style="border-color:rgba(0,0,0,0.06);">
                     <p class="font-bold text-lg" style="color:#2C2C2C;">{{ auth()->user()->sekolah->name ?? 'Sekolah' }}</p>
-                    <p class="section-title text-base">Buku Besar — {{ $gl['akun']->kode }} {{ $gl['akun']->nama }}</p>
+                    <p class="section-title text-base">Buku Besar  {{ $gl['akun']->kode }} {{ $gl['akun']->nama }}</p>
                     <p class="section-subtitle">{{ $periode['label'] }}</p>
                 </div>
 
@@ -59,11 +59,11 @@
                             @foreach($gl['mutasi'] as $row)
                                 @php $j = $row['line']->jurnal; @endphp
                                 <tr>
-                                    <td>{{ $j?->tanggal?->format('d/m/Y') ?? '—' }}</td>
-                                    <td>{{ $j?->no_jurnal ?? '—' }}</td>
-                                    <td>{{ Str::limit($j?->deskripsi ?? '—', 60) }}</td>
-                                    <td class="text-right">{{ $row['debit'] > 0 ? number_format($row['debit'], 0, ',', '.') : '—' }}</td>
-                                    <td class="text-right">{{ $row['kredit'] > 0 ? number_format($row['kredit'], 0, ',', '.') : '—' }}</td>
+                                    <td>{{ $j?->tanggal?->format('d/m/Y') ?? '' }}</td>
+                                    <td>{{ $j?->no_jurnal ?? '' }}</td>
+                                    <td>{{ Str::limit($j?->deskripsi ?? '', 60) }}</td>
+                                    <td class="text-right">{{ $row['debit'] > 0 ? number_format($row['debit'], 0, ',', '.') : '' }}</td>
+                                    <td class="text-right">{{ $row['kredit'] > 0 ? number_format($row['kredit'], 0, ',', '.') : '' }}</td>
                                     <td class="text-right font-medium">Rp {{ number_format($row['saldo'], 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach

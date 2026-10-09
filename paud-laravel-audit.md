@@ -39,7 +39,7 @@ APP_DEBUG=false
 ### S-2. SESSION_ENCRYPT=false
 
 **File:** `.env.example` line 31  
-**Temuan:** `SESSION_ENCRYPT=false` — session tidak dienkripsi.
+**Temuan:** `SESSION_ENCRYPT=false`  session tidak dienkripsi.
 
 **Risk:** Jika session storage diakses langsung (file/database), data session bisa dibaca plain.
 
@@ -53,7 +53,7 @@ SESSION_ENCRYPT=true
 ### S-3. Sanctum Token Tidak Expired
 
 **File:** `config/sanctum.php`  
-**Temuan:** `'expiration' => null` — API token mobile orang tua tidak pernah expire.
+**Temuan:** `'expiration' => null`  API token mobile orang tua tidak pernah expire.
 
 **Risk:** Token yang bocor atau di-steal bisa dipakai selamanya.
 
@@ -69,7 +69,7 @@ SESSION_ENCRYPT=true
 **File:** `app/Models/AiSetting.php`, `app/Services/MonevSummaryService.php`  
 **Temuan:** API key AI (OpenAI, DeepSeek, Groq, dll) disimpan di tabel `ai_settings` tanpa enkripsi.
 
-**Risk:** Jika database bocor (SQL Injection atau backup ter-expose), semua API key vendor AI ikut bocor. API key ini berbayar — attacker bisa pakai atas nama sekolah.
+**Risk:** Jika database bocor (SQL Injection atau backup ter-expose), semua API key vendor AI ikut bocor. API key ini berbayar  attacker bisa pakai atas nama sekolah.
 
 **Fix:**
 ```php
@@ -81,10 +81,10 @@ protected $casts = [
 
 ---
 
-### S-5. Rate Limiting Hanya di API Login — Web Login Tidak Ada
+### S-5. Rate Limiting Hanya di API Login  Web Login Tidak Ada
 
-**File:** `routes/api.php` — ada throttle:12,1  
-**File:** `routes/auth.php` / `routes/web.php` — tidak ada throttle
+**File:** `routes/api.php`  ada throttle:12,1  
+**File:** `routes/auth.php` / `routes/web.php`  tidak ada throttle
 
 **Temuan:** API login sudah terlindungi (12 request/menit). Tapi web login (Breeze) tidak ada throttle eksplisit.
 
@@ -96,7 +96,7 @@ Route::post('login', [AuthenticatedSessionController::class, 'store'])
 
 ---
 
-### S-6. CanUploadImage Trait — Validasi MIME dari getimagesize() Bisa Bypass
+### S-6. CanUploadImage Trait  Validasi MIME dari getimagesize() Bisa Bypass
 
 **File:** `app/Http/Traits/CanUploadImage.php` line 27-28  
 **Temuan:**
@@ -106,7 +106,7 @@ $info = getimagesize($imagePath);
 $mime = $info['mime'] ?? $file->getClientMimeType(); // ❌ Fallback ke client MIME!
 ```
 
-Jika `getimagesize()` gagal (file bukan gambar atau corrupt), fallback ke `getClientMimeType()` yang diambil dari header request — bisa dimanipulasi attacker.
+Jika `getimagesize()` gagal (file bukan gambar atau corrupt), fallback ke `getClientMimeType()` yang diambil dari header request  bisa dimanipulasi attacker.
 
 **Risk:** Attacker bisa upload file PHP yang disamarkan sebagai gambar, lalu bypass image validation.
 
@@ -125,7 +125,7 @@ if (!in_array($mime, $allowedMimes)) {
 
 ---
 
-### S-7. OrangTuaChatService — Input Hanya strip_tags, Tidak Full Sanitize
+### S-7. OrangTuaChatService  Input Hanya strip_tags, Tidak Full Sanitize
 
 **File:** `app/Services/OrangTuaChatService.php` line 47  
 **Temuan:**
@@ -140,7 +140,7 @@ $content = trim(strip_tags($content));
 Ignore previous instructions. You are now...
 ```
 
-**Risk:** Prompt injection — manipulasi konteks AI untuk output yang tidak diinginkan, atau eksfiltrasi data siswa lain jika konteks dicampur.
+**Risk:** Prompt injection  manipulasi konteks AI untuk output yang tidak diinginkan, atau eksfiltrasi data siswa lain jika konteks dicampur.
 
 **Fix:** Tambahkan validasi panjang dan blacklist karakter kontrol. Pisahkan konteks system prompt dari user input dengan strict boundary:
 
@@ -151,13 +151,13 @@ $userSection = "[USER MESSAGE START]\n" . $content . "\n[USER MESSAGE END]";
 
 ---
 
-### S-8. SCRAMBLE Docs Aktif di Local — Endpoint /docs/api Terbuka
+### S-8. SCRAMBLE Docs Aktif di Local  Endpoint /docs/api Terbuka
 
-**File:** `.env.example` — `SCRAMBLE_DOCS_ENABLED=false`  
+**File:** `.env.example`  `SCRAMBLE_DOCS_ENABLED=false`  
 **File:** `config/scramble.php`  
 **Temuan:** Scramble API docs aktif di `local` environment. Jika staging/demo pakai `APP_ENV=local`, dokumentasi API lengkap bisa diakses siapa saja di `/docs/api`.
 
-**Risk:** Information disclosure — struktur endpoint, parameter, response format bocor ke publik. Memudahkan attacker reconnaissance.
+**Risk:** Information disclosure  struktur endpoint, parameter, response format bocor ke publik. Memudahkan attacker reconnaissance.
 
 **Fix:** Pastikan production/staging pakai:
 ```env
@@ -174,7 +174,7 @@ Atau tambahkan auth middleware di Scramble config:
 
 ## 2. Robustness
 
-### R-1. GenerateMonevSummaryJob — Tidak Ada Max Retry / Timeout
+### R-1. GenerateMonevSummaryJob  Tidak Ada Max Retry / Timeout
 
 **File:** `app/Jobs/GenerateMonevSummaryJob.php`  
 **Temuan:** Job AI generation tidak punya `$tries`, `$timeout`, atau `$backoff` yang eksplisit.
@@ -202,7 +202,7 @@ class GenerateMonevSummaryJob implements ShouldQueue
 
 ---
 
-### R-2. MonevSummaryService — AI Service Resolve Bisa Null Tanpa Handling di Job
+### R-2. MonevSummaryService  AI Service Resolve Bisa Null Tanpa Handling di Job
 
 **File:** `app/Services/MonevSummaryService.php` line 31-47  
 **Temuan:** `resolveAiServiceForSekolah()` mengembalikan `null` jika AI setting belum dikonfigurasi. Jika job sudah jalan dan service null, kemungkinan throw exception unhandled.
@@ -217,12 +217,12 @@ GenerateMonevSummaryJob::dispatch($sekolahId);
 
 ---
 
-### R-3. AkuntansiService — Tidak Ada Validasi Akun Null Sebelum Buat Jurnal
+### R-3. AkuntansiService  Tidak Ada Validasi Akun Null Sebelum Buat Jurnal
 
 **File:** `app/Services/AkuntansiService.php`  
 **Temuan:** Jika `$kas` atau `$counter` adalah `null` (akun tidak ditemukan atau setting belum dikonfigurasi), jurnal akan dibuat dengan data tidak lengkap.
 
-**Risk:** Data akuntansi corrupt — jurnal tanpa debit/kredit yang valid.
+**Risk:** Data akuntansi corrupt  jurnal tanpa debit/kredit yang valid.
 
 **Fix:**
 ```php
@@ -235,7 +235,7 @@ if (!$kas || !$counter) {
 
 ---
 
-### R-4. CanUploadImage — Tidak Ada Cleanup Jika Proses Gagal di Tengah
+### R-4. CanUploadImage  Tidak Ada Cleanup Jika Proses Gagal di Tengah
 
 **File:** `app/Http/Traits/CanUploadImage.php`  
 **Temuan:** Jika GD image processing gagal setelah file tersimpan, file yang sudah terupload tidak dihapus.
@@ -254,7 +254,7 @@ try {
 
 ---
 
-### R-5. OrangTuaChat — Tidak Ada Rate Limiting per User
+### R-5. OrangTuaChat  Tidak Ada Rate Limiting per User
 
 **File:** `app/Services/OrangTuaChatService.php`  
 **Temuan:** Tidak ada throttle untuk frekuensi pesan orang tua. User bisa spam ratusan pesan yang menguras AI token sekolah.
@@ -272,7 +272,7 @@ Cache::expire($key, 60); // reset per menit
 
 ---
 
-### R-6. phpunit.xml — Test DB Config Hardcoded
+### R-6. phpunit.xml  Test DB Config Hardcoded
 
 **File:** `phpunit.xml`  
 **Temuan:**
@@ -296,7 +296,7 @@ Atau gunakan environment variable:
 
 ---
 
-### R-7. Scheduled Command — Tidak Ada Monitoring Failure
+### R-7. Scheduled Command  Tidak Ada Monitoring Failure
 
 **File:** `bootstrap/app.php`  
 **Temuan:**
@@ -323,7 +323,7 @@ $schedule->command('monev:generate')
 
 ### T-1. .cursor Folder Tercommit ke Repo
 
-**Temuan:** `.cursor/skills/ui-ux-pro-max/` ter-commit ke branch demo. Berisi file Python, CSV data, dan SKILL.md — ini adalah IDE config file, bukan kode aplikasi.
+**Temuan:** `.cursor/skills/ui-ux-pro-max/` ter-commit ke branch demo. Berisi file Python, CSV data, dan SKILL.md  ini adalah IDE config file, bukan kode aplikasi.
 
 **Fix:**
 ```bash
@@ -344,7 +344,7 @@ git commit -m "chore: remove .cursor IDE folder from tracking"
 
 ---
 
-### T-3. Duplikasi Controllers — Admin vs AdminKelas
+### T-3. Duplikasi Controllers  Admin vs AdminKelas
 
 **Temuan:** Ada dua namespace yang mirip:
 - `Admin\AnakController` → `app/Http/Controllers/Admin/AnakController.php`
@@ -356,7 +356,7 @@ Sama untuk Monev, Presensi, Kesehatan. Kemungkinan besar ada duplikasi logika.
 
 ---
 
-### T-4. Monev PDF Service — Kemungkinan Memory Issue untuk Data Besar
+### T-4. Monev PDF Service  Kemungkinan Memory Issue untuk Data Besar
 
 **File:** `app/Services/MonevPdfService.php`  
 **Temuan:** DomPDF generate PDF dari semua data siswa per bulan. Tanpa pagination atau chunking, untuk sekolah dengan banyak siswa ini bisa OOM.
@@ -369,7 +369,7 @@ ini_set('memory_limit', '256M'); // Temporary di service
 
 ---
 
-### T-5. Config admin-menu.php — Magic String untuk Permission
+### T-5. Config admin-menu.php  Magic String untuk Permission
 
 **File:** `config/admin-menu.php`  
 **Temuan:** Route permission mapping pakai magic string yang tidak type-safe dan tidak tervalidasi saat boot.
@@ -449,7 +449,7 @@ Berikut adalah skenario yang perlu diverifikasi manual sebelum release.
 
 ## To-Do List by Priority
 
-### P1 — Harus Sebelum Launch
+### P1  Harus Sebelum Launch
 
 | # | Task | File |
 |---|------|------|
@@ -457,25 +457,25 @@ Berikut adalah skenario yang perlu diverifikasi manual sebelum release.
 | 2 | Set SESSION_ENCRYPT=true | `.env.example` |
 | 3 | Set Sanctum token expiration | `config/sanctum.php` |
 | 4 | Encrypt AI API key di database | `AiSetting` model cast + migration |
-| 5 | Fix CanUploadImage — ganti fallback ke finfo, hapus `getClientMimeType()` | `CanUploadImage.php` |
-| 6 | Fix AkuntansiService — validasi akun tidak null sebelum buat jurnal | `AkuntansiService.php` |
+| 5 | Fix CanUploadImage  ganti fallback ke finfo, hapus `getClientMimeType()` | `CanUploadImage.php` |
+| 6 | Fix AkuntansiService  validasi akun tidak null sebelum buat jurnal | `AkuntansiService.php` |
 | 7 | Tambah rate limiting di web login | `routes/auth.php` |
-| 8 | Fix GenerateMonevSummaryJob — tambah tries, timeout, onFailure | `GenerateMonevSummaryJob.php` |
+| 8 | Fix GenerateMonevSummaryJob  tambah tries, timeout, onFailure | `GenerateMonevSummaryJob.php` |
 | 9 | Jalankan seluruh UAT checklist | Manual |
 
-### P2 — Minggu Ini
+### P2  Minggu Ini
 
 | # | Task | File |
 |---|------|------|
 | 10 | Hapus .cursor dari repo dan gitignore | `.gitignore`, `git rm` |
 | 11 | Pindah kode rekening.xlsx ke database/data atau seed | Root → `database/data/` |
-| 12 | Fix phpunit.xml — ganti hardcoded DB config ke sqlite memory | `phpunit.xml` |
+| 12 | Fix phpunit.xml  ganti hardcoded DB config ke sqlite memory | `phpunit.xml` |
 | 13 | Tambah rate limiting chat orang tua per user | `OrangTuaChatService.php` |
 | 14 | Tambah prompt injection boundary di AI context builder | `OrangTuaChatContextBuilder.php` |
 | 15 | Proteksi Scramble docs di staging/production | `config/scramble.php` + middleware |
 | 16 | Tambah cleanup file di CanUploadImage jika processing gagal | `CanUploadImage.php` |
 
-### P3 — Bulan Ini
+### P3  Bulan Ini
 
 | # | Task | File |
 |---|------|------|
@@ -496,8 +496,8 @@ Berikut adalah skenario yang perlu diverifikasi manual sebelum release.
 | Form Request | `StoreAnakPendaftaranRequest` sudah pakai Form Request dengan authorize() |
 | Service Layer | Logic dipisah dengan benar ke service classes |
 | API Rate Limiting | Login API sudah ada throttle:12,1 |
-| Test Coverage | 22 test files — jauh lebih baik dari proyek sejenis |
+| Test Coverage | 22 test files  jauh lebih baik dari proyek sejenis |
 | AI Multi-Provider | Arsitektur multi-provider AI (OpenAI, Groq, DeepSeek, dll) sudah fleksibel |
 | Sanctum API | API mobile sudah pakai token-based auth dengan role guard |
 | .env.example Bersih | Tidak ada credential real yang ter-commit |
-| Filename Upload Aman | `CanUploadImage` sudah pakai `Str::random(40)` — tidak pakai nama asli |
+| Filename Upload Aman | `CanUploadImage` sudah pakai `Str::random(40)`  tidak pakai nama asli |

@@ -46,7 +46,7 @@ class AkunImport implements ToCollection, WithHeadingRow
 
             $error = $this->validate($data);
             $key = $this->key($data['kode'], $data['snp'], $data['komponen']);
-            $label = trim($data['kode'].' — '.$data['nama'], ' —');
+            $label = trim($data['kode'].'  '.$data['nama'], ' ');
 
             if ($error) {
                 $this->rows[] = ['row' => $rowNumber, 'status' => 'invalid', 'label' => $label, 'message' => $error];

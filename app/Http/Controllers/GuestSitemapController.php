@@ -12,7 +12,7 @@ class GuestSitemapController extends Controller
             ['loc' => route('guest.beranda'), 'priority' => '1.0', 'changefreq' => 'weekly'],
             ['loc' => route('guest.tentang'), 'priority' => '0.8', 'changefreq' => 'monthly'],
             ['loc' => route('guest.fasilitas'), 'priority' => '0.8', 'changefreq' => 'monthly'],
-            ['loc' => route('guest.galeri'), 'priority' => '0.7', 'changefreq' => 'weekly'],
+            ['loc' => route('guest.harga'), 'priority' => '0.8', 'changefreq' => 'monthly'],
             ['loc' => route('guest.kontak'), 'priority' => '0.7', 'changefreq' => 'monthly'],
             ['loc' => route('guest.pendaftaran'), 'priority' => '0.6', 'changefreq' => 'monthly'],
             ['loc' => route('guest.daftar-sekolah'), 'priority' => '0.9', 'changefreq' => 'monthly'],

@@ -110,7 +110,7 @@
                         @foreach($rka->lines as $line)
                             @foreach($line->realisasis as $real)
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-2 items-center text-sm border-b pb-2" style="border-color:rgba(0,0,0,0.06);">
-                                    <div class="md:col-span-2">{{ $line->akun->kode }} — {{ $real->sumberDana->kode }} <span class="text-xs" style="color:#9E9790;">(otomatis: {{ number_format($real->nominal_otomatis, 0, ',', '.') }})</span></div>
+                                    <div class="md:col-span-2">{{ $line->akun->kode }}  {{ $real->sumberDana->kode }} <span class="text-xs" style="color:#9E9790;">(otomatis: {{ number_format($real->nominal_otomatis, 0, ',', '.') }})</span></div>
                                     <input type="number" name="realisasi[{{ $real->id }}][nominal_manual]" value="{{ $real->nominal_manual }}" min="0" step="1000" placeholder="Override manual" class="input-field text-sm">
                                     <input type="text" name="realisasi[{{ $real->id }}][catatan]" value="{{ $real->catatan }}" placeholder="Catatan koreksi" class="input-field text-sm">
                                 </div>

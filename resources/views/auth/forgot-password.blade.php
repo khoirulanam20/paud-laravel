@@ -1,9 +1,16 @@
 <x-guest-layout>
-    <p class="text-secondary-foreground font-bubblegum-sans text-[19px]">Reset</p>
-    <h2 class="text-2xl lg:text-[28px] font-bold leading-tight mt-1 mb-1">Lupa kata sandi?</h2>
-    <p class="text-sm text-muted-foreground mb-6">
-        Masukkan email terdaftar. Kami akan mengirim tautan reset kata sandi ke email Anda.
-    </p>
+    <div class="mb-6">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-mint text-forest-deep text-xs font-semibold tracking-wide uppercase">
+            <span class="material-symbols-outlined text-[15px]">lock_reset</span>
+            Pemulihan Akun
+        </span>
+        <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-text-primary tracking-tight mt-2.5">
+            Lupa kata sandi?
+        </h1>
+        <p class="text-sm text-text-secondary mt-1.5 leading-relaxed">
+            Masukkan alamat email yang terdaftar. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi Anda.
+        </p>
+    </div>
 
     <x-auth-session-status class="mb-5" :status="session('status')" />
 
@@ -11,7 +18,7 @@
         @csrf
 
         <div>
-            <x-input-label for="email" :value="__('Alamat Email')" />
+            <x-input-label for="email" :value="__('Alamat Email Terdaftar')" />
             <x-auth-field-wrap icon="fa-solid fa-envelope">
                 <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="email@contoh.com" />
             </x-auth-field-wrap>
@@ -19,12 +26,15 @@
         </div>
 
         <x-ascent-button>
-            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-            Kirim tautan reset
+            <span class="material-symbols-outlined text-[19px]">mail</span>
+            <span>Kirim Tautan Reset</span>
         </x-ascent-button>
 
-        <div class="text-center">
-            <a href="{{ route('login') }}" class="text-sm font-semibold text-green-foreground hover:underline">Kembali ke masuk</a>
+        <div class="text-center pt-2">
+            <a href="{{ route('login') }}" class="text-xs sm:text-sm font-semibold text-forest-deep hover:underline inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">arrow_back</span>
+                <span>Kembali ke halaman masuk</span>
+            </a>
         </div>
     </form>
 </x-guest-layout>

@@ -95,7 +95,7 @@ class AiMonevGuruController extends Controller
                     'kriteria_id' => $kriteria->id,
                     'skor' => (int) $validated['skor'],
                 ],
-                'Saran catatan monev guru: '.$pengajar->name.' — '.$kriteria->nama,
+                'Saran catatan monev guru: '.$pengajar->name.'  '.$kriteria->nama,
                 fn () => $aiSetting->resolveAiService()->generateMonevGuruCatatanSuggestions(
                     $pengajar->name,
                     $kriteria->nama,

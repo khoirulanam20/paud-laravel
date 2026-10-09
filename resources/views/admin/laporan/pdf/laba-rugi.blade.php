@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>{{ $sekolah->name ?? 'Sekolah' }}</h1>
-    <p class="muted">Laporan Laba Rugi — {{ $periode['label'] }}</p>
+    <p class="muted">Laporan Laba Rugi  {{ $periode['label'] }}</p>
 
     <table>
         <thead>
@@ -28,7 +28,7 @@
             <tr><td colspan="2"><strong>Pendapatan</strong></td></tr>
             @foreach($pendapatan as $item)
                 <tr>
-                    <td>{{ $item['akun']->kode }} — {{ $item['akun']->nama }}</td>
+                    <td>{{ $item['akun']->kode }}  {{ $item['akun']->nama }}</td>
                     <td class="text-right">{{ number_format($item['saldo'], 0, ',', '.') }}</td>
                 </tr>
             @endforeach
@@ -37,7 +37,7 @@
             <tr><td colspan="2"><strong>Beban</strong></td></tr>
             @foreach($beban as $item)
                 <tr>
-                    <td>{{ $item['akun']->kode }} — {{ $item['akun']->nama }}</td>
+                    <td>{{ $item['akun']->kode }}  {{ $item['akun']->nama }}</td>
                     <td class="text-right">{{ number_format($item['saldo'], 0, ',', '.') }}</td>
                 </tr>
             @endforeach

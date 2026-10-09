@@ -13,7 +13,7 @@
 
         return [
             'id' => (string) $a->id,
-            'label' => $a->kode.' — '.$nama,
+            'label' => $a->kode.'  '.$nama,
             'search' => strtolower($a->kode.' '.$nama.' '.($a->uraian ?? '').' '.($a->snp ?? '').' '.($a->komponen ?? '')),
         ];
     })->values()->all();

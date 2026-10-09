@@ -5,7 +5,7 @@
     use App\Support\GuestWhatsApp;
     $brand = GuestBrand::name();
     $pageTitle = $title ?? $brand;
-    $pageDesc = $metaDesc ?: $brand.' — Sistem Informasi PAUD Terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
+    $pageDesc = $metaDesc ?: $brand.'  Sistem Informasi PAUD Terpadu untuk lembaga, admin sekolah, pengajar, dan orang tua.';
     $canonicalUrl = $canonical ?? url()->current();
 @endphp
 <!DOCTYPE html>

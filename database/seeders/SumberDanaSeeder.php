@@ -7,7 +7,7 @@ use App\Models\SumberDana;
 use Illuminate\Database\Seeder;
 
 /**
- * Akuntansi — sumber dana default (BOS, BOSDA, Komite, SPP, Lain-lain) per sekolah.
+ * Akuntansi  sumber dana default (BOS, BOSDA, Komite, SPP, Lain-lain) per sekolah.
  *
  *   php artisan db:seed --class=Database\Seeders\SumberDanaSeeder
  *

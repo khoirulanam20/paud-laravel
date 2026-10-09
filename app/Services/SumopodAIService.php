@@ -405,7 +405,7 @@ PROMPT;
         $lines = [];
         foreach ($penilaianItems as $item) {
             $catatan = trim($item['catatan'] ?? '') !== '' ? $item['catatan'] : '(belum ada catatan)';
-            $lines[] = "- {$item['nama']} (bobot {$item['bobot']}%): skor {$item['skor']}/100 — {$catatan}";
+            $lines[] = "- {$item['nama']} (bobot {$item['bobot']}%): skor {$item['skor']}/100  {$catatan}";
         }
         $penilaianBlock = implode("\n", $lines);
 

@@ -18,7 +18,7 @@ class ActivityLogScopeService
             ->latest('id');
 
         if ($user->hasRole('Superadmin')) {
-            // ponytail: no filter — platform-wide
+            // ponytail: no filter  platform-wide
         } elseif ($user->hasRole('Lembaga')) {
             $query->where('properties->lembaga_id', $user->lembaga_id);
         } elseif ($user->sekolah_id && ($user->hasRole('Admin Sekolah') || $user->can('menu.log-aktivitas'))) {
@@ -172,7 +172,7 @@ class ActivityLogScopeService
             $kode = $attrs['kode'] ?? $old['kode'];
             $uraian = $attrs['uraian'] ?? $old['uraian'] ?? $attrs['nama'] ?? $old['nama'] ?? null;
 
-            return $uraian ? "{$kode} — {$uraian}" : (string) $kode;
+            return $uraian ? "{$kode}  {$uraian}" : (string) $kode;
         }
 
         return null;
@@ -205,7 +205,7 @@ class ActivityLogScopeService
         if (filled($subject->kode ?? null)) {
             $uraian = $subject->uraian ?? $subject->nama ?? null;
 
-            return $uraian ? "{$subject->kode} — {$uraian}" : (string) $subject->kode;
+            return $uraian ? "{$subject->kode}  {$uraian}" : (string) $subject->kode;
         }
 
         return null;

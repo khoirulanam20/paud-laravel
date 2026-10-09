@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 
 /**
- * Setup dev lengkap — pengganti behavior lama `php artisan db:seed`.
+ * Setup dev lengkap  pengganti behavior lama `php artisan db:seed`.
  *
  *   php artisan db:seed --class=Database\Seeders\DevSetupSeeder
  *

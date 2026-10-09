@@ -4,7 +4,7 @@ namespace App\Support;
 
 class TourRegistry
 {
-    /** @see modalRouteKey() — camelCase types e.g. addSiswa */
+    /** @see modalRouteKey()  camelCase types e.g. addSiswa */
     private const MODAL_TYPE_PATTERN = '[a-zA-Z][a-zA-Z0-9]*';
 
     private static ?array $routes = null;

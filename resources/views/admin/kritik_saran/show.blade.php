@@ -29,7 +29,7 @@
             <dl class="px-6 py-5 space-y-3 text-sm">
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-44 shrink-0" style="color:#6B6560;">Sekolah tujuan</dt>
-                    <dd style="color:#2C2C2C;">{{ $kritik_saran->sekolah?->name ?? '—' }}</dd>
+                    <dd style="color:#2C2C2C;">{{ $kritik_saran->sekolah?->name ?? '' }}</dd>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-44 shrink-0 align-top" style="color:#6B6560;">Kelas &amp; anak</dt>
@@ -64,11 +64,11 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-40 shrink-0" style="color:#6B6560;">Nama (akun)</dt>
-                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->name ?? '—' }}</dd>
+                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->name ?? '' }}</dd>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-40 shrink-0" style="color:#6B6560;">Email</dt>
-                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->email ?? '—' }}</dd>
+                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->email ?? '' }}</dd>
                 </div>
                 @if($kritik_saran->nama_bapak || $kritik_saran->nik_bapak || $kritik_saran->nama_anak)
                     <div class="pt-2 border-t" style="border-color:rgba(0,0,0,0.06);"></div>

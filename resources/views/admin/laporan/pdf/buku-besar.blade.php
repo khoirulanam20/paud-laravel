@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>{{ $sekolah->name ?? 'Sekolah' }}</h1>
-    <p class="muted">Buku Besar — {{ $gl['akun']->kode }} {{ $gl['akun']->nama }}</p>
+    <p class="muted">Buku Besar  {{ $gl['akun']->kode }} {{ $gl['akun']->nama }}</p>
     <p class="muted">{{ $periode['label'] }}</p>
 
     <table>
@@ -39,9 +39,9 @@
             @foreach($gl['mutasi'] as $row)
                 @php $j = $row['line']->jurnal; @endphp
                 <tr>
-                    <td>{{ $j?->tanggal?->format('d/m/Y') ?? '—' }}</td>
-                    <td>{{ $j?->no_jurnal ?? '—' }}</td>
-                    <td>{{ \Illuminate\Support\Str::limit($j?->deskripsi ?? '—', 40) }}</td>
+                    <td>{{ $j?->tanggal?->format('d/m/Y') ?? '' }}</td>
+                    <td>{{ $j?->no_jurnal ?? '' }}</td>
+                    <td>{{ \Illuminate\Support\Str::limit($j?->deskripsi ?? '', 40) }}</td>
                     <td class="text-right">{{ $row['debit'] > 0 ? number_format($row['debit'], 0, ',', '.') : '' }}</td>
                     <td class="text-right">{{ $row['kredit'] > 0 ? number_format($row['kredit'], 0, ',', '.') : '' }}</td>
                     <td class="text-right">{{ number_format($row['saldo'], 0, ',', '.') }}</td>

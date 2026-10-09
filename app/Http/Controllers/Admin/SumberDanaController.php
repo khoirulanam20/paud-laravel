@@ -32,7 +32,7 @@ class SumberDanaController extends Controller
             ->map(fn (SumberDana $s) => [
                 $s->kode,
                 $s->nama,
-                $s->akun ? $s->akun->kode.' — '.$s->akun->nama : '-',
+                $s->akun ? $s->akun->kode.'  '.$s->akun->nama : '-',
                 $s->urutan,
                 $s->is_aktif ? 'Aktif' : 'Nonaktif',
             ])

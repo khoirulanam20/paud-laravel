@@ -42,17 +42,17 @@
                                     : collect();
                                 $kelasTeks = $kelasUnik->isNotEmpty()
                                     ? $kelasUnik->implode(', ')
-                                    : ($fb->user?->anaks?->isNotEmpty() ? 'Anak belum masuk kelas' : '—');
+                                    : ($fb->user?->anaks?->isNotEmpty() ? 'Anak belum masuk kelas' : '');
                             @endphp
                             <tr>
                                 <td class="whitespace-nowrap text-sm" style="color:#6B6560;">{{ $fb->created_at->format('d M Y, H:i') }}</td>
                                 <td class="text-sm">
-                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $fb->user?->name ?? ($fb->nama_bapak ?: '—') }}</span>
+                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $fb->user?->name ?? ($fb->nama_bapak ?: '') }}</span>
                                     @if($fb->user?->email)
                                         <span class="block text-xs" style="color:#9E9790;">{{ $fb->user->email }}</span>
                                     @endif
                                 </td>
-                                <td class="text-sm max-w-[10rem]" style="color:#2C2C2C;">{{ $fb->sekolah?->name ?? '—' }}</td>
+                                <td class="text-sm max-w-[10rem]" style="color:#2C2C2C;">{{ $fb->sekolah?->name ?? '' }}</td>
                                 <td class="text-sm max-w-[12rem]" style="color:#6B6560;">{{ $kelasTeks }}</td>
                                 <td class="max-w-md">
                                     <p class="text-sm line-clamp-2" style="color:#6B6560;">{{ \Illuminate\Support\Str::limit($fb->message, 120) }}</p>
@@ -61,7 +61,7 @@
                                     @if($fb->photo)
                                         <img src="{{ Storage::url($fb->photo) }}" class="h-10 w-10 rounded-lg object-cover mx-auto border border-gray-100" alt="">
                                     @else
-                                        <span class="text-xs" style="color:#9E9790;">—</span>
+                                        <span class="text-xs" style="color:#9E9790;"></span>
                                     @endif
                                 </td>
                                 <td class="text-right">

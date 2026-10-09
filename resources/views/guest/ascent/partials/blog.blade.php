@@ -21,7 +21,7 @@
                                 <p><i class="fa-regular fa-user text-secondary-foreground mr-1"></i><small>Tim {{ \App\Support\GuestBrand::name() }}</small></p>
                             </div>
                             <h3 class="lg:max-w-[370px]">
-                                <span class="md:text-2xl text-xl font-semibold">Artikel {{ $n }} — konten akan hadir di fase berikutnya</span>
+                                <span class="md:text-2xl text-xl font-semibold">Artikel {{ $n }}  konten akan hadir di fase berikutnya</span>
                             </h3>
                             <span class="inline-flex items-center gap-2.5 lg:mt-6 mt-4 text-muted-foreground text-sm">Segera hadir</span>
                         </div>

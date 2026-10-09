@@ -93,7 +93,7 @@ if (! function_exists('tour_modal_pencapaian_create_sections')) {
             $sections[] = [
                 'element' => '[data-tour="modal-create-section-kelas"]',
                 'title' => 'Pilih Kelas',
-                'description' => 'Filter daftar siswa berdasarkan kelas. Pilih kelas terlebih dahulu — tour akan lanjut otomatis setelah Anda memilih.',
+                'description' => 'Filter daftar siswa berdasarkan kelas. Pilih kelas terlebih dahulu  tour akan lanjut otomatis setelah Anda memilih.',
                 'advanceWhen' => 'section-input',
             ];
         }
@@ -126,7 +126,7 @@ if (! function_exists('tour_modal_pencapaian_create_sections')) {
             [
                 'element' => '[data-tour="modal-create-section-evidence"]',
                 'title' => 'Unggah Dokumentasi (Evidence)',
-                'description' => 'Lampirkan foto bukti kegiatan jika perlu. Langkah ini opsional — tekan Lanjut untuk melanjutkan.',
+                'description' => 'Lampirkan foto bukti kegiatan jika perlu. Langkah ini opsional  tekan Lanjut untuk melanjutkan.',
                 'advanceWhen' => 'section-optional',
             ],
             [

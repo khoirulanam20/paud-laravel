@@ -149,7 +149,7 @@
                         <div>
                             <label class="input-label">Tentukan Wali Kelas</label>
                             <select name="wali_kelas_id" x-model="editData.wali_id" class="input-field @error('wali_kelas_id') border-red-500 @enderror">
-                                <option value="">— Pilih Guru —</option>
+                                <option value=""> Pilih Guru </option>
                                 @foreach($pengajars as $p)
                                     <template x-if="editData.pengajar_ids && editData.pengajar_ids.includes({{ $p->id }})">
                                         <option value="{{ $p->id }}">{{ $p->name }}</option>

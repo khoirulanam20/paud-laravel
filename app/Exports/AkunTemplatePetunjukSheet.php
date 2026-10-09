@@ -16,7 +16,7 @@ class AkunTemplatePetunjukSheet implements FromArray, ShouldAutoSize, WithTitle
             [],
             ['1. Isi data di sheet "Data Akun". Hapus baris contoh jika tidak dipakai.'],
             ['2. Kolom wajib: kode_akun, jenis, nama_akun, saldo_normal.'],
-            ['3. Saldo awal: angka (0 jika tidak ada). Hanya untuk Aset, Liabilitas, Modal — bukan Pendapatan/Beban.'],
+            ['3. Saldo awal: angka (0 jika tidak ada). Hanya untuk Aset, Liabilitas, Modal  bukan Pendapatan/Beban.'],
             ['4. Upload file lalu klik Periksa File di aplikasi sebelum Import.'],
             [],
             ['Nilai jenis yang valid:'],

@@ -38,13 +38,13 @@
                             <tr>
                                 <td class="whitespace-nowrap text-sm" style="color:#6B6560;">{{ $chat->updated_at->format('d M Y, H:i') }}</td>
                                 <td class="text-sm">
-                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $chat->user?->name ?? '—' }}</span>
+                                    <span class="font-semibold" style="color:#2C2C2C;">{{ $chat->user?->name ?? '' }}</span>
                                     @if($chat->user?->email)
                                         <span class="block text-xs" style="color:#9E9790;">{{ $chat->user->email }}</span>
                                     @endif
                                 </td>
                                 <td class="text-sm max-w-[10rem]" style="color:#6B6560;">
-                                    {{ $anakNames->isNotEmpty() ? $anakNames->implode(', ') : '—' }}
+                                    {{ $anakNames->isNotEmpty() ? $anakNames->implode(', ') : '' }}
                                 </td>
                                 <td class="text-sm" style="color:#2C2C2C;">{{ $chat->messages_count }}</td>
                                 <td class="max-w-md">
@@ -52,7 +52,7 @@
                                         <p class="text-xs mb-0.5" style="color:#9E9790;">{{ $lastMsg->role === 'user' ? 'Ortu' : 'AI' }} · {{ $lastMsg->created_at->format('d M H:i') }}</p>
                                         <p class="text-sm line-clamp-2" style="color:#6B6560;">{{ \Illuminate\Support\Str::limit($lastMsg->content, 100) }}</p>
                                     @else
-                                        <span class="text-sm" style="color:#9E9790;">—</span>
+                                        <span class="text-sm" style="color:#9E9790;"></span>
                                     @endif
                                 </td>
                                 <td>

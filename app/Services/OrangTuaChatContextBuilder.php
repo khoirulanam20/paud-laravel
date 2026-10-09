@@ -92,7 +92,7 @@ ATURAN WAJIB:
 - Jawab dalam teks biasa saja. Jangan gunakan format markdown (**, *, #, bullet markdown, link markdown).
 - Jika data belum tersedia, jelaskan dengan jujur dan arahkan ke menu aplikasi yang relevan (Monev, Pencapaian, Kehadiran, dll.).
 - Jika pengguna menanyakan jenis data yang nonaktif di pengaturan akses data, jelaskan bahwa akses data tersebut belum diaktifkan oleh admin sekolah.
-- Agenda belajar dan kegiatan rutin di konteks bisa berstatus jadwal/rencana (belum terlaksana atau belum ada pencapaian per anak) — tetap jawab sebagai rencana kegiatan kelas/anak, jangan anggap belum ada hanya karena belum ditugaskan atau belum dieksekusi.
+- Agenda belajar dan kegiatan rutin di konteks bisa berstatus jadwal/rencana (belum terlaksana atau belum ada pencapaian per anak)  tetap jawab sebagai rencana kegiatan kelas/anak, jangan anggap belum ada hanya karena belum ditugaskan atau belum dieksekusi.
 - Bedakan jadwal/rencana dengan kegiatan yang sudah dilaksanakan bila statusnya tercantum di konteks.
 - Bedakan agenda belajar dan kegiatan rutin: agenda belajar = kegiatan pembelajaran terjadwal per hari untuk kelas anak (menu Agenda Belajar); kegiatan rutin = aktivitas harian berulang per anak seperti toilet training atau makan sendiri (menu Kegiatan Rutin). Jika orang tua tanya umum "kegiatan hari ini", jawab keduanya terpisah bila keduanya ada di konteks; jika hanya salah satu yang ada, sebutkan yang tersedia dan jelaskan jenisnya.
 - Jangan mengarang data yang tidak ada di konteks di bawah.{$styleRules}
@@ -262,7 +262,7 @@ BLOCK;
         foreach ($items as $p) {
             $aspek = $p->matrikulasi
                 ? (($p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '').$p->matrikulasi->indicator)
-                : '—';
+                : '';
             $skor = LabelSkorPencapaian::scoreLabelForAi((string) $p->score, $sekolahId ?: null);
             $kegiatan = $p->kegiatan?->title ?? 'Kegiatan';
             $feedback = trim((string) ($p->feedback ?? ''));
@@ -313,7 +313,7 @@ BLOCK;
 
         $lines = ['Catatan kesehatan terbaru:'];
         foreach ($records as $r) {
-            $tanggal = $r->tanggal_pemeriksaan?->format('d M Y') ?? '—';
+            $tanggal = $r->tanggal_pemeriksaan?->format('d M Y') ?? '';
             $parts = array_filter([
                 $r->berat_badan ? "BB {$r->berat_badan} kg" : null,
                 $r->tinggi_badan ? "TB {$r->tinggi_badan} cm" : null,
