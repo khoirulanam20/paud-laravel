@@ -275,7 +275,7 @@
         <!-- CREATE MODAL -->
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;" @click.self="showCreateModal=false">
             <div x-show="showCreateModal" x-transition class="modal-box">
-                <form action="{{ route('admin.cashflow.store') }}" method="POST">
+                <form action="{{ route('admin.cashflow.store') }}" method="POST" x-data="{ submitting: false }" @submit="if (submitting) { $event.preventDefault(); return; } submitting = true">
                     @csrf
                     <div class="modal-header"><h3 class="section-title">Catat Transaksi Kas</h3></div>
                     <div class="modal-body grid grid-cols-2 gap-4">
@@ -307,7 +307,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Transaksi</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="submitting">Simpan Transaksi</button></div>
                 </form>
             </div>
         </div>
@@ -315,7 +315,7 @@
         <!-- EDIT MODAL -->
         <div x-show="showEditModal" class="modal-overlay" style="display:none;" @click.self="showEditModal=false">
             <div x-show="showEditModal" x-transition class="modal-box">
-                <form :action="`/admin/cashflow/${editData.id}`" method="POST">
+                <form :action="`/admin/cashflow/${editData.id}`" method="POST" x-data="{ submitting: false }" @submit="if (submitting) { $event.preventDefault(); return; } submitting = true">
                     @csrf @method('PUT')
                     <div class="modal-header"><h3 class="section-title">Edit Transaksi</h3></div>
                     <div class="modal-body grid grid-cols-2 gap-4">
@@ -347,7 +347,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan Perubahan</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" :disabled="submitting">Simpan Perubahan</button></div>
                 </form>
             </div>
         </div>

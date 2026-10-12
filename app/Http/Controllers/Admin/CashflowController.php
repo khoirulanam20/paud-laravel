@@ -156,6 +156,9 @@ class CashflowController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $cashflow) {
+            // Kunci baris agar submit ganda tidak membuat jurnal duplikat.
+            $cashflow = Cashflow::whereKey($cashflow->id)->lockForUpdate()->firstOrFail();
+
             if ($cashflow->jurnal_id) {
                 $this->akuntansiService->hapusJurnal($cashflow->jurnal);
             }
@@ -182,11 +185,19 @@ class CashflowController extends Controller
     {
         abort_if($cashflow->sekolah_id !== auth()->user()->sekolah_id, 403);
 
-        if ($cashflow->jurnal_id) {
-            $this->akuntansiService->hapusJurnal($cashflow->jurnal);
-        }
+        DB::transaction(function () use ($cashflow) {
+            $cashflow = Cashflow::whereKey($cashflow->id)->lockForUpdate()->first();
 
-        $cashflow->delete();
+            if (! $cashflow) {
+                return;
+            }
+
+            if ($cashflow->jurnal_id) {
+                $this->akuntansiService->hapusJurnal($cashflow->jurnal);
+            }
+
+            $cashflow->delete();
+        });
 
         return redirect()->route('admin.cashflow.index', $this->cashflowIndexQueryFromRequest($request))
             ->with('success', 'Transaksi berhasil dihapus.');
