@@ -468,13 +468,22 @@ class PembayaranBulananController extends Controller
         $this->assertPembayaranAccessible($pembayaran);
         abort_if($pembayaran->isApproved(), 403, 'Tagihan sudah lunas.');
 
-        $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
+        try {
+            // Satu transaksi: jurnal dan status lunas harus berubah bersamaan, supaya klik ganda tidak membuat jurnal dobel.
+            DB::transaction(function () use ($pembayaran, $request) {
+                $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
 
-        $this->rekapBiayaService->approvePembayaran(
-            $pembayaran,
-            auth()->id(),
-            $request->catatan_admin
-        );
+                $this->rekapBiayaService->approvePembayaran(
+                    $pembayaran,
+                    auth()->id(),
+                    $request->catatan_admin
+                );
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()
+                ->route('admin.pembayaran-bulanan.show', $pembayaran)
+                ->withErrors(['approve' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('admin.pembayaran-bulanan.show', $pembayaran)

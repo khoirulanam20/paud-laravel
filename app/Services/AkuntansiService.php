@@ -66,7 +66,13 @@ class AkuntansiService
     public function sinkronkanJurnalTagihanGenerate(PembayaranBulanan $pembayaran, int $userId): ?Jurnal
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
-        if (! $setting->isAccrual() || $pembayaran->status !== 'pending' || $pembayaran->total_bayar <= 0) {
+        if (! $setting->isAccrual() || $pembayaran->status !== 'pending') {
+            return null;
+        }
+
+        if ($pembayaran->total_bayar <= 0) {
+            $this->hapusJurnalTagihan($pembayaran);
+
             return null;
         }
 
@@ -115,7 +121,7 @@ class AkuntansiService
      * Cash:  Debit Kas / Kredit Pendapatan SPP
      * Accrual: Debit Kas / Kredit Piutang SPP
      */
-    public function buatJurnalSaatApprove(PembayaranBulanan $pembayaran, int $userId): Jurnal
+    public function buatJurnalSaatApprove(PembayaranBulanan $pembayaran, int $userId): ?Jurnal
     {
         $setting = AkuntansiSetting::forSekolah($pembayaran->sekolah_id);
         $this->assertAkunSppLengkap($setting);
@@ -124,22 +130,33 @@ class AkuntansiService
         }
 
         return DB::transaction(function () use ($pembayaran, $setting, $userId) {
-            $pembayaran->loadMissing('anak');
-            $deskripsi = 'Auto: Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa');
-
-            if ($setting->isAccrual()) {
-                // Debit Kas / Kredit Piutang SPP
-                $lines = [
-                    [$setting->akun_kas_id, $pembayaran->total_bayar, 0],
-                    [$setting->akun_piutang_id, 0, $pembayaran->total_bayar],
-                ];
-            } else {
-                // Cash: Debit Kas / Kredit Pendapatan SPP
-                $lines = [
-                    [$setting->akun_kas_id, $pembayaran->total_bayar, 0],
-                    [$setting->akun_pendapatan_id, 0, $pembayaran->total_bayar],
-                ];
+            // Kunci baris agar approve ganda tidak membuat jurnal/cashflow dobel.
+            $locked = PembayaranBulanan::whereKey($pembayaran->id)->lockForUpdate()->firstOrFail();
+            if ($locked->isApproved()) {
+                throw new \RuntimeException('Tagihan sudah lunas.');
             }
+
+            $pembayaran->loadMissing('anak');
+            $total = (float) $pembayaran->total_bayar;
+            $tagihan = $this->jurnalTagihan($pembayaran);
+
+            if ($total <= 0) {
+                // Tidak ada uang masuk: tidak perlu jurnal/cashflow, bersihkan jurnal tagihan sisa.
+                $this->hapusJurnalTagihan($pembayaran);
+
+                return null;
+            }
+
+            // Bila tagihan sudah diakui sebagai piutang (mode akrual saat generate), pelunasan harus
+            // menutup piutang, apa pun mode pencatatan saat ini. Kalau tidak, pendapatan tercatat dua kali.
+            if ($tagihan) {
+                $this->sesuaikanJurnalTagihan($tagihan, $setting, $total);
+                $akunKredit = $setting->akun_piutang_id;
+            } else {
+                $akunKredit = $setting->isAccrual() ? $setting->akun_piutang_id : $setting->akun_pendapatan_id;
+            }
+
+            $deskripsi = 'Auto: Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa');
 
             $jurnal = $this->insertJurnal([
                 'sekolah_id' => $pembayaran->sekolah_id,
@@ -151,10 +168,13 @@ class AkuntansiService
                 'sourceable_id' => $pembayaran->id,
             ]);
 
-            $this->createLines($jurnal, $lines);
+            $this->createLines($jurnal, [
+                [$setting->akun_kas_id, $total, 0],
+                [$akunKredit, 0, $total],
+            ]);
 
             // ponytail: jurnal tagihan (generate) tetap di jurnal_id; jurnal pelunasan hanya lewat sourceable + cashflow
-            if ($setting->isCash() || ! $pembayaran->jurnal_id) {
+            if (! $tagihan) {
                 $pembayaran->update(['jurnal_id' => $jurnal->id]);
             }
 
@@ -163,13 +183,42 @@ class AkuntansiService
                 'akun_id' => $setting->akun_kas_id,
                 'jurnal_id' => $jurnal->id,
                 'type' => 'in',
-                'amount' => $pembayaran->total_bayar,
+                'amount' => $total,
                 'description' => 'Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa'),
                 'date' => now(),
             ]);
 
             return $jurnal;
         });
+    }
+
+    /** Jurnal tagihan (Dr Piutang / Cr Pendapatan) milik pembayaran, jika ada. */
+    private function jurnalTagihan(PembayaranBulanan $pembayaran): ?Jurnal
+    {
+        return Jurnal::query()
+            ->where('sekolah_id', $pembayaran->sekolah_id)
+            ->where('sourceable_type', PembayaranBulanan::class)
+            ->where('sourceable_id', $pembayaran->id)
+            ->where('deskripsi', 'like', 'Auto: Tagihan%')
+            ->first();
+    }
+
+    private function hapusJurnalTagihan(PembayaranBulanan $pembayaran): void
+    {
+        $tagihan = $this->jurnalTagihan($pembayaran);
+        if ($tagihan) {
+            $this->hapusJurnal($tagihan);
+        }
+    }
+
+    /** Samakan nominal jurnal tagihan dengan total bayar (mis. diskon diubah setelah tagihan dibuat). */
+    private function sesuaikanJurnalTagihan(Jurnal $tagihan, AkuntansiSetting $setting, float $total): void
+    {
+        $tagihan->lines()->delete();
+        $this->createLines($tagihan, [
+            [$setting->akun_piutang_id, $total, 0],
+            [$setting->akun_pendapatan_id, 0, $total],
+        ]);
     }
 
     /** Kembalikan tagihan lunas ke Menunggu; hapus jurnal pelunasan & cashflow (jurnal tagihan accrual tetap). */
@@ -509,6 +558,18 @@ class AkuntansiService
     {
         if (! $setting->akun_piutang_id || ! $setting->akun_pendapatan_id) {
             throw new \RuntimeException('Lengkapi akun piutang SPP dan pendapatan SPP di Pengaturan Akuntansi.');
+        }
+
+        $nonaktif = Akun::whereIn('id', array_filter([
+            $setting->akun_kas_id,
+            $setting->akun_piutang_id,
+            $setting->akun_pendapatan_id,
+        ]))->where('is_aktif', false)->pluck('nama');
+
+        if ($nonaktif->isNotEmpty()) {
+            throw new \RuntimeException(
+                'Akun nonaktif dipakai di Pengaturan Akuntansi: '.$nonaktif->implode(', ').'. Aktifkan atau ganti akunnya.'
+            );
         }
     }
 
