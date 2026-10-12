@@ -14,7 +14,7 @@
     </x-slot>
 
     <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
-         x-data="{ showDiskonModal: false, showApproveModal: false, showRejectModal: false, showBatalkanModal: false, showItemModal: false, showImageModal: false, activeImage: null, activeDownloadUrl: null, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showBatalkanModal=false; showItemModal=false">
+         x-data="{ showDiskonModal: {{ $errors->hasAny(['diskon_mode', 'diskon_id', 'diskon_manual_nominal', 'diskon_manual_keterangan']) ? 'true' : 'false' }}, showApproveModal: false, showRejectModal: false, showBatalkanModal: false, showItemModal: false, showImageModal: false, activeImage: null, activeDownloadUrl: null, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showBatalkanModal=false; showItemModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
@@ -160,18 +160,51 @@
         </div>
 
         <!-- DISKON -->
+        @php
+            $diskonModeAwal = $pembayaran->diskon_id
+                ? 'master'
+                : (((float) $pembayaran->nilai_diskon > 0 || filled($pembayaran->diskon_keterangan)) ? 'manual' : 'none');
+        @endphp
         <div x-show="showDiskonModal" class="modal-overlay" style="display:none;">
             <div x-show="showDiskonModal" x-transition class="modal-box max-w-sm" @click.away="showDiskonModal=false">
-                <form action="{{ route('admin.pembayaran-bulanan.update-diskon', $pembayaran) }}" method="POST">
+                <form action="{{ route('admin.pembayaran-bulanan.update-diskon', $pembayaran) }}" method="POST"
+                      x-data="{
+                          mode: @js(old('diskon_mode', $diskonModeAwal)),
+                          diskonId: @js((string) old('diskon_id', $pembayaran->diskon_id ?? '')),
+                          nominal: @js(old('diskon_manual_nominal', $diskonModeAwal === 'manual' ? (int) round((float) $pembayaran->nilai_diskon) : '')),
+                          keterangan: @js(old('diskon_manual_keterangan', $pembayaran->diskon_keterangan ?? '')),
+                      }">
                     @csrf @method('PATCH')
+                    <input type="hidden" name="diskon_mode" :value="mode">
                     <div class="modal-header"><h3 class="section-title">Edit Diskon</h3></div>
-                    <div class="modal-body">
-                        <select name="diskon_id" class="input-field">
-                            <option value="">Tanpa Diskon</option>
-                            @foreach(\App\Models\Diskon::where('sekolah_id', auth()->user()->sekolah_id)->where('is_aktif', true)->get() as $diskon)
-                                <option value="{{ $diskon->id }}" {{ $pembayaran->diskon_id == $diskon->id ? 'selected' : '' }}>{{ $diskon->nama_diskon }} ({{ $diskon->getNilaiFormatted() }})</option>
-                            @endforeach
-                        </select>
+                    <div class="modal-body space-y-3">
+                        <div>
+                            <label class="input-label">Jenis</label>
+                            <select x-model="mode" class="input-field">
+                                <option value="none">Tanpa Diskon</option>
+                                <option value="master">Dari master</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </div>
+                        <div x-show="mode === 'master'">
+                            <label class="input-label">Diskon</label>
+                            <select name="diskon_id" x-model="diskonId" class="input-field" :required="mode === 'master'" :disabled="mode !== 'master'">
+                                <option value="">Pilih diskon</option>
+                                @foreach(\App\Models\Diskon::where('sekolah_id', auth()->user()->sekolah_id)->where('is_aktif', true)->get() as $diskon)
+                                    <option value="{{ $diskon->id }}">{{ $diskon->nama_diskon }} ({{ $diskon->getNilaiFormatted() }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div x-show="mode === 'manual'" class="space-y-3">
+                            <div>
+                                <label class="input-label">Nominal (Rp)</label>
+                                <input type="number" name="diskon_manual_nominal" x-model="nominal" min="1" step="1" placeholder="0" class="input-field" :required="mode === 'manual'" :disabled="mode !== 'manual'">
+                            </div>
+                            <div>
+                                <label class="input-label">Keterangan</label>
+                                <input type="text" name="diskon_manual_keterangan" x-model="keterangan" maxlength="255" placeholder="Contoh: diskon saudara" class="input-field" :required="mode === 'manual'" :disabled="mode !== 'manual'">
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer"><button type="button" @click="showDiskonModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
                 </form>

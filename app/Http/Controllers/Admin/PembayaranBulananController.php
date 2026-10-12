@@ -413,10 +413,49 @@ class PembayaranBulananController extends Controller
         $this->assertPembayaranAccessible($pembayaran);
 
         $request->validate([
-            'diskon_id' => 'nullable|exists:diskons,id',
+            'diskon_mode' => 'required|in:none,master,manual',
+            'diskon_id' => 'nullable|required_if:diskon_mode,master|exists:diskons,id',
+            'diskon_manual_nominal' => 'nullable|required_if:diskon_mode,manual|numeric|min:1',
+            'diskon_manual_keterangan' => 'nullable|required_if:diskon_mode,manual|string|max:255',
         ]);
 
-        $pembayaran->update(['diskon_id' => $request->diskon_id]);
+        if ($request->diskon_mode === 'manual') {
+            $nominal = (float) $request->diskon_manual_nominal;
+            $maks = (float) $pembayaran->subtotal + $pembayaran->getTotalBiayaTambahan();
+            if ($nominal > $maks) {
+                return back()->withErrors([
+                    'diskon_manual_nominal' => 'Nominal diskon tidak boleh melebihi total tagihan.',
+                ])->withInput();
+            }
+
+            $pembayaran->update([
+                'diskon_id' => null,
+                'nilai_diskon' => round($nominal, 2),
+                'diskon_keterangan' => trim($request->diskon_manual_keterangan),
+            ]);
+        } elseif ($request->diskon_mode === 'master') {
+            $diskon = Diskon::query()
+                ->where('id', $request->diskon_id)
+                ->where('sekolah_id', $pembayaran->sekolah_id)
+                ->where('is_aktif', true)
+                ->first();
+
+            if (! $diskon) {
+                return back()->withErrors(['diskon_id' => 'Diskon tidak valid.'])->withInput();
+            }
+
+            $pembayaran->update([
+                'diskon_id' => $diskon->id,
+                'diskon_keterangan' => null,
+            ]);
+        } else {
+            $pembayaran->update([
+                'diskon_id' => null,
+                'nilai_diskon' => 0,
+                'diskon_keterangan' => null,
+            ]);
+        }
+
         $this->rekapBiayaService->hitungBiaya($pembayaran);
 
         return redirect()
