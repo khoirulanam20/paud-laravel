@@ -374,7 +374,7 @@
                                                     <option value="manual">Manual</option>
                                                 </select>
                                                 <template x-if="row.diskon_mode === 'master'">
-                                                    <select x-model="row.diskon_id" :name="'diskon[' + rowKey(row) + ']'" class="input-field text-xs py-1 w-full"
+                                                    <select x-model="row.diskon_id" class="input-field text-xs py-1 w-full"
                                                             :disabled="!selectedKeys.includes(rowKey(row))">
                                                         <option value="">Pilih diskon</option>
                                                         <template x-for="d in diskons" :key="d.id">
@@ -383,17 +383,20 @@
                                                     </select>
                                                 </template>
                                                 <template x-if="row.diskon_mode === 'manual'">
-                                                    <input type="number" min="0" step="1" placeholder="Nominal diskon"
-                                                           x-model="row.diskon_manual_nominal"
-                                                           class="input-field text-xs py-1 w-full mb-1"
-                                                           :disabled="!selectedKeys.includes(rowKey(row))">
-                                                    <input type="text" placeholder="Keterangan diskon"
-                                                           x-model="row.diskon_manual_keterangan"
-                                                           class="input-field text-xs py-1 w-full"
-                                                           :disabled="!selectedKeys.includes(rowKey(row))">
-                                                    <input type="hidden" :name="'diskon_manual[' + rowKey(row) + '][nominal]'" :value="row.diskon_manual_nominal">
-                                                    <input type="hidden" :name="'diskon_manual[' + rowKey(row) + '][keterangan]'" :value="row.diskon_manual_keterangan">
+                                                    <div>
+                                                        <input type="number" min="0" step="1" placeholder="Nominal diskon"
+                                                               x-model="row.diskon_manual_nominal"
+                                                               class="input-field text-xs py-1 w-full mb-1"
+                                                               :disabled="!selectedKeys.includes(rowKey(row))">
+                                                        <input type="text" placeholder="Keterangan diskon"
+                                                               x-model="row.diskon_manual_keterangan"
+                                                               class="input-field text-xs py-1 w-full"
+                                                               :disabled="!selectedKeys.includes(rowKey(row))">
+                                                    </div>
                                                 </template>
+                                                <input type="hidden" :name="'diskon[' + rowKey(row) + ']'" :value="row.diskon_mode === 'master' ? row.diskon_id : ''">
+                                                <input type="hidden" :name="'diskon_manual[' + rowKey(row) + '][nominal]'" :value="row.diskon_mode === 'manual' ? row.diskon_manual_nominal : ''">
+                                                <input type="hidden" :name="'diskon_manual[' + rowKey(row) + '][keterangan]'" :value="row.diskon_mode === 'manual' ? row.diskon_manual_keterangan : ''">
                                                 <p x-show="nilaiDiskonRow(row) > 0" class="text-[10px] mt-1" style="color:#C0392B;"
                                                    x-text="'-' + formatRp(nilaiDiskonRow(row))"></p>
                                             </td>
