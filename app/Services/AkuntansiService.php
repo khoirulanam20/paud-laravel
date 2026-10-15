@@ -147,13 +147,20 @@ class AkuntansiService
                 return null;
             }
 
-            // Bila tagihan sudah diakui sebagai piutang (mode akrual saat generate), pelunasan harus
-            // menutup piutang, apa pun mode pencatatan saat ini. Kalau tidak, pendapatan tercatat dua kali.
+            // Mode piutang tanpa jurnal tagihan (mis. dibuat saat mode tunai): akui dulu piutangnya,
+            // supaya pelunasan di bawah tidak mengkredit piutang yang belum pernah didebit.
+            if (! $tagihan && $setting->isAccrual()) {
+                $this->sinkronkanJurnalTagihanGenerate($pembayaran, $userId);
+                $tagihan = $this->jurnalTagihan($pembayaran);
+            }
+
+            // Bila tagihan sudah diakui sebagai piutang, pelunasan harus menutup piutang, apa pun mode
+            // pencatatan saat ini. Kalau tidak, pendapatan tercatat dua kali.
             if ($tagihan) {
                 $this->sesuaikanJurnalTagihan($tagihan, $setting, $total);
                 $akunKredit = $setting->akun_piutang_id;
             } else {
-                $akunKredit = $setting->isAccrual() ? $setting->akun_piutang_id : $setting->akun_pendapatan_id;
+                $akunKredit = $setting->akun_pendapatan_id;
             }
 
             $deskripsi = 'Auto: Pembayaran '.$pembayaran->getPeriodeLabel().' - '.($pembayaran->anak->name ?? 'Siswa');
