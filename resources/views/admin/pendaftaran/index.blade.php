@@ -12,9 +12,22 @@
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
-        <div class="mb-5 flex justify-end">
-            <x-export-excel route="admin.pendaftaran.export" />
-        </div>
+        <form method="get" class="card card-pad toolbar-form mb-5">
+            <div class="toolbar-field md:min-w-[16rem] md:flex-[2]">
+                <label class="input-label">Cari Pendaftaran</label>
+                <input type="text" name="search" value="{{ request('search') }}" class="input-field"
+                    placeholder="Nama anak, orang tua, atau email...">
+            </div>
+            <div class="toolbar-actions">
+                <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Cari" aria-label="Cari">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+                <x-filter-reset :href="route('admin.pendaftaran.index')" compact />
+                <x-export-excel route="admin.pendaftaran.export" :icon-only="true" />
+            </div>
+        </form>
 
         {{-- PENDING --}}
         <div class="card overflow-hidden mb-6" data-tour="admin-pendaftaran-pending">

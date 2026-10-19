@@ -63,7 +63,7 @@
                                 <div>{{ $e->judul ?: 'Evaluasi Guru' }}</div>
                                 <div class="text-xs" style="color:#9E9790;">{{ $e->periodeLabel() }}</div>
                             </td>
-                            <td>@if($e->skor_keseluruhan !== null)<span class="font-bold" style="color:#1A6B6B;">{{ $e->skor_keseluruhan }}</span>@else@endif</td>
+                            <td>@if($e->skor_keseluruhan !== null)<span class="font-bold" style="color:#1A6B6B;">{{ $e->skor_keseluruhan }}</span>@endif</td>
                             <td>@if($e->isFinal())<span class="badge badge-teal">Final</span>@else<span class="badge" style="background:#FDE9BC;color:#8B6914;">Draft</span>@endif</td>
                             <td class="text-sm">{{ $e->evaluator->name ?? '' }}</td>
                             <td class="text-right">

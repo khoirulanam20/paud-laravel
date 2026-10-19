@@ -11,13 +11,32 @@ use Illuminate\Http\Request;
 class PendaftaranController extends Controller
 {
     use DownloadsExcel;
+
     public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
+        $search = trim((string) $request->input('search'));
 
-        $pending = Anak::with(['user.anaks'])->where('sekolah_id', $sekolahId)->where('status', 'pending')->latest()->paginate(PaginationPerPage::resolve($request, 'pending_per_page'), ['*'], 'pending_page')->withQueryString();
-        $approved = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'approved')->latest()->paginate(PaginationPerPage::resolve($request, 'approved_per_page'), ['*'], 'approved_page')->withQueryString();
-        $rejected = Anak::with('user')->where('sekolah_id', $sekolahId)->where('status', 'rejected')->latest()->paginate(PaginationPerPage::resolve($request, 'rejected_per_page'), ['*'], 'rejected_page')->withQueryString();
+        $queryFor = function (string $status, array $relations) use ($sekolahId, $search) {
+            return Anak::with($relations)
+                ->where('sekolah_id', $sekolahId)
+                ->where('status', $status)
+                ->when($search !== '', function ($query) use ($search) {
+                    $query->where(function ($query) use ($search) {
+                        $query->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('parent_name', 'like', '%'.$search.'%')
+                            ->orWhereHas('user', function ($query) use ($search) {
+                                $query->where('name', 'like', '%'.$search.'%')
+                                    ->orWhere('email', 'like', '%'.$search.'%');
+                            });
+                    });
+                })
+                ->latest();
+        };
+
+        $pending = $queryFor('pending', ['user.anaks'])->paginate(PaginationPerPage::resolve($request, 'pending_per_page'), ['*'], 'pending_page')->withQueryString();
+        $approved = $queryFor('approved', ['user'])->paginate(PaginationPerPage::resolve($request, 'approved_per_page'), ['*'], 'approved_page')->withQueryString();
+        $rejected = $queryFor('rejected', ['user'])->paginate(PaginationPerPage::resolve($request, 'rejected_per_page'), ['*'], 'rejected_page')->withQueryString();
 
         return view('admin.pendaftaran.index', compact('pending', 'approved', 'rejected'));
     }
