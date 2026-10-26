@@ -21,6 +21,10 @@ class MenuMakanan extends Model
         'photo_kegiatan',
     ];
 
+    protected $casts = [
+        'date' => 'date',
+    ];
+
     public function sekolah(): BelongsTo
     {
         return $this->belongsTo(Sekolah::class);
