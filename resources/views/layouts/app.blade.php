@@ -228,7 +228,10 @@
                 return $group;
             }
             $group['items'] = array_values(array_filter($group['items'], function ($item) use ($user, $seesAdminMenus) {
-                if ($seesAdminMenus && (str_starts_with($item['route'], 'admin.') || (str_starts_with($item['route'], 'pengajar.') && ! str_starts_with($item['route'], 'pengajar.monev-guru')))) {
+                $pengajarSelfService = str_starts_with($item['route'], 'pengajar.monev-guru')
+                    || str_starts_with($item['route'], 'pengajar.presensi-guru');
+
+                if ($seesAdminMenus && (str_starts_with($item['route'], 'admin.') || (str_starts_with($item['route'], 'pengajar.') && ! $pengajarSelfService))) {
                     return false;
                 }
                 if (! isset($item['perm'])) {
@@ -267,6 +270,7 @@
                 $group['items'] = array_values(array_filter(
                     $group['items'],
                     fn ($item) => str_starts_with($item['route'], 'pengajar.monev-guru')
+                        || str_starts_with($item['route'], 'pengajar.presensi-guru')
                 ));
 
                 return $group;

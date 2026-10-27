@@ -14,6 +14,7 @@ use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
@@ -35,6 +36,7 @@ class PresensiGuruTest extends TestCase
         // (pivot sekolah_id NULL) yang tidak cocok untuk skema teams=true.
         // Role di sini dibuat langsung dan di-assign per sekolah.
         Role::firstOrCreate(['name' => 'Pengajar', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'Wali Kelas', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'Admin Sekolah', 'guard_name' => 'web']);
     }
 
@@ -439,6 +441,51 @@ class PresensiGuruTest extends TestCase
                 ],
             ])
             ->assertSessionHasErrors('location_coordinate');
+    }
+
+    public function test_menu_presensi_saya_tetap_tampil_untuk_pengajar_pemilik_menu_admin(): void
+    {
+        $f = $this->fixtures();
+        $this->seedJadwal($f['sekolah']);
+
+        // Role Pengajar punya menu permission -> seesAdminMenus true.
+        $this->beriMenuPermission('Pengajar', 'menu.monev-guru');
+
+        $this->actingAs($f['guruUser'])
+            ->get(route('pengajar.presensi-guru.index'))
+            ->assertOk()
+            ->assertSee('data-tour="nav-pengajar.presensi-guru.index"', false);
+    }
+
+    public function test_menu_presensi_saya_tetap_tampil_untuk_wali_kelas_pemilik_menu_admin(): void
+    {
+        $f = $this->fixtures();
+        $this->seedJadwal($f['sekolah']);
+
+        $waliUser = User::factory()->create([
+            'email' => 'wali-presensi@test.com',
+            'sekolah_id' => $f['sekolah']->id,
+        ]);
+        $this->assignRoleForSchool($waliUser, 'Wali Kelas', $f['sekolah']->id);
+        Pengajar::create([
+            'user_id' => $waliUser->id,
+            'sekolah_id' => $f['sekolah']->id,
+            'name' => 'Wali Presensi',
+        ]);
+
+        $this->beriMenuPermission('Wali Kelas', 'menu.monev-guru');
+
+        $this->actingAs($waliUser)
+            ->get(route('pengajar.presensi-guru.index'))
+            ->assertOk()
+            ->assertSee('data-tour="nav-pengajar.presensi-guru.index"', false);
+    }
+
+    private function beriMenuPermission(string $role, string $permission): void
+    {
+        $permissionModel = Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        Role::findByName($role, 'web')->givePermissionTo($permissionModel);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     public function test_admin_dapat_membuka_halaman_pengaturan_presensi(): void
