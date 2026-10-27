@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\PengumumanController;
 use App\Http\Controllers\Admin\PresensiController;
 use App\Http\Controllers\Admin\PresensiPengajarController;
+use App\Http\Controllers\Admin\JamKerjaController;
 use App\Http\Controllers\Admin\RkasController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaranaController;
@@ -69,6 +70,7 @@ use App\Http\Controllers\Pengajar\MonevGuruController as PengajarMonevGuruContro
 use App\Http\Controllers\Pengajar\MatrikulasiController;
 use App\Http\Controllers\Pengajar\PencapaianController;
 use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
+use App\Http\Controllers\Pengajar\PresensiGuruController as PengajarPresensiGuruController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Superadmin\AdminLembagaController as SuperadminAdminLembagaController;
 use App\Http\Controllers\Superadmin\AiSettingController as SuperadminAiSettingController;
@@ -370,6 +372,10 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::resource('kesehatan', KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('presensi-guru', [PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
     Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
+    Route::get('presensi-guru/pengaturan', [JamKerjaController::class, 'index'])->name('presensi-guru.pengaturan');
+    Route::put('presensi-guru/pengaturan', [JamKerjaController::class, 'update'])->name('presensi-guru.pengaturan.update');
+    Route::post('presensi-guru/pengaturan/libur', [JamKerjaController::class, 'storeLibur'])->name('presensi-guru.pengaturan.libur.store');
+    Route::delete('presensi-guru/pengaturan/libur/{hariLibur}', [JamKerjaController::class, 'destroyLibur'])->name('presensi-guru.pengaturan.libur.destroy');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
     Route::post('ai/monev-guru-suggestions', [AiMonevGuruController::class, 'suggest'])
@@ -412,6 +418,9 @@ Route::middleware(['auth', 'tenant.context', 'sekolah.active', 'role:Wali Kelas'
 Route::middleware(['auth', 'tenant.context', 'sekolah.active', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->name('pengajar.')->group(function () {
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
+    Route::get('presensi-guru', [PengajarPresensiGuruController::class, 'index'])->name('presensi-guru.index');
+    Route::post('presensi-guru/check-in', [PengajarPresensiGuruController::class, 'checkIn'])->name('presensi-guru.check-in');
+    Route::post('presensi-guru/check-out', [PengajarPresensiGuruController::class, 'checkOut'])->name('presensi-guru.check-out');
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);
     Route::get('kegiatan/photos/download', [PengajarKegiatanController::class, 'downloadPhotos'])->name('kegiatan.photos.download');
     Route::get('kegiatan/{kegiatan}/photos/download', [PengajarKegiatanController::class, 'downloadPhotosSingle'])->name('kegiatan.photos.download-single');
