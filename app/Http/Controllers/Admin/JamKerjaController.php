@@ -32,6 +32,38 @@ class JamKerjaController extends Controller
 
         $validated = $request->validate([
             'radius_m' => ['nullable', 'integer', 'min:10', 'max:5000'],
+            'location_coordinate' => [
+                'nullable',
+                'string',
+                'max:100',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! filled($value)) {
+                        return;
+                    }
+
+                    $raw = preg_replace('/\s+/', '', trim((string) $value)) ?? '';
+                    $parts = explode(',', $raw);
+
+                    if (count($parts) !== 2) {
+                        $fail('Koordinat lokasi harus berformat "lat,lng".');
+
+                        return;
+                    }
+
+                    $lat = filter_var($parts[0], FILTER_VALIDATE_FLOAT);
+                    $lng = filter_var($parts[1], FILTER_VALIDATE_FLOAT);
+
+                    if ($lat === false || $lng === false) {
+                        $fail('Koordinat lokasi harus berupa angka desimal.');
+
+                        return;
+                    }
+
+                    if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+                        $fail('Koordinat lokasi di luar rentang yang valid.');
+                    }
+                },
+            ],
             'jadwal' => ['required', 'array'],
             'jadwal.*.is_kerja' => ['nullable', 'boolean'],
             'jadwal.*.jam_masuk' => ['nullable', 'date_format:H:i'],
@@ -40,7 +72,15 @@ class JamKerjaController extends Controller
             'jadwal.*.toleransi_pulang_menit' => ['nullable', 'integer', 'min:0', 'max:600'],
         ]);
 
-        $sekolah->update(['radius_m' => $validated['radius_m'] ?? null]);
+        $update = ['radius_m' => $validated['radius_m'] ?? null];
+
+        if ($request->has('location_coordinate')) {
+            $koordinat = preg_replace('/\s+/', '', trim((string) $request->input('location_coordinate', ''))) ?? '';
+
+            $update['location_coordinate'] = $koordinat === '' ? null : $koordinat;
+        }
+
+        $sekolah->update($update);
 
         foreach ($validated['jadwal'] as $hari => $row) {
             $isKerja = (bool) ($row['is_kerja'] ?? false);

@@ -33,8 +33,9 @@
 
         @if(! $sekolah->location_coordinate)
             <div class="alert-danger mb-5">
-                Titik koordinat sekolah belum diatur. Presensi guru tidak dapat dibuka sampai koordinat diisi.
-                Atur di halaman <a class="underline font-bold" href="{{ route('profile.edit') }}">Profil Sekolah</a> (format: <code>-6.200000, 106.816666</code>).
+                Titik koordinat sekolah belum diatur, jadi presensi guru belum bisa dibuka. Isi di bagian
+                <strong>Lokasi &amp; Radius</strong> di bawah: klik <strong>"Deteksi lokasi saya"</strong> saat berada
+                di sekolah, atau isi manual dengan format <code>-6.200000,106.816666</code>, lalu simpan.
             </div>
         @endif
 
@@ -45,14 +46,38 @@
             <div class="card overflow-hidden mb-6">
                 <div class="px-6 py-4 border-b" style="border-color: rgba(0,0,0,0.06);">
                     <h3 class="section-title">Lokasi &amp; Radius</h3>
-                    <p class="section-subtitle">Titik lokasi sekolah: {{ $sekolah->location_coordinate ?: 'belum diatur' }}</p>
+                    <p class="section-subtitle">Titik koordinat sekolah dipakai sebagai pusat radius presensi guru.</p>
                 </div>
-                <div class="px-6 py-5">
-                    <label class="input-label">Radius presensi (meter)</label>
-                    <input type="number" name="radius_m" min="10" max="5000"
-                        value="{{ old('radius_m', $sekolah->radius_m) }}"
-                        placeholder="100" class="input-field max-w-xs">
-                    <p class="text-xs mt-2" style="color:#9A9188;">Kosongkan untuk memakai default 100 meter.</p>
+                <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="input-label">Titik koordinat sekolah (lat,lng)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="location_coordinate" name="location_coordinate"
+                                value="{{ old('location_coordinate', $sekolah->location_coordinate) }}"
+                                placeholder="-6.200000,106.816666" class="input-field w-full">
+                            <button type="button" id="btn-deteksi-lokasi"
+                                class="btn-secondary px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap">
+                                Deteksi lokasi saya
+                            </button>
+                        </div>
+                        <p class="text-xs mt-2" style="color:#9A9188;">
+                            Klik tombol saat berada <strong>di lokasi sekolah</strong>, atau isi manual.
+                        </p>
+                        <p id="deteksi-status" class="text-xs mt-1" style="color:#9A9188;"></p>
+                    </div>
+                    <div>
+                        <label class="input-label">Radius presensi (meter)</label>
+                        <input type="number" name="radius_m" min="10" max="5000"
+                            value="{{ old('radius_m', $sekolah->radius_m) }}"
+                            placeholder="100" class="input-field w-full sm:max-w-xs">
+                        <p class="text-xs mt-2" style="color:#9A9188;">Kosongkan untuk memakai default 100 meter.</p>
+                    </div>
+                </div>
+                <div class="px-6 pb-5 -mt-2">
+                    <div class="text-xs rounded-xl px-4 py-3" style="background:#FAF6F0;color:#6B6560;">
+                        Hasil deteksi (read-only):
+                        <span id="deteksi-hasil" class="font-bold" style="color:#2C2C2C;">{{ $sekolah->location_coordinate ?: 'belum ada koordinat tersimpan' }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -164,4 +189,47 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const button = document.getElementById('btn-deteksi-lokasi');
+            const input = document.getElementById('location_coordinate');
+            const status = document.getElementById('deteksi-status');
+            const hasil = document.getElementById('deteksi-hasil');
+
+            if (!button || !input) {
+                return;
+            }
+
+            button.addEventListener('click', function () {
+                if (!navigator.geolocation) {
+                    status.textContent = 'Browser tidak mendukung deteksi lokasi.';
+                    status.style.color = '#C0392B';
+                    return;
+                }
+
+                button.disabled = true;
+                status.textContent = 'Mengambil lokasi…';
+                status.style.color = '#6B6560';
+
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        const lat = position.coords.latitude.toFixed(6);
+                        const lng = position.coords.longitude.toFixed(6);
+                        input.value = lat + ',' + lng;
+                        hasil.textContent = lat + ', ' + lng + ' (akurasi ±' + Math.round(position.coords.accuracy) + ' m)';
+                        status.textContent = 'Lokasi terdeteksi. Klik Simpan Pengaturan untuk menerapkan.';
+                        status.style.color = '#1A6B6B';
+                        button.disabled = false;
+                    },
+                    function () {
+                        status.textContent = 'Gagal mengambil lokasi. Izinkan akses lokasi lalu coba lagi.';
+                        status.style.color = '#C0392B';
+                        button.disabled = false;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            });
+        });
+    </script>
 </x-app-layout>

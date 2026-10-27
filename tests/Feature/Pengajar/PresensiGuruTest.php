@@ -406,6 +406,41 @@ class PresensiGuruTest extends TestCase
             ->assertSee('Presensi Saya');
     }
 
+    public function test_admin_dapat_menyimpan_koordinat_sekolah(): void
+    {
+        $f = $this->fixtures();
+
+        $this->actingAs($f['admin'])
+            ->put(route('admin.presensi-guru.pengaturan.update'), [
+                'location_coordinate' => '-6.210000, 106.820000',
+                'radius_m' => 150,
+                'jadwal' => [
+                    1 => ['is_kerja' => 1, 'jam_masuk' => '07:00', 'jam_pulang' => '13:00', 'toleransi_masuk_menit' => 5, 'toleransi_pulang_menit' => 5],
+                ],
+            ])
+            ->assertRedirect(route('admin.presensi-guru.pengaturan'));
+
+        $sekolah = $f['sekolah']->fresh();
+        $this->assertEquals('-6.210000,106.820000', $sekolah->location_coordinate);
+        $this->assertEquals(150, $sekolah->radius_m);
+    }
+
+    public function test_koordinat_tidak_valid_ditolak(): void
+    {
+        $f = $this->fixtures();
+
+        $this->actingAs($f['admin'])
+            ->from(route('admin.presensi-guru.pengaturan'))
+            ->put(route('admin.presensi-guru.pengaturan.update'), [
+                'location_coordinate' => 'bukan-koordinat',
+                'radius_m' => 100,
+                'jadwal' => [
+                    1 => ['is_kerja' => 1, 'jam_masuk' => '07:00', 'jam_pulang' => '13:00', 'toleransi_masuk_menit' => 5, 'toleransi_pulang_menit' => 5],
+                ],
+            ])
+            ->assertSessionHasErrors('location_coordinate');
+    }
+
     public function test_admin_dapat_membuka_halaman_pengaturan_presensi(): void
     {
         $f = $this->fixtures();
