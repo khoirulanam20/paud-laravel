@@ -481,6 +481,17 @@ class PresensiGuruTest extends TestCase
             ->assertSee('data-tour="nav-pengajar.presensi-guru.index"', false);
     }
 
+    public function test_halaman_profil_pengajar_menampilkan_menu_dan_data_pengajar(): void
+    {
+        $f = $this->fixtures();
+
+        $this->actingAs($f['guruUser'])
+            ->get(route('profile.edit'))
+            ->assertOk()
+            ->assertSee('data-tour="nav-pengajar.presensi-guru.index"', false)
+            ->assertSee('Presensi Saya');
+    }
+
     private function beriMenuPermission(string $role, string $permission): void
     {
         $permissionModel = Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);

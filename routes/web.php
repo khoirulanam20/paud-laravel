@@ -114,7 +114,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'tenant.context'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'tenant.context'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('/profile/sekolah', [ProfileController::class, 'editSekolah'])->name('profile.sekolah.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
