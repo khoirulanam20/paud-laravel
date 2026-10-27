@@ -83,6 +83,26 @@ class PresensiPengajarService
             ->exists();
     }
 
+    /** Jam pulang efektif hari itu, atau null kalau hari libur / belum diatur. */
+    public function jamPulangHari(Sekolah $sekolah, CarbonInterface $tanggal): ?CarbonInterface
+    {
+        $jadwal = $this->jadwalHari($sekolah, $tanggal);
+
+        if (! $jadwal || ! $jadwal->is_kerja || ! $jadwal->jam_pulang) {
+            return null;
+        }
+
+        return Carbon::parse($tanggal->toDateString().' '.$jadwal->jam_pulang);
+    }
+
+    /** Check-out hanya dibuka mulai jam pulang. */
+    public function bolehCheckOut(Sekolah $sekolah, CarbonInterface $tanggal): bool
+    {
+        $batas = $this->jamPulangHari($sekolah, $tanggal);
+
+        return $batas === null || $tanggal->gte($batas);
+    }
+
     public function presensiHariIni(Pengajar $pengajar, CarbonInterface $tanggal): ?PresensiPengajar
     {
         return PresensiPengajar::withoutSekolahScope()
@@ -122,7 +142,8 @@ class PresensiPengajarService
             'bisa_check_in' => ! $libur && $koordinatSet && $presensi?->check_in_at === null,
             'bisa_check_out' => ! $libur && $koordinatSet
                 && $presensi?->check_in_at !== null
-                && $presensi?->check_out_at === null,
+                && $presensi?->check_out_at === null
+                && $this->bolehCheckOut($sekolah, $tanggal),
         ];
     }
 
@@ -207,6 +228,14 @@ class PresensiPengajarService
         if ($presensi->check_out_at !== null) {
             throw ValidationException::withMessages([
                 'presensi' => 'Anda sudah melakukan check-out hari ini.',
+            ]);
+        }
+
+        $batasPulang = $this->jamPulangHari($sekolah, $now);
+
+        if ($batasPulang !== null && $now->lt($batasPulang)) {
+            throw ValidationException::withMessages([
+                'presensi' => 'Check-out baru dibuka pukul '.$batasPulang->format('H:i').'.',
             ]);
         }
 

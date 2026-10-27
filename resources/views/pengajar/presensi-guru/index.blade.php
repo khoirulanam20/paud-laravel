@@ -103,6 +103,12 @@
                         </form>
                     </div>
 
+                    @if($status['presensi']?->check_in_at && ! $status['presensi']?->check_out_at && ! $status['bisa_check_out'] && $status['jadwal']?->jam_pulang)
+                        <p class="text-xs font-bold mt-3" style="color:#C0392B;">
+                            Check-out baru dibuka mulai pukul {{ \Illuminate\Support\Carbon::parse($status['jadwal']->jam_pulang)->format('H:i') }}.
+                        </p>
+                    @endif
+
                     <p id="geo-status" class="text-xs mt-4" style="color:#9A9188;">
                         Aktifkan izin lokasi di browser. Titik presensi wajib berada dalam radius {{ $status['radius_meter'] }} meter dari sekolah.
                     </p>

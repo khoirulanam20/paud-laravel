@@ -241,6 +241,32 @@ class PresensiGuruTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_check_out_sebelum_jam_pulang_ditolak(): void
+    {
+        $f = $this->fixtures();
+        $this->seedJadwal($f['sekolah']);
+
+        Carbon::setTestNow(Carbon::parse('2026-10-27 07:05:00'));
+        $this->actingAs($f['guruUser'])->post(route('pengajar.presensi-guru.check-in'), $this->dalamRadius());
+
+        // Jam pulang 13:00, coba check-out 11:00.
+        Carbon::setTestNow(Carbon::parse('2026-10-27 11:00:00'));
+        $this->actingAs($f['guruUser'])
+            ->from(route('pengajar.presensi-guru.index'))
+            ->post(route('pengajar.presensi-guru.check-out'), $this->dalamRadius())
+            ->assertSessionHasErrors('presensi');
+
+        $this->assertNull(PresensiPengajar::withoutSekolahScope()->first()->check_out_at);
+
+        // Di halaman, tombol check-out belum terbuka.
+        $this->actingAs($f['guruUser'])
+            ->get(route('pengajar.presensi-guru.index'))
+            ->assertOk()
+            ->assertSee('Check-out baru dibuka mulai pukul 13:00');
+
+        Carbon::setTestNow();
+    }
+
     public function test_check_in_lalu_check_out_menyimpan_jam_pulang(): void
     {
         $f = $this->fixtures();
