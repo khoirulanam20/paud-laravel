@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Lembaga;
+use App\Models\KomponenGaji;
 use App\Models\MonevGuruKriteria;
 use App\Models\Sekolah;
 use App\Models\SkalaPencapaian;
@@ -45,6 +46,7 @@ class LembagaProvisioningService
 
             SkalaPencapaian::seedDefaultsForSekolah($sekolah->id);
             MonevGuruKriteria::seedDefaultsForSekolah($sekolah->id);
+            KomponenGaji::seedDefaultsForSekolah($sekolah->id);
 
             $user = User::create([
                 'name' => $data['contact_name'],

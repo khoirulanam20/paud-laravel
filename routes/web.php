@@ -8,7 +8,9 @@ use App\Http\Controllers\Admin\AnakController;
 use App\Http\Controllers\Admin\BiayaBulananController;
 use App\Http\Controllers\Admin\CashflowController;
 use App\Http\Controllers\Admin\DiskonController;
+use App\Http\Controllers\Admin\GajiGuruController;
 use App\Http\Controllers\Admin\JamKerjaController;
+use App\Http\Controllers\Admin\KomponenGajiController;
 use App\Http\Controllers\Admin\JurnalController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KegiatanRutinController;
@@ -331,6 +333,23 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::post('pembayaran-bulanan/{pembayaran}/items', [PembayaranBulananController::class, 'storeItem'])->name('pembayaran-bulanan.items.store');
     Route::patch('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'updateItem'])->name('pembayaran-bulanan.items.update');
     Route::delete('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'destroyItem'])->name('pembayaran-bulanan.items.destroy');
+
+    Route::prefix('gaji-guru')->name('gaji-guru.')->group(function () {
+        Route::get('export', [GajiGuruController::class, 'export'])->name('export');
+        Route::get('komponen', [KomponenGajiController::class, 'index'])->name('komponen.index');
+        Route::post('komponen', [KomponenGajiController::class, 'store'])->name('komponen.store');
+        Route::put('komponen/{komponen_gaji}', [KomponenGajiController::class, 'update'])->name('komponen.update');
+        Route::delete('komponen/{komponen_gaji}', [KomponenGajiController::class, 'destroy'])->name('komponen.destroy');
+        Route::get('create', [GajiGuruController::class, 'create'])->name('create');
+        Route::patch('{gaji_pengajar}/approve', [GajiGuruController::class, 'approve'])->name('approve');
+        Route::patch('{gaji_pengajar}/batalkan', [GajiGuruController::class, 'batalkan'])->name('batalkan');
+        Route::get('/', [GajiGuruController::class, 'index'])->name('index');
+        Route::post('/', [GajiGuruController::class, 'store'])->name('store');
+        Route::get('{gaji_pengajar}', [GajiGuruController::class, 'show'])->name('show');
+        Route::get('{gaji_pengajar}/edit', [GajiGuruController::class, 'edit'])->name('edit');
+        Route::put('{gaji_pengajar}', [GajiGuruController::class, 'update'])->name('update');
+        Route::delete('{gaji_pengajar}', [GajiGuruController::class, 'destroy'])->name('destroy');
+    });
 
     Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
     Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Lembaga;
+use App\Models\KomponenGaji;
 use App\Models\MonevGuruKriteria;
 use App\Models\Sekolah;
 use App\Models\SkalaPencapaian;
@@ -93,6 +94,7 @@ class SekolahProvisioningService
 
             SkalaPencapaian::seedDefaultsForSekolah($sekolah->id);
             MonevGuruKriteria::seedDefaultsForSekolah($sekolah->id);
+            KomponenGaji::seedDefaultsForSekolah($sekolah->id);
 
             $password = $data['password'] ?? 'password123';
 
