@@ -78,9 +78,15 @@ class AkuntansiSetting extends Model
         return $this->belongsTo(Akun::class, 'akun_kas_gaji_id');
     }
 
+    /** ponytail: fallback ke akun_kas_id jika kas gaji belum diisi (data lama / migrasi belum lengkap) */
+    public function akunKasGajiEfektifId(): ?int
+    {
+        return $this->akun_kas_gaji_id ?? $this->akun_kas_id;
+    }
+
     public function lengkapUntukGajiGuru(): bool
     {
-        return $this->akun_kas_gaji_id && $this->akun_beban_gaji_id;
+        return $this->akunKasGajiEfektifId() && $this->akun_beban_gaji_id;
     }
 
     public function assertLengkapUntukGajiGuru(): void
@@ -101,8 +107,10 @@ class AkuntansiSetting extends Model
     {
         $this->assertLengkapUntukGajiGuru();
 
+        $kasGajiId = $this->akunKasGajiEfektifId();
+
         return [
-            'akun_kas_id' => (int) $this->akun_kas_gaji_id,
+            'akun_kas_id' => (int) $kasGajiId,
             'akun_beban_id' => (int) $this->akun_beban_gaji_id,
             'sumber_dana_id' => $this->sumber_dana_gaji_id ? (int) $this->sumber_dana_gaji_id : null,
         ];

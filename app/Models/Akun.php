@@ -97,8 +97,18 @@ class Akun extends Model
                     ->orWhere('akun_piutang_id', $id)
                     ->orWhere('akun_pendapatan_id', $id)
                     ->orWhere('akun_untuk_in', $id)
-                    ->orWhere('akun_untuk_out', $id);
+                    ->orWhere('akun_untuk_out', $id)
+                    ->orWhere('akun_beban_gaji_id', $id)
+                    ->orWhere('akun_kas_gaji_id', $id);
             })->exists()) {
+            return true;
+        }
+
+        if (GajiPengajar::where('sekolah_id', $this->sekolah_id)
+            ->where(function ($q) use ($id) {
+                $q->where('akun_kas_id', $id)->orWhere('akun_beban_id', $id);
+            })
+            ->exists()) {
             return true;
         }
 

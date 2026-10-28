@@ -241,6 +241,16 @@ class GajiGuruTest extends TestCase
         $this->assertDatabaseHas('gaji_pengajars', ['id' => $gaji->id, 'status' => GajiPengajar::STATUS_APPROVED]);
     }
 
+    public function test_gaji_kas_fallbacks_to_akun_kas_when_kas_gaji_null(): void
+    {
+        $f = $this->fixtures();
+        AkuntansiSetting::where('sekolah_id', $f['sekolah']->id)->update(['akun_kas_gaji_id' => null]);
+
+        $setting = AkuntansiSetting::where('sekolah_id', $f['sekolah']->id)->firstOrFail();
+        $this->assertTrue($setting->lengkapUntukGajiGuru());
+        $this->assertSame($f['kas']->id, $setting->akunUntukGajiGuru()['akun_kas_id']);
+    }
+
     public function test_create_redirects_when_gaji_setting_incomplete(): void
     {
         $f = $this->fixtures();
