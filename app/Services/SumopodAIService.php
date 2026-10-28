@@ -326,6 +326,7 @@ PROMPT;
     /**
      * Generate 3 catatan penilaian suggestions for monev guru per kriteria.
      *
+     * @param  array{hari_kerja: int, hadir: int, terlambat: int, telat_pulang: int, tanpa_check_out: int, persentase: float}|null  $rekap
      * @return array<string>
      */
     public function generateMonevGuruCatatanSuggestions(
@@ -334,13 +335,48 @@ PROMPT;
         string $kriteriaDeskripsi,
         int $skor,
         string $periodeLabel,
-        ?string $personaPrefix = null
+        ?string $personaPrefix = null,
+        ?array $rekap = null
     ): array {
         $identity = $personaPrefix !== null && trim($personaPrefix) !== ''
             ? trim($personaPrefix)
             : 'Kamu adalah kepala sekolah / supervisor PAUD yang profesional dan objektif.';
 
         $deskripsi = $kriteriaDeskripsi !== '' ? $kriteriaDeskripsi : '(tidak ada deskripsi tambahan)';
+
+        $presensiBlock = '';
+        $presensiInstruksi = '';
+        if ($rekap !== null && (int) ($rekap['hari_kerja'] ?? 0) > 0) {
+            $hariKerja = (int) $rekap['hari_kerja'];
+            $hadir = (int) ($rekap['hadir'] ?? 0);
+            $alpa = max(0, $hariKerja - $hadir);
+            $terlambat = (int) ($rekap['terlambat'] ?? 0);
+            $telatPulang = (int) ($rekap['telat_pulang'] ?? 0);
+            $tanpaCheckOut = (int) ($rekap['tanpa_check_out'] ?? 0);
+            $persentase = (float) ($rekap['persentase'] ?? 0);
+
+            $presensiBlock = <<<PRESENSI
+
+Data Presensi:
+- Hari kerja efektif : {$hariKerja} hari
+- Hadir              : {$hadir} hari ({$persentase}%)
+- Tidak hadir (alpa) : {$alpa} hari
+- Telat masuk        : {$terlambat} kali
+- Pulang lebih awal  : {$telatPulang} kali
+- Check-in tanpa checkout: {$tanpaCheckOut} kali
+PRESENSI;
+
+            $presensiInstruksi = <<<PRESENSI_INS
+
+- Data Presensi di atas WAJIB dipakai sebagai dasar catatan; jangan mengarang angka lain.
+- Di antara 3 saran, sebar fakta berikut (angka harus sesuai data):
+  1) total hadir vs hari kerja / persentase kehadiran,
+  2) alpa (tidak hadir) bila > 0, atau apresiasi jika 0,
+  3) telat masuk ({$terlambat} kali) — jika 0 sebutkan tepat waktu, jika >0 kritik konstruktif,
+  4) pulang lebih awal ({$telatPulang} kali) dan check-in tanpa checkout ({$tanpaCheckOut} kali) bila relevan.
+- Setiap saran harus punya alasan jelas yang menghubungkan skor {$skor} dengan fakta presensi tersebut.
+PRESENSI_INS;
+        }
 
         $prompt = <<<PROMPT
 {$identity}
@@ -352,11 +388,11 @@ Konteks:
 - Panduan Kriteria : {$deskripsi}
 - Skor (1–100) : {$skor}
 - Periode Evaluasi : {$periodeLabel}
-
+{$presensiBlock}
 Instruksi:
-- Setiap saran harus singkat (maks 2 kalimat), profesional, spesifik pada kriteria, dan selaras dengan skor.
+- Setiap saran maks 2 kalimat, profesional, spesifik pada kriteria, dan selaras dengan skor.
 - Skor rendah (<60): ton konstruktif dengan area perbaikan jelas. Skor sedang (60–79): apresiasi + saran pengembangan. Skor tinggi (≥80): apresiasi konkret + pertahankan.
-- Jangan mengulang saran yang sama.
+- Jangan mengulang saran yang sama.{$presensiInstruksi}
 - Jawab HANYA dengan 3 saran, masing-masing diawali dengan nomor (1. 2. 3.) tanpa penjelasan tambahan.
 
 Format jawaban:
@@ -364,6 +400,8 @@ Format jawaban:
 2. [Saran kedua]
 3. [Saran ketiga]
 PROMPT;
+
+        $temperature = $rekap !== null ? 0.5 : 0.8;
 
         $response = Http::withToken($this->apiKey)
             ->timeout(30)
@@ -373,7 +411,7 @@ PROMPT;
                     ['role' => 'user', 'content' => $prompt],
                 ],
                 'max_tokens' => 512,
-                'temperature' => 0.8,
+                'temperature' => $temperature,
             ]);
 
         if (! $response->successful()) {

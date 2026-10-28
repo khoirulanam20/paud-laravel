@@ -40,6 +40,12 @@ class MonevGuruKriteria extends Model
         return $this->hasMany(MonevGuruPenilaianItem::class);
     }
 
+    /** Kriteria kedisiplinan/kehadiran: Saran AI dilengkapi rekap presensi. */
+    public function usesPresensiContext(): bool
+    {
+        return str_contains(mb_strtolower($this->nama), 'kehadiran');
+    }
+
     /** @return array<int, array{nama: string, deskripsi: string|null, bobot: int, urutan: int}> */
     public static function defaultRows(): array
     {

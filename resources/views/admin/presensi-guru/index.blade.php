@@ -33,7 +33,8 @@
             </div>
         @endif
 
-        <div class="mb-4 flex justify-end">
+        <div class="mb-4 flex flex-wrap items-center justify-end gap-3">
+            <a href="{{ route('admin.presensi-guru.pengaturan') }}" class="btn-secondary px-4 py-2 rounded-xl text-sm font-bold">Pengaturan Presensi</a>
             <x-export-excel route="admin.presensi-guru.export" />
         </div>
 
@@ -48,6 +49,8 @@
                             <tr class="bg-amber-50/50">
                                 <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40">Nama Pengajar</th>
                                 <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40 w-48 text-center">Kehadiran</th>
+                                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40 text-center">Jam Masuk</th>
+                                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40 text-center">Jam Pulang</th>
                                 <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-amber-900/40">Keterangan (Optional)</th>
                             </tr>
                         </thead>
@@ -76,6 +79,22 @@
                                             </label>
                                         </div>
                                     </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <input type="time" name="presensi[{{ $pengajar->id }}][check_in]"
+                                            value="{{ $p?->check_in_at?->format('H:i') }}"
+                                            class="input-field py-1.5 text-xs border-amber-100 bg-white/50 focus:bg-white w-28 text-center">
+                                        @if($p?->terlambat_masuk)
+                                            <p class="text-[10px] font-bold mt-1 text-red-600">Telat {{ $p->menit_telat_masuk }} mnt</p>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <input type="time" name="presensi[{{ $pengajar->id }}][check_out]"
+                                            value="{{ $p?->check_out_at?->format('H:i') }}"
+                                            class="input-field py-1.5 text-xs border-amber-100 bg-white/50 focus:bg-white w-28 text-center">
+                                        @if($p?->telat_pulang)
+                                            <p class="text-[10px] font-bold mt-1 text-red-600">Telat {{ $p->menit_telat_pulang }} mnt</p>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4">
                                         <select name="presensi[{{ $pengajar->id }}][status]" class="input-field py-1.5 text-xs border-amber-100 bg-white/50 focus:bg-white w-full max-w-[12rem]">
                                             <option value="">- Pilih Status -</option>
@@ -87,7 +106,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-6 py-12 text-center">
+                                    <td colspan="5" class="px-6 py-12 text-center">
                                         <p class="text-sm text-amber-800/40 font-medium">Belum ada data pengajar di sekolah ini.</p>
                                     </td>
                                 </tr>

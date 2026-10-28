@@ -13,6 +13,7 @@
         x-data="{
             aiLoading: {},
             aiSuggestions: {},
+            presensiInfo: {},
             ringkasanLoading: false,
             catatanRingkasanSuggestions: [],
             rekomendasiRingkasanSuggestions: [],
@@ -20,6 +21,14 @@
             hasTokens: @js($hasTokens),
             aiReady: @js($aiReady),
             tokenFallbackMonev: @js($tokenFallbackMonev),
+            formatRekap(rekap) {
+                if (!rekap) return '';
+                const parts = [`Hadir ${rekap.hadir ?? 0}/${rekap.hari_kerja ?? 0} hari (${rekap.persentase ?? 0}%)`];
+                if ((rekap.terlambat ?? 0) > 0) parts.push(`Telat masuk ${rekap.terlambat}x`);
+                if ((rekap.telat_pulang ?? 0) > 0) parts.push(`Pulang lebih awal ${rekap.telat_pulang}x`);
+                if ((rekap.tanpa_check_out ?? 0) > 0) parts.push(`Tanpa checkout ${rekap.tanpa_check_out}x`);
+                return parts.join(' · ');
+            },
             async fetchAiSuggestions(kriteriaId, index) {
                 if (!this.aiReady) { alert('Pengaturan AI belum dikonfigurasi.'); return; }
                 if (!this.hasTokens) { alert(this.tokenFallbackMonev); return; }
@@ -29,6 +38,7 @@
                 if (!skor || skor < 1 || skor > 100) { alert('Isi skor (1–100) terlebih dahulu sebelum meminta saran AI.'); return; }
                 const key = String(kriteriaId);
                 this.aiSuggestions = {};
+                this.presensiInfo = { ...this.presensiInfo, [key]: '' };
                 this.aiLoading = { ...this.aiLoading, [key]: true };
                 try {
                     const res = await fetch(@js(route('admin.ai.monev-guru-suggestions')), {
@@ -57,6 +67,9 @@
                         this.hasTokens = false;
                     }
                     this.aiSuggestions = { [key]: data.suggestions || [] };
+                    if (data.rekap) {
+                        this.presensiInfo = { ...this.presensiInfo, [key]: this.formatRekap(data.rekap) };
+                    }
                 } catch (e) {
                     alert('Terjadi kesalahan: ' + e.message);
                 } finally {
@@ -218,6 +231,7 @@
                                         <span x-show="!aiReady" class="text-[10px] italic" style="color:#9E9790;">AI belum dikonfigurasi</span>
                                         <span x-show="aiReady && !hasTokens" class="text-[10px] italic" style="color:#9E9790;">Token AI habis</span>
                                     </div>
+                                    <p class="text-xs mt-1" style="color:#9A9188;" x-text="presensiInfo['{{ $k->id }}'] || ''" x-show="presensiInfo['{{ $k->id }}']"></p>
                                     <template x-if="(aiSuggestions['{{ $k->id }}'] || []).length > 0">
                                         <div class="space-y-1.5 pt-1">
                                             <div class="text-[10px] font-semibold" style="color:#6B6560;">Pilih salah satu saran:</div>

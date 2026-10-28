@@ -10,7 +10,9 @@ use App\Models\Pengajar;
 use App\Models\SekolahAiTokenTransaction;
 use App\Services\AiPersonaService;
 use App\Services\AiTokenService;
+use App\Services\PresensiPengajarService;
 use App\Support\AiPersonaScope;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -19,7 +21,8 @@ class AiMonevGuruController extends Controller
 {
     public function __construct(
         protected AiPersonaService $personaService,
-        protected AiTokenService $tokenService
+        protected AiTokenService $tokenService,
+        protected PresensiPengajarService $presensiService
     ) {}
 
     public function suggest(Request $request): JsonResponse
@@ -78,6 +81,22 @@ class AiMonevGuruController extends Controller
             $validated['periode_selesai'] ?? null
         );
 
+        $rekap = null;
+        if (
+            $kriteria->usesPresensiContext()
+            && ! empty($validated['periode_mulai'])
+            && ! empty($validated['periode_selesai'])
+        ) {
+            $rekap = $this->presensiService->rekapKehadiran(
+                $pengajar,
+                Carbon::parse($validated['periode_mulai'])->startOfDay(),
+                Carbon::parse($validated['periode_selesai'])->endOfDay()
+            );
+            if ((int) ($rekap['hari_kerja'] ?? 0) === 0) {
+                $rekap = null;
+            }
+        }
+
         $sekolahName = $user->sekolah?->name ?? 'PAUD';
         $personaPrompt = $this->personaService->resolveActivePrompt(
             $sekolahId,
@@ -102,14 +121,20 @@ class AiMonevGuruController extends Controller
                     (string) ($kriteria->deskripsi ?? ''),
                     (int) $validated['skor'],
                     $periodeLabel,
-                    $personaPrompt
+                    $personaPrompt,
+                    $rekap
                 )
             );
 
-            return response()->json([
+            $payload = [
                 'suggestions' => $suggestions,
                 'token_balance' => $this->tokenService->getBalance($sekolahId),
-            ]);
+            ];
+            if ($rekap !== null) {
+                $payload['rekap'] = $rekap;
+            }
+
+            return response()->json($payload);
         } catch (InsufficientAiTokensException $e) {
             return response()->json([
                 'error' => $e->fallbackMessage,

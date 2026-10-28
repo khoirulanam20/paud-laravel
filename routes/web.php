@@ -7,16 +7,18 @@ use App\Http\Controllers\Admin\AkuntansiSettingController;
 use App\Http\Controllers\Admin\AnakController;
 use App\Http\Controllers\Admin\BiayaBulananController;
 use App\Http\Controllers\Admin\CashflowController;
-use App\Http\Controllers\Admin\TabunganInvestasiController;
 use App\Http\Controllers\Admin\DiskonController;
+use App\Http\Controllers\Admin\GajiGuruController;
+use App\Http\Controllers\Admin\JamKerjaController;
+use App\Http\Controllers\Admin\KomponenGajiController;
 use App\Http\Controllers\Admin\JurnalController;
-use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KegiatanRutinController;
 use App\Http\Controllers\Admin\KelasController;
-// Lembaga Controllers
 use App\Http\Controllers\Admin\KesehatanController;
+// Lembaga Controllers
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
+use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\MasterKegiatanRutinController;
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
 use App\Http\Controllers\Admin\MenuMakananController;
@@ -38,6 +40,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaranaController;
 use App\Http\Controllers\Admin\SkalaPencapaianController;
 use App\Http\Controllers\Admin\SumberDanaController;
+use App\Http\Controllers\Admin\TabunganInvestasiController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
 use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
@@ -54,7 +57,6 @@ use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranCont
 use App\Http\Controllers\Lembaga\SchoolSwitcherController;
 use App\Http\Controllers\Lembaga\SekolahController;
 use App\Http\Controllers\OrangTua\AnakController as OrangTuaAnakController;
-use App\Http\Controllers\OrangTua\SchoolSwitcherController as OrangTuaSchoolSwitcherController;
 use App\Http\Controllers\OrangTua\ChatController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
@@ -62,13 +64,15 @@ use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananCo
 use App\Http\Controllers\OrangTua\MenuMakananVoteController;
 use App\Http\Controllers\OrangTua\MonevController;
 use App\Http\Controllers\OrangTua\PembayaranController;
-use App\Http\Controllers\OrangTua\PengumumanController as OrangTuaPengumumanController;
 use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
+use App\Http\Controllers\OrangTua\PengumumanController as OrangTuaPengumumanController;
+use App\Http\Controllers\OrangTua\SchoolSwitcherController as OrangTuaSchoolSwitcherController;
 use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
-use App\Http\Controllers\Pengajar\MonevGuruController as PengajarMonevGuruController;
 use App\Http\Controllers\Pengajar\MatrikulasiController;
+use App\Http\Controllers\Pengajar\MonevGuruController as PengajarMonevGuruController;
 use App\Http\Controllers\Pengajar\PencapaianController;
 use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
+use App\Http\Controllers\Pengajar\PresensiGuruController as PengajarPresensiGuruController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Superadmin\AdminLembagaController as SuperadminAdminLembagaController;
 use App\Http\Controllers\Superadmin\AiSettingController as SuperadminAiSettingController;
@@ -112,7 +116,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'tenant.context'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'tenant.context'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('/profile/sekolah', [ProfileController::class, 'editSekolah'])->name('profile.sekolah.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -330,6 +334,23 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::patch('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'updateItem'])->name('pembayaran-bulanan.items.update');
     Route::delete('pembayaran-bulanan/{pembayaran}/items/{item}', [PembayaranBulananController::class, 'destroyItem'])->name('pembayaran-bulanan.items.destroy');
 
+    Route::prefix('gaji-guru')->name('gaji-guru.')->group(function () {
+        Route::get('export', [GajiGuruController::class, 'export'])->name('export');
+        Route::get('komponen', [KomponenGajiController::class, 'index'])->name('komponen.index');
+        Route::post('komponen', [KomponenGajiController::class, 'store'])->name('komponen.store');
+        Route::put('komponen/{komponen_gaji}', [KomponenGajiController::class, 'update'])->name('komponen.update');
+        Route::delete('komponen/{komponen_gaji}', [KomponenGajiController::class, 'destroy'])->name('komponen.destroy');
+        Route::get('create', [GajiGuruController::class, 'create'])->name('create');
+        Route::patch('{gaji_pengajar}/approve', [GajiGuruController::class, 'approve'])->name('approve');
+        Route::patch('{gaji_pengajar}/batalkan', [GajiGuruController::class, 'batalkan'])->name('batalkan');
+        Route::get('/', [GajiGuruController::class, 'index'])->name('index');
+        Route::post('/', [GajiGuruController::class, 'store'])->name('store');
+        Route::get('{gaji_pengajar}', [GajiGuruController::class, 'show'])->name('show');
+        Route::get('{gaji_pengajar}/edit', [GajiGuruController::class, 'edit'])->name('edit');
+        Route::put('{gaji_pengajar}', [GajiGuruController::class, 'update'])->name('update');
+        Route::delete('{gaji_pengajar}', [GajiGuruController::class, 'destroy'])->name('destroy');
+    });
+
     Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
     Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
     Route::resource('kegiatan', KegiatanController::class)->except(['create', 'edit', 'show']);
@@ -370,6 +391,10 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::resource('kesehatan', KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('presensi-guru', [PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
     Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
+    Route::get('presensi-guru/pengaturan', [JamKerjaController::class, 'index'])->name('presensi-guru.pengaturan');
+    Route::put('presensi-guru/pengaturan', [JamKerjaController::class, 'update'])->name('presensi-guru.pengaturan.update');
+    Route::post('presensi-guru/pengaturan/libur', [JamKerjaController::class, 'storeLibur'])->name('presensi-guru.pengaturan.libur.store');
+    Route::delete('presensi-guru/pengaturan/libur/{hariLibur}', [JamKerjaController::class, 'destroyLibur'])->name('presensi-guru.pengaturan.libur.destroy');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
     Route::post('ai/monev-guru-suggestions', [AiMonevGuruController::class, 'suggest'])
@@ -412,6 +437,9 @@ Route::middleware(['auth', 'tenant.context', 'sekolah.active', 'role:Wali Kelas'
 Route::middleware(['auth', 'tenant.context', 'sekolah.active', 'role:Pengajar|Wali Kelas'])->prefix('pengajar')->name('pengajar.')->group(function () {
     Route::get('presensi', [PengajarPresensiController::class, 'index'])->name('presensi.index');
     Route::post('presensi', [PengajarPresensiController::class, 'store'])->name('presensi.store');
+    Route::get('presensi-guru', [PengajarPresensiGuruController::class, 'index'])->name('presensi-guru.index');
+    Route::post('presensi-guru/check-in', [PengajarPresensiGuruController::class, 'checkIn'])->name('presensi-guru.check-in');
+    Route::post('presensi-guru/check-out', [PengajarPresensiGuruController::class, 'checkOut'])->name('presensi-guru.check-out');
     Route::resource('kegiatan', PengajarKegiatanController::class)->except(['create', 'edit', 'show']);
     Route::get('kegiatan/photos/download', [PengajarKegiatanController::class, 'downloadPhotos'])->name('kegiatan.photos.download');
     Route::get('kegiatan/{kegiatan}/photos/download', [PengajarKegiatanController::class, 'downloadPhotosSingle'])->name('kegiatan.photos.download-single');

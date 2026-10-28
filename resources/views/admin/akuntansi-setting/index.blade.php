@@ -131,6 +131,38 @@
                 </div>
             </div>
 
+            <div class="card mb-6">
+                <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                    <h3 class="section-title">Akun Gaji Guru</h3>
+                    <p class="section-subtitle">Dipakai otomatis saat slip gaji disetujui (debit beban, kredit kas). Tidak perlu diisi lagi di form slip.</p>
+                </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2 rounded-lg px-4 py-3 text-sm" style="background:#F0F7F7;color:#2C2C2C;">
+                        <span class="font-semibold">Akun Kas/Bank:</span>
+                        {{ $setting->akunKas ? $setting->akunKas->kode.' — '.$setting->akunKas->nama : '— belum diatur —' }}
+                        <span style="color:#9E9790;"> · Atur lewat field <strong>Akun Kas</strong> di bagian Default Cashflow di atas (satu kas untuk cashflow, SPP, dan gaji).</span>
+                    </div>
+                    <div>
+                        <label class="input-label">Akun Beban Gaji</label>
+                        <select name="akun_beban_gaji_id" class="input-field" required>
+                            @foreach($akunBeban as $a)
+                                <option value="{{ $a->id }}" @selected($setting->akun_beban_gaji_id == $a->id)>{{ $a->kode }} - {{ $a->nama }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Mis. Beban Gaji (5101), bukan counter pengeluaran cashflow manual.</p>
+                    </div>
+                    <div>
+                        <label class="input-label">Sumber Dana</label>
+                        <select name="sumber_dana_gaji_id" class="input-field">
+                            <option value="">— Opsional —</option>
+                            @foreach($sumberDanas as $sd)
+                                <option value="{{ $sd->id }}" @selected($setting->sumber_dana_gaji_id == $sd->id)>{{ $sd->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex justify-end">
                 <button type="submit" class="btn-primary px-8">Simpan Pengaturan</button>
             </div>

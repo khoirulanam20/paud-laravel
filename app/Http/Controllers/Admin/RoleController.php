@@ -57,6 +57,7 @@ class RoleController extends Controller
             ['name' => 'menu.biaya-harian', 'label' => 'Biaya Bulanan'],
             ['name' => 'menu.diskon', 'label' => 'Diskon'],
             ['name' => 'menu.rekap-pembayaran', 'label' => 'Rekap Pembayaran'],
+            ['name' => 'menu.gaji-guru', 'label' => 'Gaji Guru'],
         ],
         'Masukan & Komunikasi' => [
             ['name' => 'menu.kritik-saran', 'label' => 'Kritik & Saran'],

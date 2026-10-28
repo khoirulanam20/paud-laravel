@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Lembaga;
 
 use App\Http\Controllers\Controller;
+use App\Models\KomponenGaji;
 use App\Models\MonevGuruKriteria;
 use App\Models\Sekolah;
 use App\Models\SkalaPencapaian;
@@ -37,6 +38,7 @@ class SekolahController extends Controller
 
         SkalaPencapaian::seedDefaultsForSekolah($sekolah->id);
         MonevGuruKriteria::seedDefaultsForSekolah($sekolah->id);
+        KomponenGaji::seedDefaultsForSekolah($sekolah->id);
 
         return redirect()->route('lembaga.sekolah.index')->with('success', 'Sekolah berhasil ditambahkan.');
     }

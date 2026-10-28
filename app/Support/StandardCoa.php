@@ -140,6 +140,7 @@ class StandardCoa
             'akun_pendapatan_id' => $byKode[self::DEFAULT_PENDAPATAN] ?? null,
             'akun_untuk_in' => $in,
             'akun_untuk_out' => $out,
+            'akun_beban_gaji_id' => $out,
             'created_at' => $now,
             'updated_at' => $now,
         ]);

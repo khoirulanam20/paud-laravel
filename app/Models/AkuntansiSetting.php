@@ -23,6 +23,8 @@ class AkuntansiSetting extends Model
         'akun_pendapatan_id',
         'akun_untuk_in',
         'akun_untuk_out',
+        'akun_beban_gaji_id',
+        'sumber_dana_gaji_id',
         'jenis_akun_aset',
     ];
 
@@ -58,6 +60,46 @@ class AkuntansiSetting extends Model
     public function akunUntukOut(): BelongsTo
     {
         return $this->belongsTo(Akun::class, 'akun_untuk_out');
+    }
+
+    public function akunBebanGaji(): BelongsTo
+    {
+        return $this->belongsTo(Akun::class, 'akun_beban_gaji_id');
+    }
+
+    public function sumberDanaGaji(): BelongsTo
+    {
+        return $this->belongsTo(SumberDana::class, 'sumber_dana_gaji_id');
+    }
+
+    public function lengkapUntukGajiGuru(): bool
+    {
+        return $this->akun_kas_id && $this->akun_beban_gaji_id;
+    }
+
+    public function assertLengkapUntukGajiGuru(): void
+    {
+        if ($this->lengkapUntukGajiGuru()) {
+            return;
+        }
+
+        throw new \RuntimeException(
+            'Pengaturan Akun Gaji Guru belum lengkap. Atur Akun Kas/Bank dan Akun Beban di Pengaturan Akuntansi.'
+        );
+    }
+
+    /**
+     * @return array{akun_kas_id: int, akun_beban_id: int, sumber_dana_id: ?int}
+     */
+    public function akunUntukGajiGuru(): array
+    {
+        $this->assertLengkapUntukGajiGuru();
+
+        return [
+            'akun_kas_id' => (int) $this->akun_kas_id,
+            'akun_beban_id' => (int) $this->akun_beban_gaji_id,
+            'sumber_dana_id' => $this->sumber_dana_gaji_id ? (int) $this->sumber_dana_gaji_id : null,
+        ];
     }
 
     /** Jenis akun yang tampil di kolom Akun Aset saat catat transaksi. Kosong = aset. */
@@ -96,6 +138,7 @@ class AkuntansiSetting extends Model
             'akun_pendapatan_id' => $pendapatanSpp?->id,
             'akun_untuk_in' => $pendapatanLain?->id,
             'akun_untuk_out' => $bebanDefault?->id,
+            'akun_beban_gaji_id' => $bebanDefault?->id,
         ], fn ($v) => $v !== null);
 
         $setting = static::firstOrCreate(
@@ -110,7 +153,12 @@ class AkuntansiSetting extends Model
                 'akun_pendapatan_id' => $pendapatanSpp?->id,
                 'akun_untuk_in' => $pendapatanLain?->id,
                 'akun_untuk_out' => $bebanDefault?->id,
+                'akun_beban_gaji_id' => $bebanDefault?->id,
             ], fn ($v) => $v !== null));
+        }
+
+        if (! $setting->akun_beban_gaji_id && $bebanDefault) {
+            $setting->update(['akun_beban_gaji_id' => $bebanDefault->id]);
         }
 
         return $setting->fresh();

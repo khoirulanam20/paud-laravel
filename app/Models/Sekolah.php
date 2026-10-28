@@ -20,6 +20,8 @@ class Sekolah extends Model
 
     public const STATUS_REJECTED = 'rejected';
 
+    public const RADIUS_DEFAULT_METER = 100;
+
     protected $fillable = [
         'lembaga_id',
         'name',
@@ -27,10 +29,23 @@ class Sekolah extends Model
         'phone',
         'nisn',
         'location_coordinate',
+        'radius_m',
         'photo',
         'status',
         'slug',
     ];
+
+    protected $casts = [
+        'radius_m' => 'integer',
+    ];
+
+    /** Radius geofence presensi guru (meter). */
+    public function radiusMeter(): int
+    {
+        return $this->radius_m !== null && $this->radius_m > 0
+            ? (int) $this->radius_m
+            : self::RADIUS_DEFAULT_METER;
+    }
 
     public function isOperational(): bool
     {
@@ -85,5 +100,15 @@ class Sekolah extends Model
     public function akuntansiSetting(): HasOne
     {
         return $this->hasOne(AkuntansiSetting::class);
+    }
+
+    public function jamKerjas(): HasMany
+    {
+        return $this->hasMany(SekolahJamKerja::class)->orderBy('hari');
+    }
+
+    public function hariLiburs(): HasMany
+    {
+        return $this->hasMany(SekolahHariLibur::class)->orderBy('tanggal');
     }
 }
