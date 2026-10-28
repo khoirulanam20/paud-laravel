@@ -25,6 +25,7 @@ class AkuntansiSetting extends Model
         'akun_untuk_out',
         'akun_beban_gaji_id',
         'sumber_dana_gaji_id',
+        'akun_kas_gaji_id',
         'jenis_akun_aset',
     ];
 
@@ -72,9 +73,20 @@ class AkuntansiSetting extends Model
         return $this->belongsTo(SumberDana::class, 'sumber_dana_gaji_id');
     }
 
+    public function akunKasGaji(): BelongsTo
+    {
+        return $this->belongsTo(Akun::class, 'akun_kas_gaji_id');
+    }
+
+    /** ponytail: fallback ke akun_kas_id jika kas gaji belum diisi (data lama / migrasi belum lengkap) */
+    public function akunKasGajiEfektifId(): ?int
+    {
+        return $this->akun_kas_gaji_id ?? $this->akun_kas_id;
+    }
+
     public function lengkapUntukGajiGuru(): bool
     {
-        return $this->akun_kas_id && $this->akun_beban_gaji_id;
+        return $this->akunKasGajiEfektifId() && $this->akun_beban_gaji_id;
     }
 
     public function assertLengkapUntukGajiGuru(): void
@@ -95,8 +107,10 @@ class AkuntansiSetting extends Model
     {
         $this->assertLengkapUntukGajiGuru();
 
+        $kasGajiId = $this->akunKasGajiEfektifId();
+
         return [
-            'akun_kas_id' => (int) $this->akun_kas_id,
+            'akun_kas_id' => (int) $kasGajiId,
             'akun_beban_id' => (int) $this->akun_beban_gaji_id,
             'sumber_dana_id' => $this->sumber_dana_gaji_id ? (int) $this->sumber_dana_gaji_id : null,
         ];
@@ -139,6 +153,7 @@ class AkuntansiSetting extends Model
             'akun_untuk_in' => $pendapatanLain?->id,
             'akun_untuk_out' => $bebanDefault?->id,
             'akun_beban_gaji_id' => $bebanDefault?->id,
+            'akun_kas_gaji_id' => $kas?->id,
         ], fn ($v) => $v !== null);
 
         $setting = static::firstOrCreate(
@@ -154,11 +169,16 @@ class AkuntansiSetting extends Model
                 'akun_untuk_in' => $pendapatanLain?->id,
                 'akun_untuk_out' => $bebanDefault?->id,
                 'akun_beban_gaji_id' => $bebanDefault?->id,
+                'akun_kas_gaji_id' => $kas?->id,
             ], fn ($v) => $v !== null));
         }
 
         if (! $setting->akun_beban_gaji_id && $bebanDefault) {
             $setting->update(['akun_beban_gaji_id' => $bebanDefault->id]);
+        }
+
+        if (! $setting->akun_kas_gaji_id && $kas) {
+            $setting->update(['akun_kas_gaji_id' => $kas->id]);
         }
 
         return $setting->fresh();

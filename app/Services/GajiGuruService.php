@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Akun;
 use App\Models\Cashflow;
 use App\Models\GajiPengajar;
 use App\Models\KomponenGaji;
@@ -77,6 +78,13 @@ class GajiGuruService
 
         if ((float) $gaji->total_gaji <= 0) {
             throw new \RuntimeException('Total gaji harus lebih dari nol sebelum disetujui.');
+        }
+
+        if (! Akun::where('sekolah_id', $gaji->sekolah_id)->whereKey($gaji->akun_kas_id)->exists()
+            || ! Akun::where('sekolah_id', $gaji->sekolah_id)->whereKey($gaji->akun_beban_id)->exists()) {
+            throw new \RuntimeException(
+                'Akun kas atau beban pada slip tidak valid. Simpan ulang slip draft setelah memperbaiki Pengaturan Akuntansi.'
+            );
         }
 
         return DB::transaction(function () use ($gaji, $approvedByUserId) {

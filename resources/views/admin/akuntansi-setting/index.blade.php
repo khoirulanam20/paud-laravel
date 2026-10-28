@@ -83,7 +83,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="text-xs mt-1" style="color:#9E9790;">Akun counter saat catat cashflow keluar</p>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Default cashflow keluar (mis. Beban ATK). <strong>Bukan</strong> akun slip gaji — atur di Akun Beban Gaji di bawah.</p>
                     </div>
                 </div>
             </div>
@@ -94,39 +94,29 @@
                     <h3 class="section-title">Akun SPP (Tagihan Bulanan)</h3>
                     <p class="section-subtitle">Dipakai otomatis saat generate tagihan dan saat pembayaran disetujui (lunas).</p>
                 </div>
-                <div class="p-6 space-y-5">
+                <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="input-label">Metode pencatatan SPP</label>
-                        <div class="flex flex-wrap gap-4 mt-2">
-                            <label class="flex items-start gap-2 text-sm max-w-md">
-                                <input type="radio" name="metode_pencatatan" value="cash" class="mt-1"
-                                    @checked($setting->metode_pencatatan === 'cash')>
-                                <span>
-                                    <span class="font-semibold" style="color:#2C2C2C;">Tunai (pendapatan saat lunas)</span><br>
-                                    <span style="color:#9E9790;">Tagihan belum lunas: tidak ada jurnal. Saat lunas: debit kas, kredit akun pendapatan SPP.</span>
-                                </span>
-                            </label>
-                            <label class="flex items-start gap-2 text-sm max-w-md">
-                                <input type="radio" name="metode_pencatatan" value="accrual" class="mt-1"
-                                    @checked($setting->metode_pencatatan === 'accrual')>
-                                <span>
-                                    <span class="font-semibold" style="color:#2C2C2C;">Piutang (belum lunas tercatat)</span><br>
-                                    <span style="color:#9E9790;">Saat generate tagihan: debit piutang SPP, kredit pendapatan SPP. Saat lunas: debit kas, kredit piutang SPP.</span>
-                                </span>
-                            </label>
-                        </div>
+                        <select name="metode_pencatatan" class="input-field" required>
+                            <option value="cash" @selected($setting->metode_pencatatan === 'cash')>Tunai — Pendapatan saat lunas</option>
+                            <option value="accrual" @selected($setting->metode_pencatatan === 'accrual')>Piutang — Belum lunas tercatat</option>
+                        </select>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="input-label">Akun piutang SPP (tagihan belum dibayar)</label>
-                            <x-akun-search-select name="akun_piutang_id" :options="$akunPiutangOptions" :value="$setting->akun_piutang_id" placeholder="Pilih akun piutang…" required />
-                            <p class="text-xs mt-1" style="color:#9E9790;">Didebit saat tagihan dibuat (metode piutang) atau dikredit saat pelunasan.</p>
-                        </div>
-                        <div>
-                            <label class="input-label">Akun pendapatan SPP (sudah dibayar / penghasilan)</label>
-                            <x-akun-search-select name="akun_pendapatan_id" :options="$akunPendapatan" :value="$setting->akun_pendapatan_id" placeholder="Pilih akun pendapatan…" required />
-                            <p class="text-xs mt-1" style="color:#9E9790;">Dikredit saat lunas (metode tunai) atau saat tagihan dibuat (metode piutang).</p>
-                        </div>
+                    <div>
+                        <label class="input-label">Akun piutang SPP</label>
+                        <select name="akun_piutang_id" class="input-field" required>
+                            @foreach($akunPiutangOptions as $a)
+                                <option value="{{ $a->id }}" @selected($setting->akun_piutang_id == $a->id)>{{ $a->kode }} - {{ $a->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="input-label">Akun pendapatan SPP</label>
+                        <select name="akun_pendapatan_id" class="input-field" required>
+                            @foreach($akunPendapatan as $a)
+                                <option value="{{ $a->id }}" @selected($setting->akun_pendapatan_id == $a->id)>{{ $a->kode }} - {{ $a->nama }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
             </div>
@@ -136,11 +126,15 @@
                     <h3 class="section-title">Akun Gaji Guru</h3>
                     <p class="section-subtitle">Dipakai otomatis saat slip gaji disetujui (debit beban, kredit kas). Tidak perlu diisi lagi di form slip.</p>
                 </div>
-                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2 rounded-lg px-4 py-3 text-sm" style="background:#F0F7F7;color:#2C2C2C;">
-                        <span class="font-semibold">Akun Kas/Bank:</span>
-                        {{ $setting->akunKas ? $setting->akunKas->kode.' — '.$setting->akunKas->nama : '— belum diatur —' }}
-                        <span style="color:#9E9790;"> · Atur lewat field <strong>Akun Kas</strong> di bagian Default Cashflow di atas (satu kas untuk cashflow, SPP, dan gaji).</span>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="input-label">Akun Kas/Bank Gaji</label>
+                        <select name="akun_kas_gaji_id" class="input-field" required>
+                            @foreach($akunAset as $a)
+                                <option value="{{ $a->id }}" @selected($setting->akun_kas_gaji_id == $a->id)>{{ $a->kode }} - {{ $a->nama }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Dikredit saat slip disetujui. Boleh beda dari Akun Kas cashflow di atas.</p>
                     </div>
                     <div>
                         <label class="input-label">Akun Beban Gaji</label>
@@ -149,7 +143,7 @@
                                 <option value="{{ $a->id }}" @selected($setting->akun_beban_gaji_id == $a->id)>{{ $a->kode }} - {{ $a->nama }}</option>
                             @endforeach
                         </select>
-                        <p class="text-xs mt-1" style="color:#9E9790;">Mis. Beban Gaji (5101), bukan counter pengeluaran cashflow manual.</p>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Didebit saat slip disetujui; bukan Counter Pengeluaran cashflow (ATK).</p>
                     </div>
                     <div>
                         <label class="input-label">Sumber Dana</label>
@@ -159,6 +153,7 @@
                                 <option value="{{ $sd->id }}" @selected($setting->sumber_dana_gaji_id == $sd->id)>{{ $sd->nama }}</option>
                             @endforeach
                         </select>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Opsional; tercatat di cashflow gaji. Isi master Sumber Dana jika kosong.</p>
                     </div>
                 </div>
             </div>
