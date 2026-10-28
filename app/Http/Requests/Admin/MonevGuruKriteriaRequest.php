@@ -20,6 +20,7 @@ class MonevGuruKriteriaRequest extends FormRequest
             'bobot' => 'required|integer|min:1|max:100',
             'urutan' => 'nullable|integer|min:0|max:65535',
             'is_active' => 'nullable|boolean',
+            'is_presensi' => ['sometimes', 'boolean'],
         ];
     }
 }

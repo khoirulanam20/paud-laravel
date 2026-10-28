@@ -8,6 +8,7 @@ use App\Models\MonevGuruEvaluasi;
 use App\Models\MonevGuruKriteria;
 use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MonevGuruKriteriaController extends Controller
 {
@@ -16,6 +17,25 @@ class MonevGuruKriteriaController extends Controller
         $id = auth()->user()->sekolah_id;
 
         return $id !== null ? (int) $id : null;
+    }
+
+    private function assertUniqueIsPresensi(int $sekolahId, bool $isPresensi, ?int $exceptId = null): void
+    {
+        if (! $isPresensi) {
+            return;
+        }
+
+        $exists = MonevGuruKriteria::query()
+            ->where('sekolah_id', $sekolahId)
+            ->where('is_presensi', true)
+            ->when($exceptId !== null, fn ($q) => $q->where('id', '!=', $exceptId))
+            ->exists();
+
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'is_presensi' => 'Sudah ada kriteria yang ditandai sebagai sumber presensi. Nonaktifkan yang lama dulu.',
+            ]);
+        }
     }
 
     public function index(Request $request)
@@ -38,6 +58,9 @@ class MonevGuruKriteriaController extends Controller
         $sekolahId = $this->sekolahId();
         abort_if($sekolahId === null, 403);
 
+        $isPresensi = $request->boolean('is_presensi');
+        $this->assertUniqueIsPresensi($sekolahId, $isPresensi);
+
         MonevGuruKriteria::create([
             'sekolah_id' => $sekolahId,
             'nama' => $request->string('nama')->toString(),
@@ -45,6 +68,7 @@ class MonevGuruKriteriaController extends Controller
             'bobot' => (int) $request->input('bobot'),
             'urutan' => (int) $request->input('urutan', 0),
             'is_active' => $request->boolean('is_active', true),
+            'is_presensi' => $isPresensi,
         ]);
 
         return redirect()->route('admin.monev-guru.kriteria.index')
@@ -57,12 +81,16 @@ class MonevGuruKriteriaController extends Controller
         abort_if($sekolahId === null, 403);
         abort_if((int) $monev_guru_kriteria->sekolah_id !== $sekolahId, 403);
 
+        $isPresensi = $request->boolean('is_presensi');
+        $this->assertUniqueIsPresensi($sekolahId, $isPresensi, (int) $monev_guru_kriteria->id);
+
         $monev_guru_kriteria->update([
             'nama' => $request->string('nama')->toString(),
             'deskripsi' => $request->input('deskripsi'),
             'bobot' => (int) $request->input('bobot'),
             'urutan' => (int) $request->input('urutan', 0),
             'is_active' => $request->boolean('is_active'),
+            'is_presensi' => $isPresensi,
         ]);
 
         return redirect()->route('admin.monev-guru.kriteria.index')
