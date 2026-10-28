@@ -19,6 +19,7 @@ class MonevGuruKriteria extends Model
         'bobot',
         'urutan',
         'is_active',
+        'is_presensi',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class MonevGuruKriteria extends Model
             'bobot' => 'integer',
             'urutan' => 'integer',
             'is_active' => 'boolean',
+            'is_presensi' => 'boolean',
         ];
     }
 
@@ -40,16 +42,16 @@ class MonevGuruKriteria extends Model
         return $this->hasMany(MonevGuruPenilaianItem::class);
     }
 
-    /** @return array<int, array{nama: string, deskripsi: string|null, bobot: int, urutan: int}> */
+    /** @return array<int, array{nama: string, deskripsi: string|null, bobot: int, urutan: int, is_presensi: bool}> */
     public static function defaultRows(): array
     {
         return [
-            ['nama' => 'Perencanaan & persiapan pembelajaran', 'deskripsi' => 'Rencana kegiatan, media pembelajaran, dan persiapan materi.', 'bobot' => 20, 'urutan' => 1],
-            ['nama' => 'Pelaksanaan kegiatan intrakurikuler', 'deskripsi' => 'Implementasi kegiatan belajar sesuai kurikulum.', 'bobot' => 25, 'urutan' => 2],
-            ['nama' => 'Evaluasi & dokumentasi siswa', 'deskripsi' => 'Kelengkapan input pencapaian dan dokumentasi perkembangan siswa.', 'bobot' => 20, 'urutan' => 3],
-            ['nama' => 'Kedisiplinan & kehadiran', 'deskripsi' => 'Kehadiran, ketepatan waktu, dan kedisiplinan kerja.', 'bobot' => 15, 'urutan' => 4],
-            ['nama' => 'Interaksi dengan siswa & orang tua', 'deskripsi' => 'Komunikasi efektif dengan siswa dan orang tua.', 'bobot' => 10, 'urutan' => 5],
-            ['nama' => 'Pengembangan profesional', 'deskripsi' => 'Partisipasi pelatihan, refleksi, dan peningkatan kompetensi.', 'bobot' => 10, 'urutan' => 6],
+            ['nama' => 'Perencanaan & persiapan pembelajaran', 'deskripsi' => 'Rencana kegiatan, media pembelajaran, dan persiapan materi.', 'bobot' => 20, 'urutan' => 1, 'is_presensi' => false],
+            ['nama' => 'Pelaksanaan kegiatan intrakurikuler', 'deskripsi' => 'Implementasi kegiatan belajar sesuai kurikulum.', 'bobot' => 25, 'urutan' => 2, 'is_presensi' => false],
+            ['nama' => 'Evaluasi & dokumentasi siswa', 'deskripsi' => 'Kelengkapan input pencapaian dan dokumentasi perkembangan siswa.', 'bobot' => 20, 'urutan' => 3, 'is_presensi' => false],
+            ['nama' => 'Kedisiplinan & kehadiran', 'deskripsi' => 'Kehadiran, ketepatan waktu, dan kedisiplinan kerja.', 'bobot' => 15, 'urutan' => 4, 'is_presensi' => true],
+            ['nama' => 'Interaksi dengan siswa & orang tua', 'deskripsi' => 'Komunikasi efektif dengan siswa dan orang tua.', 'bobot' => 10, 'urutan' => 5, 'is_presensi' => false],
+            ['nama' => 'Pengembangan profesional', 'deskripsi' => 'Partisipasi pelatihan, refleksi, dan peningkatan kompetensi.', 'bobot' => 10, 'urutan' => 6, 'is_presensi' => false],
         ];
     }
 
@@ -66,6 +68,7 @@ class MonevGuruKriteria extends Model
                     'bobot' => $row['bobot'],
                     'urutan' => $row['urutan'],
                     'is_active' => true,
+                    'is_presensi' => $row['is_presensi'],
                 ]
             );
         }
