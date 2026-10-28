@@ -7,16 +7,16 @@ use App\Http\Controllers\Admin\AkuntansiSettingController;
 use App\Http\Controllers\Admin\AnakController;
 use App\Http\Controllers\Admin\BiayaBulananController;
 use App\Http\Controllers\Admin\CashflowController;
-use App\Http\Controllers\Admin\TabunganInvestasiController;
 use App\Http\Controllers\Admin\DiskonController;
+use App\Http\Controllers\Admin\JamKerjaController;
 use App\Http\Controllers\Admin\JurnalController;
-use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KegiatanRutinController;
 use App\Http\Controllers\Admin\KelasController;
-// Lembaga Controllers
 use App\Http\Controllers\Admin\KesehatanController;
+// Lembaga Controllers
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
+use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\MasterKegiatanRutinController;
 use App\Http\Controllers\Admin\MatrikulasiController as AdminMatrikulasiController;
 use App\Http\Controllers\Admin\MenuMakananController;
@@ -33,12 +33,12 @@ use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\PengumumanController;
 use App\Http\Controllers\Admin\PresensiController;
 use App\Http\Controllers\Admin\PresensiPengajarController;
-use App\Http\Controllers\Admin\JamKerjaController;
 use App\Http\Controllers\Admin\RkasController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaranaController;
 use App\Http\Controllers\Admin\SkalaPencapaianController;
 use App\Http\Controllers\Admin\SumberDanaController;
+use App\Http\Controllers\Admin\TabunganInvestasiController;
 use App\Http\Controllers\AdminKelas\AnakController as AdminKelasAnakController;
 use App\Http\Controllers\AdminKelas\MonevController as AdminKelasMonevController;
 use App\Http\Controllers\AdminKelas\PresensiController as AdminKelasPresensiController;
@@ -55,7 +55,6 @@ use App\Http\Controllers\Lembaga\KritikSaranController as LembagaKritikSaranCont
 use App\Http\Controllers\Lembaga\SchoolSwitcherController;
 use App\Http\Controllers\Lembaga\SekolahController;
 use App\Http\Controllers\OrangTua\AnakController as OrangTuaAnakController;
-use App\Http\Controllers\OrangTua\SchoolSwitcherController as OrangTuaSchoolSwitcherController;
 use App\Http\Controllers\OrangTua\ChatController;
 use App\Http\Controllers\OrangTua\KegiatanController as OrangTuaKegiatanController;
 use App\Http\Controllers\OrangTua\KritikSaranController as OrangTuaKritikSaranController;
@@ -63,11 +62,12 @@ use App\Http\Controllers\OrangTua\MenuMakananController as OrangTuaMenuMakananCo
 use App\Http\Controllers\OrangTua\MenuMakananVoteController;
 use App\Http\Controllers\OrangTua\MonevController;
 use App\Http\Controllers\OrangTua\PembayaranController;
-use App\Http\Controllers\OrangTua\PengumumanController as OrangTuaPengumumanController;
 use App\Http\Controllers\OrangTua\PencapaianController as OrangTuaPencapaianController;
+use App\Http\Controllers\OrangTua\PengumumanController as OrangTuaPengumumanController;
+use App\Http\Controllers\OrangTua\SchoolSwitcherController as OrangTuaSchoolSwitcherController;
 use App\Http\Controllers\Pengajar\KegiatanController as PengajarKegiatanController;
-use App\Http\Controllers\Pengajar\MonevGuruController as PengajarMonevGuruController;
 use App\Http\Controllers\Pengajar\MatrikulasiController;
+use App\Http\Controllers\Pengajar\MonevGuruController as PengajarMonevGuruController;
 use App\Http\Controllers\Pengajar\PencapaianController;
 use App\Http\Controllers\Pengajar\PresensiController as PengajarPresensiController;
 use App\Http\Controllers\Pengajar\PresensiGuruController as PengajarPresensiGuruController;
@@ -384,6 +384,9 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::post('ai/monev-guru-ringkasan-suggestions', [AiMonevGuruController::class, 'suggestRingkasan'])
         ->middleware('throttle:10,1')
         ->name('ai.monev-guru-ringkasan-suggestions');
+    Route::post('ai/monev-guru-kehadiran-suggestions', [AiMonevGuruController::class, 'suggestKehadiran'])
+        ->middleware('throttle:10,1')
+        ->name('ai.monev-guru-kehadiran-suggestions');
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 

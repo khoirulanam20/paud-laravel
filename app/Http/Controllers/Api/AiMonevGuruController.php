@@ -10,7 +10,9 @@ use App\Models\Pengajar;
 use App\Models\SekolahAiTokenTransaction;
 use App\Services\AiPersonaService;
 use App\Services\AiTokenService;
+use App\Services\PresensiPengajarService;
 use App\Support\AiPersonaScope;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -19,7 +21,8 @@ class AiMonevGuruController extends Controller
 {
     public function __construct(
         protected AiPersonaService $personaService,
-        protected AiTokenService $tokenService
+        protected AiTokenService $tokenService,
+        protected PresensiPengajarService $presensiService
     ) {}
 
     public function suggest(Request $request): JsonResponse
@@ -228,6 +231,121 @@ class AiMonevGuruController extends Controller
             return response()->json([
                 'catatan_suggestions' => $result['catatan'] ?? [],
                 'rekomendasi_suggestions' => $result['rekomendasi'] ?? [],
+                'token_balance' => $this->tokenService->getBalance($sekolahId),
+            ]);
+        } catch (InsufficientAiTokensException $e) {
+            return response()->json([
+                'error' => $e->fallbackMessage,
+                'token_exhausted' => true,
+                'token_balance' => $this->tokenService->getBalance($sekolahId),
+            ], 422);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'error' => 'Gagal menghubungi layanan AI. Coba lagi nanti.',
+            ], 500);
+        }
+    }
+
+    public function suggestKehadiran(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        abort_unless($user?->hasAnyRole(['Admin Sekolah', 'Lembaga']), 403);
+
+        $sekolahId = (int) $user->sekolah_id;
+        abort_if($sekolahId < 1, 403, 'Akun tidak terikat sekolah.');
+
+        $validated = $request->validate([
+            'pengajar_id' => ['required', 'integer', 'exists:pengajars,id'],
+            'kriteria_id' => ['required', 'integer', 'exists:monev_guru_kriterias,id'],
+            'periode_mulai' => ['required', 'date'],
+            'periode_selesai' => ['required', 'date', 'after_or_equal:periode_mulai'],
+        ]);
+
+        $pengajar = Pengajar::query()
+            ->where('id', (int) $validated['pengajar_id'])
+            ->where('sekolah_id', $sekolahId)
+            ->first();
+
+        if ($pengajar === null) {
+            throw ValidationException::withMessages([
+                'pengajar_id' => 'Guru tidak ditemukan atau tidak termasuk sekolah Anda.',
+            ]);
+        }
+
+        $kriteria = MonevGuruKriteria::query()
+            ->where('id', (int) $validated['kriteria_id'])
+            ->where('sekolah_id', $sekolahId)
+            ->where('is_active', true)
+            ->where('is_presensi', true)
+            ->first();
+
+        if ($kriteria === null) {
+            throw ValidationException::withMessages([
+                'kriteria_id' => 'Kriteria bukan sumber skor presensi atau tidak aktif.',
+            ]);
+        }
+
+        $mulai = Carbon::parse($validated['periode_mulai'])->startOfDay();
+        $selesai = Carbon::parse($validated['periode_selesai'])->endOfDay();
+        $rekap = $this->presensiService->rekapKehadiran($pengajar, $mulai, $selesai);
+
+        if ((int) $rekap['hari_kerja'] === 0) {
+            return response()->json([
+                'error' => 'Tidak ada hari kerja pada periode ini. Periksa pengaturan jadwal.',
+            ], 422);
+        }
+
+        $lembagaId = $user->lembaga_id ?? $user->sekolah?->lembaga_id;
+        if (! $lembagaId) {
+            return response()->json(['error' => 'Tidak dapat menemukan lembaga pengguna.'], 403);
+        }
+
+        $aiSetting = AiSetting::where('lembaga_id', $lembagaId)->first();
+        if (! $aiSetting || ! $aiSetting->hasValidApiKey()) {
+            return response()->json([
+                'error' => 'Pengaturan AI belum dikonfigurasi. Minta admin lembaga untuk mengisi API Key di menu Pengaturan AI.',
+            ], 422);
+        }
+
+        $periodeLabel = $this->buildPeriodeLabel(
+            $validated['periode_mulai'],
+            $validated['periode_selesai']
+        );
+
+        $sekolahName = $user->sekolah?->name ?? 'PAUD';
+        $personaPrompt = $this->personaService->resolveActivePrompt(
+            $sekolahId,
+            AiPersonaScope::MONEV,
+            $sekolahName
+        );
+
+        try {
+            $result = $this->tokenService->runWithToken(
+                $sekolahId,
+                SekolahAiTokenTransaction::TYPE_MONEV,
+                $user,
+                [
+                    'pengajar_id' => $pengajar->id,
+                    'kriteria_id' => $kriteria->id,
+                    'type' => 'kehadiran',
+                ],
+                'Saran skor kehadiran monev guru: '.$pengajar->name,
+                fn () => $aiSetting->resolveAiService()->generateMonevGuruKehadiranSkor(
+                    $pengajar->name,
+                    $periodeLabel,
+                    $rekap,
+                    $kriteria->nama,
+                    (string) ($kriteria->deskripsi ?? ''),
+                    $personaPrompt
+                )
+            );
+
+            return response()->json([
+                'skor' => $result['skor'],
+                'catatan' => $result['catatan'],
+                'rekap' => $rekap,
                 'token_balance' => $this->tokenService->getBalance($sekolahId),
             ]);
         } catch (InsufficientAiTokensException $e) {
