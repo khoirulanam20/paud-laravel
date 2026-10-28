@@ -50,6 +50,7 @@ class AkuntansiSettingController extends Controller
             'akun_untuk_in' => 'required|exists:akuns,id',
             'akun_untuk_out' => 'required|exists:akuns,id',
             'akun_beban_gaji_id' => 'required|exists:akuns,id',
+            'akun_kas_gaji_id' => 'required|exists:akuns,id',
             'sumber_dana_gaji_id' => 'nullable|exists:sumber_danas,id',
             'jenis_akun_aset' => 'required|array|min:1',
             'jenis_akun_aset.*' => 'string|max:50',
@@ -61,7 +62,7 @@ class AkuntansiSettingController extends Controller
         $setting->update($request->only([
             'metode_pencatatan', 'akun_kas_id', 'akun_piutang_id',
             'akun_pendapatan_id', 'akun_untuk_in', 'akun_untuk_out',
-            'akun_beban_gaji_id', 'sumber_dana_gaji_id',
+            'akun_beban_gaji_id', 'sumber_dana_gaji_id', 'akun_kas_gaji_id',
         ]) + [
             'jenis_akun_aset' => array_values(array_unique(array_map('trim', $request->input('jenis_akun_aset', [])))),
             'sumber_dana_gaji_id' => $request->filled('sumber_dana_gaji_id') ? $request->input('sumber_dana_gaji_id') : null,

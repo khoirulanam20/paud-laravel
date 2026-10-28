@@ -103,6 +103,7 @@ class GajiGuruTest extends TestCase
             'akun_untuk_in' => $kas->id,
             'akun_untuk_out' => $beban->id,
             'akun_beban_gaji_id' => $beban->id,
+            'akun_kas_gaji_id' => $kas->id,
         ]);
 
         return compact('admin', 'sekolah', 'pengajar', 'kas', 'beban');

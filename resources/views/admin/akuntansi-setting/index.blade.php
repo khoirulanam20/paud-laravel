@@ -83,7 +83,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="text-xs mt-1" style="color:#9E9790;">Akun counter saat catat cashflow keluar</p>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Default cashflow keluar (mis. Beban ATK). <strong>Bukan</strong> akun slip gaji — atur di Akun Beban Gaji di bawah.</p>
                     </div>
                 </div>
             </div>
@@ -136,11 +136,15 @@
                     <h3 class="section-title">Akun Gaji Guru</h3>
                     <p class="section-subtitle">Dipakai otomatis saat slip gaji disetujui (debit beban, kredit kas). Tidak perlu diisi lagi di form slip.</p>
                 </div>
-                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2 rounded-lg px-4 py-3 text-sm" style="background:#F0F7F7;color:#2C2C2C;">
-                        <span class="font-semibold">Akun Kas/Bank:</span>
-                        {{ $setting->akunKas ? $setting->akunKas->kode.' — '.$setting->akunKas->nama : '— belum diatur —' }}
-                        <span style="color:#9E9790;"> · Atur lewat field <strong>Akun Kas</strong> di bagian Default Cashflow di atas (satu kas untuk cashflow, SPP, dan gaji).</span>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="input-label">Akun Kas/Bank Gaji</label>
+                        <select name="akun_kas_gaji_id" class="input-field" required>
+                            @foreach($akunAset as $a)
+                                <option value="{{ $a->id }}" @selected($setting->akun_kas_gaji_id == $a->id)>{{ $a->kode }} - {{ $a->nama }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Dikredit saat slip disetujui. Boleh beda dari Akun Kas cashflow di atas.</p>
                     </div>
                     <div>
                         <label class="input-label">Akun Beban Gaji</label>
@@ -149,7 +153,7 @@
                                 <option value="{{ $a->id }}" @selected($setting->akun_beban_gaji_id == $a->id)>{{ $a->kode }} - {{ $a->nama }}</option>
                             @endforeach
                         </select>
-                        <p class="text-xs mt-1" style="color:#9E9790;">Mis. Beban Gaji (5101), bukan counter pengeluaran cashflow manual.</p>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Didebit saat slip disetujui; bukan Counter Pengeluaran cashflow (ATK).</p>
                     </div>
                     <div>
                         <label class="input-label">Sumber Dana</label>
@@ -159,6 +163,7 @@
                                 <option value="{{ $sd->id }}" @selected($setting->sumber_dana_gaji_id == $sd->id)>{{ $sd->nama }}</option>
                             @endforeach
                         </select>
+                        <p class="text-xs mt-1" style="color:#9E9790;">Opsional; tercatat di cashflow gaji. Isi master Sumber Dana jika kosong.</p>
                     </div>
                 </div>
             </div>
