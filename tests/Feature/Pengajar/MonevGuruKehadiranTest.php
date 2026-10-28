@@ -180,7 +180,9 @@ class MonevGuruKehadiranTest extends TestCase
             $content = $body['messages'][0]['content'] ?? '';
 
             return str_contains($content, 'Data Presensi')
-                && str_contains($content, 'Hadir')
+                && str_contains($content, 'Telat masuk')
+                && str_contains($content, 'Pulang lebih awal')
+                && str_contains($content, 'telat masuk')
                 && str_contains($content, 'Skor (1–100) : 80');
         });
     }

@@ -366,9 +366,15 @@ Data Presensi:
 - Check-in tanpa checkout: {$tanpaCheckOut} kali
 PRESENSI;
 
-            $presensiInstruksi = <<<'PRESENSI_INS'
+            $presensiInstruksi = <<<PRESENSI_INS
 
-- Wajib menyertakan angka kehadiran konkret (mis. hadir X dari Y hari / persentase) dan alasan yang selaras skor serta data di atas (alpa, telat, dll).
+- Data Presensi di atas WAJIB dipakai sebagai dasar catatan; jangan mengarang angka lain.
+- Di antara 3 saran, sebar fakta berikut (angka harus sesuai data):
+  1) total hadir vs hari kerja / persentase kehadiran,
+  2) alpa (tidak hadir) bila > 0, atau apresiasi jika 0,
+  3) telat masuk ({$terlambat} kali) — jika 0 sebutkan tepat waktu, jika >0 kritik konstruktif,
+  4) pulang lebih awal ({$telatPulang} kali) dan check-in tanpa checkout ({$tanpaCheckOut} kali) bila relevan.
+- Setiap saran harus punya alasan jelas yang menghubungkan skor {$skor} dengan fakta presensi tersebut.
 PRESENSI_INS;
         }
 
@@ -384,7 +390,7 @@ Konteks:
 - Periode Evaluasi : {$periodeLabel}
 {$presensiBlock}
 Instruksi:
-- Setiap saran harus singkat (maks 2 kalimat), profesional, spesifik pada kriteria, dan selaras dengan skor.
+- Setiap saran maks 2 kalimat, profesional, spesifik pada kriteria, dan selaras dengan skor.
 - Skor rendah (<60): ton konstruktif dengan area perbaikan jelas. Skor sedang (60–79): apresiasi + saran pengembangan. Skor tinggi (≥80): apresiasi konkret + pertahankan.
 - Jangan mengulang saran yang sama.{$presensiInstruksi}
 - Jawab HANYA dengan 3 saran, masing-masing diawali dengan nomor (1. 2. 3.) tanpa penjelasan tambahan.
@@ -395,6 +401,8 @@ Format jawaban:
 3. [Saran ketiga]
 PROMPT;
 
+        $temperature = $rekap !== null ? 0.5 : 0.8;
+
         $response = Http::withToken($this->apiKey)
             ->timeout(30)
             ->post("{$this->baseUrl}/chat/completions", [
@@ -403,7 +411,7 @@ PROMPT;
                     ['role' => 'user', 'content' => $prompt],
                 ],
                 'max_tokens' => 512,
-                'temperature' => 0.8,
+                'temperature' => $temperature,
             ]);
 
         if (! $response->successful()) {
