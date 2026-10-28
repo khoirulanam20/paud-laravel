@@ -384,9 +384,6 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::post('ai/monev-guru-ringkasan-suggestions', [AiMonevGuruController::class, 'suggestRingkasan'])
         ->middleware('throttle:10,1')
         ->name('ai.monev-guru-ringkasan-suggestions');
-    Route::post('ai/monev-guru-kehadiran-suggestions', [AiMonevGuruController::class, 'suggestKehadiran'])
-        ->middleware('throttle:10,1')
-        ->name('ai.monev-guru-kehadiran-suggestions');
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 

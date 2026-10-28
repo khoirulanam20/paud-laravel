@@ -326,6 +326,7 @@ PROMPT;
     /**
      * Generate 3 catatan penilaian suggestions for monev guru per kriteria.
      *
+     * @param  array{hari_kerja: int, hadir: int, terlambat: int, telat_pulang: int, tanpa_check_out: int, persentase: float}|null  $rekap
      * @return array<string>
      */
     public function generateMonevGuruCatatanSuggestions(
@@ -334,13 +335,42 @@ PROMPT;
         string $kriteriaDeskripsi,
         int $skor,
         string $periodeLabel,
-        ?string $personaPrefix = null
+        ?string $personaPrefix = null,
+        ?array $rekap = null
     ): array {
         $identity = $personaPrefix !== null && trim($personaPrefix) !== ''
             ? trim($personaPrefix)
             : 'Kamu adalah kepala sekolah / supervisor PAUD yang profesional dan objektif.';
 
         $deskripsi = $kriteriaDeskripsi !== '' ? $kriteriaDeskripsi : '(tidak ada deskripsi tambahan)';
+
+        $presensiBlock = '';
+        $presensiInstruksi = '';
+        if ($rekap !== null && (int) ($rekap['hari_kerja'] ?? 0) > 0) {
+            $hariKerja = (int) $rekap['hari_kerja'];
+            $hadir = (int) ($rekap['hadir'] ?? 0);
+            $alpa = max(0, $hariKerja - $hadir);
+            $terlambat = (int) ($rekap['terlambat'] ?? 0);
+            $telatPulang = (int) ($rekap['telat_pulang'] ?? 0);
+            $tanpaCheckOut = (int) ($rekap['tanpa_check_out'] ?? 0);
+            $persentase = (float) ($rekap['persentase'] ?? 0);
+
+            $presensiBlock = <<<PRESENSI
+
+Data Presensi:
+- Hari kerja efektif : {$hariKerja} hari
+- Hadir              : {$hadir} hari ({$persentase}%)
+- Tidak hadir (alpa) : {$alpa} hari
+- Telat masuk        : {$terlambat} kali
+- Pulang lebih awal  : {$telatPulang} kali
+- Check-in tanpa checkout: {$tanpaCheckOut} kali
+PRESENSI;
+
+            $presensiInstruksi = <<<'PRESENSI_INS'
+
+- Wajib menyertakan angka kehadiran konkret (mis. hadir X dari Y hari / persentase) dan alasan yang selaras skor serta data di atas (alpa, telat, dll).
+PRESENSI_INS;
+        }
 
         $prompt = <<<PROMPT
 {$identity}
@@ -352,11 +382,11 @@ Konteks:
 - Panduan Kriteria : {$deskripsi}
 - Skor (1–100) : {$skor}
 - Periode Evaluasi : {$periodeLabel}
-
+{$presensiBlock}
 Instruksi:
 - Setiap saran harus singkat (maks 2 kalimat), profesional, spesifik pada kriteria, dan selaras dengan skor.
 - Skor rendah (<60): ton konstruktif dengan area perbaikan jelas. Skor sedang (60–79): apresiasi + saran pengembangan. Skor tinggi (≥80): apresiasi konkret + pertahankan.
-- Jangan mengulang saran yang sama.
+- Jangan mengulang saran yang sama.{$presensiInstruksi}
 - Jawab HANYA dengan 3 saran, masing-masing diawali dengan nomor (1. 2. 3.) tanpa penjelasan tambahan.
 
 Format jawaban:
@@ -445,108 +475,6 @@ PROMPT;
         $content = trim($this->extractCompletionContent($response));
 
         return $this->parseMonevGuruRingkasanSuggestions($content, $penilaianItems);
-    }
-
-    /**
-     * @param  array{hari_kerja: int, hadir: int, terlambat: int, telat_pulang: int, tanpa_check_out: int, persentase: float}  $rekap
-     * @return array{skor: int, catatan: string}
-     */
-    public function generateMonevGuruKehadiranSkor(
-        string $guruName,
-        string $periodeLabel,
-        array $rekap,
-        string $kriteriaNama,
-        string $kriteriaDeskripsi,
-        ?string $personaPrefix = null
-    ): array {
-        $identity = $personaPrefix !== null && trim($personaPrefix) !== ''
-            ? trim($personaPrefix)
-            : 'Kamu adalah kepala sekolah / supervisor PAUD yang profesional dan objektif.';
-
-        $deskripsi = $kriteriaDeskripsi !== '' ? $kriteriaDeskripsi : '(tidak ada deskripsi tambahan)';
-        $hariKerja = (int) ($rekap['hari_kerja'] ?? 0);
-        $hadir = (int) ($rekap['hadir'] ?? 0);
-        $alpa = max(0, $hariKerja - $hadir);
-        $terlambat = (int) ($rekap['terlambat'] ?? 0);
-        $telatPulang = (int) ($rekap['telat_pulang'] ?? 0);
-        $tanpaCheckOut = (int) ($rekap['tanpa_check_out'] ?? 0);
-        $persentase = (float) ($rekap['persentase'] ?? 0);
-
-        $prompt = <<<PROMPT
-{$identity}
-Berdasarkan data presensi guru PAUD berikut, tentukan skor kedisiplinan dan kehadiran
-serta tulis catatan penilaian singkat dalam Bahasa Indonesia.
-
-Konteks:
-- Nama Guru       : {$guruName}
-- Periode         : {$periodeLabel}
-- Kriteria        : {$kriteriaNama}
-- Panduan         : {$deskripsi}
-
-Data Presensi:
-- Hari kerja efektif : {$hariKerja} hari
-- Hadir              : {$hadir} hari ({$persentase}%)
-- Tidak hadir (alpa) : {$alpa} hari
-- Telat masuk        : {$terlambat} kali
-- Pulang lebih awal  : {$telatPulang} kali
-- Check-in tanpa checkout: {$tanpaCheckOut} kali
-
-Instruksi:
-- Skor 1–100, mempertimbangkan persentase kehadiran, frekuensi telat, dan konsistensi.
-- Catatan maks 2 kalimat, profesional, spesifik pada data di atas.
-- Jawab HANYA JSON valid tanpa markdown:
-{"skor": <int>, "catatan": "<string>"}
-PROMPT;
-
-        $response = Http::withToken($this->apiKey)
-            ->timeout(30)
-            ->post("{$this->baseUrl}/chat/completions", [
-                'model' => $this->model,
-                'messages' => [
-                    ['role' => 'user', 'content' => $prompt],
-                ],
-                'max_tokens' => 256,
-                'temperature' => 0.4,
-            ]);
-
-        if (! $response->successful()) {
-            $this->throwApiError($response);
-        }
-
-        $content = trim($this->extractCompletionContent($response));
-
-        return $this->parseMonevGuruKehadiranSkor($content);
-    }
-
-    /**
-     * @return array{skor: int, catatan: string}
-     */
-    protected function parseMonevGuruKehadiranSkor(string $content): array
-    {
-        $json = $content;
-        if (preg_match('/\{[\s\S]*\}/', $content, $m)) {
-            $json = $m[0];
-        }
-
-        $decoded = json_decode($json, true);
-        if (! is_array($decoded) || ! isset($decoded['skor'])) {
-            throw new \RuntimeException('AI tidak mengembalikan JSON valid.');
-        }
-
-        $skor = (int) $decoded['skor'];
-        if ($skor < 1 || $skor > 100) {
-            throw new \RuntimeException('AI tidak mengembalikan JSON valid.');
-        }
-
-        $catatan = trim((string) ($decoded['catatan'] ?? ''));
-        if ($catatan === '') {
-            throw new \RuntimeException('AI tidak mengembalikan JSON valid.');
-        }
-
-        return [
-            'skor' => $skor,
-            'catatan' => $catatan,
-        ];
     }
 
     /**

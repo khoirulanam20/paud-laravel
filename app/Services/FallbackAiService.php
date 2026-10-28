@@ -71,6 +71,7 @@ class FallbackAiService
     }
 
     /**
+     * @param  array{hari_kerja: int, hadir: int, terlambat: int, telat_pulang: int, tanpa_check_out: int, persentase: float}|null  $rekap
      * @return array<string>
      */
     public function generateMonevGuruCatatanSuggestions(
@@ -79,7 +80,8 @@ class FallbackAiService
         string $kriteriaDeskripsi,
         int $skor,
         string $periodeLabel,
-        ?string $personaPrefix = null
+        ?string $personaPrefix = null,
+        ?array $rekap = null
     ): array {
         return $this->run(
             fn (SumopodAIService $ai) => $ai->generateMonevGuruCatatanSuggestions(
@@ -88,7 +90,8 @@ class FallbackAiService
                 $kriteriaDeskripsi,
                 $skor,
                 $periodeLabel,
-                $personaPrefix
+                $personaPrefix,
+                $rekap
             )
         );
     }
@@ -110,30 +113,6 @@ class FallbackAiService
                 $periodeLabel,
                 $penilaianItems,
                 $judul,
-                $personaPrefix
-            )
-        );
-    }
-
-    /**
-     * @param  array{hari_kerja: int, hadir: int, terlambat: int, telat_pulang: int, tanpa_check_out: int, persentase: float}  $rekap
-     * @return array{skor: int, catatan: string}
-     */
-    public function generateMonevGuruKehadiranSkor(
-        string $guruName,
-        string $periodeLabel,
-        array $rekap,
-        string $kriteriaNama,
-        string $kriteriaDeskripsi,
-        ?string $personaPrefix = null
-    ): array {
-        return $this->run(
-            fn (SumopodAIService $ai) => $ai->generateMonevGuruKehadiranSkor(
-                $guruName,
-                $periodeLabel,
-                $rekap,
-                $kriteriaNama,
-                $kriteriaDeskripsi,
                 $personaPrefix
             )
         );

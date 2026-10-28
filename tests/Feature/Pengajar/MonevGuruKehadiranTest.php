@@ -51,7 +51,7 @@ class MonevGuruKehadiranTest extends TestCase
      *     sekolah: Sekolah,
      *     admin: User,
      *     pengajar: Pengajar,
-     *     kriteriaPresensi: MonevGuruKriteria,
+     *     kriteriaKehadiran: MonevGuruKriteria,
      *     kriteriaLain: MonevGuruKriteria
      * }
      */
@@ -92,14 +92,14 @@ class MonevGuruKehadiranTest extends TestCase
 
         MonevGuruKriteria::seedDefaultsForSekolah($sekolah->id);
 
-        $kriteriaPresensi = MonevGuruKriteria::query()
+        $kriteriaKehadiran = MonevGuruKriteria::query()
             ->where('sekolah_id', $sekolah->id)
-            ->where('is_presensi', true)
+            ->where('nama', 'Kedisiplinan & kehadiran')
             ->firstOrFail();
 
         $kriteriaLain = MonevGuruKriteria::query()
             ->where('sekolah_id', $sekolah->id)
-            ->where('is_presensi', false)
+            ->where('nama', '!=', 'Kedisiplinan & kehadiran')
             ->firstOrFail();
 
         AiSetting::create([
@@ -111,13 +111,13 @@ class MonevGuruKehadiranTest extends TestCase
 
         $this->seedAiTokens($sekolah, 10, $admin);
 
-        return compact('lembaga', 'sekolah', 'admin', 'pengajar', 'kriteriaPresensi', 'kriteriaLain');
+        return compact('lembaga', 'sekolah', 'admin', 'pengajar', 'kriteriaKehadiran', 'kriteriaLain');
     }
 
-    private function seedJadwalKerja(Sekolah $sekolah, bool $semuaLibur = false): void
+    private function seedJadwalKerja(Sekolah $sekolah): void
     {
         foreach (range(1, 7) as $hari) {
-            $kerja = $semuaLibur ? false : $hari <= 5;
+            $kerja = $hari <= 5;
 
             SekolahJamKerja::withoutSekolahScope()->create([
                 'sekolah_id' => $sekolah->id,
@@ -131,12 +131,11 @@ class MonevGuruKehadiranTest extends TestCase
         }
     }
 
-    public function test_endpoint_mengembalikan_skor_dan_catatan_dari_presensi(): void
+    public function test_saran_ai_kriteria_kehadiran_menyertakan_rekap_presensi(): void
     {
         $f = $this->fixtures();
         $this->seedJadwalKerja($f['sekolah']);
 
-        // Senin–Rabu 2026-10-26..28
         foreach (['2026-10-26', '2026-10-27', '2026-10-28'] as $tanggal) {
             PresensiPengajar::withoutSekolahScope()->create([
                 'sekolah_id' => $f['sekolah']->id,
@@ -156,140 +155,104 @@ class MonevGuruKehadiranTest extends TestCase
             '*/chat/completions' => Http::response([
                 'choices' => [[
                     'message' => [
-                        'content' => '{"skor":72,"catatan":"Kehadiran baik dengan sedikit keterlambatan."}',
+                        'content' => "1. Hadir 3 dari 3 hari kerja (100%); pertahankan ketepatan waktu.\n2. Tidak ada alpa pada periode ini; skor 80 selaras dengan kehadiran penuh.\n3. Lanjutkan disiplin check-in/out agar konsistensi terjaga.",
                     ],
                 ]],
             ], 200),
         ]);
 
-        $response = $this->actingAs($f['admin'])->postJson(route('admin.ai.monev-guru-kehadiran-suggestions'), [
+        $response = $this->actingAs($f['admin'])->postJson(route('admin.ai.monev-guru-suggestions'), [
             'pengajar_id' => $f['pengajar']->id,
-            'kriteria_id' => $f['kriteriaPresensi']->id,
+            'kriteria_id' => $f['kriteriaKehadiran']->id,
+            'skor' => 80,
             'periode_mulai' => '2026-10-26',
             'periode_selesai' => '2026-10-28',
         ]);
 
         $response->assertOk();
-        $response->assertJsonPath('skor', 72);
-        $response->assertJsonPath('catatan', 'Kehadiran baik dengan sedikit keterlambatan.');
-        $response->assertJsonStructure(['rekap' => ['hari_kerja', 'hadir', 'persentase'], 'token_balance']);
+        $response->assertJsonStructure(['suggestions', 'token_balance', 'rekap' => ['hari_kerja', 'hadir', 'persentase']]);
+        $this->assertCount(3, $response->json('suggestions'));
         $this->assertSame(3, $response->json('rekap.hadir'));
         $this->assertSame(3, $response->json('rekap.hari_kerja'));
+
+        Http::assertSent(function ($request) {
+            $body = $request->data();
+            $content = $body['messages'][0]['content'] ?? '';
+
+            return str_contains($content, 'Data Presensi')
+                && str_contains($content, 'Hadir')
+                && str_contains($content, 'Skor (1–100) : 80');
+        });
     }
 
-    public function test_endpoint_gagal_kalau_periode_tidak_ada_hari_kerja(): void
-    {
-        $f = $this->fixtures();
-        $this->seedJadwalKerja($f['sekolah'], semuaLibur: true);
-
-        $response = $this->actingAs($f['admin'])->postJson(route('admin.ai.monev-guru-kehadiran-suggestions'), [
-            'pengajar_id' => $f['pengajar']->id,
-            'kriteria_id' => $f['kriteriaPresensi']->id,
-            'periode_mulai' => '2026-10-26',
-            'periode_selesai' => '2026-10-28',
-        ]);
-
-        $response->assertUnprocessable();
-        $response->assertJsonPath('error', 'Tidak ada hari kerja pada periode ini. Periksa pengaturan jadwal.');
-        Http::assertNothingSent();
-    }
-
-    public function test_endpoint_gagal_kalau_kriteria_bukan_is_presensi(): void
+    public function test_saran_ai_kriteria_lain_tidak_menyertakan_rekap(): void
     {
         $f = $this->fixtures();
         $this->seedJadwalKerja($f['sekolah']);
 
-        $response = $this->actingAs($f['admin'])->postJson(route('admin.ai.monev-guru-kehadiran-suggestions'), [
+        Http::fake([
+            '*/chat/completions' => Http::response([
+                'choices' => [[
+                    'message' => [
+                        'content' => "1. Perencanaan matang.\n2. Media siap pakai.\n3. Pertahankan persiapan.",
+                    ],
+                ]],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($f['admin'])->postJson(route('admin.ai.monev-guru-suggestions'), [
             'pengajar_id' => $f['pengajar']->id,
             'kriteria_id' => $f['kriteriaLain']->id,
+            'skor' => 75,
             'periode_mulai' => '2026-10-26',
             'periode_selesai' => '2026-10-28',
         ]);
 
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['kriteria_id']);
+        $response->assertOk();
+        $response->assertJsonMissingPath('rekap');
+
+        Http::assertSent(function ($request) {
+            $content = $request->data()['messages'][0]['content'] ?? '';
+
+            return ! str_contains($content, 'Data Presensi');
+        });
     }
 
-    public function test_endpoint_gagal_kalau_pengajar_bukan_milik_sekolah(): void
-    {
-        $f = $this->fixtures();
-        $this->seedJadwalKerja($f['sekolah']);
-
-        $lembagaLain = Lembaga::create([
-            'name' => 'Yayasan Lain',
-            'status' => Lembaga::STATUS_ACTIVE,
-        ]);
-        $sekolahLain = Sekolah::create([
-            'lembaga_id' => $lembagaLain->id,
-            'name' => 'PAUD Lain',
-            'address' => 'Jl. Lain',
-            'phone' => '022',
-            'status' => Sekolah::STATUS_ACTIVE,
-        ]);
-        $guruLain = User::factory()->create(['sekolah_id' => $sekolahLain->id]);
-        $this->assignRoleForSchool($guruLain, 'Pengajar', $sekolahLain->id);
-        $pengajarLain = Pengajar::create([
-            'user_id' => $guruLain->id,
-            'sekolah_id' => $sekolahLain->id,
-            'name' => 'Guru Sekolah Lain',
-        ]);
-
-        $response = $this->actingAs($f['admin'])->postJson(route('admin.ai.monev-guru-kehadiran-suggestions'), [
-            'pengajar_id' => $pengajarLain->id,
-            'kriteria_id' => $f['kriteriaPresensi']->id,
-            'periode_mulai' => '2026-10-26',
-            'periode_selesai' => '2026-10-28',
-        ]);
-
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['pengajar_id']);
-    }
-
-    public function test_is_presensi_unique_per_sekolah_divalidasi(): void
+    public function test_saran_ai_kehadiran_tanpa_periode_tetap_sukses_tanpa_rekap(): void
     {
         $f = $this->fixtures();
 
-        $response = $this->actingAs($f['admin'])->post(route('admin.monev-guru.kriteria.store'), [
-            'nama' => 'Kriteria Presensi Kedua',
-            'deskripsi' => 'Duplikat',
-            'bobot' => 10,
-            'urutan' => 99,
-            'is_active' => 1,
-            'is_presensi' => 1,
+        Http::fake([
+            '*/chat/completions' => Http::response([
+                'choices' => [[
+                    'message' => [
+                        'content' => "1. Saran satu.\n2. Saran dua.\n3. Saran tiga.",
+                    ],
+                ]],
+            ], 200),
         ]);
 
-        $response->assertSessionHasErrors(['is_presensi']);
-        $this->assertDatabaseMissing('monev_guru_kriterias', [
-            'sekolah_id' => $f['sekolah']->id,
-            'nama' => 'Kriteria Presensi Kedua',
+        $response = $this->actingAs($f['admin'])->postJson(route('admin.ai.monev-guru-suggestions'), [
+            'pengajar_id' => $f['pengajar']->id,
+            'kriteria_id' => $f['kriteriaKehadiran']->id,
+            'skor' => 70,
         ]);
+
+        $response->assertOk();
+        $response->assertJsonMissingPath('rekap');
     }
 
-    public function test_is_presensi_dapat_dipindah_ke_kriteria_lain(): void
+    public function test_endpoint_kehadiran_khusus_sudah_dihapus(): void
     {
         $f = $this->fixtures();
 
-        $this->actingAs($f['admin'])->put(route('admin.monev-guru.kriteria.update', $f['kriteriaPresensi']), [
-            'nama' => $f['kriteriaPresensi']->nama,
-            'deskripsi' => $f['kriteriaPresensi']->deskripsi,
-            'bobot' => $f['kriteriaPresensi']->bobot,
-            'urutan' => $f['kriteriaPresensi']->urutan,
-            'is_active' => 1,
-            // unchecked → is_presensi false
-        ])->assertRedirect(route('admin.monev-guru.kriteria.index'));
-
-        $this->assertFalse($f['kriteriaPresensi']->fresh()->is_presensi);
-
-        $this->actingAs($f['admin'])->put(route('admin.monev-guru.kriteria.update', $f['kriteriaLain']), [
-            'nama' => $f['kriteriaLain']->nama,
-            'deskripsi' => $f['kriteriaLain']->deskripsi,
-            'bobot' => $f['kriteriaLain']->bobot,
-            'urutan' => $f['kriteriaLain']->urutan,
-            'is_active' => 1,
-            'is_presensi' => 1,
-        ])->assertRedirect(route('admin.monev-guru.kriteria.index'));
-
-        $this->assertTrue($f['kriteriaLain']->fresh()->is_presensi);
-        $this->assertFalse($f['kriteriaPresensi']->fresh()->is_presensi);
+        $this->actingAs($f['admin'])
+            ->postJson('/admin/ai/monev-guru-kehadiran-suggestions', [
+                'pengajar_id' => $f['pengajar']->id,
+                'kriteria_id' => $f['kriteriaKehadiran']->id,
+                'periode_mulai' => '2026-10-26',
+                'periode_selesai' => '2026-10-28',
+            ])
+            ->assertNotFound();
     }
 }

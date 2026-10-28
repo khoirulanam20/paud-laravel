@@ -13,8 +13,6 @@
         x-data="{
             aiLoading: {},
             aiSuggestions: {},
-            loadingPresensi: {},
-            presensiError: {},
             presensiInfo: {},
             ringkasanLoading: false,
             catatanRingkasanSuggestions: [],
@@ -23,68 +21,13 @@
             hasTokens: @js($hasTokens),
             aiReady: @js($aiReady),
             tokenFallbackMonev: @js($tokenFallbackMonev),
-            async hitungPresensi(kriteriaId, index) {
-                const key = String(kriteriaId);
-                this.presensiError = { ...this.presensiError, [key]: '' };
-                this.presensiInfo = { ...this.presensiInfo, [key]: '' };
-                const pengajarId = this.$refs.pengajarSelect?.value;
-                const mulai = document.querySelector(`input[name='periode_mulai']`)?.value;
-                const selesai = document.querySelector(`input[name='periode_selesai']`)?.value;
-                if (!pengajarId || !mulai || !selesai) {
-                    this.presensiError = { ...this.presensiError, [key]: 'Pilih guru dan periode evaluasi terlebih dahulu.' };
-                    return;
-                }
-                if (!this.aiReady) {
-                    this.presensiError = { ...this.presensiError, [key]: 'Pengaturan AI belum dikonfigurasi.' };
-                    return;
-                }
-                if (!this.hasTokens) {
-                    this.presensiError = { ...this.presensiError, [key]: this.tokenFallbackMonev };
-                    return;
-                }
-                this.loadingPresensi = { ...this.loadingPresensi, [key]: true };
-                try {
-                    const res = await fetch(@js(route('admin.ai.monev-guru-kehadiran-suggestions')), {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            pengajar_id: parseInt(pengajarId, 10),
-                            kriteria_id: kriteriaId,
-                            periode_mulai: mulai,
-                            periode_selesai: selesai,
-                        }),
-                        credentials: 'same-origin',
-                    });
-                    const data = await res.json();
-                    if (!res.ok) {
-                        if (data.token_exhausted) this.hasTokens = false;
-                        this.presensiError = { ...this.presensiError, [key]: data.error || 'Gagal menghitung skor dari presensi.' };
-                        return;
-                    }
-                    if (typeof data.token_balance === 'number' && data.token_balance < 1) {
-                        this.hasTokens = false;
-                    }
-                    const skorInput = document.querySelector(`input[name='items[${index}][skor]']`);
-                    const catatanInput = document.querySelector(`textarea[name='items[${index}][catatan]']`);
-                    if (skorInput) skorInput.value = data.skor;
-                    if (catatanInput) catatanInput.value = data.catatan;
-                    const rekap = data.rekap || {};
-                    const parts = [
-                        `Hadir ${rekap.hadir ?? 0}/${rekap.hari_kerja ?? 0} hari (${rekap.persentase ?? 0}%)`,
-                    ];
-                    if ((rekap.terlambat ?? 0) > 0) parts.push(`Telat masuk ${rekap.terlambat}x`);
-                    if ((rekap.telat_pulang ?? 0) > 0) parts.push(`Pulang lebih awal ${rekap.telat_pulang}x`);
-                    if ((rekap.tanpa_check_out ?? 0) > 0) parts.push(`Tanpa checkout ${rekap.tanpa_check_out}x`);
-                    this.presensiInfo = { ...this.presensiInfo, [key]: parts.join(' · ') };
-                } catch (e) {
-                    this.presensiError = { ...this.presensiError, [key]: 'Terjadi kesalahan: ' + e.message };
-                } finally {
-                    this.loadingPresensi = { ...this.loadingPresensi, [key]: false };
-                }
+            formatRekap(rekap) {
+                if (!rekap) return '';
+                const parts = [`Hadir ${rekap.hadir ?? 0}/${rekap.hari_kerja ?? 0} hari (${rekap.persentase ?? 0}%)`];
+                if ((rekap.terlambat ?? 0) > 0) parts.push(`Telat masuk ${rekap.terlambat}x`);
+                if ((rekap.telat_pulang ?? 0) > 0) parts.push(`Pulang lebih awal ${rekap.telat_pulang}x`);
+                if ((rekap.tanpa_check_out ?? 0) > 0) parts.push(`Tanpa checkout ${rekap.tanpa_check_out}x`);
+                return parts.join(' · ');
             },
             async fetchAiSuggestions(kriteriaId, index) {
                 if (!this.aiReady) { alert('Pengaturan AI belum dikonfigurasi.'); return; }
@@ -95,6 +38,7 @@
                 if (!skor || skor < 1 || skor > 100) { alert('Isi skor (1–100) terlebih dahulu sebelum meminta saran AI.'); return; }
                 const key = String(kriteriaId);
                 this.aiSuggestions = {};
+                this.presensiInfo = { ...this.presensiInfo, [key]: '' };
                 this.aiLoading = { ...this.aiLoading, [key]: true };
                 try {
                     const res = await fetch(@js(route('admin.ai.monev-guru-suggestions')), {
@@ -123,6 +67,9 @@
                         this.hasTokens = false;
                     }
                     this.aiSuggestions = { [key]: data.suggestions || [] };
+                    if (data.rekap) {
+                        this.presensiInfo = { ...this.presensiInfo, [key]: this.formatRekap(data.rekap) };
+                    }
                 } catch (e) {
                     alert('Terjadi kesalahan: ' + e.message);
                 } finally {
@@ -266,23 +213,6 @@
                                     <label class="input-label">Catatan</label>
                                     <textarea name="items[{{ $i }}][catatan]" rows="4" class="input-field w-full min-h-[6.5rem]" placeholder="Catatan penilaian untuk kriteria ini…">{{ $oldCatatan }}</textarea>
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        @if($k->is_presensi)
-                                        <button type="button"
-                                            @click="hitungPresensi({{ $k->id }}, {{ $i }})"
-                                            :disabled="loadingPresensi['{{ $k->id }}'] || !aiReady || !hasTokens"
-                                            class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all"
-                                            style="color:#1A6B6B; background:#E8F5F5; border-color:#1A6B6B33;"
-                                            :class="{ 'opacity-40 cursor-not-allowed': !aiReady || !hasTokens }">
-                                            <span x-show="!loadingPresensi['{{ $k->id }}']">Hitung dari Presensi</span>
-                                            <span x-show="loadingPresensi['{{ $k->id }}']" class="flex items-center gap-1">
-                                                <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Memuat...
-                                            </span>
-                                        </button>
-                                        @endif
                                         <button type="button"
                                             @click="fetchAiSuggestions({{ $k->id }}, {{ $i }})"
                                             :disabled="aiLoading['{{ $k->id }}'] || !aiReady || !hasTokens"
@@ -301,10 +231,7 @@
                                         <span x-show="!aiReady" class="text-[10px] italic" style="color:#9E9790;">AI belum dikonfigurasi</span>
                                         <span x-show="aiReady && !hasTokens" class="text-[10px] italic" style="color:#9E9790;">Token AI habis</span>
                                     </div>
-                                    @if($k->is_presensi)
-                                    <p class="text-xs mt-1 text-red-600" x-text="presensiError['{{ $k->id }}'] || ''" x-show="presensiError['{{ $k->id }}']"></p>
                                     <p class="text-xs mt-1" style="color:#9A9188;" x-text="presensiInfo['{{ $k->id }}'] || ''" x-show="presensiInfo['{{ $k->id }}']"></p>
-                                    @endif
                                     <template x-if="(aiSuggestions['{{ $k->id }}'] || []).length > 0">
                                         <div class="space-y-1.5 pt-1">
                                             <div class="text-[10px] font-semibold" style="color:#6B6560;">Pilih salah satu saran:</div>
