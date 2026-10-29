@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/js/guest-ascent.js',
                 'resources/js/tour.js',
                 'resources/js/kegiatan-calendar.js',
+                'resources/js/dashboard-charts.js',
             ],
             refresh: true,
         }),

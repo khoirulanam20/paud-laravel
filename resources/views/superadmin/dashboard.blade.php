@@ -1,63 +1,41 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center gap-3" data-tour="page-header">
-            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;">
-                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-            </div>
-            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Dashboard Superadmin</h2>
-        </div>
-    </x-slot>
-
-    <div class="pt-4 pb-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-5 sm:space-y-8">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5" data-tour="superadmin-dashboard-stats">
-            <div class="stat-card">
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 truncate" style="color:#9E9790;">Total Lembaga</p>
-                    <p class="text-2xl sm:text-3xl font-bold" style="color:#2C2C2C;">{{ $totalLembaga }}</p>
-                    <a href="{{ route('superadmin.lembaga.index') }}" class="text-xs font-medium mt-1 inline-block" style="color:#1A6B6B;">Kelola &rarr;</a>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 truncate" style="color:#9E9790;">Total Sekolah</p>
-                    <p class="text-2xl sm:text-3xl font-bold" style="color:#2C2C2C;">{{ $totalSekolah }}</p>
-                    <a href="{{ route('superadmin.sekolah.index') }}" class="text-xs font-medium mt-1 inline-block" style="color:#1A6B6B;">Lihat &rarr;</a>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 truncate" style="color:#9E9790;">Total Pengguna</p>
-                    <p class="text-2xl sm:text-3xl font-bold" style="color:#2C2C2C;">{{ $totalUsers }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 truncate" style="color:#9E9790;">AI Terkonfigurasi</p>
-                    <p class="text-2xl sm:text-3xl font-bold" style="color:#2C2C2C;">{{ $totalAiConfigured }}</p>
-                    <a href="{{ route('superadmin.ai-setting.index') }}" class="text-xs font-medium mt-1 inline-block" style="color:#1A6B6B;">Pengaturan &rarr;</a>
-                </div>
-            </div>
+    <div class="app-page-shell dashboard-stack">
+        <div class="dashboard-kpi-grid" data-tour="superadmin-dashboard-stats">
+            <x-dashboard.kpi label="Total Lembaga" :value="$totalLembaga" :href="route('superadmin.lembaga.index')" link-label="Kelola"
+                icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            <x-dashboard.kpi label="Total Sekolah" :value="$totalSekolah" :href="route('superadmin.sekolah.index')" link-label="Lihat"
+                icon="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            <x-dashboard.kpi label="Total Pengguna" :value="$totalUsers"
+                icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            <x-dashboard.kpi label="AI Terkonfigurasi" :value="$totalAiConfigured" :href="route('superadmin.ai-setting.index')" link-label="Pengaturan"
+                icon="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </div>
 
-        <div class="card overflow-hidden">
-            <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
-                <h3 class="section-title">Lembaga Terbaru</h3>
-            </div>
-            <div class="divide-y" style="divide-color:rgba(0,0,0,0.05);">
+        @if(!empty($dashboardCharts))
+            <x-dashboard-charts :charts="$dashboardCharts" />
+        @endif
+
+        <x-dashboard.panel title="Lembaga Terbaru">
+            <div class="divide-y divide-black/5">
                 @forelse($recentLembagas as $l)
                     <div class="card-pad flex justify-between items-center gap-3">
                         <div class="min-w-0 flex-1">
-                            <p class="font-semibold text-sm truncate" style="color:#2C2C2C;">{{ $l->name }}</p>
-                            <p class="text-xs truncate" style="color:#9E9790;">{{ $l->address ?? '-' }}</p>
+                            <p class="font-semibold text-sm truncate text-[var(--text-primary)]">{{ $l->name }}</p>
+                            <p class="text-xs truncate text-[var(--text-muted)]">{{ $l->address ?? '-' }}</p>
                         </div>
-                        <span class="text-xs shrink-0" style="color:#9E9790;">{{ $l->created_at?->format('d M Y') }}</span>
+                        <span class="text-xs shrink-0 text-[var(--text-muted)]">{{ $l->created_at?->format('d M Y') }}</span>
                     </div>
                 @empty
-                    <p class="px-6 py-8 text-center text-sm" style="color:#9E9790;">Belum ada lembaga.</p>
+                    <p class="px-6 py-8 text-center text-sm text-[var(--text-muted)]">Belum ada lembaga.</p>
                 @endforelse
             </div>
-        </div>
+        </x-dashboard.panel>
     </div>
+
+    @if(!empty($dashboardCharts ?? []))
+        @push('scripts')
+            @vite(['resources/js/dashboard-charts.js'])
+            <script type="application/json" id="dashboard-charts-json">@json($dashboardCharts)</script>
+        @endpush
+    @endif
 </x-app-layout>

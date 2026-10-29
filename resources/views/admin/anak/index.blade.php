@@ -11,7 +11,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+    <div class="app-page-shell" x-data="{
             showCreateModal: @js($errors->any() && ! $errors->has('file')),
             showImportModal: @js($errors->has('file')),
             showEditModal: false,

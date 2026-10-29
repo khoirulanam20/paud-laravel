@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="app-page-shell">
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Riwayat chat AI orang tua</h3>

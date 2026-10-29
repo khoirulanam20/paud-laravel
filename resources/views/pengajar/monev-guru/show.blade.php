@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">{{ $evaluasi->judul ?: 'Evaluasi Guru' }}</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="app-page-shell">
         <div class="mb-4"><a href="{{ route('pengajar.monev-guru.index') }}" class="btn-secondary text-sm">← Kembali</a></div>
 
         <div class="card p-6 mb-6">

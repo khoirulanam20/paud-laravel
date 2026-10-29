@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Indikator Matrikulasi</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showDetailModal: false, detailData: {} }">
+    <div class="app-page-shell" x-data="{ showDetailModal: false, detailData: {} }">
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Indikator Matrikulasi</h3><p class="section-subtitle">Standar perkembangan yang digunakan sebagai dasar penilaian siswa</p></div>

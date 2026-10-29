@@ -13,7 +13,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{ showDiskonModal: {{ $errors->hasAny(['diskon_mode', 'diskon_id', 'diskon_manual_nominal', 'diskon_manual_keterangan']) ? 'true' : 'false' }}, showApproveModal: false, showRejectModal: false, showBatalkanModal: false, showItemModal: false, showImageModal: false, activeImage: null, activeDownloadUrl: null, itemModalEditId: null, itemModalNama: '', itemModalJumlah: 0 }" @tour-close-modals.window="showDiskonModal=false; showApproveModal=false; showRejectModal=false; showBatalkanModal=false; showItemModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif

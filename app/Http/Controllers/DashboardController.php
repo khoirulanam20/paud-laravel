@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Anak;
 use App\Models\Cashflow;
-use App\Models\Kelas;
 use App\Models\Kegiatan;
 use App\Models\KegiatanRutin;
+use App\Models\Kelas;
 use App\Models\Kesehatan;
 use App\Models\KritikSaran;
 use App\Models\MenuMakanan;
@@ -14,10 +14,13 @@ use App\Models\MenuMakananVote;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
 use App\Models\Pengumuman;
+use App\Models\PengumumanRead;
 use App\Models\Presensi;
 use App\Models\Sarana;
 use App\Models\Sekolah;
 use App\Models\User;
+use App\Support\AdminSekolahDashboard;
+use App\Support\DashboardChartData;
 use App\Support\HariLiburIndonesia;
 use App\Support\PresensiPeriodeFilter;
 use App\Support\TenantContext;
@@ -49,6 +52,13 @@ class DashboardController extends Controller
             $data['totalAdmin'] = User::role('Admin Sekolah')->whereIn('sekolah_id', $sekolahIds)->count();
             $data['totalKritikSaran'] = KritikSaran::whereIn('sekolah_id', $sekolahIds)->count();
             $data['recentFeedback'] = KritikSaran::whereIn('sekolah_id', $sekolahIds)->latest()->limit(5)->get();
+            $data['totalMurid'] = Anak::whereIn('sekolah_id', $sekolahIds)->where('status', 'approved')->count();
+            $data['totalGuru'] = Pengajar::whereIn('sekolah_id', $sekolahIds)->count();
+            $now = Carbon::now();
+            $data['kegiatanBulanIni'] = Kegiatan::whereIn('sekolah_id', $sekolahIds)
+                ->whereYear('date', $now->year)
+                ->whereMonth('date', $now->month)
+                ->count();
         }
 
         if ($user->hasRole('Admin Sekolah')) {
@@ -62,7 +72,14 @@ class DashboardController extends Controller
             $data['saldoKas'] = $uangMasuk - $uangKeluar;
 
             $data['kegiatanHariIni'] = Kegiatan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->count();
+            $now = Carbon::now();
+            $data['kegiatanBulanIni'] = Kegiatan::where('sekolah_id', $sekolahId)
+                ->whereYear('date', $now->year)
+                ->whereMonth('date', $now->month)
+                ->count();
+            $data['totalKelas'] = Kelas::where('sekolah_id', $sekolahId)->count();
             $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
+            $data['adminDashboardUx'] = AdminSekolahDashboard::compose($sekolahId);
         }
 
         if ($user->hasRole('Wali Kelas')) {
@@ -273,11 +290,20 @@ class DashboardController extends Controller
                 ->limit(20)
                 ->get();
 
-            $data['readPengumumanIds'] = \App\Models\PengumumanRead::query()
+            $data['readPengumumanIds'] = PengumumanRead::query()
                 ->where('user_id', $user->id)
                 ->whereIn('pengumuman_id', $data['pengumumans']->pluck('id'))
                 ->pluck('pengumuman_id')
                 ->all();
+        }
+
+        $data['dashboardCharts'] = DashboardChartData::forUser($user, $request, $data);
+
+        if ($user->hasRole('Admin Sekolah')) {
+            $data['dashboardCharts'] = AdminSekolahDashboard::enrichCharts(
+                $data['dashboardCharts'],
+                (int) $user->sekolah_id
+            );
         }
 
         return view('dashboard', $data);

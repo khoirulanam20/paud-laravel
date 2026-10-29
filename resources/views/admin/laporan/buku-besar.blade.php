@@ -14,7 +14,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    <div class="app-page-shell">
         <x-laporan-periode-filter :action="route('admin.laporan-keuangan.buku-besar')" :periode="$periode">
                 <div class="w-full min-w-0 sm:min-w-[12rem] sm:flex-1">
                     <label class="input-label">Akun</label>

@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Monev Guru</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="app-page-shell">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b" style="border-color:rgba(0,0,0,0.06);">

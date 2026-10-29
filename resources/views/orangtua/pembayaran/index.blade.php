@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8">
+    <div class="app-page-shell">
         @if($anaks->count() > 1)
             <div class="card overflow-hidden mb-4 sm:mb-6">
                 <div class="px-3 py-3 sm:card-pad border-b" style="border-color:rgba(0,0,0,0.06);">

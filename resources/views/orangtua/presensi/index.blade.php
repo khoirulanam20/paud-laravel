@@ -9,7 +9,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kehadiran</h2>
         </div>
     </x-slot>
-    <div class="max-w-7xl mx-auto py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8">
+    <div class="app-page-shell">
         <div class="mb-6 page-toolbar">
             <div class="hidden lg:block">
                 <h2 class="text-2xl font-bold text-gray-900 leading-tight">Rekap Kehadiran Siswa</h2>

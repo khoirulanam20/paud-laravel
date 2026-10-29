@@ -4,7 +4,7 @@
             <h2 class="font-bold text-xl" style="color:#2C2C2C;">Kelola Sekolah</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showRejectModal:false, editData:{}, deleteRoute:'', rejectRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true}, openReject(r){this.rejectRoute=r;this.showRejectModal=true} }">
+    <div class="app-page-shell" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showRejectModal:false, editData:{}, deleteRoute:'', rejectRoute:'', openEdit(d){this.editData=d;this.showEditModal=true}, openDelete(r){this.deleteRoute=r;this.showDeleteModal=true}, openReject(r){this.rejectRoute=r;this.showRejectModal=true} }">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 

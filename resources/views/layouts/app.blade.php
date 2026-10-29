@@ -76,74 +76,146 @@
     if ($user && $user->canAccessAdminPanel()) {
         $hasProfileSekolahRoute = \Illuminate\Support\Facades\Route::has('profile.sekolah.edit');
         $roleNavItems = array_merge($roleNavItems, [
+            // Grup 1: Dashboard
             [
-                'group' => 'Manajemen Siswa',
+                'route' => 'dashboard',
+                'label' => 'Dashboard',
+                'icon' => 'M3 12l2-3m2 3l-2-3 2-3m2 3l-2-3m4 3l-2 3 2 3m2-3l-2-3m4 3l-2 3m8 0V4m0 0a2 2 0 11-4 0 2 2 0 014 0zm-6 8a2 2 0 11-4 0 2 2 0 014 0z',
+            ],
+            // Grup 2: Operasional Harian (PRIMARY, tidak collapsible)
+            [
+                'group' => 'Operasional Harian',
                 'items' => [
                     ['route' => 'admin.anak.index', 'label' => 'Siswa Sekolah', 'perm' => 'menu.siswa', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'admin.anak.*'],
-                    ['route' => 'admin.pendaftaran.index', 'label' => 'Pendaftaran', 'perm' => 'menu.pendaftaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'admin.pendaftaran.*', 'badge' => $pendingCount],
-                    ['route' => 'admin.kelas.index', 'label' => 'Kelola Kelas', 'perm' => 'menu.kelola-kelas', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'pattern' => 'admin.kelas.*'],
                     ['route' => 'admin.presensi.index', 'label' => 'Presensi Siswa', 'perm' => 'menu.presensi-siswa', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'admin.presensi.*'],
                     ['route' => 'admin.kesehatan.index', 'label' => 'Kesehatan Siswa', 'perm' => 'menu.kesehatan-siswa', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'admin.kesehatan.*'],
-                ]
-            ],
-            [
-                'group' => 'Kurikulum',
-                'items' => [
-                    ['route' => 'admin.matrikulasi.index', 'label' => 'Matrikulasi', 'perm' => 'menu.matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.matrikulasi.*'],
-                    ['route' => 'admin.skala-pencapaian.index', 'label' => 'Skala Capaian', 'perm' => 'menu.skala-capaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.skala-pencapaian.*'],
-                    ['route' => 'admin.kegiatan.index', 'label' => 'Agenda Belajar', 'perm' => 'menu.agenda-belajar', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'pattern' => 'admin.kegiatan.*'],
-                    ['route' => 'admin.master-kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'perm' => 'menu.kegiatan-rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => ['admin.master-kegiatan-rutin.*', 'admin.kegiatan-rutin.*']],
-                    ['route' => 'admin.pencapaian.index', 'label' => 'Pencapaian Siswa', 'perm' => 'menu.pencapaian-siswa', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.pencapaian.*'],
-                    ['route' => 'admin.monev.index', 'label' => 'Monev', 'perm' => 'menu.monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.monev.*'],
-                ]
-            ],
-            [
-                'group' => 'Sekolah & Guru',
-                'items' => [
-                    ...(($hasProfileSekolahRoute && $user->hasRole('Admin Sekolah')) ? [['route' => 'profile.sekolah.edit', 'label' => 'Profil Sekolah', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', 'pattern' => 'profile.sekolah.*']] : []),
-                    ['route' => 'admin.pengajar.index', 'label' => 'Data Guru', 'perm' => 'menu.data-pengajar', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'pattern' => 'admin.pengajar.*'],
-                    ['route' => 'admin.presensi-guru.index', 'label' => 'Presensi Guru', 'perm' => 'menu.presensi-guru', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'admin.presensi-guru.*'],
-                    ['route' => 'admin.monev-guru.index', 'label' => 'Monev Guru', 'perm' => 'menu.monev-guru', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.monev-guru.*'],
-                    ['route' => 'admin.sarana.index', 'label' => 'Sarana', 'perm' => 'menu.sarana', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'pattern' => 'admin.sarana.*'],
+                    ['route' => 'admin.pengajar.index', 'label' => 'Pengajar', 'perm' => 'menu.data-pengajar', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'pattern' => 'admin.pengajar.*'],
+                    ['route' => 'admin.presensi-guru.index', 'label' => 'Presensi Guru', 'perm' => 'menu.presensi-guru', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => ['admin.presensi-guru.index', 'admin.presensi-guru.store', 'admin.presensi-guru.export']],
                     ['route' => 'admin.menu-makanan.index', 'label' => 'Menu Makanan', 'perm' => 'menu.menu-makanan', 'icon' => 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z', 'pattern' => 'admin.menu-makanan.*'],
+                    ['route' => 'admin.pendaftaran.index', 'label' => 'Pendaftaran', 'perm' => 'menu.pendaftaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'admin.pendaftaran.*', 'badge' => $pendingCount],
                 ]
             ],
+            // Grup 3: Keuangan (collapsible)
             [
-                'group' => 'Akuntansi',
-                'items' => [
-                    ['route' => 'admin.akun.index', 'label' => 'Kode Rekening & Akun', 'perm' => 'menu.akun-coa', 'icon' => 'M4 6h16M4 10h16M4 14h16M4 18h16', 'pattern' => 'admin.akun.*'],
-                    ['route' => 'admin.cashflow.index', 'label' => 'Cashflow', 'perm' => 'menu.cashflow', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.cashflow.*'],
-                    ['route' => 'admin.tabungan-investasi.index', 'label' => 'Tabungan & Investasi', 'perm' => 'menu.tabungan-investasi', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'pattern' => 'admin.tabungan-investasi.*'],
-                    ['route' => 'admin.jurnal.index', 'label' => 'Jurnal Umum', 'perm' => 'menu.jurnal-umum', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.jurnal.*'],
-                    ['route' => 'admin.laporan-keuangan.index', 'label' => 'Laporan Keuangan', 'perm' => 'menu.laporan-keuangan', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.laporan-keuangan.*'],
-                ]
+                'collapsible' => true,
+                'group' => 'Keuangan',
+                'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
+                'pattern' => ['admin.biaya-bulanan.*', 'admin.diskon.*', 'admin.pembayaran-bulanan.*', 'admin.gaji-guru.*', 'admin.cashflow.*', 'admin.tabungan-investasi.*', 'admin.jurnal.*', 'admin.laporan-keuangan.*', 'admin.laporan.*', 'admin.akun.*'],
+                'sections' => [
+                    [
+                        'label' => 'Pembayaran & Gaji',
+                        'items' => [
+                            [
+                                'route' => 'admin.biaya-bulanan.index',
+                                'label' => 'Biaya Bulanan',
+                                'perm' => 'menu.biaya-harian',
+                                'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                                'pattern' => ['admin.biaya-bulanan.*', 'admin.diskon.*'],
+                                'children' => [
+                                    ['route' => 'admin.diskon.index', 'label' => 'Master Diskon', 'perm' => 'menu.diskon', 'icon' => 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z', 'pattern' => 'admin.diskon.*'],
+                                ],
+                            ],
+                            ['route' => 'admin.pembayaran-bulanan.index', 'label' => 'Rekap Pembayaran', 'perm' => 'menu.rekap-pembayaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'pattern' => 'admin.pembayaran-bulanan.*'],
+                            ['route' => 'admin.gaji-guru.index', 'label' => 'Gaji Guru', 'perm' => 'menu.gaji-guru', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'pattern' => 'admin.gaji-guru.*'],
+                        ],
+                    ],
+                    [
+                        'label' => 'Buku & Laporan',
+                        'items' => [
+                            ['route' => 'admin.cashflow.index', 'label' => 'Cashflow', 'perm' => 'menu.cashflow', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.cashflow.*'],
+                            ['route' => 'admin.tabungan-investasi.index', 'label' => 'Tabungan & Investasi', 'perm' => 'menu.tabungan-investasi', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'pattern' => 'admin.tabungan-investasi.*'],
+                            ['route' => 'admin.jurnal.index', 'label' => 'Jurnal Umum', 'perm' => 'menu.jurnal-umum', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.jurnal.*'],
+                            ['route' => 'admin.laporan-keuangan.index', 'label' => 'Laporan Keuangan', 'perm' => 'menu.laporan-keuangan', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => ['admin.laporan-keuangan.*', 'admin.laporan.*']],
+                        ],
+                    ],
+                ],
             ],
+            // Grup 4: Akademik (collapsible)
             [
+                'collapsible' => true,
+                'group' => 'Akademik',
+                'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+                'pattern' => ['admin.matrikulasi.*', 'admin.skala-pencapaian.*', 'admin.kegiatan.*', 'admin.master-kegiatan-rutin.*', 'admin.kegiatan-rutin.*', 'admin.pencapaian.*', 'admin.monev.*'],
+                'sections' => [
+                    [
+                        'label' => 'Kurikulum & Matrikulasi',
+                        'items' => [
+                            ['route' => 'admin.matrikulasi.index', 'label' => 'Matrikulasi', 'perm' => 'menu.matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.matrikulasi.*'],
+                            ['route' => 'admin.skala-pencapaian.index', 'label' => 'Skala Capaian', 'perm' => 'menu.skala-capaian', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.skala-pencapaian.*'],
+                        ],
+                    ],
+                    [
+                        'label' => 'Agenda & Evaluasi',
+                        'items' => [
+                            ['route' => 'admin.kegiatan.index', 'label' => 'Agenda Belajar', 'perm' => 'menu.agenda-belajar', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'pattern' => 'admin.kegiatan.*'],
+                            ['route' => 'admin.master-kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'perm' => 'menu.kegiatan-rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => ['admin.master-kegiatan-rutin.*', 'admin.kegiatan-rutin.*']],
+                            ['route' => 'admin.pencapaian.index', 'label' => 'Pencapaian Siswa', 'perm' => 'menu.pencapaian-siswa', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.pencapaian.*'],
+                            ['route' => 'admin.monev.index', 'label' => 'Monev', 'perm' => 'menu.monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.monev.*'],
+                        ],
+                    ],
+                ],
+            ],
+            // Grup 5: RKAS (collapsible)
+            [
+                'collapsible' => true,
                 'group' => 'RKAS',
-                'items' => [
-                    ['route' => 'admin.sumber-dana.index', 'label' => 'Sumber Dana', 'perm' => 'menu.sumber-dana', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'pattern' => 'admin.sumber-dana.*'],
-                    ['route' => 'admin.rkas.index', 'label' => 'RKAS', 'perm' => 'menu.rkas', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => ['admin.rkas.index', 'admin.rkas.edit']],
-                    ['route' => 'admin.rkas.laporan', 'label' => 'Laporan RKAS', 'perm' => 'menu.laporan-rkas', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'pattern' => ['admin.rkas.laporan', 'admin.rkas.export-pdf']],
-                ]
+                'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+                'pattern' => ['admin.sumber-dana.*', 'admin.rkas.*'],
+                'sections' => [
+                    [
+                        'items' => [
+                            ['route' => 'admin.sumber-dana.index', 'label' => 'Sumber Dana', 'perm' => 'menu.sumber-dana', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'pattern' => 'admin.sumber-dana.*'],
+                            ['route' => 'admin.rkas.index', 'label' => 'RKAS', 'perm' => 'menu.rkas', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => ['admin.rkas.index', 'admin.rkas.edit']],
+                            ['route' => 'admin.rkas.laporan', 'label' => 'Laporan RKAS', 'perm' => 'menu.laporan-rkas', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'pattern' => ['admin.rkas.laporan', 'admin.rkas.export-pdf']],
+                        ]
+                    ],
+                ],
             ],
+            // Grup 6: Komunikasi (collapsible)
             [
-                'group' => 'Biaya & Pembayaran',
-                'items' => [
-                    ['route' => 'admin.biaya-bulanan.index', 'label' => 'Biaya Bulanan', 'perm' => 'menu.biaya-harian', 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402-2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.biaya-bulanan.*'],
-                    ['route' => 'admin.diskon.index', 'label' => 'Diskon', 'perm' => 'menu.diskon', 'icon' => 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z', 'pattern' => 'admin.diskon.*'],
-                    ['route' => 'admin.pembayaran-bulanan.index', 'label' => 'Rekap Pembayaran', 'perm' => 'menu.rekap-pembayaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'pattern' => 'admin.pembayaran-bulanan.*'],
-                    ['route' => 'admin.gaji-guru.index', 'label' => 'Gaji Guru', 'perm' => 'menu.gaji-guru', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'pattern' => 'admin.gaji-guru.*'],
-                ]
+                'collapsible' => true,
+                'group' => 'Komunikasi',
+                'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z',
+                'pattern' => ['admin.kritik-saran.*', 'admin.pengumuman.*', 'admin.orangtua-chat.*'],
+                'sections' => [
+                    [
+                        'items' => [
+                            ['route' => 'admin.kritik-saran.index', 'label' => 'Kritik & Saran', 'perm' => 'menu.kritik-saran', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'admin.kritik-saran.*'],
+                            ['route' => 'admin.pengumuman.index', 'label' => 'Pengumuman', 'perm' => 'menu.pengumuman', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'pattern' => 'admin.pengumuman.*'],
+                            ...($chatOrangTuaEnabled ? [['route' => 'admin.orangtua-chat.index', 'label' => 'Chat Orang Tua', 'perm' => 'menu.chat-orangtua', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', 'pattern' => 'admin.orangtua-chat.*']] : []),
+                        ]
+                    ],
+                ],
             ],
+            // Grup 7: Pengaturan (collapsible)
             [
-                'group' => 'Masukan & Komunikasi',
-                'items' => [
-                    ['route' => 'admin.kritik-saran.index', 'label' => 'Kritik & Saran', 'perm' => 'menu.kritik-saran', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'pattern' => 'admin.kritik-saran.*'],
-                    ['route' => 'admin.pengumuman.index', 'label' => 'Pengumuman', 'perm' => 'menu.pengumuman', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'pattern' => 'admin.pengumuman.*'],
-                    ...($chatOrangTuaEnabled ? [['route' => 'admin.orangtua-chat.index', 'label' => 'Chat Orang Tua', 'perm' => 'menu.chat-orangtua', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', 'pattern' => 'admin.orangtua-chat.*']] : []),
-                ]
+                'collapsible' => true,
+                'group' => 'Pengaturan',
+                'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z',
+                'pattern' => [
+                    'profile.sekolah.*', 'admin.sarana.*', 'admin.presensi-guru.pengaturan*',
+                    'admin.pengguna.*', 'admin.role.*', 'admin.activity-log.*',
+                    'admin.settings', 'admin.akuntansi-setting.*', 'admin.ai-persona.*',
+                ],
+                'sections' => [
+                    [
+                        'label' => 'Sekolah',
+                        'items' => array_values(array_filter([
+                            ($hasProfileSekolahRoute && $user->hasRole('Admin Sekolah')) ? ['route' => 'profile.sekolah.edit', 'label' => 'Profil Sekolah', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'pattern' => 'profile.sekolah.*'] : null,
+                            ['route' => 'admin.sarana.index', 'label' => 'Sarana', 'perm' => 'menu.sarana', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'pattern' => 'admin.sarana.*'],
+                            ['route' => 'admin.presensi-guru.pengaturan', 'label' => 'Pengaturan Presensi', 'perm' => 'menu.presensi-guru', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'admin.presensi-guru.pengaturan*'],
+                        ])),
+                    ],
+                    [
+                        'label' => 'Akses & Audit',
+                        'items' => [
+                            ['route' => 'admin.pengguna.index', 'label' => 'Pengguna', 'perm' => 'menu.pengguna', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'admin.pengguna.*'],
+                            ['route' => 'admin.role.index', 'label' => 'Role & Izin', 'perm' => 'menu.role', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'pattern' => 'admin.role.*'],
+                            ['route' => 'admin.activity-log.index', 'label' => 'Log Aktivitas', 'perm' => 'menu.log-aktivitas', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'pattern' => 'admin.activity-log.*'],
+                        ],
+                    ],
+                ],
             ],
-            ['route' => 'admin.settings', 'label' => 'Pengaturan', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z', 'pattern' => ['admin.settings', 'admin.role.*', 'admin.pengguna.*', 'admin.akuntansi-setting.*', 'admin.ai-persona.*', 'admin.activity-log.*']],
         ]);
 
         // Filter by permission: hanya tampilkan menu yang user punya akses (kecuali Admin Sekolah & Lembaga)
@@ -154,22 +226,30 @@
             }
             if (!empty($group['collapsible']) && isset($group['sections'])) {
                 $group['sections'] = array_map(function ($section) use ($user) {
-                    $section['items'] = array_values(array_filter($section['items'], function ($item) use ($user) {
-                        if (!isset($item['perm'])) return true;
-                        return $user->can($item['perm']);
-                    }));
+                    $section['items'] = array_values(array_filter(array_map(function ($item) use ($user) {
+                        if (! empty($item['children'])) {
+                            $item['children'] = array_values(array_filter($item['children'], function ($child) use ($user) {
+                                if (! isset($child['perm'])) {
+                                    return true;
+                                }
+
+                                return $user->can($child['perm']);
+                            }));
+                        }
+                        if (! isset($item['perm'])) {
+                            return $item;
+                        }
+
+                        return $user->can($item['perm']) ? $item : null;
+                    }, $section['items'])));
+                    $section['items'] = array_values(array_filter($section['items']));
+
                     return $section;
                 }, $group['sections']);
                 $group['sections'] = array_values(array_filter($group['sections'], fn ($section) => count($section['items']) > 0));
                 return $group;
             }
-            if (!isset($group['items'])) {
-                if (isset($group['route']) && $group['route'] === 'admin.settings') {
-                    $settingsPerms = ['menu.role', 'menu.pengguna', 'menu.log-aktivitas', 'menu.setting-akuntansi', 'menu.pengaturan-ai'];
-
-                    return collect($settingsPerms)->contains(fn ($p) => $user->can($p)) ? $group : null;
-                }
-
+            if (! isset($group['items'])) {
                 return $group;
             }
             $group['items'] = array_filter($group['items'], function ($item) use ($user) {
@@ -346,6 +426,10 @@
     } else {
         $homeRoute = (!$showDashboardNav && ($first = $user?->firstAccessibleAdminRoute())) ? $first : 'dashboard';
     }
+
+    $pageBreadcrumbs = $user
+        ? \App\Support\AdminBreadcrumb::resolve($roleNavItems, $homeRoute, request(), $title ?? null, $subtitle ?? null)
+        : [];
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -380,60 +464,35 @@
 
             <!-- Main Content Area -->
             <main class="flex-1 w-full {{ request()->routeIs('orangtua.chat.*') ? 'overflow-hidden flex flex-col min-h-0' : 'overflow-y-auto' }} {{ ($user && $user->hasRole('Orang Tua') && !request()->routeIs('orangtua.chat.*')) ? 'pb-24' : (($user && $user->hasRole('Orang Tua')) ? 'pb-0' : 'pb-20') }} lg:pb-0">
-                @isset($header)
-                    @if($isOrangTua)
-                        {{-- Mobile: judul halaman (profil ada di menu Lainnya) --}}
-                        @if(!request()->routeIs('orangtua.chat.*'))
-                        <header class="lg:hidden sticky top-0 z-20 bg-[#FAF6F0]/95 backdrop-blur-sm border-b border-black/5 pt-[max(env(safe-area-inset-top),0px)]">
-                            <div class="flex items-center gap-2 px-3 py-2 min-h-[2.75rem]">
-                                <div class="flex-1 min-w-0 [&>div]:gap-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:leading-tight [&_p]:text-[10px] [&_p]:leading-tight [&_p]:mt-0.5 [&_.h-8]:h-7 [&_.h-8]:w-7 [&_.h-8_svg]:h-3.5 [&_.h-8_svg]:w-3.5">{{ $header }}</div>
-                            </div>
-                            @if(($ortuSchools ?? null) && $ortuSchools->count() > 1)
-                            <div class="px-3 pb-2 pt-0.5 border-t border-black/5">
-                                <form action="{{ route('orangtua.active-sekolah.update') }}" method="POST" class="flex items-center gap-2">
-                                    @csrf
-                                    <label class="text-[11px] font-semibold whitespace-nowrap text-[#6B6560]">Sekolah aktif:</label>
-                                    <select name="sekolah_id" class="input-field text-xs py-1 flex-1 min-w-0" onchange="this.form.submit()">
-                                        @foreach($ortuSchools as $s)
-                                            <option value="{{ $s->id }}" @selected(($activeOrtuSekolah?->id ?? null) === $s->id)>{{ $s->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </form>
-                            </div>
+                @if($isOrangTua && !request()->routeIs('orangtua.chat.*'))
+                    {{-- Orang tua mobile: topbar disembunyikan; breadcrumb + aksi ada di bar ini --}}
+                    <header class="lg:hidden sticky top-0 z-20 bg-[#FAF6F0]/95 backdrop-blur-sm border-b border-black/5 pt-[max(env(safe-area-inset-top),0px)]">
+                        <div class="app-shell-bar flex flex-col gap-2 py-2">
+                            @if(count($pageBreadcrumbs) > 0)
+                                <x-app-breadcrumb :items="$pageBreadcrumbs" />
                             @endif
-                        </header>
+                            @isset($header)
+                                <div class="page-header-toolbar shrink-0">{{ $header }}</div>
+                            @endisset
+                        </div>
+                        @if(($ortuSchools ?? null) && $ortuSchools->count() > 1)
+                        <div class="px-3 pb-2 pt-0.5 border-t border-black/5">
+                            <form action="{{ route('orangtua.active-sekolah.update') }}" method="POST" class="flex items-center gap-2">
+                                @csrf
+                                <label class="text-[11px] font-semibold whitespace-nowrap text-[#6B6560]">Sekolah aktif:</label>
+                                <select name="sekolah_id" class="input-field text-xs py-1 flex-1 min-w-0" onchange="this.form.submit()">
+                                    @foreach($ortuSchools as $s)
+                                        <option value="{{ $s->id }}" @selected(($activeOrtuSekolah?->id ?? null) === $s->id)>{{ $s->name }}</option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        </div>
                         @endif
-                        {{-- Desktop --}}
-                        <header class="hidden lg:block page-header sticky top-0 z-20 bg-[#F5F0E8]/90 backdrop-blur-sm border-b border-black/5">
-                            <div class="max-w-7xl mx-auto py-2 px-4 md:py-4 sm:px-6 lg:px-8">
-                                {{ $header }}
-                            </div>
-                        </header>
-                    @else
-                        <header class="page-header sticky top-0 z-20 bg-[#F5F0E8]/90 backdrop-blur-sm border-b border-black/5">
-                            <div class="max-w-7xl mx-auto py-2 px-3 sm:px-6 lg:px-8 [&>div]:gap-2 [&_h2]:text-base sm:[&_h2]:text-xl [&_h2]:font-semibold [&_.h-8]:h-7 [&_.h-8]:w-7 sm:[&_.h-8]:h-8 sm:[&_.h-8]:w-8 [&_.h-8_svg]:h-3.5 [&_.h-8_svg]:w-3.5 sm:[&_.h-8_svg]:h-4 sm:[&_.h-8_svg]:w-4">
-                                {{ $header }}
-                            </div>
-                        </header>
-                    @endif
-                @else
-                    @if($isOrangTua && ($ortuSchools ?? null) && $ortuSchools->count() > 1 && !request()->routeIs('orangtua.chat.*'))
-                    <header class="lg:hidden sticky top-0 z-20 bg-[#FAF6F0]/95 backdrop-blur-sm border-b border-black/5 pt-[max(env(safe-area-inset-top),0px)] px-3 py-2">
-                        <form action="{{ route('orangtua.active-sekolah.update') }}" method="POST" class="flex items-center gap-2">
-                            @csrf
-                            <label class="text-[11px] font-semibold whitespace-nowrap text-[#6B6560]">Sekolah aktif:</label>
-                            <select name="sekolah_id" class="input-field text-xs py-1 flex-1 min-w-0" onchange="this.form.submit()">
-                                @foreach($ortuSchools as $s)
-                                    <option value="{{ $s->id }}" @selected(($activeOrtuSekolah?->id ?? null) === $s->id)>{{ $s->name }}</option>
-                                @endforeach
-                            </select>
-                        </form>
                     </header>
-                    @endif
-                @endisset
+                @endif
 
                 <!-- Page Content -->
-                <div class="{{ request()->routeIs('orangtua.chat.*') ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : 'min-h-[calc(100vh-64px)]' }} w-full">
+                <div class="{{ request()->routeIs('orangtua.chat.*') ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : 'min-h-[calc(100vh-64px)]' }} w-full app-page-body">
                     {{ $slot }}
                 </div>
             </main>

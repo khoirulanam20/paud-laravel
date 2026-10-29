@@ -311,8 +311,8 @@ return [
     'admin.cashflow.index' => array_merge(
         [
             ['element' => '[data-tour="nav-admin.cashflow.index"]', 'title' => 'Menu Cashflow', 'description' => 'Catat pemasukan dan pengeluaran keuangan sekolah.', 'side' => 'right'],
-            ['element' => '[data-tour="page-header"]', 'title' => 'Cashflow', 'description' => 'Ringkasan keuangan dan riwayat transaksi sekolah.', 'side' => 'bottom'],
-            ['element' => '[data-tour="admin-cashflow-stats"]', 'title' => 'Ringkasan Keuangan', 'description' => 'Kartu statistik menampilkan total pemasukan, pengeluaran, dan saldo.', 'side' => 'bottom'],
+            ['element' => '[data-tour="page-header"]', 'title' => 'Cashflow', 'description' => 'Riwayat transaksi kas. Ringkasan agregat ada di Laporan Keuangan.', 'side' => 'bottom'],
+            ['element' => '[data-tour="admin-cashflow-table"]', 'title' => 'Riwayat transaksi', 'description' => 'Filter periode dan jenis, lalu catat atau ubah transaksi di sini.', 'side' => 'top'],
         ],
         tour_table_actions(
             'admin-cashflow',

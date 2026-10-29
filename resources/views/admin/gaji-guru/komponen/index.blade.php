@@ -2,7 +2,7 @@
     <x-slot name="header">
         <h2 class="font-bold text-xl" style="color:#2C2C2C;">Master Komponen Gaji</h2>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreate:false, showEdit:false, showDelete:false, editData:{}, deleteRoute:'' }">
+    <div class="app-page-shell" x-data="{ showCreate:false, showEdit:false, showDelete:false, editData:{}, deleteRoute:'' }">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
         <div class="mb-4"><a href="{{ route('admin.gaji-guru.index') }}" class="btn-secondary text-sm">← Gaji Guru</a></div>

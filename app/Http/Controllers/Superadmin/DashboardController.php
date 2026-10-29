@@ -7,6 +7,7 @@ use App\Models\AiSetting;
 use App\Models\Lembaga;
 use App\Models\Sekolah;
 use App\Models\User;
+use App\Support\DashboardChartData;
 
 class DashboardController extends Controller
 {
@@ -19,6 +20,8 @@ class DashboardController extends Controller
             'totalAiConfigured' => AiSetting::whereNotNull('ai_api_key')->count(),
             'recentLembagas' => Lembaga::latest()->limit(5)->get(),
         ];
+
+        $data['dashboardCharts'] = DashboardChartData::forSuperadmin();
 
         return view('superadmin.dashboard', $data);
     }

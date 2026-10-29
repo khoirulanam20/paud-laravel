@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, activeMediaType:'image', compressLabel:'Memproses media...', editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
+    <div class="app-page-shell" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, activeMediaType:'image', compressLabel:'Memproses media...', editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
             tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false,
             docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
             photoToDelete: {id:null, path:''},

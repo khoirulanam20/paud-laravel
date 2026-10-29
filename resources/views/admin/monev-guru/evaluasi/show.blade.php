@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Detail Evaluasi  {{ $evaluasi->pengajar->name ?? 'Guru' }}</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="app-page-shell">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         <div class="mb-4 flex flex-wrap gap-2">
             <a href="{{ route('admin.monev-guru.index') }}" class="btn-secondary text-sm">← Kembali</a>

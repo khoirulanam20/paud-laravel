@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="pt-4 pb-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-5 sm:space-y-8">
+    <div class="app-page-shell dashboard-stack">
 
         <!-- ═══ LEMBAGA DASHBOARD ═══ -->
         @hasrole('Lembaga')
@@ -12,51 +12,27 @@
                 <p class="text-xs mt-1 mb-2 sm:mb-3" style="color:#6B6560;">Gunakan dropdown <strong>Cabang aktif</strong> di header untuk mengakses menu operasional sekolah (siswa, kurikulum, keuangan, dll).</p>
             </div>
         @endif
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5" data-tour="dashboard-stats">
-            <div class="stat-card" data-tour="dashboard-welcome">
-                <div class="stat-icon">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase leading-tight mb-0.5" style="color: #9E9790;">Total Cabang</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $totalSekolah ?? 0 }}</p>
-                    <a href="{{ route('lembaga.sekolah.index') }}" data-tour="dashboard-quick-links" class="text-xs font-medium mt-1 inline-block" style="color: #1A6B6B;">Kelola &rarr;</a>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase leading-tight mb-0.5" style="color: #9E9790;">Admin Sekolah</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $totalAdmin ?? 0 }}</p>
-                    <a href="{{ route('lembaga.admin-sekolah.index') }}" class="text-xs font-medium mt-1 inline-block" style="color: #1A6B6B;">Kelola &rarr;</a>
-                </div>
-            </div>
-            <div class="stat-card col-span-2 sm:col-span-1">
-                <div class="stat-icon">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase leading-tight mb-0.5" style="color: #9E9790;">Total Masukan</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $totalKritikSaran ?? 0 }}</p>
-                    <a href="{{ route('lembaga.kritik-saran.index') }}" class="text-xs font-medium mt-1 inline-block" style="color: #1A6B6B;">Lihat &rarr;</a>
-                </div>
-            </div>
+        <div class="dashboard-kpi-grid--3" data-tour="dashboard-stats">
+            <x-dashboard.kpi label="Total Cabang" :value="$totalSekolah ?? 0" :href="route('lembaga.sekolah.index')" link-label="Kelola" data-tour="dashboard-welcome"
+                icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            <x-dashboard.kpi label="Admin Sekolah" :value="$totalAdmin ?? 0" :href="route('lembaga.admin-sekolah.index')" link-label="Kelola"
+                icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            <x-dashboard.kpi label="Total Masukan" :value="$totalKritikSaran ?? 0" :href="route('lembaga.kritik-saran.index')" link-label="Lihat" class="col-span-2 sm:col-span-1"
+                icon="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            <x-dashboard.kpi label="Total Murid" :value="$totalMurid ?? 0"
+                icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            <x-dashboard.kpi label="Total Guru" :value="$totalGuru ?? 0"
+                icon="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <x-dashboard.kpi label="Kegiatan Bulan Ini" :value="$kegiatanBulanIni ?? 0" class="col-span-2 sm:col-span-1"
+                icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </div>
 
-        <div class="card overflow-hidden" data-tour="dashboard-recent">
-            <div class="card-pad border-b flex justify-between items-center" style="border-color: rgba(0,0,0,0.06);">
-                <h3 class="section-title">Masukan Terbaru</h3>
-                <a href="{{ route('lembaga.kritik-saran.index') }}" class="text-sm font-medium" style="color: #1A6B6B;">Lihat Semua</a>
-            </div>
-            <div class="divide-y" style="divide-color: rgba(0,0,0,0.05);">
+        @if(!empty($dashboardCharts))
+            <x-dashboard-charts :charts="$dashboardCharts" />
+        @endif
+
+        <x-dashboard.panel title="Masukan Terbaru" :href="route('lembaga.kritik-saran.index')" link-label="Lihat semua" data-tour="dashboard-recent">
+            <div class="divide-y divide-black/5">
                 @forelse ($recentFeedback ?? [] as $f)
                     @if($f)
                     <div class="card-pad flex items-start justify-between gap-3">
@@ -71,136 +47,39 @@
                     <div class="px-6 py-10 text-center text-sm" style="color: #9E9790;">Belum ada masukan terbaru.</div>
                 @endforelse
             </div>
-        </div>
+        </x-dashboard.panel>
         @endhasrole
 
         <!-- ═══ ADMIN SEKOLAH DASHBOARD ═══ -->
         @hasrole('Admin Sekolah')
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5" data-tour="dashboard-stats">
-            @foreach([
-                ['label' => 'Total Siswa', 'value' => $totalAnak ?? 0, 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'href' => route('admin.anak.index')],
-                ['label' => 'Total Pengajar', 'value' => $totalPengajar ?? 0, 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'href' => route('admin.pengajar.index')],
-                ['label' => 'Total Sarana', 'value' => $totalSarana ?? 0, 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'href' => route('admin.sarana.index')],
-                ['label' => 'Saldo Kas', 'value' => 'Rp ' . number_format($saldoKas ?? 0, 0, ',', '.'), 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'href' => route('admin.cashflow.index')],
-            ] as $stat)
-            <div class="stat-card" @if($loop->first) data-tour="dashboard-welcome" @endif>
-                <div class="stat-icon shrink-0">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $stat['icon'] }}" />
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-[10px] sm:text-xs font-semibold uppercase leading-tight mb-0.5" style="color: #9E9790;">{{ $stat['label'] }}</p>
-                    <p class="text-lg sm:text-2xl font-bold truncate" style="color: #2C2C2C;" title="{{ $stat['value'] }}">{{ $stat['value'] }}</p>
-                    <a href="{{ $stat['href'] }}" @if($loop->first) data-tour="dashboard-quick-links" @endif class="text-xs font-medium" style="color: #1A6B6B;">Detail &rarr;</a>
-                </div>
-            </div>
-            @endforeach
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5" data-tour="dashboard-recent">
-            <div class="card overflow-hidden">
-                <div class="card-pad border-b" style="border-color: rgba(0,0,0,0.06);">
-                    <h3 class="section-title">Kegiatan Hari Ini</h3>
-                </div>
-                <div class="p-3 sm:p-5 flex items-center justify-between gap-3">
-                    <div>
-                        <p class="text-xs" style="color: #9E9790;">Rekap jurnal hari ini</p>
-                        <p class="text-2xl sm:text-4xl font-bold mt-1" style="color: #1A6B6B;">{{ $kegiatanHariIni ?? 0 }} <span class="text-xs sm:text-sm font-normal" style="color: #9E9790;">entri</span></p>
-                    </div>
-                    <a href="{{ route('admin.kegiatan.index') }}" class="btn-secondary text-sm">Lihat Log</a>
-                </div>
-            </div>
-            <div class="card overflow-hidden">
-                <div class="card-pad border-b" style="border-color: rgba(0,0,0,0.06);">
-                    <h3 class="section-title">Menu Makan Hari Ini</h3>
-                </div>
-                <div class="p-3 sm:p-5">
-                    @if(!empty($menuHariIni))
-                        <p class="font-bold text-base mb-1 whitespace-pre-line" style="color: #2C2C2C;">{{ $menuHariIni->menu }}</p>
-                        <p class="text-sm line-clamp-2" style="color: #9E9790;">{{ $menuHariIni->nutrition_info }}</p>
-                    @else
-                        <p class="text-sm" style="color: #9E9790;">Belum ada menu yang diinput.</p>
-                    @endif
-                    <a href="{{ route('admin.menu-makanan.index') }}" class="text-sm font-medium mt-3 inline-block" style="color: #1A6B6B;">Kelola Jadwal &rarr;</a>
-                </div>
-            </div>
-        </div>
+            @include('dashboard.partials.admin-sekolah')
         @endhasrole
 
         <!-- ═══ ADMIN KELAS / WALI KELAS ═══ -->
         @hasrole('Wali Kelas')
-        <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-5 sm:mb-6" data-tour="dashboard-welcome"
-             style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);
-                    box-shadow: 0 8px 32px rgba(26,107,107,0.25);">
-            
-            {{-- Decorative element --}}
-            <div class="absolute right-0 top-0 -mr-8 -mt-8 opacity-10 pointer-events-none">
-                <svg class="h-40 w-40" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-            </div>
+        <x-dashboard.hero eyebrow="Wali Kelas" :title="'Kelola '.($kelasWaliCount ?? 0).' kelas wali'" description="Pantau siswa, presensi, kesehatan, dan evaluasi kelas dari satu tempat."
+            icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+            <x-slot:actions>
+                <a href="{{ route('adminkelas.anak.index') }}" class="dashboard-hero-btn dashboard-hero-btn--ghost">Siswa</a>
+                <a href="{{ route('adminkelas.presensi.index') }}" class="dashboard-hero-btn dashboard-hero-btn--primary">Presensi</a>
+                <a href="{{ route('adminkelas.monev.index') }}" class="dashboard-hero-btn dashboard-hero-btn--ghost">Monev</a>
+            </x-slot:actions>
+        </x-dashboard.hero>
 
-            <div class="relative px-4 py-4 md:px-6 md:py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
-                <div class="flex items-center gap-3 sm:gap-4">
-                    <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
-                        <svg class="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                    </div>
-                    <div data-tour="dashboard-stats">
-                        <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-widest opacity-80 mb-0.5">Wali Kelas</p>
-                        <h3 class="text-lg sm:text-xl font-bold">Kelola {{ $kelasWaliCount ?? 0 }} Kelas Wali</h3>
-                        <p class="text-xs sm:text-sm opacity-90 mt-0.5">Pantau siswa, presensi, kesehatan, dan evaluasi kelas dari satu dashboard.</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-3 sm:flex sm:flex-wrap gap-2" data-tour="dashboard-quick-links">
-                    <a href="{{ route('adminkelas.anak.index') }}" class="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all text-center">Siswa</a>
-                    <a href="{{ route('adminkelas.presensi.index') }}" class="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A6B6B] hover:shadow-lg transition-all text-center">Presensi</a>
-                    <a href="{{ route('adminkelas.monev.index') }}" class="inline-flex items-center justify-center px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all text-center">Monev</a>
-                </div>
-            </div>
+        <div class="dashboard-kpi-grid">
+            <x-dashboard.kpi label="Siswa kelasku" :value="$kelasAnakCount ?? 0" icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            <x-dashboard.kpi label="Presensi hari ini" :value="$presensiHariIniCount ?? 0" icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <x-dashboard.kpi label="Cek kesehatan" :value="$kesehatanHariIniCount ?? 0" icon="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            <x-dashboard.kpi label="Evaluasi hari ini" :value="$monevHariIniCount ?? 0" class="col-span-2 lg:col-span-1" icon="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5 mb-5 sm:mb-6" data-tour="dashboard-stats">
-            <div class="stat-card">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">Siswa Kelasku</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $kelasAnakCount ?? 0 }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">Presensi Hari Ini</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $presensiHariIniCount ?? 0 }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">Cek Kesehatan</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $kesehatanHariIniCount ?? 0 }}</p>
-                </div>
-            </div>
-            <div class="stat-card col-span-2 lg:col-span-1">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">Evaluasi Hari Ini</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $monevHariIniCount ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
+        @if(!empty($dashboardCharts))
+            <x-dashboard-charts :charts="$dashboardCharts" />
+        @endif
 
-        <div class="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <div class="xl:col-span-3 card overflow-hidden" data-tour="dashboard-recent">
-                <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
-                    <h3 class="section-title mb-0.5">Ringkasan Kelas Wali</h3>
-                    <p class="section-subtitle">Daftar kelas yang saat ini Anda pegang sebagai wali kelas.</p>
-                </div>
-                <div class="divide-y" style="border-color:rgba(0,0,0,0.06);">
+        <div class="dashboard-split-main">
+            <x-dashboard.panel class="xl:col-span-3" title="Ringkasan Kelas Wali" subtitle="Daftar kelas yang saat ini Anda pegang sebagai wali kelas." data-tour="dashboard-recent">
+                <div class="divide-y divide-black/5">
                     @forelse(($waliKelasList ?? collect()) as $kelas)
                         <div class="card-pad flex items-center justify-between gap-3">
                             <div class="min-w-0">
@@ -215,113 +94,45 @@
                         </div>
                     @endforelse
                 </div>
-            </div>
+            </x-dashboard.panel>
 
-            <div class="xl:col-span-2 card overflow-hidden">
-                <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
-                    <h3 class="section-title mb-0.5">Akses Cepat</h3>
-                    <p class="section-subtitle">Masuk ke pekerjaan utama wali kelas lebih cepat.</p>
-                </div>
+            <x-dashboard.panel class="xl:col-span-2" title="Akses cepat" subtitle="Masuk ke pekerjaan utama wali kelas lebih cepat.">
                 <div class="p-3 sm:p-5 grid grid-cols-2 xl:grid-cols-1 gap-2.5 sm:gap-3" data-tour="dashboard-quick-links">
-                    <a href="{{ route('adminkelas.anak.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Data Siswa</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Lihat siswa di kelas wali.</p>
-                    </a>
-                    <a href="{{ route('adminkelas.presensi.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Presensi</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Input & cek kehadiran harian.</p>
-                    </a>
-                    <a href="{{ route('adminkelas.kesehatan.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Kesehatan</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Pantau cek fisik siswa.</p>
-                    </a>
-                    <a href="{{ route('adminkelas.monev.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Monev</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Evaluasi berkala siswa.</p>
-                    </a>
-                    <a href="{{ route('pengajar.kegiatan.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Agenda Belajar</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Kelola jurnal harian.</p>
-                    </a>
-                    <a href="{{ route('pengajar.pencapaian.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Pencapaian</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Isi skor pencapaian.</p>
-                    </a>
+                    <x-dashboard.quick-link :href="route('adminkelas.anak.index')" title="Data siswa" description="Lihat siswa di kelas wali." />
+                    <x-dashboard.quick-link :href="route('adminkelas.presensi.index')" title="Presensi" description="Input dan cek kehadiran harian." />
+                    <x-dashboard.quick-link :href="route('adminkelas.kesehatan.index')" title="Kesehatan" description="Pantau cek fisik siswa." />
+                    <x-dashboard.quick-link :href="route('adminkelas.monev.index')" title="Monev" description="Evaluasi berkala siswa." />
+                    <x-dashboard.quick-link :href="route('pengajar.kegiatan.index')" title="Agenda belajar" description="Kelola jurnal harian." />
+                    <x-dashboard.quick-link :href="route('pengajar.pencapaian.index')" title="Pencapaian" description="Isi skor pencapaian." />
                 </div>
-            </div>
+            </x-dashboard.panel>
         </div>
         @endhasrole
 
         <!-- ═══ PENGAJAR DASHBOARD ═══ -->
         @if(auth()->user()->hasRole('Pengajar') && ! auth()->user()->hasRole('Wali Kelas'))
-        <div class="relative rounded-2xl overflow-hidden text-white shadow-lg mb-5 sm:mb-6" data-tour="dashboard-welcome"
-             style="background: linear-gradient(135deg, #1A6B6B 0%, #2D8585 100%);
-                    box-shadow: 0 8px 32px rgba(26,107,107,0.25);">
-            <div class="absolute right-0 top-0 -mr-8 -mt-8 opacity-10 pointer-events-none">
-                <svg class="h-40 w-40" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-            </div>
+        <x-dashboard.hero eyebrow="Guru" :title="'Mengampu '.($kelasAjarCount ?? 0).' kelas'" description="Kelola pembelajaran, jurnal, dan evaluasi siswa dari satu tempat."
+            icon="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+            <x-slot:actions>
+                <a href="{{ route('pengajar.kegiatan.index') }}" class="dashboard-hero-btn dashboard-hero-btn--primary">Agenda belajar</a>
+                <a href="{{ route('pengajar.pencapaian.index') }}" class="dashboard-hero-btn dashboard-hero-btn--ghost">Pencapaian</a>
+            </x-slot:actions>
+        </x-dashboard.hero>
 
-            <div class="relative px-4 py-4 md:px-6 md:py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
-                <div class="flex items-center gap-3 sm:gap-4">
-                    <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
-                        <svg class="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                    </div>
-                    <div data-tour="dashboard-stats">
-                        <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-widest opacity-80 mb-0.5">Guru</p>
-                        <h3 class="text-lg sm:text-xl font-bold">Mengampu {{ $kelasAjarCount ?? 0 }} Kelas</h3>
-                        <p class="text-xs sm:text-sm opacity-90 mt-0.5">Kelola pembelajaran, jurnal, dan evaluasi siswa dari satu tempat.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2" data-tour="dashboard-quick-links">
-                    <a href="{{ route('pengajar.kegiatan.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#1A6B6B] hover:shadow-lg transition-all text-center">Agenda Belajar</a>
-                    <a href="{{ route('pengajar.pencapaian.index') }}" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all text-center">Pencapaian</a>
-                </div>
-            </div>
+        <div class="dashboard-kpi-grid">
+            <x-dashboard.kpi :label="$dashboardAnakLabel ?? 'Siswa'" :value="$totalAnakSekolah ?? 0" data-tour="dashboard-welcome" icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            <x-dashboard.kpi label="Kelas diampu" :value="$kelasAjarCount ?? 0" icon="M3 7h18M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2m-1 14H7a2 2 0 01-2-2V7h14v12a2 2 0 01-2 2z" />
+            <x-dashboard.kpi label="Jurnal hari ini" :value="$kegiatanSayaHariIni ?? 0" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <x-dashboard.kpi label="Evaluasi" :value="$totalEvaluasiSaya ?? 0" class="col-span-2 lg:col-span-1" icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5 mb-5 sm:mb-6" data-tour="dashboard-stats">
-            <div class="stat-card" data-tour="dashboard-welcome">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">{{ $dashboardAnakLabel ?? 'Siswa' }}</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $totalAnakSekolah ?? 0 }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2m-1 14H7a2 2 0 01-2-2V7h14v12a2 2 0 01-2 2z" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">Kelas Diampu</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $kelasAjarCount ?? 0 }}</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">Jurnal Hari Ini</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $kegiatanSayaHariIni ?? 0 }}</p>
-                </div>
-            </div>
-            <div class="stat-card col-span-2 lg:col-span-1">
-                <div class="stat-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
-                <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase leading-tight mb-0.5" style="color: #9E9790;">Evaluasi</p>
-                    <p class="text-lg sm:text-2xl font-bold" style="color: #2C2C2C;">{{ $totalEvaluasiSaya ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
+        @if(!empty($dashboardCharts))
+            <x-dashboard-charts :charts="$dashboardCharts" />
+        @endif
 
-        <div class="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <div class="xl:col-span-3 card overflow-hidden" data-tour="dashboard-recent">
-                <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
-                    <h3 class="section-title mb-0.5">Ringkasan Kelas Ajar</h3>
-                    <p class="section-subtitle">Daftar kelas yang sedang Anda ampu saat ini.</p>
-                </div>
-                <div class="divide-y" style="border-color:rgba(0,0,0,0.06);">
+        <div class="dashboard-split-main">
+            <x-dashboard.panel class="xl:col-span-3" title="Ringkasan kelas ajar" subtitle="Daftar kelas yang sedang Anda ampu saat ini." data-tour="dashboard-recent">
+                <div class="divide-y divide-black/5">
                     @forelse(($pengajarKelasList ?? collect()) as $kelas)
                         <div class="card-pad flex items-center justify-between gap-3">
                             <div class="min-w-0">
@@ -336,32 +147,16 @@
                         </div>
                     @endforelse
                 </div>
-            </div>
+            </x-dashboard.panel>
 
-            <div class="xl:col-span-2 card overflow-hidden">
-                <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
-                    <h3 class="section-title mb-0.5">Akses Cepat</h3>
-                    <p class="section-subtitle">Pekerjaan utama guru untuk hari ini.</p>
-                </div>
+            <x-dashboard.panel class="xl:col-span-2" title="Akses cepat" subtitle="Pekerjaan utama guru untuk hari ini.">
                 <div class="p-3 sm:p-5 grid grid-cols-2 xl:grid-cols-1 gap-2.5 sm:gap-3" data-tour="dashboard-quick-links">
-                    <a href="{{ route('pengajar.master-kegiatan-rutin.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Kegiatan Rutin</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Aktivitas harian kelas.</p>
-                    </a>
-                    <a href="{{ route('pengajar.kegiatan.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Agenda Belajar</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Buat jurnal kegiatan.</p>
-                    </a>
-                    <a href="{{ route('pengajar.matrikulasi.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Matrikulasi</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Aspek & indikator.</p>
-                    </a>
-                    <a href="{{ route('pengajar.pencapaian.index') }}" class="rounded-xl border p-3 sm:p-4 hover:bg-black/5 transition" style="border-color:rgba(0,0,0,0.08);">
-                        <p class="font-bold text-xs sm:text-sm mb-0.5" style="color:#2C2C2C;">Pencapaian</p>
-                        <p class="text-[11px] sm:text-xs line-clamp-1" style="color:#9E9790;">Input evaluasi siswa.</p>
-                    </a>
+                    <x-dashboard.quick-link :href="route('pengajar.master-kegiatan-rutin.index')" title="Kegiatan rutin" description="Aktivitas harian kelas." />
+                    <x-dashboard.quick-link :href="route('pengajar.kegiatan.index')" title="Agenda belajar" description="Buat jurnal kegiatan." />
+                    <x-dashboard.quick-link :href="route('pengajar.matrikulasi.index')" title="Matrikulasi" description="Aspek dan indikator." />
+                    <x-dashboard.quick-link :href="route('pengajar.pencapaian.index')" title="Pencapaian" description="Input evaluasi siswa." />
                 </div>
-            </div>
+            </x-dashboard.panel>
         </div>
         @endif
 
@@ -505,6 +300,10 @@
                     </div>
                 </div>
             </div>
+
+            @if(!empty($dashboardCharts))
+                <x-dashboard-charts :charts="$dashboardCharts" />
+            @endif
 
             @if(($pengumumans ?? collect())->isNotEmpty())
             <div class="card overflow-hidden" data-tour="dashboard-pengumuman">
@@ -900,4 +699,11 @@
         </div>
         @endunless
     </div>
+
+    @if(!empty($dashboardCharts ?? []))
+        @push('scripts')
+            @vite(['resources/js/dashboard-charts.js'])
+            <script type="application/json" id="dashboard-charts-json">@json($dashboardCharts)</script>
+        @endpush
+    @endif
 </x-app-layout>

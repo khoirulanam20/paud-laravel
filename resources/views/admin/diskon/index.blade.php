@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{ showCreateModal: false, showEditModal: false, showDeleteModal: false, editData: {}, deleteRoute: '' }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
 
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif

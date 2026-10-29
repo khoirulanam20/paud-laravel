@@ -12,6 +12,9 @@
                 foreach($nav['sections'] as $section) {
                     foreach($section['items'] as $item) {
                         $flatItems[] = $item;
+                        foreach ($item['children'] ?? [] as $child) {
+                            $flatItems[] = $child;
+                        }
                     }
                 }
             } elseif(isset($nav['group'])) {

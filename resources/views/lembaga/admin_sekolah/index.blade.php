@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Akun Admin Sekolah</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ 
+    <div class="app-page-shell" x-data="{ 
         showCreateModal:@js($errors->any() && old('_method') !== 'PUT'), 
         showEditModal:@js($errors->any() && old('_method') === 'PUT'),
         showDeleteModal:false, 

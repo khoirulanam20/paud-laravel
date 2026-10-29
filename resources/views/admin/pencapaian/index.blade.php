@@ -68,7 +68,7 @@
         }
     @endphp
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+    <div class="app-page-shell" x-data="{
             hasTokens: @js($hasTokens ?? false),
             tokenFallbackPencapaian: @js($tokenFallbackPencapaian ?? 'Maaf, fitur ini sedang terbatas.'),
             skalaOptions: @js($skalaOptions),
