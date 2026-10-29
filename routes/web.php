@@ -96,17 +96,19 @@ Route::get('/harga', [GuestController::class, 'harga'])->name('guest.harga');
 Route::redirect('/galeri', '/harga', 301);
 Route::get('/pendaftaran', [GuestController::class, 'pendaftaran'])->name('guest.pendaftaran');
 Route::post('/pendaftaran', [RegisteredUserController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:guest-forms'])
     ->name('guest.pendaftaran.store');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('guest.kontak');
-Route::post('/kontak', [GuestController::class, 'kontakSend'])->name('guest.kontak.send');
+Route::post('/kontak', [GuestController::class, 'kontakSend'])
+    ->middleware('throttle:guest-forms')
+    ->name('guest.kontak.send');
 Route::get('/daftar-sekolah', [SekolahRegistrationController::class, 'create'])->name('guest.daftar-sekolah');
 Route::post('/daftar-sekolah', [SekolahRegistrationController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:guest-forms'])
     ->name('guest.daftar-sekolah.store');
 Route::redirect('/daftar-lembaga', '/daftar-sekolah', 301);
 Route::post('/daftar-lembaga', [LembagaRegistrationController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:guest-forms'])
     ->name('guest.daftar-lembaga.store');
 
 // ─────────────────────────────────────────────

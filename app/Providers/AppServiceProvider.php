@@ -54,6 +54,10 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('guest-forms', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
         Gate::define('viewApiDocs', fn () => (bool) config('scramble.docs_enabled', false));
 
         View::composer('layouts.app', TourComposer::class);
