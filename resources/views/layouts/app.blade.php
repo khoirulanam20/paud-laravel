@@ -81,6 +81,7 @@
                 'route' => 'dashboard',
                 'label' => 'Dashboard',
                 'icon' => 'M3 12l2-3m2 3l-2-3 2-3m2 3l-2-3m4 3l-2 3 2 3m2-3l-2-3m4 3l-2 3m8 0V4m0 0a2 2 0 11-4 0 2 2 0 014 0zm-6 8a2 2 0 11-4 0 2 2 0 014 0z',
+                'pattern' => 'dashboard',
             ],
             // Grup 2: Operasional Harian (PRIMARY, tidak collapsible)
             [

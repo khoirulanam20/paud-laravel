@@ -129,10 +129,14 @@
                     </a>
                 @endforeach
             @else
+                @php
+                    $itemPattern = is_array($nav['pattern'] ?? null) ? $nav['pattern'] : [$nav['pattern'] ?? ''];
+                    $itemActive = request()->routeIs($itemPattern);
+                @endphp
                 <a href="{{ route($nav['route']) }}"
-                   @if(request()->routeIs($nav['pattern'])) id="nav-active-item" @endif
+                   @if($itemActive) id="nav-active-item" @endif
                    data-tour="nav-{{ $nav['route'] }}"
-                   class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs($nav['pattern']) ? 'bg-[#1A6B6B] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-black/5' }}"
+                   class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm font-medium transition-colors {{ $itemActive ? 'bg-[#1A6B6B] text-white shadow-sm' : 'text-[#2C2C2C] hover:bg-black/5' }}"
                    :class="sidebarCollapsed ? 'justify-center' : ''">
                     <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="{{ $nav['icon'] }}" />
