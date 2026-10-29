@@ -48,6 +48,16 @@ function readRadius(input) {
     return Math.min(value, 5000);
 }
 
+/** @type {import('leaflet').Map | null} */
+let activeMap = null;
+
+function teardownPresensiSettingMap() {
+    if (activeMap) {
+        activeMap.remove();
+        activeMap = null;
+    }
+}
+
 function initPresensiSettingMap() {
     const mapEl = document.getElementById('presensi-setting-map');
     const coordInput = document.getElementById('location_coordinate');
@@ -63,11 +73,14 @@ function initPresensiSettingMap() {
         return;
     }
 
+    teardownPresensiSettingMap();
+
     const parsed = parseCoordinate(coordInput.value);
     const center = parsed ? [parsed.lat, parsed.lng] : DEFAULT_CENTER;
     const zoom = parsed ? 16 : DEFAULT_ZOOM;
 
     const map = L.map(mapEl, { scrollWheelZoom: true }).setView(center, zoom);
+    activeMap = map;
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -283,7 +296,17 @@ function initPresensiSettingMap() {
         );
     });
 
-    setTimeout(() => map.invalidateSize(), 200);
+    requestAnimationFrame(() => {
+        map.invalidateSize();
+        requestAnimationFrame(() => map.invalidateSize());
+    });
 }
 
-document.addEventListener('DOMContentLoaded', initPresensiSettingMap);
+document.addEventListener('turbo:before-cache', teardownPresensiSettingMap);
+document.addEventListener('turbo:load', initPresensiSettingMap);
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPresensiSettingMap);
+} else {
+    initPresensiSettingMap();
+}

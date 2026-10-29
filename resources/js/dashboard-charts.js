@@ -30,49 +30,62 @@ function readChartsConfig() {
     }
 }
 
+function disposeDashboardCharts() {
+    document.querySelectorAll('[data-echarts-init="1"]').forEach((mount) => {
+        const instance = echarts.getInstanceByDom(mount);
+        if (instance) {
+            instance.dispose();
+        }
+        delete mount.dataset.echartsInit;
+    });
+}
+
 function initDashboardCharts() {
     const charts = readChartsConfig();
     if (charts.length === 0) {
         return;
     }
 
-    const instances = [];
-
     charts.forEach((chart) => {
         const mount = document.getElementById(chart.id);
-        if (!mount || mount.dataset.echartsInit === '1') {
+        if (!mount) {
+            return;
+        }
+
+        const existing = echarts.getInstanceByDom(mount);
+        if (existing) {
+            existing.dispose();
+            delete mount.dataset.echartsInit;
+        }
+
+        if (mount.dataset.echartsInit === '1') {
             return;
         }
         mount.dataset.echartsInit = '1';
 
         const height = chart.height || 300;
         mount.style.height = `${height}px`;
+        mount.style.width = '100%';
 
         const instance = echarts.init(mount, null, { renderer: 'canvas' });
         instance.setOption(chart.option || {});
-        instances.push(instance);
+        requestAnimationFrame(() => instance.resize());
     });
-
-    if (instances.length === 0) {
-        return;
-    }
-
-    const resize = () => {
-        instances.forEach((inst) => inst.resize());
-    };
-
-    window.addEventListener('resize', resize, { passive: true });
-
-    if (typeof ResizeObserver !== 'undefined') {
-        const ro = new ResizeObserver(() => resize());
-        instances.forEach((inst) => {
-            const el = inst.getDom()?.parentElement;
-            if (el) {
-                ro.observe(el);
-            }
-        });
-    }
 }
+
+function resizeDashboardCharts() {
+    document.querySelectorAll('[data-echarts-init="1"]').forEach((mount) => {
+        echarts.getInstanceByDom(mount)?.resize();
+    });
+}
+
+if (!window.__dashboardChartsResizeBound) {
+    window.__dashboardChartsResizeBound = true;
+    window.addEventListener('resize', resizeDashboardCharts, { passive: true });
+}
+
+document.addEventListener('turbo:before-cache', disposeDashboardCharts);
+document.addEventListener('turbo:load', initDashboardCharts);
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDashboardCharts);

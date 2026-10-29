@@ -13,6 +13,7 @@ final class AdminBreadcrumb
         'dashboard' => 'Dashboard',
         'superadmin.dashboard' => 'Dashboard',
         'profile.edit' => 'Profil',
+        'profile.sekolah.edit' => 'Profil Sekolah',
         'admin.settings' => 'Pengaturan',
         'admin.presensi-setting.index' => 'Pengaturan Presensi Guru',
         'admin.presensi.rekap' => 'Rekap Presensi',
@@ -48,15 +49,16 @@ final class AdminBreadcrumb
             return [];
         }
 
-        $homeUrl = Route::has($homeRoute) ? route($homeRoute) : null;
-        $items = [['label' => 'Dashboard', 'url' => $homeUrl]];
-
         if (in_array($routeName, ['dashboard', 'admin.dashboard', 'superadmin.dashboard'], true)) {
-            $items[0]['url'] = null;
-
-            return self::applyOverride($items, $request, $titleOverride, $subtitle);
+            return self::applyOverride(
+                [['label' => 'Dashboard', 'url' => null]],
+                $request,
+                $titleOverride,
+                $subtitle
+            );
         }
 
+        $items = [];
         $context = self::matchNavContext($roleNavItems, $request);
         $suffix = self::suffixForRoute($routeName);
 

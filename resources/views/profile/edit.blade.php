@@ -23,6 +23,10 @@
             <div class="alert-danger"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>
         @endif
 
+        @if(\App\Support\AdminSettingsNav::canAccessHub($user))
+            <x-settings-tabs data-tour="admin-settings-tabs" />
+        @endif
+
         @if($profileMode !== 'sekolah')
             {{-- SECTION: Akun Login --}}
             @php

@@ -174,24 +174,12 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('pengaturan', function (Request $request) {
-        $user = $request->user();
-
-        $targets = [
-            'menu.role' => 'admin.role.index',
-            'menu.pengguna' => 'admin.pengguna.index',
-            'menu.presensi-guru' => 'admin.presensi-setting.index',
-            'menu.log-aktivitas' => 'admin.activity-log.index',
-            'menu.setting-akuntansi' => 'admin.akuntansi-setting.index',
-            'menu.pengaturan-ai' => 'admin.ai-persona.index',
-        ];
-
-        foreach ($targets as $perm => $route) {
-            if ($user?->can($perm)) {
-                return redirect()->route($route);
-            }
+        $route = \App\Support\AdminSettingsNav::firstRouteName($request->user());
+        if ($route === null) {
+            abort(403);
         }
 
-        abort(403);
+        return redirect()->route($route);
     })->name('settings');
 
     // Export Excel
