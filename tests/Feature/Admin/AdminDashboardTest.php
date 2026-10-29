@@ -67,7 +67,8 @@ class AdminDashboardTest extends TestCase
         $response->assertSee('Siswa aktif');
         $response->assertSee('Kehadiran murid');
         $response->assertSee('Jurnal &amp; Guru', false);
-        $response->assertSee('Saldo kas');
+        $response->assertSee('Kegiatan bulan ini');
+        $response->assertDontSee('Saldo kas');
         $response->assertSee('Akses cepat');
         $response->assertSee('Data Siswa');
         $response->assertSee('Presensi siswa');

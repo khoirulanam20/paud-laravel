@@ -350,13 +350,13 @@ class PresensiGuruTest extends TestCase
         $f = $this->fixtures();
 
         $this->actingAs($f['admin'])
-            ->put(route('admin.presensi-guru.pengaturan.update'), [
+            ->put(route('admin.presensi-setting.update'), [
                 'radius_m' => 250,
                 'jadwal' => [
                     1 => ['is_kerja' => 1, 'jam_masuk' => '08:00', 'jam_pulang' => '14:00', 'toleransi_masuk_menit' => 15, 'toleransi_pulang_menit' => 5],
                 ],
             ])
-            ->assertRedirect(route('admin.presensi-guru.pengaturan'));
+            ->assertRedirect(route('admin.presensi-setting.index'));
 
         $this->assertEquals(250, $f['sekolah']->fresh()->radius_m);
 
@@ -375,11 +375,11 @@ class PresensiGuruTest extends TestCase
         $f = $this->fixtures();
 
         $this->actingAs($f['admin'])
-            ->post(route('admin.presensi-guru.pengaturan.libur.store'), [
+            ->post(route('admin.presensi-setting.libur.store'), [
                 'tanggal' => '2026-12-25',
                 'keterangan' => 'Natal',
             ])
-            ->assertRedirect(route('admin.presensi-guru.pengaturan'));
+            ->assertRedirect(route('admin.presensi-setting.index'));
 
         $this->assertDatabaseHas('sekolah_hari_liburs', [
             'sekolah_id' => $f['sekolah']->id,
@@ -392,8 +392,8 @@ class PresensiGuruTest extends TestCase
             ->first();
 
         $this->actingAs($f['admin'])
-            ->delete(route('admin.presensi-guru.pengaturan.libur.destroy', $libur))
-            ->assertRedirect(route('admin.presensi-guru.pengaturan'));
+            ->delete(route('admin.presensi-setting.libur.destroy', $libur))
+            ->assertRedirect(route('admin.presensi-setting.index'));
 
         $this->assertDatabaseCount('sekolah_hari_liburs', 0);
     }
@@ -439,14 +439,14 @@ class PresensiGuruTest extends TestCase
         $f = $this->fixtures();
 
         $this->actingAs($f['admin'])
-            ->put(route('admin.presensi-guru.pengaturan.update'), [
+            ->put(route('admin.presensi-setting.update'), [
                 'location_coordinate' => '-6.210000, 106.820000',
                 'radius_m' => 150,
                 'jadwal' => [
                     1 => ['is_kerja' => 1, 'jam_masuk' => '07:00', 'jam_pulang' => '13:00', 'toleransi_masuk_menit' => 5, 'toleransi_pulang_menit' => 5],
                 ],
             ])
-            ->assertRedirect(route('admin.presensi-guru.pengaturan'));
+            ->assertRedirect(route('admin.presensi-setting.index'));
 
         $sekolah = $f['sekolah']->fresh();
         $this->assertEquals('-6.210000,106.820000', $sekolah->location_coordinate);
@@ -458,8 +458,8 @@ class PresensiGuruTest extends TestCase
         $f = $this->fixtures();
 
         $this->actingAs($f['admin'])
-            ->from(route('admin.presensi-guru.pengaturan'))
-            ->put(route('admin.presensi-guru.pengaturan.update'), [
+            ->from(route('admin.presensi-setting.index'))
+            ->put(route('admin.presensi-setting.update'), [
                 'location_coordinate' => 'bukan-koordinat',
                 'radius_m' => 100,
                 'jadwal' => [
@@ -530,7 +530,7 @@ class PresensiGuruTest extends TestCase
         $f = $this->fixtures();
 
         $this->actingAs($f['admin'])
-            ->get(route('admin.presensi-guru.pengaturan'))
+            ->get(route('admin.presensi-setting.index'))
             ->assertOk()
             ->assertSee('Pengaturan Presensi Guru');
 

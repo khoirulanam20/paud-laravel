@@ -177,6 +177,7 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
         $targets = [
             'menu.role' => 'admin.role.index',
             'menu.pengguna' => 'admin.pengguna.index',
+            'menu.presensi-guru' => 'admin.presensi-setting.index',
             'menu.log-aktivitas' => 'admin.activity-log.index',
             'menu.setting-akuntansi' => 'admin.akuntansi-setting.index',
             'menu.pengaturan-ai' => 'admin.ai-persona.index',
@@ -393,10 +394,11 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::resource('kesehatan', KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('presensi-guru', [PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
     Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
-    Route::get('presensi-guru/pengaturan', [JamKerjaController::class, 'index'])->name('presensi-guru.pengaturan');
-    Route::put('presensi-guru/pengaturan', [JamKerjaController::class, 'update'])->name('presensi-guru.pengaturan.update');
-    Route::post('presensi-guru/pengaturan/libur', [JamKerjaController::class, 'storeLibur'])->name('presensi-guru.pengaturan.libur.store');
-    Route::delete('presensi-guru/pengaturan/libur/{hariLibur}', [JamKerjaController::class, 'destroyLibur'])->name('presensi-guru.pengaturan.libur.destroy');
+    Route::get('presensi-setting', [JamKerjaController::class, 'index'])->name('presensi-setting.index');
+    Route::put('presensi-setting', [JamKerjaController::class, 'update'])->name('presensi-setting.update');
+    Route::post('presensi-setting/libur', [JamKerjaController::class, 'storeLibur'])->name('presensi-setting.libur.store');
+    Route::delete('presensi-setting/libur/{hariLibur}', [JamKerjaController::class, 'destroyLibur'])->name('presensi-setting.libur.destroy');
+    Route::redirect('presensi-guru/pengaturan', '/admin/presensi-setting');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
     Route::post('ai/monev-guru-suggestions', [AiMonevGuruController::class, 'suggest'])

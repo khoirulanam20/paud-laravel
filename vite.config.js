@@ -13,6 +13,7 @@ export default defineConfig({
                 'resources/js/tour.js',
                 'resources/js/kegiatan-calendar.js',
                 'resources/js/dashboard-charts.js',
+                'resources/js/presensi-setting-map.js',
             ],
             refresh: true,
         }),

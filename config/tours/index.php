@@ -266,7 +266,7 @@ return [
     'admin.presensi-guru.index' => [
         ['element' => '[data-tour="nav-admin.presensi-guru.index"]', 'title' => 'Menu Presensi Guru', 'description' => 'Catat kehadiran pengajar setiap hari.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Presensi Guru', 'description' => 'Input absensi harian seluruh pengajar di sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-presensi-guru-date"]', 'title' => 'Filter Harian', 'description' => 'Pilih tanggal, cari pengajar, export, atau buka pengaturan jam kerja.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-presensi-guru-date"]', 'title' => 'Filter Harian', 'description' => 'Pilih tanggal, cari pengajar, atau export rekap.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-presensi-guru-input-table"]', 'title' => 'Daftar Guru', 'description' => 'Tandai Hadir/Tidak Hadir dan isi keterangan, lalu simpan.', 'side' => 'top'],
     ],
 

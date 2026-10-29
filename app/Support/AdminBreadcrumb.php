@@ -14,7 +14,7 @@ final class AdminBreadcrumb
         'superadmin.dashboard' => 'Dashboard',
         'profile.edit' => 'Profil',
         'admin.settings' => 'Pengaturan',
-        'admin.jam-kerja.index' => 'Pengaturan Presensi Guru',
+        'admin.presensi-setting.index' => 'Pengaturan Presensi Guru',
         'admin.presensi.rekap' => 'Rekap Presensi',
         'admin.laporan-keuangan.index' => 'Laporan Keuangan',
         'admin.laporan.arus-kas' => 'Arus Kas',
@@ -35,7 +35,7 @@ final class AdminBreadcrumb
 
     /** @var array<string, string> */
     private const ROUTE_SUBTITLES = [
-        'admin.jam-kerja.index' => 'Hari kerja, jam masuk/pulang, radius lokasi, dan hari libur.',
+        'admin.presensi-setting.index' => 'Hari kerja, jam masuk/pulang, radius lokasi, dan hari libur.',
     ];
 
     /**
@@ -43,7 +43,7 @@ final class AdminBreadcrumb
      */
     public static function resolve(array $roleNavItems, string $homeRoute, Request $request, ?string $titleOverride = null, ?string $subtitle = null): array
     {
-        $routeName = Route::currentRouteName();
+        $routeName = $request->route()?->getName();
         if (! $routeName) {
             return [];
         }
@@ -54,36 +54,56 @@ final class AdminBreadcrumb
         if (in_array($routeName, ['dashboard', 'admin.dashboard', 'superadmin.dashboard'], true)) {
             $items[0]['url'] = null;
 
-            return self::applyOverride($items, $titleOverride);
+            return self::applyOverride($items, $request, $titleOverride, $subtitle);
         }
 
-        $match = self::matchNavItem($roleNavItems, $routeName);
-        $parentLabel = $match['label'] ?? self::ROUTE_LABELS[$routeName] ?? self::humanizeRoute($routeName);
-        $parentUrl = ($match && Route::has($match['route'])) ? route($match['route']) : null;
-
+        $context = self::matchNavContext($roleNavItems, $request);
         $suffix = self::suffixForRoute($routeName);
-        if ($suffix && ! str_ends_with($routeName, '.index')) {
-            if ($parentUrl && ($match === null || $routeName !== $match['route'])) {
-                $items[] = ['label' => $parentLabel, 'url' => $parentUrl];
+
+        if ($context !== null) {
+            foreach ($context['groups'] as $groupLabel) {
+                if ($groupLabel !== '') {
+                    $items[] = ['label' => $groupLabel, 'url' => null];
+                }
             }
-            $items[] = ['label' => $titleOverride ?? $suffix, 'url' => null];
+
+            $item = $context['item'];
+            $itemLabel = $item['label'];
+            $itemRoute = $item['route'];
+            $itemUrl = Route::has($itemRoute) ? route($itemRoute) : null;
+
+            if ($suffix && ! str_ends_with($routeName, '.index')) {
+                if ($itemUrl && $routeName !== $itemRoute) {
+                    $items[] = ['label' => $itemLabel, 'url' => $itemUrl];
+                }
+                $items[] = ['label' => $titleOverride ?? $suffix, 'url' => null];
+            } else {
+                $items[] = ['label' => $titleOverride ?? $itemLabel, 'url' => null];
+            }
         } else {
-            $items[] = ['label' => $titleOverride ?? $parentLabel, 'url' => null];
+            $parentLabel = self::ROUTE_LABELS[$routeName] ?? self::humanizeRoute($routeName);
+            $suffix = self::suffixForRoute($routeName);
+            if ($suffix && ! str_ends_with($routeName, '.index')) {
+                $items[] = ['label' => $parentLabel, 'url' => null];
+                $items[] = ['label' => $titleOverride ?? $suffix, 'url' => null];
+            } else {
+                $items[] = ['label' => $titleOverride ?? $parentLabel, 'url' => null];
+            }
         }
 
-        return self::applyOverride($items, $titleOverride, $subtitle);
+        return self::applyOverride($items, $request, $titleOverride, $subtitle);
     }
 
     /**
      * @param  list<array{label: string, url: string|null}>  $items
      * @return list<array{label: string, url: string|null, subtitle?: string|null}>
      */
-    private static function applyOverride(array $items, ?string $titleOverride, ?string $subtitle = null): array
+    private static function applyOverride(array $items, Request $request, ?string $titleOverride, ?string $subtitle = null): array
     {
         if ($titleOverride && count($items) > 0) {
             $items[array_key_last($items)]['label'] = $titleOverride;
         }
-        $routeName = Route::currentRouteName();
+        $routeName = $request->route()?->getName();
         $autoSubtitle = $routeName ? (self::ROUTE_SUBTITLES[$routeName] ?? null) : null;
         $resolvedSubtitle = $subtitle ?? $autoSubtitle;
         if ($resolvedSubtitle !== null && $resolvedSubtitle !== '' && count($items) > 0) {
@@ -94,64 +114,95 @@ final class AdminBreadcrumb
     }
 
     /**
-     * @return array{route: string, label: string}|null
+     * @return array{groups: list<string>, item: array{route: string, label: string}}|null
      */
-    private static function matchNavItem(array $roleNavItems, string $routeName): ?array
+    private static function matchNavContext(array $roleNavItems, Request $request): ?array
     {
         $best = null;
         $bestLen = -1;
 
-        foreach (self::flattenNav($roleNavItems) as $item) {
-            $patterns = is_array($item['pattern'] ?? null) ? $item['pattern'] : [($item['pattern'] ?? $item['route'] ?? '')];
-            foreach ($patterns as $pattern) {
-                if ($pattern === '') {
+        $visit = function (array $nodes, array $groupStack) use (&$visit, &$best, &$bestLen, $request): void {
+            foreach ($nodes as $nav) {
+                if (! empty($nav['collapsible']) && isset($nav['sections'])) {
+                    $nextStack = $groupStack;
+                    $groupName = (string) ($nav['group'] ?? '');
+                    if ($groupName !== '') {
+                        $nextStack[] = $groupName;
+                    }
+                    foreach ($nav['sections'] as $section) {
+                        foreach ($section['items'] ?? [] as $item) {
+                            if (! empty($item['collapsible'])) {
+                                $visit([$item], $nextStack);
+                            } else {
+                                self::considerNavMatch($item, $nextStack, $request, $best, $bestLen);
+                            }
+                        }
+                    }
+
                     continue;
                 }
-                if (! request()->routeIs($pattern)) {
+
+                if (isset($nav['items'])) {
+                    $nextStack = $groupStack;
+                    $groupName = (string) ($nav['group'] ?? '');
+                    if ($groupName !== '') {
+                        $nextStack[] = $groupName;
+                    }
+                    foreach ($nav['items'] as $item) {
+                        self::considerNavMatch($item, $nextStack, $request, $best, $bestLen);
+                    }
+
                     continue;
                 }
-                $len = strlen($pattern);
-                if ($len > $bestLen) {
-                    $bestLen = $len;
-                    $best = ['route' => $item['route'], 'label' => $item['label']];
+
+                if (isset($nav['route'], $nav['label'])) {
+                    self::considerNavMatch($nav, $groupStack, $request, $best, $bestLen);
                 }
+            }
+        };
+
+        $visit($roleNavItems, []);
+
+        foreach ([
+            ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'pattern' => 'admin.dashboard'],
+            ['route' => 'dashboard', 'label' => 'Dashboard', 'pattern' => 'dashboard'],
+            ['route' => 'superadmin.dashboard', 'label' => 'Dashboard', 'pattern' => 'superadmin.dashboard'],
+        ] as $dashboardItem) {
+            if (Route::has($dashboardItem['route'])) {
+                self::considerNavMatch($dashboardItem, [], $request, $best, $bestLen);
             }
         }
 
         return $best;
     }
 
-    /** @return list<array{route: string, label: string, pattern?: string|list<string>}> */
-    private static function flattenNav(array $roleNavItems): array
+    /**
+     * @param  list<string>  $groupStack
+     * @param  array{groups: list<string>, item: array{route: string, label: string}}|null  $best
+     */
+    private static function considerNavMatch(array $item, array $groupStack, Request $request, ?array &$best, int &$bestLen): void
     {
-        $flat = [];
-        foreach ($roleNavItems as $nav) {
-            if (! empty($nav['collapsible']) && isset($nav['sections'])) {
-                foreach ($nav['sections'] as $section) {
-                    foreach ($section['items'] as $item) {
-                        $flat[] = $item;
-                    }
-                }
-            } elseif (isset($nav['items'])) {
-                foreach ($nav['items'] as $item) {
-                    $flat[] = $item;
-                }
-            } elseif (isset($nav['route'], $nav['label'])) {
-                $flat[] = $nav;
+        if (! isset($item['route'], $item['label'])) {
+            return;
+        }
+
+        $patterns = is_array($item['pattern'] ?? null) ? $item['pattern'] : [($item['pattern'] ?? $item['route'] ?? '')];
+        foreach ($patterns as $pattern) {
+            if ($pattern === '') {
+                continue;
+            }
+            if (! $request->routeIs($pattern)) {
+                continue;
+            }
+            $len = strlen($pattern);
+            if ($len > $bestLen) {
+                $bestLen = $len;
+                $best = [
+                    'groups' => $groupStack,
+                    'item' => ['route' => $item['route'], 'label' => $item['label']],
+                ];
             }
         }
-
-        if (Route::has('admin.dashboard')) {
-            $flat[] = ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'pattern' => 'admin.dashboard'];
-        }
-        if (Route::has('dashboard')) {
-            $flat[] = ['route' => 'dashboard', 'label' => 'Dashboard', 'pattern' => 'dashboard'];
-        }
-        if (Route::has('superadmin.dashboard')) {
-            $flat[] = ['route' => 'superadmin.dashboard', 'label' => 'Dashboard', 'pattern' => 'superadmin.dashboard'];
-        }
-
-        return $flat;
     }
 
     private static function suffixForRoute(string $routeName): ?string

@@ -8,7 +8,7 @@
     <div class="app-shell-bar flex flex-col gap-1.5 sm:gap-2 py-2 md:py-2.5 w-full">
         <div class="flex items-center justify-between gap-2 sm:gap-3 w-full min-h-[2.25rem]">
             <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0 flex-1">
-                <a href="{{ route($homeRoute) }}" class="lg:hidden flex items-center gap-2 shrink-0">
+                <a href="{{ route($homeRoute) }}" @class(['shrink-0 items-center gap-2', 'hidden' => $hasBreadcrumb, 'flex lg:hidden' => ! $hasBreadcrumb])>
                     <div class="h-7 w-7 rounded-lg flex items-center justify-center bg-[#1A6B6B] shadow-sm">
                         <svg class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -56,11 +56,11 @@
             </div>
         </div>
 
-        @isset($header)
-            <div class="page-header-toolbar flex flex-wrap items-center justify-end gap-2 w-full">
+        @if(isset($header) && ! $hasBreadcrumb)
+            <div class="page-header-toolbar flex flex-wrap items-center justify-end gap-2 w-full min-w-0">
                 {{ $header }}
             </div>
-        @endisset
+        @endif
     </div>
 
     @if($lembagaSchools ?? null)

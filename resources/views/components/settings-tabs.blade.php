@@ -10,6 +10,9 @@
     if ($user?->can('menu.pengguna')) {
         $tabs[] = ['route' => 'admin.pengguna.index', 'label' => 'Pengguna', 'active' => request()->routeIs('admin.pengguna.*')];
     }
+    if ($user?->can('menu.presensi-guru')) {
+        $tabs[] = ['route' => 'admin.presensi-setting.index', 'label' => 'Presensi Guru', 'active' => request()->routeIs('admin.presensi-setting.*')];
+    }
     if ($user?->can('menu.log-aktivitas')) {
         $tabs[] = ['route' => 'admin.activity-log.index', 'label' => 'Log Aktivitas', 'active' => request()->routeIs('admin.activity-log.*')];
     }

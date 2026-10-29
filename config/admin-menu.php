@@ -56,6 +56,7 @@ return [
         'admin.monev.*' => 'menu.monev',
         'admin.pengajar.*' => 'menu.data-pengajar',
         'admin.presensi-guru.*' => 'menu.presensi-guru',
+        'admin.presensi-setting.*' => 'menu.presensi-guru',
         'admin.monev-guru.kriteria.*' => 'menu.monev-guru-kriteria',
         'admin.monev-guru.*' => 'menu.monev-guru',
         'admin.sarana.*' => 'menu.sarana',

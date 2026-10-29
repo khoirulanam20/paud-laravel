@@ -322,18 +322,9 @@
         @apply w-full max-w-[1520px] mx-auto py-3 md:py-5 px-3 lg:px-4;
     }
 
-    /* Judul lama di slot header: breadcrumb yang tampil; tombol/filter tetap */
-    .page-header-toolbar [data-tour="page-header"]:not(:has(a, button, form, select, input[type="submit"])) {
-        display: none;
-    }
-
-    .page-header-toolbar [data-tour="page-header"]:has(a, button, form, select) h2,
-    .page-header-toolbar [data-tour="page-header"]:has(a, button, form, select) p.text-sm {
-        @apply sr-only;
-    }
-
-    .page-header-toolbar [data-tour="page-header"]:has(a, button, form, select) .h-8.w-8.rounded-lg {
-        @apply hidden;
+    .turbo-progress-bar {
+        background-color: #1A6B6B;
+        height: 3px;
     }
 
     /* Judul duplikat di dalam konten (beberapa halaman pengajar) */

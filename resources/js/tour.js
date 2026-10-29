@@ -980,6 +980,7 @@ function handleTourPageHide() {
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', scheduleAutoTour, { once: true });
+    document.addEventListener('turbo:load', scheduleAutoTour);
 } else {
     scheduleAutoTour();
 }

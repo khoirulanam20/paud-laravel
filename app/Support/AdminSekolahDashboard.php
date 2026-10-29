@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\Anak;
-use App\Models\Cashflow;
 use App\Models\Kegiatan;
 use App\Models\Kelas;
 use App\Models\KritikSaran;
@@ -70,10 +69,6 @@ class AdminSekolahDashboard
         $menuRecord = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', $today)->first();
         $menuKosong = $menuRecord === null || DashboardCompactMenu::isEmpty($menuRecord->menu ?? null);
 
-        $uangMasuk = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'in')->sum('amount');
-        $uangKeluar = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
-        $saldoKas = $uangMasuk - $uangKeluar;
-
         $pembayaranPending = PembayaranBulanan::where('sekolah_id', $sekolahId)
             ->where('status', 'pending')
             ->where('periode_bulan', $now->month)
@@ -113,11 +108,13 @@ class AdminSekolahDashboard
                 'icon' => 'calendar',
             ],
             [
-                'label' => 'Saldo kas',
-                'value' => 'Rp '.number_format($saldoKas, 0, ',', '.'),
-                'context' => $pembayaranPending > 0 ? "{$pembayaranPending} tagihan pending" : 'Keuangan terkendali',
-                'href' => route('admin.cashflow.index'),
-                'icon' => 'cash',
+                'label' => 'Kegiatan bulan ini',
+                'value' => (string) $kegiatanBulanIni,
+                'context' => $kegiatanHariIni > 0
+                    ? "{$kegiatanHariIni} jurnal tercatat hari ini"
+                    : 'Jurnal belajar · '.$now->translatedFormat('F Y'),
+                'href' => route('admin.kegiatan.index'),
+                'icon' => 'book',
             ],
         ];
 
@@ -128,7 +125,7 @@ class AdminSekolahDashboard
                 'severity' => 'critical',
                 'title' => 'Lokasi sekolah belum diatur',
                 'detail' => 'Presensi guru berbasis GPS terkunci sampai titik koordinat sekolah diatur.',
-                'href' => route('admin.presensi-guru.pengaturan'),
+                'href' => route('admin.presensi-setting.index'),
                 'action' => 'Atur lokasi',
             ];
         }
