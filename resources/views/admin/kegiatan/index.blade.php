@@ -113,11 +113,9 @@
                 </div>
                 <div class="toolbar-actions">
                     <x-export-excel route="admin.kegiatan.export" />
-                    <x-download-photos route="admin.kegiatan.photos.download" />
-                    <button data-tour="admin-kegiatan-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" class="btn-primary toolbar-primary shrink-0"><svg
-                        class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>Buat Jurnal Baru</button>
+                    <x-download-photos route="admin.kegiatan.photos.download" :icon-only="true" />
+                    <x-toolbar.add-icon label="Buat Jurnal Baru" data-tour="admin-kegiatan-add-btn" data-tour-open-modal="create"
+                        type="button" @click="showCreateModal=true" />
                 </div>
             </div>
             <form data-tour="admin-kegiatan-filter" method="get" class="card-pad toolbar-form border-b"
@@ -143,8 +141,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="toolbar-split">
-                    <button type="submit" class="btn-secondary">Tampilkan</button>
+                <div class="toolbar-actions">
+                    <x-toolbar.filter-icon label="Tampilkan" variant="secondary" />
                     <x-filter-reset :href="route('admin.kegiatan.index')" compact />
                 </div>
             </form>
@@ -173,9 +171,11 @@
                                 x-text="(detailData.pengajar_name || '?').charAt(0).toUpperCase()"></div>
                             <span x-text="detailData.pengajar_name || '-'"></span>
                         </div>
-                        <p class="text-sm mt-2" style="color:#5A5A5A;"><strong class="text-gray-800">Kelas:</strong>
-                            <span x-text="detailData.kelas_name || '-'"></span>
-                        </p>
+                        <div class="flex flex-wrap items-center gap-2 mt-2 text-sm" style="color:#5A5A5A;">
+                            <span class="font-semibold text-gray-800 shrink-0">Kelas</span>
+                            <span x-show="detailData.kelas_name && detailData.kelas_name !== '-'" class="badge badge-teal" x-text="detailData.kelas_name"></span>
+                            <span x-show="!detailData.kelas_name || detailData.kelas_name === '-'" class="text-sm">-</span>
+                        </div>
                         <p class="text-sm mt-2" style="color:#5A5A5A;" x-show="detailData.description"><strong
                                 class="text-gray-800">Deskripsi:</strong> <br><span
                                 x-text="detailData.description"></span></p>

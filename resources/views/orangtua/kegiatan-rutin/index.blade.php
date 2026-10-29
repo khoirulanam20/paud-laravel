@@ -19,9 +19,9 @@
          }">
         <div class="card overflow-hidden">
             <div class="card-pad border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF9F6;">
-                <form data-tour="ortu-rutin-filters" method="GET" class="grid grid-cols-2 lg:flex lg:items-end gap-4">
+                <form data-tour="ortu-rutin-filters" method="GET" class="toolbar-form w-full">
                     @if($anaks->count() > 1)
-                        <div class="col-span-2 lg:col-auto lg:min-w-[160px]">
+                        <div class="toolbar-field md:min-w-[10rem] md:max-w-[14rem]">
                             <label class="input-label">Pilih Anak</label>
                             <select name="anak_id" class="input-field w-full" onchange="this.form.submit()">
                                 <option value="">Semua Anak</option>
@@ -33,7 +33,7 @@
                             </select>
                         </div>
                     @endif
-                    <div class="col-span-2 lg:col-auto lg:min-w-[180px]">
+                    <div class="toolbar-field md:min-w-[10rem] md:flex-[1.2]">
                         <label class="input-label">Kegiatan</label>
                         <select name="master_id" class="input-field w-full" onchange="this.form.submit()">
                             <option value="">Semua Kegiatan</option>
@@ -45,26 +45,17 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-span-1 lg:col-auto">
+                    <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
                         <label class="input-label">Dari</label>
-                        <input type="date" name="mulai" value="{{ $mulai }}" class="input-field w-full h-[42px]">
+                        <input type="date" name="mulai" value="{{ $mulai }}" class="input-field w-full">
                     </div>
-                    <div class="col-span-1 lg:col-auto">
+                    <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
                         <label class="input-label">Sampai</label>
-                        <input type="date" name="sampai" value="{{ $sampai }}" class="input-field w-full h-[42px]">
+                        <input type="date" name="sampai" value="{{ $sampai }}" class="input-field w-full">
                     </div>
-                    <div class="col-span-2 lg:col-auto lg:flex-1">
-                        <button type="submit"
-                            class="btn-primary w-full h-[42px] flex items-center justify-center gap-2">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                            </svg>
-                            Filter
-                        </button>
-                    </div>
-                    <div class="col-span-2 lg:col-auto flex items-end">
-                        <x-filter-reset :href="route('orangtua.kegiatan-rutin.index')" />
+                    <div class="toolbar-actions">
+                        <x-toolbar.filter-icon label="Filter" />
+                        <x-filter-reset :href="route('orangtua.kegiatan-rutin.index')" compact />
                     </div>
                 </form>
             </div>
@@ -79,7 +70,7 @@
                             @endif
                             <th>Kegiatan</th>
                             <th>Aspek</th>
-                            <th class="text-center">Aksi</th>
+                            <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -95,7 +86,7 @@
                                                     <td><span
                                                             class="text-xs text-gray-500 font-medium px-2 py-1 bg-gray-100 rounded-md">{{ $keg->aspek }}</span>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td class="text-right">
                                                         <button type="button" @click="selectedKeg = {{ json_encode([
                                 'tanggal' => \Carbon\Carbon::parse($keg->tanggal)->format('d M Y'),
                                 'kegiatan' => $keg->kegiatan,
@@ -105,8 +96,10 @@
                                 'keterangan' => $keg->keterangan,
                                 'photo' => $keg->photo ? Storage::url($keg->photo) : null
                             ]) }}; showDetailModal = true"
-                                                            class="text-[#1A6B6B] hover:text-[#145757] font-bold text-xs underline decoration-dotted underline-offset-4">
-                                                            Detail
+                                                            class="row-action-icon"
+                                                            style="color:#1A6B6B;background:#D0E8E8;"
+                                                            title="Detail" aria-label="Detail">
+                                                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                                         </button>
                                                     </td>
                                                 </tr>

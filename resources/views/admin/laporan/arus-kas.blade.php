@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -10,8 +10,8 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
-        <form method="GET" class="flex flex-wrap gap-3 mb-6">
+    <div class="app-page-shell">
+        <form method="GET" class="card p-4 flex flex-wrap gap-3 items-end mb-6">
             <select name="bulan" class="input-field w-36">
                 @foreach(range(1,12) as $m)
                     <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>
@@ -22,7 +22,7 @@
                     <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="btn-primary text-xs px-4">Tampilkan</button>
+            <x-toolbar.filter-icon label="Tampilkan" />
             <x-filter-reset :href="url()->current()" />
         </form>
 

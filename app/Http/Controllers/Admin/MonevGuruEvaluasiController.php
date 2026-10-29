@@ -84,6 +84,14 @@ class MonevGuruEvaluasiController extends Controller
             $query->whereDate('periode_mulai', '<=', $request->input('periode_selesai'));
         }
 
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', '%'.$search.'%')
+                    ->orWhereHas('pengajar', fn ($pq) => $pq->where('name', 'like', '%'.$search.'%'));
+            });
+        }
+
         $evaluasis = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $pengajars = Pengajar::where('sekolah_id', $sekolahId)->orderBy('name')->get();
 

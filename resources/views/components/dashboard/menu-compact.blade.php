@@ -29,7 +29,7 @@
             <div class="dashboard-compact-empty">
                 <p class="dashboard-compact-meta m-0 text-sm leading-snug">{{ $emptyText }}</p>
                 @if($href)
-                    <a href="{{ $href }}" class="btn-primary text-xs sm:text-sm w-fit">{{ $emptyActionLabel }}</a>
+                    <a href="{{ $href }}" class="btn-primary dashboard-compact-cta">{{ $emptyActionLabel }}</a>
                 @endif
             </div>
         @else
@@ -43,7 +43,7 @@
             @endif
             @if($href)
                 <div class="dashboard-compact-foot">
-                    <a href="{{ $href }}" class="dashboard-compact-link">{{ $linkLabel }} &rarr;</a>
+                    <a href="{{ $href }}" class="dashboard-compact-link">{{ $linkLabel }}</a>
                 </div>
             @endif
         @endif

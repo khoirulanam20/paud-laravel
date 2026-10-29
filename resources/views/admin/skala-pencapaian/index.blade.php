@@ -17,17 +17,33 @@
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Master skala capaian</h3>
-                    <p class="section-subtitle">Opsi penilaian pencapaian siswa (mis. BB, MB, BSH, BSB). Dipakai di form pencapaian dan saran AI.</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <x-export-excel route="admin.skala-pencapaian.export" />
-                    <button type="button" data-tour="admin-skala-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Tambah skala</button>
-                </div>
+            <div class="px-4 md:px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                <h3 class="section-title">Master skala capaian</h3>
+                <p class="section-subtitle">Opsi penilaian pencapaian siswa (mis. BB, MB, BSH, BSB). Dipakai di form pencapaian dan saran AI.</p>
             </div>
-            <div class="overflow-x-auto">
+
+            <form method="get" data-tour="admin-skala-filter" class="card-pad toolbar-form border-b w-full" style="border-color:rgba(0,0,0,0.06);">
+                <div class="toolbar-field md:min-w-[12rem] md:flex-[2]">
+                    <label class="input-label">Cari</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="input-field w-full" placeholder="Kode atau label…">
+                </div>
+                <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
+                    <label class="input-label">Status</label>
+                    <select name="status" class="input-field w-full">
+                        <option value="" @selected(!request('status'))>Semua</option>
+                        <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
+                        <option value="nonaktif" @selected(request('status') === 'nonaktif')>Nonaktif</option>
+                    </select>
+                </div>
+                <div class="toolbar-actions">
+                    <x-toolbar.filter-icon label="Filter" variant="secondary" />
+                    <x-filter-reset :href="route('admin.skala-pencapaian.index')" compact />
+                    <x-export-excel route="admin.skala-pencapaian.export" :icon-only="true" />
+                    <x-toolbar.add-icon label="Tambah Skala" data-tour="admin-skala-add-btn" data-tour-open-modal="create" type="button" @click="showCreateModal=true" />
+                </div>
+            </form>
+
+            <div class="table-responsive">
                 <table class="data-table">
                     <thead><tr><th>Kode</th><th>Label</th><th>Warna</th><th>Urutan</th><th>Status</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
@@ -47,19 +63,23 @@
                                 @endif
                             </td>
                             <td class="text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    @php
-                                        $payload = [
-                                            'id' => $s->id,
-                                            'code' => $s->code,
-                                            'label' => $s->label,
-                                            'color' => $s->color,
-                                            'sort_order' => $s->sort_order,
-                                            'is_active' => $s->is_active,
-                                        ];
-                                    @endphp
-                                    <button type="button" @if($loop->first) data-tour="admin-skala-action-edit" data-tour-open-modal="edit" @endif @click="openEdit(@js($payload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span class="hidden md:inline">Edit</span></button>
-                                    <button type="button" @if($loop->first) data-tour="admin-skala-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.skala-pencapaian.destroy', $s) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg><span class="hidden md:inline">Hapus</span></button>
+                                @php
+                                    $payload = [
+                                        'id' => $s->id,
+                                        'code' => $s->code,
+                                        'label' => $s->label,
+                                        'color' => $s->color,
+                                        'sort_order' => $s->sort_order,
+                                        'is_active' => $s->is_active,
+                                    ];
+                                @endphp
+                                <div class="flex flex-wrap items-center justify-end gap-1.5">
+                                    <x-table.action-icon type="button" label="Edit" variant="edit"
+                                        @if($loop->first) data-tour="admin-skala-action-edit" data-tour-open-modal="edit" @endif
+                                        @click="openEdit(@js($payload))" />
+                                    <x-table.action-icon type="button" label="Hapus" variant="delete"
+                                        @if($loop->first) data-tour="admin-skala-action-delete" data-tour-demo-action="delete" @endif
+                                        @click="openDelete('{{ route('admin.skala-pencapaian.destroy', $s) }}')" />
                                 </div>
                             </td>
                         </tr>
@@ -69,7 +89,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+            <div class="px-4 md:px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
                 <x-per-page-selector :paginator="$skalas" />
                 {{ $skalas->links() }}
             </div>

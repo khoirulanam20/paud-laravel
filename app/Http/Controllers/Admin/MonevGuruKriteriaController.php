@@ -23,10 +23,20 @@ class MonevGuruKriteriaController extends Controller
         $sekolahId = $this->sekolahId();
         abort_if($sekolahId === null, 403, 'Akun tidak terikat sekolah.');
 
-        $kriterias = MonevGuruKriteria::query()
+        $kriteriaQuery = MonevGuruKriteria::query()
             ->where('sekolah_id', $sekolahId)
             ->orderBy('urutan')
-            ->orderBy('nama')
+            ->orderBy('nama');
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $kriteriaQuery->where(function ($q) use ($search) {
+                $q->where('nama', 'like', '%'.$search.'%')
+                    ->orWhere('deskripsi', 'like', '%'.$search.'%');
+            });
+        }
+
+        $kriterias = $kriteriaQuery
             ->paginate(PaginationPerPage::resolve($request))
             ->withQueryString();
 

@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\MenuMakanan;
 use App\Services\PhotoArchiveService;
-use App\Support\PaginationPerPage;
+use App\Support\KegiatanCalendar;
+use App\Support\MenuMakananCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -19,13 +20,53 @@ class MenuMakananController extends Controller
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $menus = MenuMakanan::where('sekolah_id', $sekolah_id)
+        [$year, $month] = KegiatanCalendar::resolveYearMonth($request);
+        [$from, $to] = KegiatanCalendar::dateRangeForCalendar($year, $month);
+
+        $menusQuery = MenuMakanan::query()
+            ->where('sekolah_id', $sekolah_id)
             ->withCount(['votes as likes_count' => fn ($q) => $q->where('vote_type', 'like')])
             ->withCount(['votes as dislikes_count' => fn ($q) => $q->where('vote_type', 'dislike')])
-            ->orderBy('date', 'desc')
-            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
+            ->whereBetween('date', [$from, $to]);
 
-        return view('admin.menu_makanan.index', compact('menus'));
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $menusQuery->where(function ($q) use ($search) {
+                $q->where('menu', 'like', '%'.$search.'%')
+                    ->orWhere('nutrition_info', 'like', '%'.$search.'%');
+            });
+        }
+
+        $foto = (string) $request->input('foto', '');
+        if ($foto === 'ada') {
+            $menusQuery->where(function ($q) {
+                $q->whereNotNull('photo')->orWhereNotNull('photo_kegiatan');
+            });
+        } elseif ($foto === 'tanpa') {
+            $menusQuery->whereNull('photo')->whereNull('photo_kegiatan');
+        }
+
+        $menus = $menusQuery
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $calendarEvents = $menus->map(fn (MenuMakanan $m) => MenuMakananCalendar::toAdminEvent($m))->values()->all();
+
+        return view('admin.menu_makanan.index', compact('calendarEvents', 'year', 'month'));
+    }
+
+    /** @return array<string, mixed> */
+    protected function calendarQueryParams(Request $request): array
+    {
+        return array_filter([
+            'year' => $request->input('year'),
+            'month' => $request->input('month'),
+            'view' => $request->input('view'),
+            'day' => $request->input('day'),
+            'search' => $request->input('search'),
+            'foto' => $request->input('foto'),
+        ], fn ($v) => $v !== null && $v !== '');
     }
 
     public function store(Request $request)
@@ -54,7 +95,7 @@ class MenuMakananController extends Controller
 
         MenuMakanan::create($data);
 
-        return redirect()->route('admin.menu-makanan.index')->with('success', 'Menu Makanan berhasil ditambahkan.');
+        return redirect()->route('admin.menu-makanan.index', $this->calendarQueryParams($request))->with('success', 'Menu Makanan berhasil ditambahkan.');
     }
 
     public function update(Request $request, MenuMakanan $menu_makanan)
@@ -91,10 +132,10 @@ class MenuMakananController extends Controller
 
         $menu_makanan->update($data);
 
-        return redirect()->route('admin.menu-makanan.index')->with('success', 'Menu Makanan berhasil diperbarui.');
+        return redirect()->route('admin.menu-makanan.index', $this->calendarQueryParams($request))->with('success', 'Menu Makanan berhasil diperbarui.');
     }
 
-    public function destroy(MenuMakanan $menu_makanan)
+    public function destroy(Request $request, MenuMakanan $menu_makanan)
     {
         abort_if($menu_makanan->sekolah_id !== auth()->user()->sekolah_id, 403);
 
@@ -106,7 +147,7 @@ class MenuMakananController extends Controller
         }
         $menu_makanan->delete();
 
-        return redirect()->route('admin.menu-makanan.index')->with('success', 'Menu Makanan berhasil dihapus.');
+        return redirect()->route('admin.menu-makanan.index', $this->calendarQueryParams($request))->with('success', 'Menu Makanan berhasil dihapus.');
     }
 
     public function downloadPhoto(Request $request, MenuMakanan $menu_makanan, PhotoArchiveService $photoArchive)

@@ -72,7 +72,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $homeRoute = match (true) {
+            $user?->hasRole('Superadmin') => 'superadmin.dashboard',
+            $user?->hasRole('Admin Sekolah') => 'admin.dashboard',
+            default => 'dashboard',
+        };
+
+        return redirect()->intended(route($homeRoute, absolute: false));
     }
 
     public function destroy(Request $request): RedirectResponse

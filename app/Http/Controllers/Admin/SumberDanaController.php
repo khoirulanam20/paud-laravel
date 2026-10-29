@@ -11,13 +11,30 @@ use Illuminate\Http\Request;
 class SumberDanaController extends Controller
 {
     use DownloadsExcel;
-    public function index()
+    public function index(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
-        $sumberDanas = SumberDana::where('sekolah_id', $sekolahId)
+        $query = SumberDana::query()
+            ->where('sekolah_id', $sekolahId)
             ->with('akun')
-            ->orderBy('urutan')
-            ->get();
+            ->orderBy('urutan');
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('kode', 'like', '%'.$search.'%')
+                    ->orWhere('nama', 'like', '%'.$search.'%');
+            });
+        }
+
+        $status = (string) $request->input('status', '');
+        if ($status === 'aktif') {
+            $query->where('is_aktif', true);
+        } elseif ($status === 'nonaktif') {
+            $query->where('is_aktif', false);
+        }
+
+        $sumberDanas = $query->get();
         $akunOptions = Akun::where('sekolah_id', $sekolahId)->aktif()->orderBy('kode')->get();
 
         return view('admin.sumber-dana.index', compact('sumberDanas', 'akunOptions'));

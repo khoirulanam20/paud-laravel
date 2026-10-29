@@ -60,13 +60,13 @@
         <x-dashboard.hero eyebrow="Wali Kelas" :title="'Kelola '.($kelasWaliCount ?? 0).' kelas wali'" description="Pantau siswa, presensi, kesehatan, dan evaluasi kelas dari satu tempat."
             icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
             <x-slot:actions>
-                <a href="{{ route('adminkelas.anak.index') }}" class="dashboard-hero-btn dashboard-hero-btn--ghost">Siswa</a>
-                <a href="{{ route('adminkelas.presensi.index') }}" class="dashboard-hero-btn dashboard-hero-btn--primary">Presensi</a>
-                <a href="{{ route('adminkelas.monev.index') }}" class="dashboard-hero-btn dashboard-hero-btn--ghost">Monev</a>
+                <x-icon-btn :href="route('adminkelas.anak.index')" label="Siswa" icon="{{ \App\Support\DashboardIcons::path('users') }}" variant="hero-ghost" />
+                <x-icon-btn :href="route('adminkelas.presensi.index')" label="Presensi" icon="{{ \App\Support\DashboardIcons::path('check') }}" variant="hero-primary" />
+                <x-icon-btn :href="route('adminkelas.monev.index')" label="Monev" icon="{{ \App\Support\DashboardIcons::path('chart') }}" variant="hero-ghost" />
             </x-slot:actions>
         </x-dashboard.hero>
 
-        <div class="dashboard-kpi-grid">
+        <div class="dashboard-kpi-grid" data-tour="dashboard-stats">
             <x-dashboard.kpi label="Siswa kelasku" :value="$kelasAnakCount ?? 0" icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             <x-dashboard.kpi label="Presensi hari ini" :value="$presensiHariIniCount ?? 0" icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             <x-dashboard.kpi label="Cek kesehatan" :value="$kesehatanHariIniCount ?? 0" icon="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -98,12 +98,12 @@
 
             <x-dashboard.panel class="xl:col-span-2" title="Akses cepat" subtitle="Masuk ke pekerjaan utama wali kelas lebih cepat.">
                 <div class="p-3 sm:p-5 grid grid-cols-2 xl:grid-cols-1 gap-2.5 sm:gap-3" data-tour="dashboard-quick-links">
-                    <x-dashboard.quick-link :href="route('adminkelas.anak.index')" title="Data siswa" description="Lihat siswa di kelas wali." />
-                    <x-dashboard.quick-link :href="route('adminkelas.presensi.index')" title="Presensi" description="Input dan cek kehadiran harian." />
-                    <x-dashboard.quick-link :href="route('adminkelas.kesehatan.index')" title="Kesehatan" description="Pantau cek fisik siswa." />
-                    <x-dashboard.quick-link :href="route('adminkelas.monev.index')" title="Monev" description="Evaluasi berkala siswa." />
-                    <x-dashboard.quick-link :href="route('pengajar.kegiatan.index')" title="Agenda belajar" description="Kelola jurnal harian." />
-                    <x-dashboard.quick-link :href="route('pengajar.pencapaian.index')" title="Pencapaian" description="Isi skor pencapaian." />
+                    <x-dashboard.quick-link :href="route('adminkelas.anak.index')" title="Data siswa" description="Lihat siswa di kelas wali." icon="{{ \App\Support\DashboardIcons::path('users') }}" />
+                    <x-dashboard.quick-link :href="route('adminkelas.presensi.index')" title="Presensi" description="Input dan cek kehadiran harian." icon="{{ \App\Support\DashboardIcons::path('check') }}" />
+                    <x-dashboard.quick-link :href="route('adminkelas.kesehatan.index')" title="Kesehatan" description="Pantau cek fisik siswa." icon="{{ \App\Support\DashboardIcons::path('heart') }}" />
+                    <x-dashboard.quick-link :href="route('adminkelas.monev.index')" title="Monev" description="Evaluasi berkala siswa." icon="{{ \App\Support\DashboardIcons::path('chart') }}" />
+                    <x-dashboard.quick-link :href="route('pengajar.kegiatan.index')" title="Agenda belajar" description="Kelola jurnal harian." icon="{{ \App\Support\DashboardIcons::path('calendar') }}" />
+                    <x-dashboard.quick-link :href="route('pengajar.pencapaian.index')" title="Pencapaian" description="Isi skor pencapaian." icon="{{ \App\Support\DashboardIcons::path('book') }}" />
                 </div>
             </x-dashboard.panel>
         </div>
@@ -114,13 +114,13 @@
         <x-dashboard.hero eyebrow="Guru" :title="'Mengampu '.($kelasAjarCount ?? 0).' kelas'" description="Kelola pembelajaran, jurnal, dan evaluasi siswa dari satu tempat."
             icon="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
             <x-slot:actions>
-                <a href="{{ route('pengajar.kegiatan.index') }}" class="dashboard-hero-btn dashboard-hero-btn--primary">Agenda belajar</a>
-                <a href="{{ route('pengajar.pencapaian.index') }}" class="dashboard-hero-btn dashboard-hero-btn--ghost">Pencapaian</a>
+                <x-icon-btn :href="route('pengajar.kegiatan.index')" label="Agenda belajar" icon="{{ \App\Support\DashboardIcons::path('calendar') }}" variant="hero-primary" />
+                <x-icon-btn :href="route('pengajar.pencapaian.index')" label="Pencapaian" icon="{{ \App\Support\DashboardIcons::path('book') }}" variant="hero-ghost" />
             </x-slot:actions>
         </x-dashboard.hero>
 
-        <div class="dashboard-kpi-grid">
-            <x-dashboard.kpi :label="$dashboardAnakLabel ?? 'Siswa'" :value="$totalAnakSekolah ?? 0" data-tour="dashboard-welcome" icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        <div class="dashboard-kpi-grid" data-tour="dashboard-stats">
+            <x-dashboard.kpi :label="$dashboardAnakLabel ?? 'Siswa'" :value="$totalAnakSekolah ?? 0" icon="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             <x-dashboard.kpi label="Kelas diampu" :value="$kelasAjarCount ?? 0" icon="M3 7h18M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2m-1 14H7a2 2 0 01-2-2V7h14v12a2 2 0 01-2 2z" />
             <x-dashboard.kpi label="Jurnal hari ini" :value="$kegiatanSayaHariIni ?? 0" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             <x-dashboard.kpi label="Evaluasi" :value="$totalEvaluasiSaya ?? 0" class="col-span-2 lg:col-span-1" icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -151,10 +151,10 @@
 
             <x-dashboard.panel class="xl:col-span-2" title="Akses cepat" subtitle="Pekerjaan utama guru untuk hari ini.">
                 <div class="p-3 sm:p-5 grid grid-cols-2 xl:grid-cols-1 gap-2.5 sm:gap-3" data-tour="dashboard-quick-links">
-                    <x-dashboard.quick-link :href="route('pengajar.master-kegiatan-rutin.index')" title="Kegiatan rutin" description="Aktivitas harian kelas." />
-                    <x-dashboard.quick-link :href="route('pengajar.kegiatan.index')" title="Agenda belajar" description="Buat jurnal kegiatan." />
-                    <x-dashboard.quick-link :href="route('pengajar.matrikulasi.index')" title="Matrikulasi" description="Aspek dan indikator." />
-                    <x-dashboard.quick-link :href="route('pengajar.pencapaian.index')" title="Pencapaian" description="Input evaluasi siswa." />
+                    <x-dashboard.quick-link :href="route('pengajar.master-kegiatan-rutin.index')" title="Kegiatan rutin" description="Aktivitas harian kelas." icon="{{ \App\Support\DashboardIcons::path('calendar') }}" />
+                    <x-dashboard.quick-link :href="route('pengajar.kegiatan.index')" title="Agenda belajar" description="Buat jurnal kegiatan." icon="{{ \App\Support\DashboardIcons::path('book') }}" />
+                    <x-dashboard.quick-link :href="route('pengajar.matrikulasi.index')" title="Matrikulasi" description="Aspek dan indikator." icon="{{ \App\Support\DashboardIcons::path('grid') }}" />
+                    <x-dashboard.quick-link :href="route('pengajar.pencapaian.index')" title="Pencapaian" description="Input evaluasi siswa." icon="{{ \App\Support\DashboardIcons::path('chart') }}" />
                 </div>
             </x-dashboard.panel>
         </div>
@@ -290,13 +290,7 @@
                     @endforelse
 
                     <div class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/10">
-                        <a href="{{ route('orangtua.anak.create') }}" data-tour="dashboard-quick-links"
-                           class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 transition">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Tambah Anak
-                        </a>
+                        <x-icon-btn :href="route('orangtua.anak.create')" label="Tambah Anak" icon="{{ \App\Support\DashboardIcons::path('plus') }}" variant="hero-ghost" data-tour="dashboard-quick-links" />
                     </div>
                 </div>
             </div>

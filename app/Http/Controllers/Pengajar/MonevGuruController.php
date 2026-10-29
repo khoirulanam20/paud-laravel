@@ -22,13 +22,30 @@ class MonevGuruController extends Controller
     {
         $pengajar = $this->pengajar();
 
-        $evaluasis = MonevGuruEvaluasi::query()
+        $query = MonevGuruEvaluasi::query()
             ->where('pengajar_id', $pengajar->id)
             ->final()
             ->with('evaluator')
             ->latest('finalized_at')
-            ->paginate(PaginationPerPage::resolve($request))
-            ->withQueryString();
+            ->latest('id');
+
+        if ($request->filled('periode_mulai')) {
+            $query->whereDate('periode_selesai', '>=', $request->input('periode_mulai'));
+        }
+
+        if ($request->filled('periode_selesai')) {
+            $query->whereDate('periode_mulai', '<=', $request->input('periode_selesai'));
+        }
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', '%'.$search.'%')
+                    ->orWhereHas('evaluator', fn ($eq) => $eq->where('name', 'like', '%'.$search.'%'));
+            });
+        }
+
+        $evaluasis = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('pengajar.monev-guru.index', compact('evaluasis'));
     }

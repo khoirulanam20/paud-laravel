@@ -26,11 +26,27 @@ class SkalaPencapaianController extends Controller
         $sekolah_id = $this->sekolahId();
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah.');
 
-        $skalas = SkalaPencapaian::query()
+        $query = SkalaPencapaian::query()
             ->where('sekolah_id', $sekolah_id)
             ->orderBy('sort_order')
-            ->orderBy('code')
-            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
+            ->orderBy('code');
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', '%'.$search.'%')
+                    ->orWhere('label', 'like', '%'.$search.'%');
+            });
+        }
+
+        $status = (string) $request->input('status', '');
+        if ($status === 'aktif') {
+            $query->where('is_active', true);
+        } elseif ($status === 'nonaktif') {
+            $query->where('is_active', false);
+        }
+
+        $skalas = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('admin.skala-pencapaian.index', compact('skalas'));
     }

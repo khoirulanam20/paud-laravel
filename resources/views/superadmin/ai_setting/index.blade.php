@@ -243,12 +243,10 @@
                         </template>
                     </button>
 
-                    <button type="submit" class="btn-primary">
-                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <button type="submit" class="btn-primary shrink-0 h-9 w-9 md:h-11 md:w-11 p-0" title="Simpan Pengaturan" aria-label="Simpan Pengaturan">
+                        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        Simpan Pengaturan
-                    </button>
+                        </svg></button>
                 </div>
             </form>
         </div>

@@ -40,7 +40,7 @@
                         @endforeach
                     </select>
                 </div>
-                <button type="submit" class="btn-secondary">Filter</button>
+                <x-toolbar.filter-icon variant="secondary" />
                 <x-filter-reset :href="url()->current()" />
                 @if(request()->routeIs('admin.activity-log.*'))
                     <x-export-excel route="admin.activity-log.export" />

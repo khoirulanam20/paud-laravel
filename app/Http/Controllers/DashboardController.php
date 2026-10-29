@@ -37,6 +37,10 @@ class DashboardController extends Controller
             return redirect()->route('superadmin.dashboard');
         }
 
+        if ($user->hasRole('Admin Sekolah') && $request->route()?->getName() === 'dashboard') {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($user->canAccessAdminPanel() && ! $user->hasRole(['Admin Sekolah', 'Lembaga'])) {
             $route = $user->firstAccessibleAdminRoute();
             if ($route) {
@@ -78,7 +82,6 @@ class DashboardController extends Controller
                 ->whereMonth('date', $now->month)
                 ->count();
             $data['totalKelas'] = Kelas::where('sekolah_id', $sekolahId)->count();
-            $data['menuHariIni'] = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', Carbon::today())->first();
             $data['adminDashboardUx'] = AdminSekolahDashboard::compose($sekolahId);
         }
 

@@ -30,19 +30,6 @@
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
 
-        <div class="flex justify-end mb-4">
-            <button type="button" @click="showSettingsModal = true"
-                    class="btn-secondary text-sm inline-flex items-center gap-2"
-                    title="Pengaturan akun tabungan/investasi"
-                    aria-label="Pengaturan akun tabungan/investasi">
-                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-                <span class="hidden sm:inline">Pengaturan Akun</span>
-            </button>
-        </div>
-
         @if($tabunganAkuns->isNotEmpty())
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
                 @foreach($tabunganAkuns as $row)
@@ -62,24 +49,40 @@
         @endif
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Mutasi</h3>
-                    <p class="section-subtitle">Transaksi kas terkait akun tabungan/investasi terpilih</p>
+            <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
+                <div class="min-w-0 mb-3 md:mb-4">
+                    <h3 class="section-title mb-0">Mutasi</h3>
+                    <p class="section-subtitle mt-1">Transaksi kas terkait akun tabungan/investasi terpilih</p>
                 </div>
-                <form method="GET" class="flex gap-2">
-                    <select name="bulan" class="input-field w-32 text-sm">
-                        @foreach(range(1,12) as $m)
-                            <option value="{{ $m }}" @selected($bulan == $m)>{{ \Carbon\Carbon::create()->month($m)->locale('id')->translatedFormat('F') }}</option>
-                        @endforeach
-                    </select>
-                    <select name="tahun" class="input-field w-24 text-sm">
-                        @foreach(range(now()->year - 2, now()->year + 1) as $y)
-                            <option value="{{ $y }}" @selected($tahun == $y)>{{ $y }}</option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="btn-secondary text-xs">Filter</button>
-                    <x-filter-reset :href="route('admin.tabungan-investasi.index')" />
+                <form method="GET" class="toolbar-form w-full">
+                    <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
+                        <label class="input-label">Bulan</label>
+                        <select name="bulan" class="input-field w-full">
+                            @foreach(range(1,12) as $m)
+                                <option value="{{ $m }}" @selected($bulan == $m)>{{ \Carbon\Carbon::create()->month($m)->locale('id')->translatedFormat('F') }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="toolbar-field md:min-w-[6rem] md:max-w-[8rem]">
+                        <label class="input-label">Tahun</label>
+                        <select name="tahun" class="input-field w-full">
+                            @foreach(range(now()->year - 2, now()->year + 1) as $y)
+                                <option value="{{ $y }}" @selected($tahun == $y)>{{ $y }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="toolbar-actions">
+                        <x-toolbar.filter-icon variant="secondary" label="Filter" />
+                        <x-filter-reset :href="route('admin.tabungan-investasi.index')" compact />
+                        <button type="button" @click="showSettingsModal = true"
+                            class="btn-secondary toolbar-icon shrink-0 inline-flex items-center justify-center !p-0 h-9 w-9 md:h-11 md:w-11"
+                            title="Pengaturan Akun" aria-label="Pengaturan Akun">
+                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </form>
             </div>
             <div class="overflow-x-auto">

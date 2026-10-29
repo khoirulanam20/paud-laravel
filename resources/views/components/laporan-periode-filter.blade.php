@@ -33,6 +33,6 @@
         </select>
     </div>
     {{ $slot }}
-    <button type="submit" class="btn-primary text-xs px-4">Tampilkan</button>
+    <x-toolbar.filter-icon label="Tampilkan" />
     <x-filter-reset :href="$resetHref ?? $action" />
 </form>

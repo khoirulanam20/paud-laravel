@@ -23,7 +23,7 @@
         @endif
         @if($href)
             <div class="dashboard-compact-foot">
-                <a href="{{ $href }}" class="dashboard-compact-link">{{ $linkLabel }} &rarr;</a>
+                <a href="{{ $href }}" class="dashboard-compact-link">{{ $linkLabel }}</a>
             </div>
         @endif
     </div>

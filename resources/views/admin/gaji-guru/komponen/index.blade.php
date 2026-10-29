@@ -1,6 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-xl" style="color:#2C2C2C;">Master Komponen Gaji</h2>
+        <div class="flex items-center gap-3" data-tour="page-header">
+            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Master Komponen Gaji</h2>
+        </div>
     </x-slot>
     <div class="app-page-shell" x-data="{ showCreate:false, showEdit:false, showDelete:false, editData:{}, deleteRoute:'' }">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
@@ -9,7 +11,7 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title">Komponen default per sekolah</h3>
-                <button type="button" @click="showCreate=true" class="btn-primary text-sm">+ Tambah</button>
+                <x-toolbar.add-icon label="Tambah" @click="showCreate=true" />
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
@@ -24,8 +26,8 @@
                             <td>@if($k->is_aktif)<span class="badge badge-teal">Aktif</span>@else<span class="badge" style="background:#eee;">Nonaktif</span>@endif</td>
                             <td class="text-right space-x-2">
                                 @php $payload = ['id'=>$k->id,'nama'=>$k->nama,'jenis'=>$k->jenis,'nominal_default'=>$k->nominal_default,'urutan'=>$k->urutan,'is_aktif'=>$k->is_aktif]; @endphp
-                                <button type="button" @click="editData=@js($payload);showEdit=true" class="text-xs px-3 py-1.5 rounded-lg" style="background:#D0E8E8;color:#1A6B6B;">Edit</button>
-                                <button type="button" @click="deleteRoute='{{ route('admin.gaji-guru.komponen.destroy', $k) }}';showDelete=true" class="text-xs px-3 py-1.5 rounded-lg" style="background:#FAD7D2;color:#C0392B;">Hapus</button>
+                                <button type="button" @click="editData=@js($payload);showEdit=true" class="row-action-icon" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                                <button type="button" @click="deleteRoute='{{ route('admin.gaji-guru.komponen.destroy', $k) }}';showDelete=true" class="row-action-icon" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                             </td>
                         </tr>
                         @empty

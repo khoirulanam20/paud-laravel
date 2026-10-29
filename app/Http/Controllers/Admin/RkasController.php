@@ -29,11 +29,22 @@ class RkasController extends Controller
         $sekolahId = auth()->user()->sekolah_id;
         $tahunAjaran = $request->input('tahun_ajaran', TahunAjaran::current()['tahun_ajaran']);
 
-        $rkasList = Rkas::where('sekolah_id', $sekolahId)
+        $query = Rkas::query()
+            ->where('sekolah_id', $sekolahId)
             ->where('tahun_ajaran', $tahunAjaran)
             ->orderBy('semester')
-            ->withCount('lines')
-            ->get();
+            ->withCount('lines');
+
+        if ($request->filled('semester')) {
+            $query->where('semester', (int) $request->input('semester'));
+        }
+
+        $status = (string) $request->input('status', '');
+        if ($status === 'draft' || $status === 'final') {
+            $query->where('status', $status);
+        }
+
+        $rkasList = $query->get();
 
         $tahunOptions = TahunAjaran::options();
 
@@ -45,11 +56,22 @@ class RkasController extends Controller
         $sekolahId = auth()->user()->sekolah_id;
         $tahunAjaran = $request->input('tahun_ajaran', TahunAjaran::current()['tahun_ajaran']);
 
-        $rows = Rkas::where('sekolah_id', $sekolahId)
+        $exportQuery = Rkas::query()
+            ->where('sekolah_id', $sekolahId)
             ->where('tahun_ajaran', $tahunAjaran)
             ->orderBy('semester')
-            ->withCount('lines')
-            ->get()
+            ->withCount('lines');
+
+        if ($request->filled('semester')) {
+            $exportQuery->where('semester', (int) $request->input('semester'));
+        }
+
+        $status = (string) $request->input('status', '');
+        if ($status === 'draft' || $status === 'final') {
+            $exportQuery->where('status', $status);
+        }
+
+        $rows = $exportQuery->get()
             ->map(fn (Rkas $r) => [
                 $r->tahun_ajaran.' Semester '.$r->semester,
                 $r->isFinal() ? 'Final' : 'Draft',

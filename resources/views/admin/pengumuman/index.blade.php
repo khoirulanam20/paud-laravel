@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
@@ -39,18 +39,45 @@
         @endif
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
-                <div>
-                    <h3 class="section-title">Pengumuman untuk Orang Tua</h3>
-                    <p class="section-subtitle">{{ ($waliKelasIds ?? null) !== null ? 'Informasi untuk orang tua kelas wali Anda' : 'Broadcast informasi ke wali murid via dashboard' }}</p>
-                </div>
-                <button type="button" @click="showCreateModal=true" class="btn-primary">
-                    <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    Tambah Pengumuman
-                </button>
+            <div class="px-4 md:px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                <h3 class="section-title">Pengumuman untuk Orang Tua</h3>
+                <p class="section-subtitle">{{ ($waliKelasIds ?? null) !== null ? 'Informasi untuk orang tua kelas wali Anda' : 'Broadcast informasi ke wali murid via dashboard' }}</p>
             </div>
 
-            <div class="overflow-x-auto">
+            <form method="get" data-tour="admin-pengumuman-filter" class="card-pad toolbar-form border-b w-full" style="border-color:rgba(0,0,0,0.06);">
+                <div class="toolbar-field md:min-w-[12rem] md:flex-[2]">
+                    <label class="input-label">Cari</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="input-field w-full" placeholder="Judul, kategori, atau isi…">
+                </div>
+                @if($kelasList->isNotEmpty())
+                    <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
+                        <label class="input-label">Kelas</label>
+                        <select name="kelas_id" class="input-field w-full">
+                            <option value="">Semua</option>
+                            @foreach($kelasList as $kelas)
+                                <option value="{{ $kelas->id }}" @selected((string) request('kelas_id') === (string) $kelas->id)>{{ $kelas->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
+                    <label class="input-label">Status tayang</label>
+                    <select name="status" class="input-field w-full">
+                        <option value="" @selected(!request('status'))>Semua</option>
+                        <option value="aktif" @selected(request('status') === 'aktif')>Sedang tayang</option>
+                        <option value="belum_tayang" @selected(request('status') === 'belum_tayang')>Belum tayang</option>
+                        <option value="berakhir" @selected(request('status') === 'berakhir')>Berakhir</option>
+                        <option value="nonaktif" @selected(request('status') === 'nonaktif')>Nonaktif</option>
+                    </select>
+                </div>
+                <div class="toolbar-actions">
+                    <x-toolbar.filter-icon label="Filter" variant="secondary" />
+                    <x-filter-reset :href="route('admin.pengumuman.index')" compact />
+                    <x-toolbar.add-icon label="Tambah Pengumuman" type="button" @click="showCreateModal=true" />
+                </div>
+            </form>
+
+            <div class="table-responsive">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -105,8 +132,14 @@
                                         <span class="font-semibold" style="color:#2C2C2C;">{{ $p->judul }}</span>
                                     </div>
                                 </td>
-                                <td><span class="text-sm border px-2 py-0.5 rounded text-gray-600 bg-gray-50">{{ $p->kategori }}</span></td>
-                                <td class="text-sm" style="color:#6B6560;">{{ $p->kelas?->name ?? 'Semua kelas' }}</td>
+                                <td><span class="badge badge-teal">{{ $p->kategori }}</span></td>
+                                <td class="text-sm" style="color:#6B6560;">
+                                    @if($p->kelas?->name)
+                                        <span class="badge badge-teal">{{ $p->kelas->name }}</span>
+                                    @else
+                                        Semua kelas
+                                    @endif
+                                </td>
                                 <td class="text-sm" style="color:#6B6560;">{{ $p->mulai_tayang->translatedFormat('d M Y') }} – {{ $p->selesai_tayang->translatedFormat('d M Y') }}</td>
                                 <td>
                                     @if($isActiveNow)
@@ -120,10 +153,10 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <button type="button" @click="openDetail(@js($detailPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#F0F7F7;border:1px solid #D0E8E8;" title="Detail" aria-label="Detail"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><span class="hidden md:inline">Detail</span></button>
-                                        <button type="button" @click="openEdit(@js($editPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span class="hidden md:inline">Edit</span></button>
-                                        <button type="button" @click="openDelete('{{ route('admin.pengumuman.destroy', $p) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg><span class="hidden md:inline">Hapus</span></button>
+                                    <div class="flex flex-wrap items-center justify-end gap-1.5">
+                                        <x-table.action-icon type="button" label="Detail" variant="detail" @click="openDetail(@js($detailPayload))" />
+                                        <x-table.action-icon type="button" label="Edit" variant="edit" @click="openEdit(@js($editPayload))" />
+                                        <x-table.action-icon type="button" label="Hapus" variant="delete" @click="openDelete('{{ route('admin.pengumuman.destroy', $p) }}')" />
                                     </div>
                                 </td>
                             </tr>
@@ -134,7 +167,7 @@
                 </table>
             </div>
 
-            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+            <div class="px-4 md:px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
                 <x-per-page-selector :paginator="$pengumumans" />
                 {{ $pengumumans->links() }}
             </div>

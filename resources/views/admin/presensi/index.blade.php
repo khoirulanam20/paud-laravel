@@ -80,12 +80,12 @@
                 </span>
                 <span class="inline-flex items-center gap-1.5" title="Hadir">
                     <svg class="h-4 w-4 shrink-0 text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span class="hidden md:inline">Hadir:</span>
+                    
                     <strong data-presensi-hadir style="color:#1A6B6B;">{{ $hadirCount }}</strong>
                 </span>
                 <span class="inline-flex items-center gap-1.5" title="Tidak hadir">
                     <svg class="h-4 w-4 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span class="hidden md:inline">Tidak hadir:</span>
+                    
                     <strong data-presensi-absen style="color:#C0392B;">{{ $totalSiswa - $hadirCount }}</strong>
                 </span>
                 <span class="inline-flex items-center gap-1.5 w-full sm:w-auto sm:ml-auto" title="Rekap bulan">

@@ -12,16 +12,15 @@
                 foreach($nav['sections'] as $section) {
                     foreach($section['items'] as $item) {
                         $flatItems[] = $item;
-                        foreach ($item['children'] ?? [] as $child) {
-                            $flatItems[] = $child;
-                        }
                     }
                 }
-            } elseif(isset($nav['group'])) {
+            } elseif(isset($nav['group']) && isset($nav['items'])) {
                 foreach($nav['items'] as $item) {
-                    $flatItems[] = $item;
+                    if (isset($item['route'])) {
+                        $flatItems[] = $item;
+                    }
                 }
-            } else {
+            } elseif(isset($nav['route'])) {
                 $flatItems[] = $nav;
             }
         }
@@ -41,7 +40,7 @@
 
 <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-black/5 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] px-1 flex items-end justify-around h-[64px]" style="padding-bottom: max(env(safe-area-inset-bottom), 0.25rem); height: calc(64px + env(safe-area-inset-bottom));">
     @if($showDashboardNav ?? true)
-    <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center w-full h-full text-[9.5px] font-medium transition-colors pt-1 {{ request()->routeIs('dashboard') ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
+    <a href="{{ route($dashboardRoute ?? 'dashboard') }}" class="flex flex-col items-center justify-center w-full h-full text-[9.5px] font-medium transition-colors pt-1 {{ request()->routeIs($dashboardRoute ?? 'dashboard') ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
         <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
@@ -54,7 +53,7 @@
         <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full -mt-4">
             <span class="flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform {{ request()->routeIs($item['pattern']) ? 'bg-[#145252] scale-105' : 'bg-[#1A6B6B]' }}">
                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] ?? 'M4 6h16M4 10h16M4 14h16M4 18h16' }}" />
                 </svg>
             </span>
             <span class="truncate w-full text-center text-[9px] font-semibold mt-0.5 px-0.5 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-500' }}">{{ $item['label'] }}</span>
@@ -62,7 +61,7 @@
         @else
         <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" class="relative flex flex-col items-center justify-center w-full h-full text-[9.5px] font-medium transition-colors pt-1 {{ request()->routeIs($item['pattern']) ? 'text-[#1A6B6B]' : 'text-gray-400 hover:text-gray-600' }}">
             <svg class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] ?? 'M4 6h16M4 10h16M4 14h16M4 18h16' }}" />
             </svg>
             <span class="truncate w-full text-center px-0.5">{{ $item['label'] }}</span>
             @if(!empty($item['badge']) && $item['badge'] > 0)
@@ -110,7 +109,7 @@
             @foreach($moreItems as $item)
             <a href="{{ route($item['route']) }}" data-tour="nav-{{ $item['route'] }}" @click="moreMenuOpen = false" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all {{ request()->routeIs($item['pattern']) ? 'bg-[#1A6B6B] text-white shadow-md shadow-[#1A6B6B]/20' : 'text-[#2C2C2C] bg-[#FAF6F0] hover:bg-black/5' }}">
                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] ?? 'M4 6h16M4 10h16M4 14h16M4 18h16' }}" />
                 </svg>
                 <div class="flex-1">{{ $item['label'] }}</div>
                 @if(!empty($item['badge']) && $item['badge'] > 0)

@@ -169,6 +169,8 @@ Route::middleware(['auth', 'role:Lembaga', 'admin.activity'])->prefix('lembaga')
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 'sekolah.active', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::get('pengaturan', function (Request $request) {
         $user = $request->user();
 

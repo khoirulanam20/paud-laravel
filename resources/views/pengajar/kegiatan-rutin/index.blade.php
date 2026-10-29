@@ -4,6 +4,17 @@
 @endphp
 
 <x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center gap-3" data-tour="page-header">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;">
+                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3"/>
+                </svg>
+            </div>
+            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Input Rutin Harian</h2>
+        </div>
+    </x-slot>
+
     <div class="app-page-shell" x-data="{
         openDetailModal: false,
         selectedAnak: null,
@@ -54,46 +65,46 @@
             });
         },
     }" @tour-close-modals.window="openDetailModal = false">
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="page-header">
-            <div class="flex items-start gap-4 min-w-0">
-                <a href="{{ route($routePrefix.'master-kegiatan-rutin.index') }}" class="h-10 w-10 shrink-0 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm" title="Kembali">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                </a>
-                <div class="min-w-0">
-                    <h2 class="text-2xl font-bold text-gray-900 leading-tight">Update Pencapaian Rutin</h2>
-                    <p class="text-sm text-gray-500 mt-1">Isi status pencapaian seluruh siswa dalam satu grid, lalu simpan sekaligus.</p>
-                </div>
-            </div>
-
-            <form method="GET" action="{{ route($routePrefix.'kegiatan-rutin.index') }}" class="flex flex-wrap gap-3 items-end">
-                <div class="w-full sm:w-auto">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 ml-1">Tanggal</label>
-                    <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field py-2 text-sm" onchange="this.form.submit()">
-                </div>
-                <div class="w-full sm:w-auto">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 ml-1">Kelas</label>
-                    <select name="kelas_id" class="input-field py-2 text-sm min-w-[120px]" onchange="this.form.submit()">
-                        @foreach($classList as $c)
-                            <option value="{{ $c->id }}" @selected($kelasId == $c->id)>{{ $c->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <x-filter-reset :href="route($routePrefix.'kegiatan-rutin.index')" />
-            </form>
-            @if(auth()->user()->usesAdminKegiatanRutinRoutes())
-                <x-export-excel route="admin.kegiatan-rutin.export" />
-            @endif
-            <x-download-photos :route="$photoDownloadRoute" :icon-only="true" />
-        </div>
-
         @if(session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl flex items-center gap-3 animate-fade-in shadow-sm">
-                <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                <p class="text-sm font-bold">{{ session('success') }}</p>
+            <div class="alert-success mb-5">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ session('success') }}
             </div>
         @endif
 
-        <div class="card overflow-hidden border-none shadow-sm shadow-gray-200" data-tour="kegiatan-rutin-list">
+        <div class="mb-4">
+            <a href="{{ route($routePrefix.'master-kegiatan-rutin.index') }}" class="btn-secondary text-sm">← Master Kegiatan Rutin</a>
+        </div>
+
+        <div class="card overflow-hidden mb-6">
+            <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06); background:#FAF9F6;">
+                <p class="section-subtitle mb-3 md:mb-4">Isi status pencapaian seluruh siswa dalam satu grid, lalu simpan sekaligus.</p>
+                <form method="GET" action="{{ route($routePrefix.'kegiatan-rutin.index') }}" class="toolbar-form w-full">
+                    <div class="toolbar-field md:min-w-[10rem] md:max-w-[12rem]">
+                        <label class="input-label">Tanggal</label>
+                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field w-full">
+                    </div>
+                    <div class="toolbar-field md:min-w-[10rem] md:max-w-[14rem]">
+                        <label class="input-label">Kelas</label>
+                        <select name="kelas_id" class="input-field w-full">
+                            @foreach($classList as $c)
+                                <option value="{{ $c->id }}" @selected($kelasId == $c->id)>{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="toolbar-actions">
+                        <x-toolbar.filter-icon label="Terapkan" />
+                        <x-filter-reset :href="route($routePrefix.'kegiatan-rutin.index')" compact />
+                        @if(auth()->user()->usesAdminKegiatanRutinRoutes())
+                            <x-export-excel route="admin.kegiatan-rutin.export" />
+                        @endif
+                        <x-download-photos :route="$photoDownloadRoute" :icon-only="true" />
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card overflow-hidden" data-tour="kegiatan-rutin-list">
             @if($anaks->isEmpty() || $masters->isEmpty())
                 <div class="px-6 py-12 text-center text-gray-400 italic text-sm">
                     @if($anaks->isEmpty())
@@ -108,18 +119,16 @@
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="kelas_id" value="{{ $kelasId }}">
 
-                    <div class="px-4 sm:px-6 py-4 border-b flex flex-wrap items-center justify-between gap-3" style="border-color: rgba(0,0,0,0.06); background:#FAF6F0;">
-                        <p class="text-sm text-gray-600 m-0">
+                    <div class="card-pad border-b flex flex-wrap items-center justify-between gap-3" style="border-color:rgba(0,0,0,0.06); background:#FAF6F0;">
+                        <p class="section-subtitle mb-0">
                             <strong style="color:#2C2C2C;">{{ $anaks->count() }}</strong> siswa ·
                             <strong style="color:#2C2C2C;">{{ $masters->count() }}</strong> kegiatan rutin
                         </p>
                         <div class="flex flex-wrap items-center gap-2">
-                            <button type="button" @click="copyYesterday()" class="btn-secondary text-xs py-2 px-3">
-                                Salin Kemarin
-                            </button>
-                            <button type="submit" data-tour="modal-create-submit" class="btn-primary text-sm py-2 px-4">
-                                Simpan Semua
-                            </button>
+                            <x-icon-btn type="button" @click="copyYesterday()" label="Salin Kemarin" variant="secondary"
+                                icon="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            <x-icon-btn type="submit" label="Simpan Semua" variant="primary" icon="M5 13l4 4L19 7"
+                                data-tour="modal-create-submit" />
                         </div>
                     </div>
 
@@ -138,8 +147,9 @@
                                                     <div class="text-[11px] font-bold text-gray-800 line-clamp-2 mt-0.5" title="{{ $master->nama_kegiatan }}">{{ $master->nama_kegiatan }}</div>
                                                 </div>
                                                 <button type="button" @click="setColumnLancar('{{ $master->id }}')"
-                                                    class="w-full text-[9px] font-semibold px-1 py-1 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-[#E8F5F5] hover:text-[#1A6B6B] hover:border-[#D0E8E8] transition leading-none">
-                                                    Semua Lancar
+                                                    class="row-action-icon mx-auto !h-7 !w-7 md:!h-8 md:!w-8" style="color:#1A6B6B;background:#E8F5F5;border:1px solid #D0E8E8;"
+                                                    title="Semua Lancar" aria-label="Semua Lancar">
+                                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                 </button>
                                             </div>
                                         </th>
@@ -178,9 +188,9 @@
                                         <td class="px-3 py-3 text-center">
                                             <button type="button"
                                                 @click="loadDetail('{{ $anak->id }}', @js($anak->name))"
-                                                class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition border border-gray-100 shadow-sm text-indigo-500 mx-auto"
-                                                title="Detail Riwayat">
-                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                class="row-action-icon mx-auto" style="color:#1A6B6B;background:#E8F5F5;"
+                                                title="Detail Riwayat" aria-label="Detail Riwayat">
+                                                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                             </button>
                                         </td>
                                     </tr>
@@ -190,8 +200,9 @@
                     </div>
 
                     <div class="px-4 sm:px-6 py-4 border-t flex justify-end gap-2" style="border-color: rgba(0,0,0,0.06);">
-                        <button type="button" @click="copyYesterday()" class="btn-secondary text-sm">Salin Kemarin</button>
-                        <button type="submit" class="btn-primary text-sm">Simpan Semua</button>
+                        <x-icon-btn type="button" @click="copyYesterday()" label="Salin Kemarin" variant="secondary"
+                            icon="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        <x-icon-btn type="submit" label="Simpan Semua" variant="primary" icon="M5 13l4 4L19 7" />
                     </div>
                 </form>
             @endif

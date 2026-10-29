@@ -3,12 +3,16 @@
 namespace App\Support;
 
 use App\Models\Anak;
+use App\Models\Cashflow;
 use App\Models\Kegiatan;
 use App\Models\Kelas;
 use App\Models\KritikSaran;
 use App\Models\MenuMakanan;
 use App\Models\PembayaranBulanan;
+use App\Models\Pengajar;
 use App\Models\Presensi;
+use App\Models\PresensiPengajar;
+use App\Models\Sekolah;
 use Carbon\Carbon;
 
 class AdminSekolahDashboard
@@ -27,10 +31,13 @@ class AdminSekolahDashboard
         $today = Carbon::today()->locale('id');
         $now = Carbon::now()->locale('id');
 
+        $sekolah = Sekolah::find($sekolahId);
+        $sekolahName = $sekolah?->name ?? 'Sekolah';
+
         $siswaAktif = Anak::where('sekolah_id', $sekolahId)->where('status', 'approved')->count();
         $siswaPending = Anak::where('sekolah_id', $sekolahId)->where('status', 'pending')->count();
         $totalKelas = Kelas::where('sekolah_id', $sekolahId)->count();
-        $totalPengajar = \App\Models\Pengajar::where('sekolah_id', $sekolahId)->count();
+        $totalPengajar = Pengajar::where('sekolah_id', $sekolahId)->count();
 
         $kegiatanHariIni = Kegiatan::where('sekolah_id', $sekolahId)->whereDate('date', $today)->count();
         $kegiatanBulanIni = Kegiatan::where('sekolah_id', $sekolahId)
@@ -50,12 +57,21 @@ class AdminSekolahDashboard
             ->distinct()
             ->count('anak_id');
 
+        $presensiGuruHariIni = (int) PresensiPengajar::where('sekolah_id', $sekolahId)
+            ->whereDate('check_in_at', $today)
+            ->count();
+
+        $presensiGuruTelatHariIni = (int) PresensiPengajar::where('sekolah_id', $sekolahId)
+            ->whereDate('check_in_at', $today)
+            ->where('terlambat_masuk', true)
+            ->count();
+
         $isWeekday = ! $today->isWeekend();
         $menuRecord = MenuMakanan::where('sekolah_id', $sekolahId)->whereDate('date', $today)->first();
         $menuKosong = $menuRecord === null || DashboardCompactMenu::isEmpty($menuRecord->menu ?? null);
 
-        $uangMasuk = \App\Models\Cashflow::where('sekolah_id', $sekolahId)->where('type', 'in')->sum('amount');
-        $uangKeluar = \App\Models\Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
+        $uangMasuk = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'in')->sum('amount');
+        $uangKeluar = Cashflow::where('sekolah_id', $sekolahId)->where('type', 'out')->sum('amount');
         $saldoKas = $uangMasuk - $uangKeluar;
 
         $pembayaranPending = PembayaranBulanan::where('sekolah_id', $sekolahId)
@@ -72,7 +88,7 @@ class AdminSekolahDashboard
 
         $hadirLabel = $isWeekday
             ? "{$presensiHadirHariIni} dari {$siswaAktif} siswa sudah hadir"
-            : 'Akhir pekan — presensi biasanya diisi Senin';
+            : 'Akhir pekan, presensi biasanya diisi Senin';
 
         $summary = [
             [
@@ -83,29 +99,39 @@ class AdminSekolahDashboard
                 'icon' => 'users',
             ],
             [
-                'label' => 'Kehadiran hari ini',
-                'value' => $isWeekday ? (string) $presensiHadirHariIni : '—',
+                'label' => 'Kehadiran murid',
+                'value' => $isWeekday ? (string) $presensiHadirHariIni : '-',
                 'context' => $hadirLabel,
                 'href' => route('admin.presensi.index'),
                 'icon' => 'check',
             ],
             [
-                'label' => 'Jurnal hari ini',
+                'label' => 'Jurnal & Guru',
                 'value' => (string) $kegiatanHariIni,
-                'context' => "Bulan ini {$kegiatanBulanIni} entri · {$totalKelas} kelas",
+                'context' => ($isWeekday && $totalPengajar > 0 ? "{$presensiGuruHariIni}/{$totalPengajar} guru hadir · " : '')."{$totalKelas} kelas",
                 'href' => route('admin.kegiatan.index'),
                 'icon' => 'calendar',
             ],
             [
                 'label' => 'Saldo kas',
                 'value' => 'Rp '.number_format($saldoKas, 0, ',', '.'),
-                'context' => $totalPengajar.' pengajar aktif',
+                'context' => $pembayaranPending > 0 ? "{$pembayaranPending} tagihan pending" : 'Keuangan terkendali',
                 'href' => route('admin.cashflow.index'),
                 'icon' => 'cash',
             ],
         ];
 
         $attention = [];
+
+        if ($sekolah && empty($sekolah->location_coordinate)) {
+            $attention[] = [
+                'severity' => 'critical',
+                'title' => 'Lokasi sekolah belum diatur',
+                'detail' => 'Presensi guru berbasis GPS terkunci sampai titik koordinat sekolah diatur.',
+                'href' => route('admin.presensi-guru.pengaturan'),
+                'action' => 'Atur lokasi',
+            ];
+        }
 
         if ($siswaPending > 0) {
             $attention[] = [
@@ -120,7 +146,7 @@ class AdminSekolahDashboard
         if ($isWeekday && $siswaAktif > 0 && $presensiHadirHariIni < (int) ($siswaAktif * 0.5)) {
             $attention[] = [
                 'severity' => 'critical',
-                'title' => 'Kehadiran hari ini masih rendah',
+                'title' => 'Kehadiran murid masih rendah',
                 'detail' => "Baru {$presensiHadirHariIni} dari {$siswaAktif} siswa tercatat hadir.",
                 'href' => route('admin.presensi.index'),
                 'action' => 'Cek presensi',
@@ -167,11 +193,21 @@ class AdminSekolahDashboard
             ];
         }
 
+        if ($presensiGuruTelatHariIni > 0) {
+            $attention[] = [
+                'severity' => 'info',
+                'title' => "{$presensiGuruTelatHariIni} guru tercatat terlambat hari ini",
+                'detail' => 'Check-in tercatat melewati batas toleransi jam masuk.',
+                'href' => route('admin.presensi-guru.index'),
+                'action' => 'Cek presensi guru',
+            ];
+        }
+
         usort($attention, fn (array $a, array $b) => self::severityRank($a['severity']) <=> self::severityRank($b['severity']));
 
         $activitiesItems = $kegiatanTerbaru->map(function (Kegiatan $k) {
             return [
-                'time' => $k->created_at?->format('H:i') ?? '—',
+                'time' => $k->created_at?->format('H:i') ?? '-',
                 'title' => $k->title ?: 'Kegiatan belajar',
                 'meta' => $k->kelas?->name ?? '',
                 'status' => 'Jurnal',
@@ -183,7 +219,8 @@ class AdminSekolahDashboard
             : route('admin.kegiatan.index');
 
         return [
-            'lead' => $today->translatedFormat('l, d F Y').' · Pantau operasional sekolah dari satu tempat',
+            'sekolahName' => $sekolahName,
+            'lead' => $today->translatedFormat('l, d F Y'),
             'summary' => $summary,
             'attention' => $attention,
             'activities' => [
@@ -220,7 +257,7 @@ class AdminSekolahDashboard
                 $firstLabel = is_array($labels) && count($labels) > 0 ? (string) $labels[0] : '';
                 $lastLabel = is_array($labels) && count($labels) > 0 ? (string) end($labels) : '';
                 $rangeSubtitle = ($firstLabel !== '' && $lastLabel !== '')
-                    ? "Murid terdaftar (kumulatif) vs jumlah entri kegiatan, {$firstLabel}–{$lastLabel}"
+                    ? "Murid terdaftar (kumulatif) vs jumlah entri kegiatan, {$firstLabel}-{$lastLabel}"
                     : 'Murid terdaftar (kumulatif) vs jumlah entri kegiatan, 6 bulan terakhir';
 
                 $charts[$i]['subtitle'] = $rangeSubtitle;

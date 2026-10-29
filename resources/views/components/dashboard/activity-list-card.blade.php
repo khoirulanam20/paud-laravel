@@ -26,14 +26,14 @@
             <div class="dashboard-compact-empty">
                 <p class="dashboard-compact-meta m-0 text-sm leading-snug">{{ $emptyText }}</p>
                 @if($href)
-                    <a href="{{ $href }}" class="btn-primary text-xs sm:text-sm w-fit">Buka agenda</a>
+                    <a href="{{ $href }}" class="btn-primary dashboard-compact-cta">Buka agenda</a>
                 @endif
             </div>
         @else
             <ul class="dashboard-activity-rows">
                 @foreach($displayItems as $row)
                     <li class="dashboard-activity-row">
-                        <span class="dashboard-activity-time">{{ $row['time'] ?? '—' }}</span>
+                        <span class="dashboard-activity-time">{{ $row['time'] ?? '-' }}</span>
                         <div class="dashboard-activity-main min-w-0">
                             <p class="dashboard-activity-title m-0">{{ $row['title'] ?? 'Kegiatan' }}</p>
                             @if(!empty($row['meta']))
@@ -48,11 +48,10 @@
             </ul>
             @if($href)
                 <div class="dashboard-compact-foot">
-                    @if($showOverflow)
-                        <a href="{{ $href }}" class="dashboard-compact-link">{{ $linkLabel }} ({{ $total }}) &rarr;</a>
-                    @else
-                        <a href="{{ $href }}" class="dashboard-compact-link">{{ $linkLabel }} &rarr;</a>
-                    @endif
+                    @php
+                        $footLabel = $showOverflow ? "{$linkLabel} ({$total})" : $linkLabel;
+                    @endphp
+                    <a href="{{ $href }}" class="dashboard-compact-link">{{ $footLabel }}</a>
                 </div>
             @endif
         @endif

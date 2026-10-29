@@ -345,7 +345,7 @@
         <div class="card overflow-hidden">
             <div class="card-pad page-toolbar border-b" style="border-color:rgba(0,0,0,0.06);">
                 <h3 class="section-title mb-0">Laporan Pencapaian Sekolah</h3>
-                <button type="button" data-tour="admin-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary toolbar-primary">Buat Evaluasi</button>
+                <x-toolbar.add-icon label="Buat Evaluasi" data-tour="admin-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" />
             </div>
 
             <div class="lg:hidden divide-y" style="border-color:rgba(0,0,0,0.06);">

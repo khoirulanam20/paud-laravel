@@ -7,6 +7,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        app()->setLocale((string) config('app.locale', 'id'));
+        Carbon::setLocale((string) config('app.date_locale', 'id'));
+
         RateLimiter::for('api-login', function (Request $request) {
             return Limit::perMinute((int) config('api.rate_limits.login', 10))
                 ->by($request->ip());

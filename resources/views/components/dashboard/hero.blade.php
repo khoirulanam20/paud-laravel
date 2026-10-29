@@ -14,14 +14,6 @@
 @endphp
 
 <div {{ $attributes->merge(['class' => $variantClass]) }} data-tour="dashboard-welcome">
-    @if($variant === 'default' && $icon)
-        <div class="dashboard-hero-deco" aria-hidden="true">
-            <svg class="h-40 w-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}" />
-            </svg>
-        </div>
-    @endif
-
     <div class="dashboard-hero-inner">
         <div class="flex items-center gap-3 sm:gap-4 min-w-0">
             @if($icon && $variant === 'default')
@@ -31,16 +23,16 @@
                     </svg>
                 </div>
             @endif
-            <div class="min-w-0" data-tour="dashboard-stats">
+            <div class="min-w-0">
                 <p class="dashboard-hero-eyebrow">{{ $eyebrow }}</p>
-                <h2 class="dashboard-hero-title">{{ $title }}</h2>
+                <h1 class="dashboard-hero-title">{{ $title }}</h1>
                 @if($description)
                     <p class="dashboard-hero-desc">{{ $description }}</p>
                 @endif
             </div>
         </div>
         @isset($actions)
-            <div class="dashboard-hero-actions" data-tour="dashboard-quick-links">
+            <div class="dashboard-hero-actions">
                 {{ $actions }}
             </div>
         @endisset

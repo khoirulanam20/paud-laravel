@@ -51,7 +51,7 @@ final class AdminBreadcrumb
         $homeUrl = Route::has($homeRoute) ? route($homeRoute) : null;
         $items = [['label' => 'Dashboard', 'url' => $homeUrl]];
 
-        if (in_array($routeName, ['dashboard', 'superadmin.dashboard'], true)) {
+        if (in_array($routeName, ['dashboard', 'admin.dashboard', 'superadmin.dashboard'], true)) {
             $items[0]['url'] = null;
 
             return self::applyOverride($items, $titleOverride);
@@ -141,6 +141,9 @@ final class AdminBreadcrumb
             }
         }
 
+        if (Route::has('admin.dashboard')) {
+            $flat[] = ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'pattern' => 'admin.dashboard'];
+        }
         if (Route::has('dashboard')) {
             $flat[] = ['route' => 'dashboard', 'label' => 'Dashboard', 'pattern' => 'dashboard'];
         }
