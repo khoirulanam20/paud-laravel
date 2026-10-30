@@ -96,17 +96,19 @@ Route::get('/harga', [GuestController::class, 'harga'])->name('guest.harga');
 Route::redirect('/galeri', '/harga', 301);
 Route::get('/pendaftaran', [GuestController::class, 'pendaftaran'])->name('guest.pendaftaran');
 Route::post('/pendaftaran', [RegisteredUserController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:guest-forms'])
     ->name('guest.pendaftaran.store');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('guest.kontak');
-Route::post('/kontak', [GuestController::class, 'kontakSend'])->name('guest.kontak.send');
+Route::post('/kontak', [GuestController::class, 'kontakSend'])
+    ->middleware('throttle:guest-forms')
+    ->name('guest.kontak.send');
 Route::get('/daftar-sekolah', [SekolahRegistrationController::class, 'create'])->name('guest.daftar-sekolah');
 Route::post('/daftar-sekolah', [SekolahRegistrationController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:guest-forms'])
     ->name('guest.daftar-sekolah.store');
 Route::redirect('/daftar-lembaga', '/daftar-sekolah', 301);
 Route::post('/daftar-lembaga', [LembagaRegistrationController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:guest-forms'])
     ->name('guest.daftar-lembaga.store');
 
 // ─────────────────────────────────────────────
@@ -169,24 +171,15 @@ Route::middleware(['auth', 'role:Lembaga', 'admin.activity'])->prefix('lembaga')
 // ADMIN SEKOLAH
 // ─────────────────────────────────────────────
 Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 'sekolah.active', 'admin.activity'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::get('pengaturan', function (Request $request) {
-        $user = $request->user();
-
-        $targets = [
-            'menu.role' => 'admin.role.index',
-            'menu.pengguna' => 'admin.pengguna.index',
-            'menu.log-aktivitas' => 'admin.activity-log.index',
-            'menu.setting-akuntansi' => 'admin.akuntansi-setting.index',
-            'menu.pengaturan-ai' => 'admin.ai-persona.index',
-        ];
-
-        foreach ($targets as $perm => $route) {
-            if ($user?->can($perm)) {
-                return redirect()->route($route);
-            }
+        $route = \App\Support\AdminSettingsNav::firstRouteName($request->user());
+        if ($route === null) {
+            abort(403);
         }
 
-        abort(403);
+        return redirect()->route($route);
     })->name('settings');
 
     // Export Excel
@@ -391,10 +384,11 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::resource('kesehatan', KesehatanController::class)->only(['index', 'store', 'destroy']);
     Route::get('presensi-guru', [PresensiPengajarController::class, 'index'])->name('presensi-guru.index');
     Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
-    Route::get('presensi-guru/pengaturan', [JamKerjaController::class, 'index'])->name('presensi-guru.pengaturan');
-    Route::put('presensi-guru/pengaturan', [JamKerjaController::class, 'update'])->name('presensi-guru.pengaturan.update');
-    Route::post('presensi-guru/pengaturan/libur', [JamKerjaController::class, 'storeLibur'])->name('presensi-guru.pengaturan.libur.store');
-    Route::delete('presensi-guru/pengaturan/libur/{hariLibur}', [JamKerjaController::class, 'destroyLibur'])->name('presensi-guru.pengaturan.libur.destroy');
+    Route::get('presensi-setting', [JamKerjaController::class, 'index'])->name('presensi-setting.index');
+    Route::put('presensi-setting', [JamKerjaController::class, 'update'])->name('presensi-setting.update');
+    Route::post('presensi-setting/libur', [JamKerjaController::class, 'storeLibur'])->name('presensi-setting.libur.store');
+    Route::delete('presensi-setting/libur/{hariLibur}', [JamKerjaController::class, 'destroyLibur'])->name('presensi-setting.libur.destroy');
+    Route::redirect('presensi-guru/pengaturan', '/admin/presensi-setting');
     // AI Feedback Suggestions (web route, uses web session auth)
     Route::post('ai/feedback-suggestions', [AiFeedbackController::class, 'suggest'])->name('ai.feedback-suggestions');
     Route::post('ai/monev-guru-suggestions', [AiMonevGuruController::class, 'suggest'])

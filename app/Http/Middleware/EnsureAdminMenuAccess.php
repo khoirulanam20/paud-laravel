@@ -40,8 +40,7 @@ class EnsureAdminMenuAccess
         }
 
         if ($routeName === 'admin.settings') {
-            $settingsPerms = ['menu.role', 'menu.pengguna', 'menu.log-aktivitas', 'menu.setting-akuntansi', 'menu.pengaturan-ai'];
-            if (collect($settingsPerms)->contains(fn ($p) => $user->can($p))) {
+            if (\App\Support\AdminSettingsNav::canAccessHub($user)) {
                 return $next($request);
             }
 

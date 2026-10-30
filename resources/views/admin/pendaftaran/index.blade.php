@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3" data-tour="page-header">
-            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3" /></svg></div>
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Pendaftaran Siswa Baru</h2>
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{ showRejectModal: false, rejectRoute: '', rejectData: {}, openReject(r, d){ this.rejectRoute=r; this.rejectData=d; this.showRejectModal=true; } }" @tour-close-modals.window="showRejectModal=false">
 
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
@@ -75,9 +75,9 @@
                                 <div class="flex items-center justify-end gap-2">
                                     <form method="POST" action="{{ route('admin.pendaftaran.approve', $a) }}">
                                         @csrf
-                                        <button type="submit" @if($loop->first) data-tour="admin-pendaftaran-action-approve" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white row-action" style="background:#1A6B6B;" title="Setujui" aria-label="Setujui"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg><span class="hidden md:inline">Setujui</span></button>
+                                        <button type="submit" @if($loop->first) data-tour="admin-pendaftaran-action-approve" @endif class="row-action-icon shrink-0" style="background:#1A6B6B;" title="Setujui" aria-label="Setujui"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></button>
                                     </form>
-                                    <button @if($loop->first) data-tour="admin-pendaftaran-action-reject" data-tour-open-modal="reject" @endif @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg row-action" style="color:#C0392B;background:#FAD7D2;" title="Tolak" aria-label="Tolak"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg><span class="hidden md:inline">Tolak</span></button>
+                                    <button @if($loop->first) data-tour="admin-pendaftaran-action-reject" data-tour-open-modal="reject" @endif @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="row-action-icon" style="color:#C0392B;background:#FAD7D2;" title="Tolak" aria-label="Tolak"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
                                 </div>
                             </td>
                         </tr>

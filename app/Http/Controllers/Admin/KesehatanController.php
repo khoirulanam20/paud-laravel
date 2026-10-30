@@ -30,6 +30,13 @@ class KesehatanController extends Controller
             $query->where('name', 'like', '%'.$request->search.'%');
         }
 
+        $pemeriksaan = (string) $request->input('pemeriksaan', '');
+        if ($pemeriksaan === 'belum') {
+            $query->whereDoesntHave('kesehatans');
+        } elseif ($pemeriksaan === 'sudah') {
+            $query->whereHas('kesehatans');
+        }
+
         $anaks = $query->orderBy('name')->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $kelas = $user->applyScopedKelas(Kelas::where('sekolah_id', $user->sekolah_id)->orderBy('name'), 'id')->get();
 
@@ -47,6 +54,13 @@ class KesehatanController extends Controller
         }
         if ($request->filled('search')) {
             $query->where('name', 'like', '%'.$request->search.'%');
+        }
+
+        $pemeriksaan = (string) $request->input('pemeriksaan', '');
+        if ($pemeriksaan === 'belum') {
+            $query->whereDoesntHave('kesehatans');
+        } elseif ($pemeriksaan === 'sudah') {
+            $query->whereHas('kesehatans');
         }
 
         $rows = $query->orderBy('name')->get()->map(function (Anak $anak) {

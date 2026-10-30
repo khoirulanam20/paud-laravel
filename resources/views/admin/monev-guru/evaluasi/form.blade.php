@@ -9,7 +9,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">{{ $isEdit ? 'Edit Evaluasi Guru' : 'Buat Evaluasi Guru' }}</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
         x-data="{
             aiLoading: {},
             aiSuggestions: {},
@@ -152,8 +152,21 @@
             }
         }">
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
-        <div class="mb-4"><a href="{{ route('admin.monev-guru.index') }}" class="btn-secondary text-sm">← Kembali</a></div>
+
         <form action="{{ $action }}" method="POST" class="space-y-6">
+            <div class="card overflow-hidden">
+                <div class="card-pad border-b flex flex-wrap items-center justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                    <div>
+                        <h3 class="section-title mb-0">{{ $isEdit ? 'Edit evaluasi' : 'Buat evaluasi baru' }}</h3>
+                        <p class="section-subtitle mt-1">Lengkapi data guru, periode, dan penilaian per kriteria.</p>
+                    </div>
+                    <a href="{{ route('admin.monev-guru.index') }}"
+                        class="btn-secondary toolbar-icon shrink-0 inline-flex items-center justify-center !p-0 h-9 w-9 md:h-11 md:w-11"
+                        title="Kembali" aria-label="Kembali">
+                        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    </a>
+                </div>
+            </div>
             @csrf
             @if($isEdit) @method('PUT') @endif
             <div class="card p-6 space-y-4">

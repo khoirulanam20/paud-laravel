@@ -36,7 +36,7 @@
                     Profil Saya
                 </x-dropdown-link>
             @endif
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('logout') }}" data-turbo="false">
                 @csrf
                 <x-dropdown-link :href="route('logout')"
                         onclick="event.preventDefault(); this.closest('form').submit();">

@@ -19,7 +19,7 @@
             : url('pengajar/kegiatan');
     @endphp
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, activeMediaType:'image', editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
+    <div class="app-page-shell" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, activeMediaType:'image', editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
             tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false,
             docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
             photoToDelete: {id:null, path:''},
@@ -133,10 +133,8 @@
                     <h3 class="section-title">Kalender Agenda Saya</h3>
                     <p class="section-subtitle">Klik entri untuk detail, edit, atau hapus.</p>
                 </div>
-                <button type="button" data-tour="pg-kegiatan-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary toolbar-primary shrink-0"><svg
-                        class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>Buat Entri Jurnal</button>
+                <x-toolbar.add-icon label="Buat Entri Jurnal" data-tour="pg-kegiatan-add-btn" data-tour-open-modal="create"
+                    type="button" @click="showCreateModal=true" />
             </div>
             <form method="get" class="card-pad toolbar-form border-b"
                 style="border-color:rgba(0,0,0,0.06);">
@@ -164,7 +162,7 @@
                     </select>
                 </div>
                 <div class="toolbar-actions">
-                    <button type="submit" class="btn-secondary">Tampilkan</button>
+                    <x-toolbar.filter-icon label="Tampilkan" variant="secondary" />
                     <x-filter-reset :href="route('pengajar.kegiatan.index')" compact />
                     <x-download-photos :route="$kegiatanPhotoDownloadRoute" :icon-only="true" />
                 </div>
@@ -293,16 +291,14 @@
                     </div>
                 </div>
                 <div class="modal-footer flex flex-wrap gap-2">
-                    <button type="button" @click="showDetailModal=false; openDoc(detailEditPayload)" class="btn-primary"
-                        x-show="detailEditPayload.id" style="background:#10B981; border-color:#10B981;">
-                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    <button type="button" @click="showDetailModal=false; openDoc(detailEditPayload)" class="btn-primary shrink-0 h-9 w-9 md:h-11 md:w-11 p-0"
+                        x-show="detailEditPayload.id" style="background:#10B981; border-color:#10B981;" title="Dokumentasi" aria-label="Dokumentasi">
+                        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Dokumentasi
-                    </button>
+                        </svg></button>
                     <button type="button" @click="showDetailModal=false; openEdit(detailEditPayload)"
                         data-tour-open-modal="edit" class="btn-secondary">Edit</button>
                     <button type="button" @click="openDelete(deleteRoute); showDetailModal=false" data-tour-open-modal="delete" class="btn-danger"

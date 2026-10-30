@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
             showCreateModal: false, showEditModal: false, showDeleteModal: false, showImportModal: @js($errors->has('file')), showDetailModal: false,
             editData: {}, detailData: {}, detailHistory: [], detailHistoryLoading: false, detailHistoryError: null, deleteRoute: '',
@@ -113,7 +113,7 @@
                 <div class="flex items-center gap-2">
                     <x-export-excel route="admin.akun.export" />
                     <button type="button" @click="openImportModal()" class="btn-secondary text-sm">Import Excel</button>
-                    <button @click="showCreateModal=true" class="btn-primary">+ Tambah Akun</button>
+                    <x-toolbar.add-icon label="Tambah Akun" @click="showCreateModal=true" />
                 </div>
             </div>
 
@@ -138,7 +138,7 @@
                         @endforeach
                     </select>
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari..." class="input-field text-sm w-40">
-                    <button type="submit" class="btn-secondary text-xs">Filter</button>
+                    <x-toolbar.filter-icon variant="secondary" />
                     <x-filter-reset :href="route('admin.akun.index')" />
                 </form>
             </div>

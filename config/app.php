@@ -80,6 +80,9 @@ return [
 
     'locale' => env('APP_LOCALE', 'id'),
 
+    /** Locale untuk Carbon (nama hari/bulan di UI). Default Indonesia. */
+    'date_locale' => env('APP_DATE_LOCALE', 'id'),
+
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),

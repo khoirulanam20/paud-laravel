@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+    <div class="app-page-shell space-y-6">
         <div class="card overflow-hidden" data-tour="anak-summary">
             <div class="p-6 md:p-8">
                 <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">

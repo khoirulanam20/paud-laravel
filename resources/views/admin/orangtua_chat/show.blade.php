@@ -1,40 +1,55 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3 min-w-0" data-tour="page-header">
-            <a href="{{ route('admin.orangtua-chat.index') }}"
-               class="shrink-0 inline-flex items-center gap-1 text-sm font-medium px-2 py-1 rounded-lg hover:bg-black/5 transition-colors"
-               style="color:#1A6B6B;">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Kembali
-            </a>
-            <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background: #1A6B6B;">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style="background:#1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
             </div>
             <div class="min-w-0">
-                <h2 class="font-bold text-lg truncate" style="color: #2C2C2C;">Chat {{ $chat->user?->name ?? 'Orang Tua' }}</h2>
-                <p class="text-xs truncate" style="color:#9E9790;">
-                    Anak: {{ $chat->user?->anaks?->pluck('name')->filter()->unique()->implode(', ') ?: '' }}
+                <h2 class="font-bold text-xl truncate" style="color:#2C2C2C;">Chat {{ $chat->user?->name ?? 'Orang Tua' }}</h2>
+                <p class="text-xs truncate section-subtitle mt-0.5 mb-0">
+                    Anak: {{ $chat->user?->anaks?->pluck('name')->filter()->unique()->implode(', ') ?: '—' }}
                 </p>
             </div>
         </div>
     </x-slot>
 
-    <div class="px-3 sm:px-6 lg:px-8 pb-6 lg:pb-8">
+    <div class="app-page-shell">
         <div class="max-w-3xl mx-auto space-y-4">
+            <div class="card overflow-hidden">
+                <div class="card-pad toolbar-form border-b w-full" style="border-color:rgba(0,0,0,0.06);">
+                    <div class="toolbar-actions w-full sm:w-auto sm:ml-0">
+                        <a href="{{ route('admin.orangtua-chat.index') }}"
+                            class="btn-secondary toolbar-icon shrink-0 inline-flex items-center justify-center !p-0 h-9 w-9 md:h-11 md:w-11"
+                            title="Kembali" aria-label="Kembali">
+                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="px-4 md:px-6 py-3 text-xs sm:text-sm flex flex-wrap gap-x-4 gap-y-1 border-b" style="background:#FAF6F0;border-color:rgba(0,0,0,0.06);color:#6B6560;">
+                    @if($chat->user?->email)
+                        <span>{{ $chat->user->email }}</span>
+                    @endif
+                    <span>{{ $messages->count() }} pesan · mode baca saja</span>
+                    @if($chat->cleared_at)
+                        <span class="badge text-[10px]" style="background:#FFF3E0;color:#E65100;">Dihapus ortu {{ $chat->cleared_at->translatedFormat('d M Y, H:i') }}</span>
+                    @else
+                        <span class="badge badge-teal text-[10px]">Aktif</span>
+                    @endif
+                </div>
+            </div>
+
             @if($chat->cleared_at)
-                <div class="px-4 py-3 rounded-xl text-sm flex items-start gap-2" style="background:#FFF3E0;color:#E65100;">
+                <div class="alert-danger text-sm flex items-start gap-2">
                     <svg class="h-5 w-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Orang tua menghapus riwayat dari tampilan mereka pada {{ $chat->cleared_at->format('d M Y, H:i') }}. Riwayat lengkap tetap tersimpan di bawah.</span>
+                    <span>Orang tua menghapus riwayat dari tampilan mereka pada {{ $chat->cleared_at->translatedFormat('d F Y, H:i') }}. Riwayat lengkap tetap tersimpan di bawah.</span>
                 </div>
             @endif
 
-            <div class="admin-chat-panel rounded-2xl border border-black/5 overflow-hidden shadow-sm flex flex-col bg-white" data-tour="chat-thread">
+            <div class="admin-chat-panel rounded-2xl border border-black/5 overflow-hidden shadow-sm flex flex-col bg-white card" data-tour="chat-thread">
                 <div id="admin-chat-thread" class="admin-chat-thread flex-1 overflow-y-auto overscroll-contain px-4 py-4">
                     @forelse($messages as $msg)
                         @if($msg->role === 'user')
@@ -44,7 +59,7 @@
                                     <div class="admin-chat-bubble admin-chat-bubble-user shadow-sm">
                                         <p class="text-[14px] leading-[1.45] whitespace-pre-wrap break-words text-left">{{ $msg->content }}</p>
                                         <div class="flex justify-end mt-1">
-                                            <span class="text-[10px] leading-none opacity-70">{{ $msg->created_at->format('d M Y, H:i') }}</span>
+                                            <span class="text-[10px] leading-none opacity-70">{{ $msg->created_at->translatedFormat('d M Y, H:i') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -56,7 +71,7 @@
                                     <div class="admin-chat-bubble admin-chat-bubble-ai shadow-sm">
                                         <p class="text-[14px] leading-[1.45] whitespace-pre-wrap break-words text-left">{{ $msg->content }}</p>
                                         <div class="flex justify-end mt-1">
-                                            <span class="text-[10px] leading-none opacity-60">{{ $msg->created_at->format('d M Y, H:i') }}</span>
+                                            <span class="text-[10px] leading-none opacity-60">{{ $msg->created_at->translatedFormat('d M Y, H:i') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -85,7 +100,7 @@
     @push('scripts')
     <style>
         .admin-chat-panel {
-            height: calc(100dvh - 11rem);
+            height: calc(100dvh - 13rem);
             min-height: 22rem;
         }
         .admin-chat-thread {

@@ -1,11 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('admin.rkas.index', ['tahun_ajaran' => $rka->tahun_ajaran]) }}" class="text-sm" style="color:#1A6B6B;">&larr; Kembali</a>
-                <h2 class="font-bold text-xl" style="color:#2C2C2C;">{{ $rka->label }}</h2>
-                <span class="badge {{ $rka->isFinal() ? 'badge-green' : 'badge-blue' }}">{{ ucfirst($rka->status) }}</span>
-            </div>
+        <div class="flex items-center gap-3 flex-wrap" data-tour="page-header">
+            <h2 class="font-bold text-xl" style="color:#2C2C2C;">{{ $rka->label }}</h2>
+            <span class="badge {{ $rka->isFinal() ? 'badge-green' : 'badge-blue' }}">{{ ucfirst($rka->status) }}</span>
+        </div>
+    </x-slot>
+
+    <div class="app-page-shell" x-data="{ showFinalizeModal: false }">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <a href="{{ route('admin.rkas.index', ['tahun_ajaran' => $rka->tahun_ajaran]) }}" class="btn-secondary text-sm">← RKAS</a>
             <div class="flex gap-2 flex-wrap">
                 @if(!$rka->isFinal())
                     <button type="button" @click="showFinalizeModal = true" class="btn-secondary text-sm">Finalkan</button>
@@ -15,9 +18,6 @@
                 <form action="{{ route('admin.rkas.sync', $rka) }}" method="POST">@csrf<button class="btn-secondary text-sm">Sync Realisasi</button></form>
             </div>
         </div>
-    </x-slot>
-
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-full mx-auto" x-data="{ showFinalizeModal: false }">
         @if(session('success'))<div class="alert-success mb-5">{{ session('success') }}</div>@endif
         <div class="card p-4 mb-5 text-sm" style="color:#9E9790;">Periode: {{ $rka->tanggal_mulai->format('d M Y') }} – {{ $rka->tanggal_akhir->format('d M Y') }}</div>
 

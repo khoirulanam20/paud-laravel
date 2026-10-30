@@ -18,7 +18,7 @@ class JamKerjaController extends Controller
 
         $this->pastikanJadwalLengkap($sekolah);
 
-        return view('admin.jam-kerja.index', [
+        return view('admin.presensi-setting.index', [
             'sekolah' => $sekolah,
             'jadwals' => $sekolah->jamKerjas()->get()->keyBy('hari'),
             'hariLiburs' => $sekolah->hariLiburs()->get(),
@@ -102,7 +102,7 @@ class JamKerjaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.presensi-guru.pengaturan')
+            ->route('admin.presensi-setting.index')
             ->with('success', 'Pengaturan presensi guru berhasil disimpan.');
     }
 
@@ -134,7 +134,7 @@ class JamKerjaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.presensi-guru.pengaturan')
+            ->route('admin.presensi-setting.index')
             ->with('success', 'Hari libur berhasil disimpan.');
     }
 
@@ -152,7 +152,7 @@ class JamKerjaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.presensi-guru.pengaturan')
+            ->route('admin.presensi-setting.index')
             ->with('success', 'Hari libur berhasil dihapus.');
     }
 

@@ -24,8 +24,19 @@ class PresensiPengajarController extends Controller
         $sekolahId = $user->sekolah_id;
         $tanggal = $request->input('tanggal', date('Y-m-d'));
 
-        $pengajars = Pengajar::where('sekolah_id', $sekolahId)
-            ->orderBy('name')
+        $pengajarQuery = Pengajar::query()
+            ->where('sekolah_id', $sekolahId)
+            ->orderBy('name');
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $pengajarQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('nip', 'like', '%'.$search.'%');
+            });
+        }
+
+        $pengajars = $pengajarQuery
             ->paginate(PaginationPerPage::resolve($request))
             ->withQueryString();
 
@@ -61,7 +72,22 @@ class PresensiPengajarController extends Controller
             Carbon::parse($tanggal),
         );
 
-        return view('admin.presensi-guru.index', compact('pengajars', 'presensis', 'tanggal', 'rekapBulanan', 'rekapMonth', 'rekapYear', 'jadwal'));
+        $totalPengajar = Pengajar::where('sekolah_id', $sekolahId)->count();
+        $hadirHariIni = $presensis->filter(fn (PresensiPengajar $p) => $p->hadir)->count();
+        $sudahDiisi = $presensis->count();
+
+        return view('admin.presensi-guru.index', compact(
+            'pengajars',
+            'presensis',
+            'tanggal',
+            'rekapBulanan',
+            'rekapMonth',
+            'rekapYear',
+            'jadwal',
+            'totalPengajar',
+            'hadirHariIni',
+            'sudahDiisi',
+        ));
     }
 
     public function export(Request $request)

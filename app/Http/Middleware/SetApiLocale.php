@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetApiLocale
@@ -13,6 +14,7 @@ class SetApiLocale
         $locale = (string) config('api.locale', 'id');
 
         app()->setLocale($locale);
+        Carbon::setLocale((string) config('app.date_locale', 'id'));
 
         $validationPath = lang_path($locale.'/api_validation.php');
 

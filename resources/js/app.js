@@ -1,11 +1,10 @@
 import './bootstrap';
 import './documentation-media';
+import './turbo-nav';
 
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
-
-Alpine.start();
 
 document.addEventListener('change', (e) => {
     const select = e.target;

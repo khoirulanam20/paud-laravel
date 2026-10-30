@@ -11,6 +11,14 @@ return [
         ['element' => '[data-tour="dashboard-quick-links"]', 'title' => 'Akses Cepat', 'description' => 'Shortcut ke menu yang sering digunakan.', 'side' => 'top'],
     ],
 
+    'admin.dashboard' => [
+        ['element' => '[data-tour="dashboard-welcome"]', 'title' => 'Selamat Datang', 'description' => 'Dashboard ringkasan operasional sekolah.', 'side' => 'bottom'],
+        ['element' => '[data-tour="dashboard-stats"]', 'title' => 'Statistik Utama', 'description' => 'Angka penting yang perlu dipantau setiap hari.', 'side' => 'bottom'],
+        ['element' => '[data-tour="dashboard-attention"]', 'title' => 'Perlu Perhatian', 'description' => 'Prioritas tindakan hari ini.', 'side' => 'top'],
+        ['element' => '[data-tour="dashboard-quick-links"]', 'title' => 'Akses Cepat', 'description' => 'Pintasan ke modul harian sekolah.', 'side' => 'top'],
+        ['element' => '[data-tour="dashboard-recent"]', 'title' => 'Aktivitas Terbaru', 'description' => 'Kegiatan dan informasi terkini.', 'side' => 'top'],
+    ],
+
     'profile.edit' => [
         ['element' => '[data-tour="nav-profile.edit"]', 'title' => 'Menu Profil Admin', 'description' => 'Kelola profil akun login Anda.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Profil Akun', 'description' => 'Kelola informasi login dan profil pribadi Anda.', 'side' => 'bottom'],

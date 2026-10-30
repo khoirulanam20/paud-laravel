@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
              showCreateModal: false,
              showAddSiswaModal: false,
@@ -49,7 +49,7 @@
             <div class="card p-6" data-tour="admin-biaya-jenis">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="section-title">Jenis Biaya</h3>
-                    <button data-tour="admin-biaya-add-jenis-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary text-xs px-3 py-1.5">+ Tambah</button>
+                    <x-toolbar.add-icon label="Tambah jenis biaya" data-tour="admin-biaya-add-jenis-btn" data-tour-open-modal="create" @click="showCreateModal=true" />
                 </div>
                 <div class="space-y-2">
                     @forelse($semuaBiaya as $biaya)
@@ -97,7 +97,7 @@
                                 <x-filter-reset :href="route('admin.biaya-bulanan.index', ['biaya_id' => $biayaTerpilih->id])" />
                             </form>
                             <x-export-excel route="admin.biaya-bulanan.export" class="text-sm" />
-                            <button type="button" data-tour="admin-biaya-add-siswa-btn" data-tour-open-modal="addSiswa" @click="openAddSiswa()" class="btn-primary text-sm">+ Tambah Siswa</button>
+                            <x-toolbar.add-icon label="Tambah Siswa" data-tour="admin-biaya-add-siswa-btn" data-tour-open-modal="addSiswa" @click="openAddSiswa()" />
                         </div>
                     </div>
 

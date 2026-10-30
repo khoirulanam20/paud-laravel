@@ -1,6 +1,86 @@
 import { Calendar } from '@fullcalendar/core';
+import idLocale from '@fullcalendar/core/locales/id';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import listPlugin from '@fullcalendar/list';
+
+function formatKelasDisplay(raw) {
+    const s = String(raw).trim();
+    if (!s) {
+        return '';
+    }
+
+    return s
+        .split(/\s+/)
+        .map((word) => {
+            const lower = word.toLowerCase();
+            if (lower === 'kelas') {
+                return 'Kelas';
+            }
+            if (word.length === 1) {
+                return word.toUpperCase();
+            }
+
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join(' ');
+}
+
+function makeKelasBadge(kelas, onEvent = false) {
+    const span = document.createElement('span');
+    span.className = onEvent ? 'jurnal-fc-kelas-chip jurnal-fc-kelas-chip--on-event' : 'badge badge-teal jurnal-fc-kelas-chip';
+    span.textContent = formatKelasDisplay(kelas);
+    return span;
+}
+
+function buildListEventContent(arg) {
+    const detail = arg.event.extendedProps.detail || {};
+    const title = arg.event.title;
+    const kelas = detail.kelas_name || '';
+    const desc = detail.description || '';
+
+    const container = document.createElement('div');
+    container.className = 'jurnal-fc-list-event py-0.5';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'jurnal-fc-list-event-title';
+    titleEl.textContent = title;
+    container.appendChild(titleEl);
+
+    if (kelas && kelas !== '-') {
+        const meta = document.createElement('div');
+        meta.className = 'jurnal-fc-list-event-meta';
+        meta.appendChild(makeKelasBadge(kelas));
+        container.appendChild(meta);
+    }
+
+    if (desc) {
+        const descEl = document.createElement('p');
+        descEl.className = 'jurnal-fc-list-desc';
+        descEl.textContent = desc;
+        container.appendChild(descEl);
+    }
+
+    return { domNodes: [container] };
+}
+
+function buildDayGridEventContent(arg) {
+    const detail = arg.event.extendedProps.detail || {};
+    const kelas = detail.kelas_name || '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'jurnal-fc-day-event';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'jurnal-fc-day-event-title';
+    titleEl.textContent = arg.event.title;
+    wrap.appendChild(titleEl);
+
+    if (kelas && kelas !== '-') {
+        wrap.appendChild(makeKelasBadge(kelas, true /* on colored event */));
+    }
+
+    return { domNodes: [wrap] };
+}
 
 function loadEventsFromPage() {
     const jsonEl = document.getElementById('kegiatan-calendar-json');
@@ -48,7 +128,7 @@ function initKegiatanCalendar() {
         plugins: [dayGridPlugin, listPlugin],
         initialView: viewFromUrl,
         initialDate,
-        locale: 'en',
+        locale: idLocale,
         buttonText: {
             today: 'Hari ini',
             month: 'Bulan',
@@ -69,37 +149,11 @@ function initKegiatanCalendar() {
         events,
         views: {
             listMonth: {
-                eventContent: function (arg) {
-                    const detail = arg.event.extendedProps.detail || {};
-                    const title = arg.event.title;
-                    const kelas = detail.kelas_name || '';
-                    const desc = detail.description || '';
-
-                    const container = document.createElement('div');
-                    container.className = 'py-1';
-
-                    const titleEl = document.createElement('div');
-                    titleEl.className = 'font-bold text-gray-800';
-                    titleEl.textContent = title;
-                    container.appendChild(titleEl);
-
-                    if (kelas && kelas !== '-') {
-                        const kelasEl = document.createElement('div');
-                        kelasEl.className = 'text-[10px] mt-0.5 font-bold text-teal-700';
-                        kelasEl.textContent = 'Kelas: ' + kelas;
-                        container.appendChild(kelasEl);
-                    }
-
-                    if (desc) {
-                        const descEl = document.createElement('div');
-                        descEl.className = 'text-[10px] mt-1 text-gray-500 italic line-clamp-2';
-                        descEl.textContent = '"' + desc + '"';
-                        container.appendChild(descEl);
-                    }
-
-                    return { domNodes: [container] };
-                }
-            }
+                eventContent: buildListEventContent,
+            },
+            dayGridMonth: {
+                eventContent: buildDayGridEventContent,
+            },
         },
         eventClick(info) {
             info.jsEvent.preventDefault();

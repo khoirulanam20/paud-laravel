@@ -11,7 +11,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+    <div class="app-page-shell" x-data="{
             showCreateModal: @js($errors->any() && ! $errors->has('file')),
             showImportModal: @js($errors->has('file')),
             showEditModal: false,
@@ -165,21 +165,11 @@
         </div>@endif
 
         <div class="card overflow-hidden">
-            <div class="card-pad page-toolbar border-b" style="border-color: rgba(0,0,0,0.06);">
-                <div class="min-w-0">
-                    <h3 class="section-title mb-0">Daftar Siswa &amp; Orang Tua</h3>
-                    <p class="section-subtitle mt-1 hidden sm:block">Cari, filter kelas, export, atau tambah siswa baru.</p>
-                </div>
-                <button type="button" data-tour="admin-anak-add-btn" data-tour-open-modal="create" @click="showCreateModal = true"
-                    class="btn-primary toolbar-primary shrink-0 h-9 md:h-11 px-3 md:px-4"
-                    title="Registrasi siswa baru">
-                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span class="hidden md:inline ml-1.5">Registrasi</span>
-                </button>
+            <div class="px-4 md:px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                <h3 class="section-title">Daftar Siswa &amp; Orang Tua</h3>
+                <p class="section-subtitle">Registrasi, import Excel, dan kelola data siswa beserta orang tua.</p>
             </div>
-            <form data-tour="admin-anak-filter" method="get" class="card-pad toolbar-form border-b" style="border-color: rgba(0,0,0,0.06);">
+            <form data-tour="admin-anak-filter" method="get" class="card-pad toolbar-form border-b w-full" style="border-color:rgba(0,0,0,0.06);">
                 <div class="toolbar-field md:min-w-[12rem] md:flex-[2]">
                     <label class="input-label">Cari Nama Siswa</label>
                     <input type="text" name="search" value="{{ request('search') }}" class="input-field"
@@ -195,22 +185,16 @@
                     </select>
                 </div>
                 <div class="toolbar-actions">
-                    <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Cari" aria-label="Cari">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
+                    <x-toolbar.filter-icon label="Filter" variant="secondary" />
                     <x-filter-reset :href="route('admin.anak.index')" compact />
                     <x-export-excel route="admin.anak.export" :icon-only="true" />
-                    <button type="button" @click="openImportModal()"
-                        class="toolbar-icon shrink-0 rounded-lg flex items-center justify-center transition border"
-                        style="color: #1A6B6B; background: #E8F5F5; border-color: #D0E8E8;"
-                        title="Import Excel" aria-label="Import Excel">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </button>
+                    <x-icon-btn type="button" variant="toolbar-teal" label="Import Excel"
+                        icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        style="color:#1A6B6B;background:#E8F5F5;border-color:#D0E8E8;"
+                        @click="openImportModal()" />
+                    <x-toolbar.add-icon label="Registrasi siswa baru" type="button"
+                        data-tour="admin-anak-add-btn" data-tour-open-modal="create"
+                        @click="showCreateModal = true" />
                 </div>
             </form>
 
@@ -258,14 +242,14 @@
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('admin.anak.show', $anak) }}"
                                             @if($loop->first) data-tour="admin-anak-action-detail" @endif
-                                            class="text-xs font-semibold px-3 py-1.5 rounded-lg transition row-action"
-                                            style="color: #1A6B6B; background: #E8F5F5;" title="Detail" aria-label="Detail"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><span class="hidden md:inline">Detail</span></a>
+                                            class="row-action-icon"
+                                            style="color: #1A6B6B; background: #E8F5F5;" title="Detail" aria-label="Detail"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>
                                         <button @if($loop->first) data-tour="admin-anak-action-edit" data-tour-open-modal="edit" @endif @click="openEdit({{ json_encode($anak) }})"
-                                            class="text-xs font-semibold px-3 py-1.5 rounded-lg transition row-action"
-                                            style="color: #1A6B6B; background: #D0E8E8;" title="Edit" aria-label="Edit"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg><span class="hidden md:inline">Edit</span></button>
+                                            class="row-action-icon"
+                                            style="color: #1A6B6B; background: #D0E8E8;" title="Edit" aria-label="Edit"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                         <button @if($loop->first) data-tour="admin-anak-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.anak.destroy', $anak) }}')"
-                                            class="text-xs font-semibold px-3 py-1.5 rounded-lg transition row-action"
-                                            style="color: #C0392B; background: #FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="md:hidden h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg><span class="hidden md:inline">Hapus</span></button>
+                                            class="row-action-icon"
+                                            style="color: #C0392B; background: #FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                                     </div>
                                 </td>
                             </tr>

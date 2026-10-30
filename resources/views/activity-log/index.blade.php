@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-5">
+    <div class="app-page-shell space-y-5">
         @if(request()->routeIs('admin.activity-log.*'))
             <x-settings-tabs />
         @endif
@@ -40,7 +40,7 @@
                         @endforeach
                     </select>
                 </div>
-                <button type="submit" class="btn-secondary">Filter</button>
+                <x-toolbar.filter-icon variant="secondary" />
                 <x-filter-reset :href="url()->current()" />
                 @if(request()->routeIs('admin.activity-log.*'))
                     <x-export-excel route="admin.activity-log.export" />

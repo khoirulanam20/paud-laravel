@@ -1,18 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('admin.laporan-keuangan.index') }}" class="text-sm" style="color:#1A6B6B;">← Laporan</a>
-                <h2 class="font-bold text-xl" style="color: #2C2C2C;">Neraca</h2>
+        <div class="flex items-center gap-3" data-tour="page-header">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
+                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
             </div>
+            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Neraca</h2>
+        </div>
+    </x-slot>
+
+    <div class="app-page-shell">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <a href="{{ route('admin.laporan-keuangan.index') }}" class="btn-secondary text-sm">← Laporan Keuangan</a>
             <div class="flex items-center gap-2">
                 <x-export-excel route="admin.laporan-keuangan.neraca.export" class="text-sm" />
                 <a href="{{ route('admin.laporan-keuangan.neraca.pdf', request()->only(['tipe', 'bulan', 'tahun'])) }}" class="btn-secondary text-sm">Export PDF</a>
             </div>
         </div>
-    </x-slot>
-
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <x-laporan-periode-filter :action="route('admin.laporan-keuangan.neraca')" :periode="$periode" />
 
         <div class="card overflow-hidden mb-6">

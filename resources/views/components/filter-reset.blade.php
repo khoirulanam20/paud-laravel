@@ -1,6 +1,6 @@
 @props([
     'href',
-    'compact' => false,
+    'compact' => true,
     'label' => 'Reset',
 ])
 

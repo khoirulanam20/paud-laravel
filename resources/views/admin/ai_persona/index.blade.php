@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
             activeTab: @js($activeTab),
             tokenBalance: @js($tokenBalance),

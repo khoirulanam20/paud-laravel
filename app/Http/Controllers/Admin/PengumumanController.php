@@ -28,6 +28,36 @@ class PengumumanController extends Controller
             $query->whereIn('kelas_id', $waliKelasIds);
         }
 
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', '%'.$search.'%')
+                    ->orWhere('isi', 'like', '%'.$search.'%')
+                    ->orWhere('kategori', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($request->filled('kelas_id')) {
+            $kelasFilter = (int) $request->input('kelas_id');
+            if ($waliKelasIds === null || in_array($kelasFilter, $waliKelasIds, true)) {
+                $query->where('kelas_id', $kelasFilter);
+            }
+        }
+
+        $status = (string) $request->input('status', '');
+        $today = today();
+        if ($status === 'aktif') {
+            $query->where('is_active', true)
+                ->whereDate('mulai_tayang', '<=', $today)
+                ->whereDate('selesai_tayang', '>=', $today);
+        } elseif ($status === 'nonaktif') {
+            $query->where('is_active', false);
+        } elseif ($status === 'belum_tayang') {
+            $query->where('is_active', true)->whereDate('mulai_tayang', '>', $today);
+        } elseif ($status === 'berakhir') {
+            $query->whereDate('selesai_tayang', '<', $today);
+        }
+
         $pengumumans = $query
             ->paginate(PaginationPerPage::resolve($request))
             ->withQueryString();
