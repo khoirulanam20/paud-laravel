@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Models\Pengajar;
 use App\Models\PresensiPengajar;
+use App\Models\PresensiShift;
 use App\Models\Sekolah;
 use App\Models\SekolahHariLibur;
 use App\Models\SekolahJamKerja;
+use App\Support\GeoCoordinate;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -22,31 +24,55 @@ class PresensiPengajarService
     public const AKURASI_MAKS_METER = 200;
 
     /**
-     * Ambil koordinat sekolah dari kolom teks "lat, lng".
-     *
      * @return array{lat: float, lng: float}|null
      */
     public function koordinatSekolah(Sekolah $sekolah): ?array
     {
-        $raw = (string) ($sekolah->location_coordinate ?? '');
+        $default = $sekolah->relationLoaded('defaultPresensiShift')
+            ? $sekolah->defaultPresensiShift
+            : PresensiShift::withoutSekolahScope()
+                ->where('sekolah_id', $sekolah->id)
+                ->where('is_default', true)
+                ->first();
 
-        if (preg_match_all('/-?\d+(?:\.\d+)?/', $raw, $matches) < 2) {
-            return null;
+        if ($default !== null) {
+            $parsed = $this->koordinatShift($default);
+            if ($parsed !== null) {
+                return $parsed;
+            }
         }
 
-        $numbers = array_map(
-            fn (string $value): float => (float) $value,
-            $matches[0],
-        );
+        return GeoCoordinate::parse($sekolah->location_coordinate);
+    }
 
-        [$lat, $lng] = $numbers;
+    /**
+     * @return array{lat: float, lng: float}|null
+     */
+    public function koordinatShift(PresensiShift $shift): ?array
+    {
+        return GeoCoordinate::parse($shift->location_coordinate);
+    }
 
-        // Validasi rentang koordinat wajar.
-        if (abs($lat) > 90 || abs($lng) > 180) {
-            return null;
+    public function resolveShift(Pengajar $pengajar): PresensiShift
+    {
+        if ($pengajar->presensi_shift_id === null) {
+            throw ValidationException::withMessages([
+                'presensi' => 'Shift presensi belum diatur untuk akun Anda. Hubungi admin sekolah.',
+            ]);
         }
 
-        return ['lat' => $lat, 'lng' => $lng];
+        $shift = PresensiShift::withoutSekolahScope()
+            ->where('sekolah_id', $pengajar->sekolah_id)
+            ->whereKey($pengajar->presensi_shift_id)
+            ->first();
+
+        if ($shift === null) {
+            throw ValidationException::withMessages([
+                'presensi' => 'Shift presensi tidak valid. Hubungi admin sekolah.',
+            ]);
+        }
+
+        return $shift;
     }
 
     public function jarakMeter(float $lat1, float $lng1, float $lat2, float $lng2): float
@@ -62,31 +88,31 @@ class PresensiPengajarService
         return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
-    public function jadwalHari(Sekolah $sekolah, CarbonInterface $tanggal): ?SekolahJamKerja
+    public function jadwalHari(PresensiShift $shift, CarbonInterface $tanggal): ?SekolahJamKerja
     {
         return SekolahJamKerja::withoutSekolahScope()
-            ->where('sekolah_id', $sekolah->id)
+            ->where('presensi_shift_id', $shift->id)
             ->where('hari', $tanggal->dayOfWeekIso)
             ->first();
     }
 
-    public function isLibur(Sekolah $sekolah, CarbonInterface $tanggal): bool
+    public function isLibur(Sekolah $sekolah, PresensiShift $shift, CarbonInterface $tanggal): bool
     {
-        $jadwal = $this->jadwalHari($sekolah, $tanggal);
-
-        if ($jadwal && ! $jadwal->is_kerja) {
+        if ($sekolah->hariLiburs()
+            ->whereDate('tanggal', $tanggal->toDateString())
+            ->exists()) {
             return true;
         }
 
-        return $sekolah->hariLiburs()
-            ->whereDate('tanggal', $tanggal->toDateString())
-            ->exists();
+        $jadwal = $this->jadwalHari($shift, $tanggal);
+
+        return $jadwal !== null && ! $jadwal->is_kerja;
     }
 
     /** Jam pulang efektif hari itu, atau null kalau hari libur / belum diatur. */
-    public function jamPulangHari(Sekolah $sekolah, CarbonInterface $tanggal): ?CarbonInterface
+    public function jamPulangHari(PresensiShift $shift, CarbonInterface $tanggal): ?CarbonInterface
     {
-        $jadwal = $this->jadwalHari($sekolah, $tanggal);
+        $jadwal = $this->jadwalHari($shift, $tanggal);
 
         if (! $jadwal || ! $jadwal->is_kerja || ! $jadwal->jam_pulang) {
             return null;
@@ -96,9 +122,9 @@ class PresensiPengajarService
     }
 
     /** Check-out hanya dibuka mulai jam pulang. */
-    public function bolehCheckOut(Sekolah $sekolah, CarbonInterface $tanggal): bool
+    public function bolehCheckOut(PresensiShift $shift, CarbonInterface $tanggal): bool
     {
-        $batas = $this->jamPulangHari($sekolah, $tanggal);
+        $batas = $this->jamPulangHari($shift, $tanggal);
 
         return $batas === null || $tanggal->gte($batas);
     }
@@ -117,6 +143,8 @@ class PresensiPengajarService
      *
      * @return array{
      *     tanggal: CarbonInterface,
+     *     shift: PresensiShift,
+     *     shift_nama: string,
      *     jadwal: SekolahJamKerja|null,
      *     presensi: PresensiPengajar|null,
      *     libur: bool,
@@ -128,22 +156,25 @@ class PresensiPengajarService
      */
     public function statusHariIni(Pengajar $pengajar, Sekolah $sekolah, CarbonInterface $tanggal): array
     {
+        $shift = $this->resolveShift($pengajar);
         $presensi = $this->presensiHariIni($pengajar, $tanggal);
-        $koordinatSet = $this->koordinatSekolah($sekolah) !== null;
-        $libur = $this->isLibur($sekolah, $tanggal);
+        $koordinatSet = $this->koordinatShift($shift) !== null;
+        $libur = $this->isLibur($sekolah, $shift, $tanggal);
 
         return [
             'tanggal' => $tanggal,
-            'jadwal' => $this->jadwalHari($sekolah, $tanggal),
+            'shift' => $shift,
+            'shift_nama' => $shift->name,
+            'jadwal' => $this->jadwalHari($shift, $tanggal),
             'presensi' => $presensi,
             'libur' => $libur,
             'koordinat_set' => $koordinatSet,
-            'radius_meter' => $sekolah->radiusMeter(),
+            'radius_meter' => $shift->radiusMeter(),
             'bisa_check_in' => ! $libur && $koordinatSet && $presensi?->check_in_at === null,
             'bisa_check_out' => ! $libur && $koordinatSet
                 && $presensi?->check_in_at !== null
                 && $presensi?->check_out_at === null
-                && $this->bolehCheckOut($sekolah, $tanggal),
+                && $this->bolehCheckOut($shift, $tanggal),
         ];
     }
 
@@ -153,8 +184,9 @@ class PresensiPengajarService
     public function checkIn(Pengajar $pengajar, Sekolah $sekolah, array $payload): PresensiPengajar
     {
         $now = Carbon::now();
-        $this->pastikanLokasiSekolah($sekolah);
-        $this->pastikanTidakLibur($sekolah, $now);
+        $shift = $this->resolveShift($pengajar);
+        $this->pastikanLokasiShift($shift);
+        $this->pastikanTidakLibur($sekolah, $shift, $now);
         $this->pastikanAkurasiWajar($payload['accuracy'] ?? null);
 
         $presensi = $this->presensiHariIni($pengajar, $now);
@@ -165,7 +197,7 @@ class PresensiPengajarService
             ]);
         }
 
-        $koordinat = $this->koordinatSekolah($sekolah);
+        $koordinat = $this->koordinatShift($shift);
         $jarak = $this->jarakMeter(
             $payload['latitude'],
             $payload['longitude'],
@@ -173,17 +205,18 @@ class PresensiPengajarService
             $koordinat['lng'],
         );
 
-        if ($jarak > $sekolah->radiusMeter()) {
+        if ($jarak > $shift->radiusMeter()) {
             throw ValidationException::withMessages([
                 'presensi' => sprintf(
-                    'Anda berada di luar area sekolah (%.0f m dari titik sekolah, maksimal %d m).',
+                    'Anda berada di luar area shift %s (%.0f m dari titik absensi, maksimal %d m).',
+                    $shift->name,
                     $jarak,
-                    $sekolah->radiusMeter(),
+                    $shift->radiusMeter(),
                 ),
             ]);
         }
 
-        [$terlambat, $menitTerlambat] = $this->hitungTerlambatMasuk($sekolah, $now);
+        [$terlambat, $menitTerlambat] = $this->hitungTerlambatMasuk($shift, $now);
 
         return PresensiPengajar::withoutSekolahScope()->updateOrCreate(
             [
@@ -192,6 +225,7 @@ class PresensiPengajarService
                 'tanggal' => $now->toDateString(),
             ],
             [
+                'presensi_shift_id' => $shift->id,
                 'hadir' => true,
                 'status' => null,
                 'check_in_at' => $now,
@@ -213,8 +247,9 @@ class PresensiPengajarService
     public function checkOut(Pengajar $pengajar, Sekolah $sekolah, array $payload): PresensiPengajar
     {
         $now = Carbon::now();
-        $this->pastikanLokasiSekolah($sekolah);
-        $this->pastikanTidakLibur($sekolah, $now);
+        $shift = $this->resolveShift($pengajar);
+        $this->pastikanLokasiShift($shift);
+        $this->pastikanTidakLibur($sekolah, $shift, $now);
         $this->pastikanAkurasiWajar($payload['accuracy'] ?? null);
 
         $presensi = $this->presensiHariIni($pengajar, $now);
@@ -231,7 +266,7 @@ class PresensiPengajarService
             ]);
         }
 
-        $batasPulang = $this->jamPulangHari($sekolah, $now);
+        $batasPulang = $this->jamPulangHari($shift, $now);
 
         if ($batasPulang !== null && $now->lt($batasPulang)) {
             throw ValidationException::withMessages([
@@ -239,7 +274,7 @@ class PresensiPengajarService
             ]);
         }
 
-        $koordinat = $this->koordinatSekolah($sekolah);
+        $koordinat = $this->koordinatShift($shift);
         $jarak = $this->jarakMeter(
             $payload['latitude'],
             $payload['longitude'],
@@ -247,17 +282,18 @@ class PresensiPengajarService
             $koordinat['lng'],
         );
 
-        if ($jarak > $sekolah->radiusMeter()) {
+        if ($jarak > $shift->radiusMeter()) {
             throw ValidationException::withMessages([
                 'presensi' => sprintf(
-                    'Anda berada di luar area sekolah (%.0f m dari titik sekolah, maksimal %d m).',
+                    'Anda berada di luar area shift %s (%.0f m dari titik absensi, maksimal %d m).',
+                    $shift->name,
                     $jarak,
-                    $sekolah->radiusMeter(),
+                    $shift->radiusMeter(),
                 ),
             ]);
         }
 
-        [$telatPulang, $menitTelatPulang] = $this->hitungTelatPulang($sekolah, $presensi->check_in_at, $now);
+        [$telatPulang, $menitTelatPulang] = $this->hitungTelatPulang($shift, $presensi->check_in_at, $now);
 
         $presensi->forceFill([
             'check_out_at' => $now,
@@ -294,7 +330,7 @@ class PresensiPengajarService
         $telatPulang = $rows->where('telat_pulang', true)->count();
         $tanpaCheckOut = $rows->filter(fn (PresensiPengajar $row) => $row->check_in_at !== null && $row->check_out_at === null)->count();
 
-        $hariKerja = $this->hitungHariKerja($pengajar->sekolah_id, $mulai, $selesai);
+        $hariKerja = $this->hitungHariKerja($pengajar, $mulai, $selesai);
 
         return [
             'hari_kerja' => $hariKerja,
@@ -306,18 +342,20 @@ class PresensiPengajarService
         ];
     }
 
-    public function hitungHariKerja(int $sekolahId, CarbonInterface $mulai, CarbonInterface $selesai): int
+    public function hitungHariKerja(Pengajar $pengajar, CarbonInterface $mulai, CarbonInterface $selesai): int
     {
         $mulai = Carbon::parse($mulai)->startOfDay();
         $selesai = Carbon::parse($selesai)->endOfDay();
 
+        $shift = $this->resolveShift($pengajar);
+
         $jadwalKerja = SekolahJamKerja::withoutSekolahScope()
-            ->where('sekolah_id', $sekolahId)
+            ->where('presensi_shift_id', $shift->id)
             ->where('is_kerja', true)
             ->pluck('hari')
             ->all();
 
-        $hariLibur = $this->hariLiburSet($sekolahId, $mulai, $selesai);
+        $hariLibur = $this->hariLiburSet($pengajar->sekolah_id, $mulai, $selesai);
 
         $total = 0;
 
@@ -353,18 +391,18 @@ class PresensiPengajarService
             ->all();
     }
 
-    private function pastikanLokasiSekolah(Sekolah $sekolah): void
+    private function pastikanLokasiShift(PresensiShift $shift): void
     {
-        if ($this->koordinatSekolah($sekolah) === null) {
+        if ($this->koordinatShift($shift) === null) {
             throw ValidationException::withMessages([
-                'presensi' => 'Lokasi sekolah belum diatur. Hubungi admin sekolah.',
+                'presensi' => 'Lokasi shift '.$shift->name.' belum diatur. Hubungi admin sekolah.',
             ]);
         }
     }
 
-    private function pastikanTidakLibur(Sekolah $sekolah, CarbonInterface $now): void
+    private function pastikanTidakLibur(Sekolah $sekolah, PresensiShift $shift, CarbonInterface $now): void
     {
-        if ($this->isLibur($sekolah, $now)) {
+        if ($this->isLibur($sekolah, $shift, $now)) {
             throw ValidationException::withMessages([
                 'presensi' => 'Hari ini libur, presensi tidak dibuka.',
             ]);
@@ -383,9 +421,9 @@ class PresensiPengajarService
     /**
      * @return array{0: bool, 1: int|null}
      */
-    public function hitungTerlambatMasuk(Sekolah $sekolah, CarbonInterface $now): array
+    public function hitungTerlambatMasuk(PresensiShift $shift, CarbonInterface $now): array
     {
-        $jadwal = $this->jadwalHari($sekolah, $now);
+        $jadwal = $this->jadwalHari($shift, $now);
 
         if (! $jadwal || ! $jadwal->is_kerja || ! $jadwal->jam_masuk) {
             return [false, null];
@@ -404,9 +442,9 @@ class PresensiPengajarService
     /**
      * @return array{0: bool, 1: int|null}
      */
-    public function hitungTelatPulang(Sekolah $sekolah, CarbonInterface $checkIn, CarbonInterface $checkOut): array
+    public function hitungTelatPulang(PresensiShift $shift, CarbonInterface $checkIn, CarbonInterface $checkOut): array
     {
-        $jadwal = $this->jadwalHari($sekolah, $checkOut);
+        $jadwal = $this->jadwalHari($shift, $checkOut);
 
         if (! $jadwal || ! $jadwal->is_kerja || ! $jadwal->jam_pulang) {
             return [false, null];
