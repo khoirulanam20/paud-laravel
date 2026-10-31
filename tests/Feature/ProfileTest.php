@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Lembaga;
+use App\Models\Sekolah;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -95,5 +99,34 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_profil_sekolah_menampilkan_peta_leaflet(): void
+    {
+        Role::firstOrCreate(['name' => 'Admin Sekolah', 'guard_name' => 'web']);
+
+        $lembaga = Lembaga::create(['name' => 'Yayasan Pendidikan']);
+        $sekolah = Sekolah::create([
+            'lembaga_id' => $lembaga->id,
+            'name' => 'PAUD Bintang',
+            'location_coordinate' => '-6.200000,106.816666',
+        ]);
+        $admin = User::factory()->create([
+            'sekolah_id' => $sekolah->id,
+            'lembaga_id' => $lembaga->id,
+        ]);
+
+        $registrar = app(PermissionRegistrar::class);
+        $previous = $registrar->getPermissionsTeamId();
+        $registrar->setPermissionsTeamId($sekolah->id);
+        $admin->assignRole('Admin Sekolah');
+        $registrar->setPermissionsTeamId($previous);
+
+        $response = $this->actingAs($admin)->get('/profile/sekolah');
+
+        $response->assertOk()
+            ->assertSee('id="presensi-setting-map"', false)
+            ->assertSee('id="location_coordinate"', false)
+            ->assertSee('presensi-setting-map.js', false);
     }
 }

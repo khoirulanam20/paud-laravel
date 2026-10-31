@@ -280,7 +280,7 @@ function initPresensiSettingMap() {
                 map.setView([lat, lng], 17);
                 syncHasil(lat, lng, ` (akurasi ±${Math.round(position.coords.accuracy)} m)`);
                 if (statusEl) {
-                    statusEl.textContent = 'Lokasi terdeteksi. Klik Simpan Pengaturan untuk menerapkan.';
+                    statusEl.textContent = 'Lokasi terdeteksi. Simpan form untuk menerapkan.';
                     statusEl.style.color = '#1A6B6B';
                 }
                 detectBtn.disabled = false;
