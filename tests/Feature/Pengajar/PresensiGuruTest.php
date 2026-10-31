@@ -5,6 +5,7 @@ namespace Tests\Feature\Pengajar;
 use App\Models\Lembaga;
 use App\Models\Pengajar;
 use App\Models\PresensiPengajar;
+use App\Models\PresensiShift;
 use App\Models\Sekolah;
 use App\Models\SekolahHariLibur;
 use App\Models\SekolahJamKerja;
@@ -78,9 +79,19 @@ class PresensiGuruTest extends TestCase
         ]);
         $this->assignRoleForSchool($guruUser, 'Pengajar', $sekolah->id);
 
+        $shift = PresensiShift::withoutSekolahScope()->create([
+            'sekolah_id' => $sekolah->id,
+            'name' => 'Reguler',
+            'location_coordinate' => self::SEKOLAH_LAT.', '.self::SEKOLAH_LNG,
+            'radius_m' => 100,
+            'is_default' => true,
+            'sort_order' => 0,
+        ]);
+
         $pengajar = Pengajar::create([
             'user_id' => $guruUser->id,
             'sekolah_id' => $sekolah->id,
+            'presensi_shift_id' => $shift->id,
             'name' => 'Guru Presensi',
         ]);
 
@@ -92,24 +103,55 @@ class PresensiGuruTest extends TestCase
         ]);
         $this->assignRoleForSchool($admin, 'Admin Sekolah', $sekolah->id);
 
-        return compact('sekolah', 'guruUser', 'pengajar', 'admin');
+        return compact('sekolah', 'guruUser', 'pengajar', 'admin', 'shift');
     }
 
-    private function seedJadwal(Sekolah $sekolah): void
+    private function seedJadwal(Sekolah $sekolah, ?PresensiShift $shift = null): PresensiShift
     {
+        $shift ??= PresensiShift::withoutSekolahScope()
+            ->where('sekolah_id', $sekolah->id)
+            ->where('is_default', true)
+            ->firstOrFail();
+
         foreach (range(1, 7) as $hari) {
             $kerja = $hari <= 5;
 
-            SekolahJamKerja::withoutSekolahScope()->create([
-                'sekolah_id' => $sekolah->id,
-                'hari' => $hari,
-                'is_kerja' => $kerja,
-                'jam_masuk' => $kerja ? '07:00:00' : null,
-                'jam_pulang' => $kerja ? '13:00:00' : null,
-                'toleransi_masuk_menit' => 10,
-                'toleransi_pulang_menit' => 10,
-            ]);
+            SekolahJamKerja::withoutSekolahScope()->updateOrCreate(
+                [
+                    'presensi_shift_id' => $shift->id,
+                    'hari' => $hari,
+                ],
+                [
+                    'sekolah_id' => $sekolah->id,
+                    'is_kerja' => $kerja,
+                    'jam_masuk' => $kerja ? '07:00:00' : null,
+                    'jam_pulang' => $kerja ? '13:00:00' : null,
+                    'toleransi_masuk_menit' => 10,
+                    'toleransi_pulang_menit' => 10,
+                ],
+            );
         }
+
+        return $shift;
+    }
+
+    /** @param  array<string, mixed>  $jadwalRow */
+    private function jadwalPayload(PresensiShift $shift, array $jadwalRow = []): array
+    {
+        $defaultRow = [
+            'is_kerja' => 1,
+            'jam_masuk' => '07:00',
+            'jam_pulang' => '13:00',
+            'toleransi_masuk_menit' => 5,
+            'toleransi_pulang_menit' => 5,
+        ];
+
+        return [
+            'presensi_shift_id' => $shift->id,
+            'jadwal' => [
+                1 => array_merge($defaultRow, $jadwalRow),
+            ],
+        ];
     }
 
     /** Koordinat di dalam radius (sekitar 22 meter dari titik sekolah). */
@@ -167,7 +209,9 @@ class PresensiGuruTest extends TestCase
     public function test_check_in_ditolak_kalau_koordinat_sekolah_belum_diset(): void
     {
         $f = $this->fixtures();
-        $f['sekolah']->update(['location_coordinate' => null]);
+        PresensiShift::withoutSekolahScope()
+            ->whereKey($f['shift']->id)
+            ->update(['location_coordinate' => null]);
 
         Carbon::setTestNow(Carbon::parse('2026-10-27 07:05:00'));
 
@@ -345,23 +389,57 @@ class PresensiGuruTest extends TestCase
         $this->assertEquals(20.0, $rekap['persentase']);
     }
 
-    public function test_admin_dapat_mengubah_pengaturan_jam_kerja(): void
+    public function test_admin_sekolah_dapat_menambah_shift(): void
+    {
+        $f = $this->fixtures();
+        $this->seedJadwal($f['sekolah'], $f['shift']);
+
+        $this->actingAs($f['admin'])
+            ->post(route('admin.presensi-setting.shifts.store'), ['name' => 'Shift Siang'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('presensi_shifts', [
+            'sekolah_id' => $f['sekolah']->id,
+            'name' => 'Shift Siang',
+        ]);
+    }
+
+    public function test_pengajar_tidak_bisa_menambah_shift(): void
     {
         $f = $this->fixtures();
 
-        $this->actingAs($f['admin'])
-            ->put(route('admin.presensi-setting.update'), [
-                'radius_m' => 250,
-                'jadwal' => [
-                    1 => ['is_kerja' => 1, 'jam_masuk' => '08:00', 'jam_pulang' => '14:00', 'toleransi_masuk_menit' => 15, 'toleransi_pulang_menit' => 5],
-                ],
-            ])
-            ->assertRedirect(route('admin.presensi-setting.index'));
+        $this->actingAs($f['guruUser'])
+            ->post(route('admin.presensi-setting.shifts.store'), ['name' => 'Illegal'])
+            ->assertForbidden();
+    }
 
-        $this->assertEquals(250, $f['sekolah']->fresh()->radius_m);
+    public function test_admin_dapat_mengubah_pengaturan_jam_kerja(): void
+    {
+        $f = $this->fixtures();
+        $this->seedJadwal($f['sekolah'], $f['shift']);
+        $this->assertSame(
+            7,
+            SekolahJamKerja::withoutSekolahScope()->where('presensi_shift_id', $f['shift']->id)->count(),
+        );
+
+        $response = $this->actingAs($f['admin'])
+            ->put(route('admin.presensi-setting.update'), array_merge(
+                $this->jadwalPayload($f['shift'], [
+                    'jam_masuk' => '08:00',
+                    'jam_pulang' => '14:00',
+                    'toleransi_masuk_menit' => 15,
+                    'toleransi_pulang_menit' => 5,
+                ]),
+                ['radius_m' => 250],
+            ));
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('shift='.$f['shift']->id, (string) $response->headers->get('Location'));
+
+        $this->assertEquals(250, $f['shift']->fresh()->radius_m);
 
         $senin = SekolahJamKerja::withoutSekolahScope()
-            ->where('sekolah_id', $f['sekolah']->id)
+            ->where('presensi_shift_id', $f['shift']->id)
             ->where('hari', 1)
             ->first();
 
@@ -438,19 +516,21 @@ class PresensiGuruTest extends TestCase
     {
         $f = $this->fixtures();
 
-        $this->actingAs($f['admin'])
-            ->put(route('admin.presensi-setting.update'), [
-                'location_coordinate' => '-6.210000, 106.820000',
-                'radius_m' => 150,
-                'jadwal' => [
-                    1 => ['is_kerja' => 1, 'jam_masuk' => '07:00', 'jam_pulang' => '13:00', 'toleransi_masuk_menit' => 5, 'toleransi_pulang_menit' => 5],
+        $response = $this->actingAs($f['admin'])
+            ->put(route('admin.presensi-setting.update'), array_merge(
+                $this->jadwalPayload($f['shift']),
+                [
+                    'location_coordinate' => '-6.210000, 106.820000',
+                    'radius_m' => 150,
                 ],
-            ])
-            ->assertRedirect(route('admin.presensi-setting.index'));
+            ));
 
-        $sekolah = $f['sekolah']->fresh();
-        $this->assertEquals('-6.210000,106.820000', $sekolah->location_coordinate);
-        $this->assertEquals(150, $sekolah->radius_m);
+        $response->assertRedirect();
+        $this->assertStringContainsString('shift='.$f['shift']->id, (string) $response->headers->get('Location'));
+
+        $shift = $f['shift']->fresh();
+        $this->assertEquals('-6.210000,106.820000', $shift->location_coordinate);
+        $this->assertEquals(150, $shift->radius_m);
     }
 
     public function test_koordinat_tidak_valid_ditolak(): void
@@ -459,23 +539,20 @@ class PresensiGuruTest extends TestCase
 
         $this->actingAs($f['admin'])
             ->from(route('admin.presensi-setting.index'))
-            ->put(route('admin.presensi-setting.update'), [
-                'location_coordinate' => 'bukan-koordinat',
-                'radius_m' => 100,
-                'jadwal' => [
-                    1 => ['is_kerja' => 1, 'jam_masuk' => '07:00', 'jam_pulang' => '13:00', 'toleransi_masuk_menit' => 5, 'toleransi_pulang_menit' => 5],
+            ->put(route('admin.presensi-setting.update'), array_merge(
+                $this->jadwalPayload($f['shift']),
+                [
+                    'location_coordinate' => 'bukan-koordinat',
+                    'radius_m' => 100,
                 ],
-            ])
+            ))
             ->assertSessionHasErrors('location_coordinate');
     }
 
-    public function test_menu_presensi_saya_tetap_tampil_untuk_pengajar_pemilik_menu_admin(): void
+    public function test_menu_presensi_saya_tetap_tampil_untuk_pengajar(): void
     {
         $f = $this->fixtures();
         $this->seedJadwal($f['sekolah']);
-
-        // Role Pengajar punya menu permission -> seesAdminMenus true.
-        $this->beriMenuPermission('Pengajar', 'menu.monev-guru');
 
         $this->actingAs($f['guruUser'])
             ->get(route('pengajar.presensi-guru.index'))
@@ -483,7 +560,7 @@ class PresensiGuruTest extends TestCase
             ->assertSee('data-tour="nav-pengajar.presensi-guru.index"', false);
     }
 
-    public function test_menu_presensi_saya_tetap_tampil_untuk_wali_kelas_pemilik_menu_admin(): void
+    public function test_menu_presensi_saya_tetap_tampil_untuk_wali_kelas(): void
     {
         $f = $this->fixtures();
         $this->seedJadwal($f['sekolah']);
@@ -496,10 +573,9 @@ class PresensiGuruTest extends TestCase
         Pengajar::create([
             'user_id' => $waliUser->id,
             'sekolah_id' => $f['sekolah']->id,
+            'presensi_shift_id' => $f['shift']->id,
             'name' => 'Wali Presensi',
         ]);
-
-        $this->beriMenuPermission('Wali Kelas', 'menu.monev-guru');
 
         $this->actingAs($waliUser)
             ->get(route('pengajar.presensi-guru.index'))
@@ -507,7 +583,17 @@ class PresensiGuruTest extends TestCase
             ->assertSee('data-tour="nav-pengajar.presensi-guru.index"', false);
     }
 
-    public function test_halaman_profil_pengajar_menampilkan_menu_dan_data_pengajar(): void
+    public function test_pengajar_tidak_bisa_buka_pengaturan_presensi(): void
+    {
+        $f = $this->fixtures();
+        $this->beriMenuPermission('Pengajar', 'menu.presensi-guru');
+
+        $this->actingAs($f['guruUser'])
+            ->get(route('admin.presensi-setting.index'))
+            ->assertForbidden();
+    }
+
+    public function test_halaman_profil_pengajar_menampilkan_presensi_saya(): void
     {
         $f = $this->fixtures();
 
@@ -532,7 +618,7 @@ class PresensiGuruTest extends TestCase
         $this->actingAs($f['admin'])
             ->get(route('admin.presensi-setting.index'))
             ->assertOk()
-            ->assertSee('Pengaturan Presensi Guru');
+            ->assertSee('Reguler');
 
         // Jadwal 7 hari otomatis dibuat kalau belum ada.
         $this->assertDatabaseCount('sekolah_jam_kerjas', 7);

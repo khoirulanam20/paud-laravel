@@ -107,7 +107,7 @@ class AdminDashboardTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Lokasi sekolah belum diatur');
+        $response->assertSee('Lokasi shift presensi belum lengkap');
         $response->assertSee('Atur lokasi');
         $response->assertSee('Segera');
     }
