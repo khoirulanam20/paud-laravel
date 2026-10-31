@@ -99,6 +99,16 @@ class MenuBuilder
      */
     private static function linkAllowed(array $item, User $user, bool $skipPermFilter): bool
     {
+        if (isset($item['except_roles'])
+            && ! $user->hasAnyRole(['Admin Sekolah', 'Lembaga'])
+            && $user->hasAnyRole((array) $item['except_roles'])) {
+            return false;
+        }
+
+        if (isset($item['roles']) && ! $user->hasAnyRole((array) $item['roles'])) {
+            return false;
+        }
+
         if ($skipPermFilter || ! isset($item['perm'])) {
             return true;
         }

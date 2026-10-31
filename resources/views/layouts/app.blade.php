@@ -111,7 +111,7 @@
             ]),
             $adminSidebarCollapsible('Sekolah & Guru', 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', [
                     ['route' => 'admin.pengajar.index', 'label' => 'Data Guru', 'perm' => 'menu.data-pengajar', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'pattern' => 'admin.pengajar.*'],
-                    ['route' => 'admin.presensi-guru.index', 'label' => 'Presensi Guru', 'perm' => 'menu.presensi-guru', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'admin.presensi-guru.*'],
+                    ['route' => 'admin.presensi-guru.index', 'label' => 'Presensi Guru', 'perm' => 'menu.presensi-guru', 'except_roles' => ['Pengajar', 'Wali Kelas'], 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'admin.presensi-guru.*'],
                     ['route' => 'admin.monev-guru.index', 'label' => 'Monev Guru', 'perm' => 'menu.monev-guru', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'admin.monev-guru.*'],
                     ['route' => 'admin.sarana.index', 'label' => 'Sarana', 'perm' => 'menu.sarana', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'pattern' => 'admin.sarana.*'],
                     ['route' => 'admin.menu-makanan.index', 'label' => 'Menu Makanan', 'perm' => 'menu.menu-makanan', 'icon' => 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z', 'pattern' => 'admin.menu-makanan.*'],
@@ -151,92 +151,39 @@
         }
 
     }
-    $seesAdminMenus = (bool) ($user?->canAccessAdminPanel());
+    $teacherSelfServiceRoles = ['Pengajar', 'Wali Kelas'];
     if ($user && $user->hasRole('Wali Kelas')) {
-        $waliKelasNav = [
+        $roleNavItems = array_merge($roleNavItems, [
             [
                 'group' => 'Kelas saya',
                 'items' => [
-                    ['route' => 'adminkelas.anak.index', 'label' => 'Siswa Kelasku', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'adminkelas.anak.*'],
-                    ['route' => 'adminkelas.presensi.index', 'label' => 'Presensi Kelasku', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'pattern' => 'adminkelas.presensi.*'],
-                    ['route' => 'adminkelas.kesehatan.index', 'label' => 'Kesehatan Kelasku', 'icon' => 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', 'pattern' => 'adminkelas.kesehatan.*'],
-                    ['route' => 'adminkelas.monev.index', 'label' => 'Monev', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'adminkelas.monev.*'],
-                    ['route' => 'admin.pengumuman.index', 'label' => 'Pengumuman', 'perm' => 'menu.pengumuman', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'pattern' => 'admin.pengumuman.*'],
-                ]
+                    ['route' => 'adminkelas.anak.index', 'label' => 'Siswa Kelasku', 'roles' => ['Wali Kelas'], 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'pattern' => 'adminkelas.anak.*'],
+                ],
             ],
             [
                 'group' => 'Kurikulum',
                 'items' => [
-                    ['route' => 'admin.master-kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'perm' => 'menu.kegiatan-rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => ['admin.master-kegiatan-rutin.*', 'admin.kegiatan-rutin.*']],
-                    ['route' => 'pengajar.presensi-guru.index', 'label' => 'Presensi Saya', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.presensi-guru.*'],
-                    ['route' => 'pengajar.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'pattern' => 'pengajar.kegiatan.*'],
-                    ['route' => 'pengajar.matrikulasi.index', 'label' => 'Matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.matrikulasi.*'],
-                    ['route' => 'pengajar.pencapaian.index', 'label' => 'Pencapaian Siswa', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.pencapaian.*'],
-                    ['route' => 'pengajar.monev-guru.index', 'label' => 'Monev Saya', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.monev-guru.*'],
-                ]
+                    ['route' => 'pengajar.presensi-guru.index', 'label' => 'Presensi Saya', 'roles' => $teacherSelfServiceRoles, 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.presensi-guru.*'],
+                    ['route' => 'pengajar.monev-guru.index', 'label' => 'Monev Saya', 'roles' => $teacherSelfServiceRoles, 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.monev-guru.*'],
+                ],
             ],
-            [
-                'group' => 'Keuangan',
-                'items' => [
-                    ['route' => 'admin.pembayaran-bulanan.index', 'label' => 'Rekap Pembayaran', 'perm' => 'menu.rekap-pembayaran', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', 'pattern' => 'admin.pembayaran-bulanan.*'],
-                    ['route' => 'admin.gaji-guru.index', 'label' => 'Gaji Guru', 'perm' => 'menu.gaji-guru', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'pattern' => 'admin.gaji-guru.*'],
-                ]
-            ],
-        ];
-        $waliKelasNav = array_map(function ($group) use ($user, $seesAdminMenus) {
-            if (! isset($group['items'])) {
-                return $group;
-            }
-            $group['items'] = array_values(array_filter($group['items'], function ($item) use ($user, $seesAdminMenus) {
-                $pengajarSelfService = str_starts_with($item['route'], 'pengajar.monev-guru')
-                    || str_starts_with($item['route'], 'pengajar.presensi-guru');
-
-                if ($seesAdminMenus && (str_starts_with($item['route'], 'admin.') || (str_starts_with($item['route'], 'pengajar.') && ! $pengajarSelfService))) {
-                    return false;
-                }
-                if (! isset($item['perm'])) {
-                    return true;
-                }
-
-                return $user->can($item['perm']);
-            }));
-
-            return $group;
-        }, $waliKelasNav);
-        $waliKelasNav = array_values(array_filter($waliKelasNav, fn ($group) => ! isset($group['items']) || count($group['items']) > 0));
-        $roleNavItems = array_merge($roleNavItems, $waliKelasNav);
+        ]);
     }
     if ($user && $user->hasRole('Pengajar') && ! $user->hasRole('Wali Kelas')) {
-        $pengajarNav = [
+        $roleNavItems = array_merge($roleNavItems, [
             [
                 'group' => 'Pembelajaran',
                 'items' => [
-                    ['route' => 'pengajar.presensi-guru.index', 'label' => 'Presensi Saya', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.presensi-guru.*'],
-                    ['route' => 'pengajar.master-kegiatan-rutin.index', 'label' => 'Kegiatan Rutin', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3', 'pattern' => 'pengajar.master-kegiatan-rutin.*'],
-                    ['route' => 'pengajar.kegiatan.index', 'label' => 'Agenda Belajar', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'pattern' => 'pengajar.kegiatan.*'],
-                    ['route' => 'pengajar.matrikulasi.index', 'label' => 'Matrikulasi', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.matrikulasi.*'],
-                ]
+                    ['route' => 'pengajar.presensi-guru.index', 'label' => 'Presensi Saya', 'roles' => $teacherSelfServiceRoles, 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.presensi-guru.*'],
+                ],
             ],
             [
                 'group' => 'Evaluasi',
                 'items' => [
-                    ['route' => 'pengajar.pencapaian.index', 'label' => 'Pencapaian Siswa', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'pattern' => 'pengajar.pencapaian.*'],
-                    ['route' => 'pengajar.monev-guru.index', 'label' => 'Monev Saya', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.monev-guru.*'],
-                ]
+                    ['route' => 'pengajar.monev-guru.index', 'label' => 'Monev Saya', 'roles' => $teacherSelfServiceRoles, 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'pattern' => 'pengajar.monev-guru.*'],
+                ],
             ],
-        ];
-        if ($seesAdminMenus) {
-            $pengajarNav = array_values(array_filter(array_map(function ($group) {
-                $group['items'] = array_values(array_filter(
-                    $group['items'],
-                    fn ($item) => str_starts_with($item['route'], 'pengajar.monev-guru')
-                        || str_starts_with($item['route'], 'pengajar.presensi-guru')
-                ));
-
-                return $group;
-            }, $pengajarNav), fn ($group) => count($group['items']) > 0));
-        }
-        $roleNavItems = array_merge($roleNavItems, $pengajarNav);
+        ]);
     }
     if ($user && $user->hasRole('Orang Tua')) {
         $chatIcon = 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z';

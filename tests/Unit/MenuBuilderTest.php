@@ -101,4 +101,25 @@ class MenuBuilderTest extends TestCase
         $this->assertTrue($built[0]['has_badge_warning']);
         $this->assertSame(1, $built[0]['count']);
     }
+
+    public function test_role_gate_hides_item_when_user_lacks_role(): void
+    {
+        $user = $this->createMock(User::class);
+        $user->method('hasAnyRole')->willReturn(false);
+
+        $items = [
+            [
+                'group' => 'Kelas saya',
+                'items' => [
+                    ['route' => 'adminkelas.anak.index', 'label' => 'Siswa Kelasku', 'roles' => ['Wali Kelas'], 'icon' => 'M0 0', 'pattern' => 'adminkelas.anak.*'],
+                    ['route' => 'admin.anak.index', 'label' => 'Siswa', 'perm' => 'menu.siswa', 'icon' => 'M0 0', 'pattern' => 'admin.anak.*'],
+                ],
+            ],
+        ];
+
+        $built = MenuBuilder::build($items, $user, skipPermFilter: true);
+
+        $this->assertCount(1, $built[0]['items']);
+        $this->assertSame('admin.anak.index', $built[0]['items'][0]['route']);
+    }
 }
