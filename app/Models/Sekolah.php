@@ -107,6 +107,16 @@ class Sekolah extends Model
         return $this->hasMany(SekolahJamKerja::class)->orderBy('hari');
     }
 
+    public function presensiShifts(): HasMany
+    {
+        return $this->hasMany(PresensiShift::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function defaultPresensiShift(): HasOne
+    {
+        return $this->hasOne(PresensiShift::class)->where('is_default', true);
+    }
+
     public function hariLiburs(): HasMany
     {
         return $this->hasMany(SekolahHariLibur::class)->orderBy('tanggal');
