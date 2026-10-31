@@ -18,6 +18,7 @@ class PresensiPengajar extends Model
     protected $fillable = [
         'sekolah_id',
         'pengajar_id',
+        'presensi_shift_id',
         'tanggal',
         'hadir',
         'status',
@@ -66,6 +67,11 @@ class PresensiPengajar extends Model
     public function pengajar(): BelongsTo
     {
         return $this->belongsTo(Pengajar::class);
+    }
+
+    public function presensiShift(): BelongsTo
+    {
+        return $this->belongsTo(PresensiShift::class);
     }
 
     public function sudahCheckIn(): bool

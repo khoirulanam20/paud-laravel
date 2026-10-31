@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Pengajar;
 use App\Models\PresensiPengajar;
+use App\Models\PresensiShift;
 use App\Models\Sekolah;
 use App\Services\PresensiPengajarService;
 use App\Support\PaginationPerPage;
@@ -20,12 +21,15 @@ class PresensiPengajarController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorizeAdminPresensiGuru();
+
         $user = auth()->user();
         $sekolahId = $user->sekolah_id;
         $tanggal = $request->input('tanggal', date('Y-m-d'));
 
         $pengajarQuery = Pengajar::query()
             ->where('sekolah_id', $sekolahId)
+            ->with('presensiShift')
             ->orderBy('name');
 
         $search = trim((string) $request->input('search', ''));
@@ -67,10 +71,7 @@ class PresensiPengajarController extends Controller
                 ];
             });
 
-        $jadwal = $this->presensi->jadwalHari(
-            Sekolah::find($sekolahId) ?? new Sekolah,
-            Carbon::parse($tanggal),
-        );
+        $shiftCount = PresensiShift::where('sekolah_id', $sekolahId)->count();
 
         $totalPengajar = Pengajar::where('sekolah_id', $sekolahId)->count();
         $hadirHariIni = $presensis->filter(fn (PresensiPengajar $p) => $p->hadir)->count();
@@ -83,7 +84,7 @@ class PresensiPengajarController extends Controller
             'rekapBulanan',
             'rekapMonth',
             'rekapYear',
-            'jadwal',
+            'shiftCount',
             'totalPengajar',
             'hadirHariIni',
             'sudahDiisi',
@@ -92,6 +93,8 @@ class PresensiPengajarController extends Controller
 
     public function export(Request $request)
     {
+        $this->authorizeAdminPresensiGuru();
+
         $sekolahId = auth()->user()->sekolah_id;
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $rekapMonth = (int) $request->input('rekap_month', date('n'));
@@ -164,6 +167,8 @@ class PresensiPengajarController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorizeAdminPresensiGuru();
+
         $request->validate([
             'tanggal' => 'required|date',
             'presensi' => 'required|array',
@@ -179,6 +184,11 @@ class PresensiPengajarController extends Controller
         $tanggal = Carbon::parse($request->tanggal)->toDateString();
 
         foreach ($request->presensi as $pengajarId => $data) {
+            $pengajar = Pengajar::where('sekolah_id', $sekolahId)->whereKey($pengajarId)->first();
+            if ($pengajar === null) {
+                continue;
+            }
+
             $presensi = PresensiPengajar::withoutSekolahScope()->firstOrNew([
                 'sekolah_id' => $sekolahId,
                 'pengajar_id' => $pengajarId,
@@ -189,10 +199,13 @@ class PresensiPengajarController extends Controller
             $presensi->status = $data['status'] ?? null;
             $presensi->catatan = $data['catatan'] ?? null;
 
-            if ($sekolah) {
+            try {
+                $shift = $this->presensi->resolveShift($pengajar);
+                $presensi->presensi_shift_id = $shift->id;
+
                 if (! empty($data['check_in'])) {
                     $checkInAt = Carbon::parse($tanggal.' '.$data['check_in']);
-                    [$terlambat, $menitTerlambat] = $this->presensi->hitungTerlambatMasuk($sekolah, $checkInAt);
+                    [$terlambat, $menitTerlambat] = $this->presensi->hitungTerlambatMasuk($shift, $checkInAt);
 
                     $presensi->check_in_at = $checkInAt;
                     $presensi->terlambat_masuk = $terlambat;
@@ -202,18 +215,30 @@ class PresensiPengajarController extends Controller
 
                 if (! empty($data['check_out']) && $presensi->check_in_at) {
                     $checkOutAt = Carbon::parse($tanggal.' '.$data['check_out']);
-                    [$telatPulang, $menitTelatPulang] = $this->presensi->hitungTelatPulang($sekolah, $presensi->check_in_at, $checkOutAt);
+                    [$telatPulang, $menitTelatPulang] = $this->presensi->hitungTelatPulang($shift, $presensi->check_in_at, $checkOutAt);
 
                     $presensi->check_out_at = $checkOutAt;
                     $presensi->telat_pulang = $telatPulang;
                     $presensi->menit_telat_pulang = $menitTelatPulang;
                     $presensi->sumber = PresensiPengajar::SUMBER_MANUAL;
                 }
+            } catch (\Illuminate\Validation\ValidationException) {
+                // Skip baris guru tanpa shift valid.
             }
 
             $presensi->save();
         }
 
         return back()->with('success', 'Presensi guru berhasil disimpan.');
+    }
+
+    private function authorizeAdminPresensiGuru(): void
+    {
+        $user = auth()->user();
+        if ($user?->hasAnyRole(['Admin Sekolah', 'Lembaga'])) {
+            return;
+        }
+
+        abort_if($user?->hasAnyRole(['Pengajar', 'Wali Kelas']), 403);
     }
 }

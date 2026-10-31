@@ -120,14 +120,22 @@ class AdminSekolahDashboard
 
         $attention = [];
 
-        if ($sekolah && empty($sekolah->location_coordinate)) {
-            $attention[] = [
-                'severity' => 'critical',
-                'title' => 'Lokasi sekolah belum diatur',
-                'detail' => 'Presensi guru berbasis GPS terkunci sampai titik koordinat sekolah diatur.',
-                'href' => route('admin.presensi-setting.index'),
-                'action' => 'Atur lokasi',
-            ];
+        if ($sekolah) {
+            $shiftTanpaKoordinat = $sekolah->presensiShifts()
+                ->where(function ($q) {
+                    $q->whereNull('location_coordinate')->orWhere('location_coordinate', '');
+                })
+                ->exists();
+
+            if ($shiftTanpaKoordinat || ($sekolah->presensiShifts()->doesntExist() && empty($sekolah->location_coordinate))) {
+                $attention[] = [
+                    'severity' => 'critical',
+                    'title' => 'Lokasi shift presensi belum lengkap',
+                    'detail' => 'Presensi guru berbasis GPS terkunci sampai titik koordinat di setiap shift diatur.',
+                    'href' => route('admin.presensi-setting.index'),
+                    'action' => 'Atur lokasi',
+                ];
+            }
         }
 
         if ($siswaPending > 0) {

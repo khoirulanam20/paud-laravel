@@ -25,22 +25,73 @@
             </div>
         @endif
 
-        @if(! $sekolah->location_coordinate)
+        @if(! $activeShift->location_coordinate)
             <div class="alert-danger mb-5">
-                Titik koordinat sekolah belum diatur, jadi presensi guru belum bisa dibuka. Atur di bagian
-                <strong>Lokasi &amp; Radius</strong>: cari daerah di peta, klik titik sekolah, atau gunakan
-                <strong>Deteksi lokasi saya</strong>, lalu simpan.
+                Titik koordinat shift <strong>{{ $activeShift->name }}</strong> belum diatur, jadi guru di shift ini belum bisa absen.
+                Atur di <strong>Lokasi &amp; Radius</strong> lalu simpan.
             </div>
         @endif
+
+        <div class="card overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                <div>
+                    <h3 class="section-title">Shift Presensi</h3>
+                    <p class="section-subtitle">Tiap shift punya jam kerja, titik GPS, dan radius sendiri. Hari libur berlaku untuk semua shift.</p>
+                </div>
+                @role('Admin Sekolah')
+                    <form method="POST" action="{{ route('admin.presensi-setting.shifts.store') }}" class="flex gap-2 items-end shrink-0">
+                        @csrf
+                        <div>
+                            <label class="input-label" for="shift_name">Shift baru</label>
+                            <input type="text" id="shift_name" name="name" maxlength="100" required placeholder="Contoh: Shift Siang" class="input-field py-1.5 text-sm w-44">
+                        </div>
+                        <button type="submit" class="btn-secondary px-4 py-2 text-sm font-bold whitespace-nowrap">Tambah</button>
+                    </form>
+                @endrole
+            </div>
+            <div class="px-6 py-3 flex flex-wrap gap-2 border-b" style="border-color:rgba(0,0,0,0.06);">
+                @foreach($shifts as $shift)
+                    <a href="{{ route('admin.presensi-setting.index', ['shift' => $shift->id]) }}"
+                        class="px-4 py-2 rounded-xl text-sm font-bold transition {{ $shift->id === $activeShift->id ? 'text-white' : '' }}"
+                        style="{{ $shift->id === $activeShift->id ? 'background:#1A6B6B;' : 'background:#FAF6F0;color:#6B6560;' }}">
+                        {{ $shift->name }}
+                        @if($shift->is_default)
+                            <span class="text-[10px] font-normal opacity-80">(default)</span>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+            @role('Admin Sekolah')
+                @if(! $activeShift->is_default)
+                    <div class="px-6 py-3 flex flex-wrap gap-2 items-center border-b" style="border-color:rgba(0,0,0,0.06);">
+                        <form method="POST" action="{{ route('admin.presensi-setting.shifts.update', $activeShift) }}" class="flex gap-2 items-end">
+                            @csrf
+                            @method('PATCH')
+                            <div>
+                                <label class="input-label">Nama shift</label>
+                                <input type="text" name="name" value="{{ old('name', $activeShift->name) }}" maxlength="100" required class="input-field py-1.5 text-sm">
+                            </div>
+                            <button type="submit" class="btn-secondary px-3 py-2 text-xs font-bold">Ubah nama</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.presensi-setting.shifts.destroy', $activeShift) }}" class="ml-auto" onsubmit="return confirm('Hapus shift ini? Guru yang masih terikat tidak bisa dihapus.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-xs font-bold px-3 py-2 rounded-lg" style="color:#C0392B;background:#FDECEA;">Hapus shift</button>
+                        </form>
+                    </div>
+                @endif
+            @endrole
+        </div>
 
         <form method="POST" action="{{ route('admin.presensi-setting.update') }}">
             @csrf
             @method('PUT')
+            <input type="hidden" name="presensi_shift_id" value="{{ $activeShift->id }}">
 
             <div class="card overflow-hidden mb-6" data-tour="presensi-setting-location">
                 <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                    <h3 class="section-title">Lokasi &amp; Radius</h3>
-                    <p class="section-subtitle">Titik koordinat sekolah sebagai pusat radius presensi guru. Lingkaran di peta menunjukkan area absensi.</p>
+                    <h3 class="section-title">Lokasi &amp; Radius — {{ $activeShift->name }}</h3>
+                    <p class="section-subtitle">Titik absensi shift ini. Guru dengan shift {{ $activeShift->name }} harus berada dalam radius saat check-in/out.</p>
                 </div>
                 <div class="card-body-pad grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <div class="space-y-4 min-w-0">
@@ -56,7 +107,7 @@
                             <label class="input-label" for="location_coordinate">Titik koordinat sekolah (lat,lng)</label>
                             <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" id="location_coordinate" name="location_coordinate"
-                                    value="{{ old('location_coordinate', $sekolah->location_coordinate) }}"
+                                    value="{{ old('location_coordinate', $activeShift->location_coordinate) }}"
                                     placeholder="-6.200000,106.816666" class="input-field w-full">
                                 <button type="button" id="btn-deteksi-lokasi" class="btn-secondary px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap shrink-0">
                                     Deteksi lokasi saya
@@ -68,13 +119,13 @@
                         <div>
                             <label class="input-label">Radius presensi (meter)</label>
                             <input type="number" name="radius_m" min="10" max="5000"
-                                value="{{ old('radius_m', $sekolah->radius_m) }}"
+                                value="{{ old('radius_m', $activeShift->radius_m) }}"
                                 placeholder="100" class="input-field w-full sm:max-w-xs">
                             <p class="text-xs mt-2" style="color:#9A9188;">Kosongkan untuk default 100 meter.</p>
                         </div>
                         <div class="text-xs rounded-xl px-4 py-3" style="background:#FAF6F0;color:#6B6560;">
                             Koordinat tersimpan:
-                            <span id="deteksi-hasil" class="font-bold" style="color:#2C2C2C;">{{ $sekolah->location_coordinate ?: 'belum ada koordinat tersimpan' }}</span>
+                            <span id="deteksi-hasil" class="font-bold" style="color:#2C2C2C;">{{ $activeShift->location_coordinate ?: 'belum ada koordinat tersimpan' }}</span>
                         </div>
                     </div>
                     <div class="min-w-0">
@@ -149,6 +200,7 @@
 
             <form method="POST" action="{{ route('admin.presensi-setting.libur.store') }}" class="card-pad toolbar-form border-b w-full" style="border-color:rgba(0,0,0,0.06);">
                 @csrf
+                <input type="hidden" name="shift" value="{{ $activeShift->id }}">
                 <div class="toolbar-field md:min-w-[10rem]">
                     <label class="input-label">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ old('tanggal') }}" class="input-field w-full" required>

@@ -49,13 +49,8 @@
                     <svg class="h-4 w-4 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     <strong style="color:#2C2C2C;">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('l, d M Y') }}</strong>
                 </span>
-                @if($jadwal && $jadwal->is_kerja)
-                    <span class="inline-flex items-center gap-1.5">
-                        Jam kerja:
-                        <strong style="color:#1A6B6B;">{{ substr((string) $jadwal->jam_masuk, 0, 5) }} – {{ substr((string) $jadwal->jam_pulang, 0, 5) }}</strong>
-                    </span>
-                @elseif($jadwal && ! $jadwal->is_kerja)
-                    <span class="badge badge-amber">Hari libur (jadwal)</span>
+                @if(($shiftCount ?? 1) > 1)
+                    <span class="inline-flex items-center gap-1.5">Jam kerja mengikuti <strong style="color:#1A6B6B;">shift</strong> masing-masing guru</span>
                 @endif
                 <span class="inline-flex items-center gap-1.5">
                     Hadir: <strong style="color:#1A6B6B;">{{ $hadirHariIni }}</strong> / {{ $totalPengajar }}

@@ -24,6 +24,7 @@ class SekolahJamKerja extends Model
 
     protected $fillable = [
         'sekolah_id',
+        'presensi_shift_id',
         'hari',
         'is_kerja',
         'jam_masuk',
@@ -42,6 +43,11 @@ class SekolahJamKerja extends Model
     public function sekolah(): BelongsTo
     {
         return $this->belongsTo(Sekolah::class);
+    }
+
+    public function presensiShift(): BelongsTo
+    {
+        return $this->belongsTo(PresensiShift::class);
     }
 
     public function namaHari(): string

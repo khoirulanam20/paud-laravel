@@ -17,6 +17,7 @@ enum AdminMenuPermission: string
     case Monev = 'menu.monev';
     case DataPengajar = 'menu.data-pengajar';
     case PresensiGuru = 'menu.presensi-guru';
+    case PengaturanPresensiGuru = 'menu.pengaturan-presensi-guru';
     case MonevGuru = 'menu.monev-guru';
     case MonevGuruKriteria = 'menu.monev-guru-kriteria';
     case Sarana = 'menu.sarana';

@@ -110,7 +110,8 @@
                     @endif
 
                     <p id="geo-status" class="text-xs mt-4" style="color:#9A9188;">
-                        Aktifkan izin lokasi di browser. Titik presensi wajib berada dalam radius {{ $status['radius_meter'] }} meter dari sekolah.
+                        Shift: <strong>{{ $status['shift_nama'] }}</strong>.
+                        Aktifkan izin lokasi di browser. Titik presensi wajib berada dalam radius {{ $status['radius_meter'] }} meter dari titik shift ini.
                     </p>
                 @endif
             </div>

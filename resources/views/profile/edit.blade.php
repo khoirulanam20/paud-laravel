@@ -77,11 +77,40 @@
                         <div class="col-span-2"><label class="input-label">Nama Sekolah</label><input type="text" name="name" value="{{ old('name', $sekolah->name) }}" required class="input-field"></div>
                         <div><label class="input-label">NPSN</label><input type="text" name="npsn" value="{{ old('npsn', $sekolah->nisn) }}" class="input-field"></div>
                         <div><label class="input-label">Kontak / HP</label><input type="text" name="phone" value="{{ old('phone', $sekolah->phone) }}" class="input-field"></div>
-                        <div class="col-span-2">
-                            <label class="input-label">Koordinat Lokasi (Opsional)</label>
-                            <input type="text" name="location_coordinate" value="{{ old('location_coordinate', $sekolah->location_coordinate) }}" class="input-field" placeholder="-6.200000, 106.816666">
-                        </div>
                         <div class="col-span-2"><label class="input-label">Alamat Lengkap</label><textarea name="address" class="input-field" rows="3">{{ old('address', $sekolah->address) }}</textarea></div>
+                        <div class="col-span-2 grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <div class="space-y-4 min-w-0">
+                                <div>
+                                    <label class="input-label" for="map-search-query">Cari daerah / alamat</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="map-search-query" class="input-field flex-1 min-w-0" placeholder="Contoh: PAUD Harapan, Bandung" autocomplete="off">
+                                        <button type="button" id="map-search-btn" class="btn-secondary shrink-0 px-4 py-2 text-sm font-bold">Cari</button>
+                                    </div>
+                                    <div id="map-search-results" class="hidden mt-2 rounded-xl border overflow-hidden bg-white shadow-sm max-h-48 overflow-y-auto" style="border-color:rgba(0,0,0,0.08);"></div>
+                                </div>
+                                <div>
+                                    <label class="input-label" for="location_coordinate">Koordinat lokasi (opsional)</label>
+                                    <div class="flex flex-col sm:flex-row gap-2">
+                                        <input type="text" id="location_coordinate" name="location_coordinate"
+                                            value="{{ old('location_coordinate', $sekolah->location_coordinate) }}"
+                                            placeholder="-6.200000,106.816666" class="input-field w-full">
+                                        <button type="button" id="btn-deteksi-lokasi" class="btn-secondary px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap shrink-0">
+                                            Deteksi lokasi saya
+                                        </button>
+                                    </div>
+                                    <p class="text-xs mt-2" style="color:#9A9188;">Klik peta, geser penanda, atau isi manual. Format: latitude,longitude.</p>
+                                    <p id="deteksi-status" class="text-xs mt-1" style="color:#9A9188;"></p>
+                                </div>
+                                <div class="text-xs rounded-xl px-4 py-3" style="background:#FAF6F0;color:#6B6560;">
+                                    Koordinat tersimpan:
+                                    <span id="deteksi-hasil" class="font-bold" style="color:#2C2C2C;">{{ $sekolah->location_coordinate ?: 'belum ada koordinat tersimpan' }}</span>
+                                </div>
+                            </div>
+                            <div class="min-w-0">
+                                <div id="presensi-setting-map" class="w-full h-72 md:h-96 rounded-xl border overflow-hidden z-0" style="border-color:rgba(0,0,0,0.08);"></div>
+                                <p class="text-xs mt-2" style="color:#9A9188;">Peta OpenStreetMap. Gunakan pencarian untuk menemukan wilayah, lalu sesuaikan titik sekolah.</p>
+                            </div>
+                        </div>
                         <div class="col-span-2"><label class="input-label">Foto/Logo Sekolah (Opsional)</label><input type="file" id="photo-sekolah" name="photo" accept="image/*" class="input-field py-1.5 text-xs"></div>
                     </div>
                     <div class="flex justify-end"><button type="submit" class="btn-primary">Simpan Profil Sekolah</button></div>
@@ -322,4 +351,10 @@
             @endif
         });
     </script>
+
+    @if($profileMode === 'sekolah')
+        @push('scripts')
+            @vite('resources/js/presensi-setting-map.js')
+        @endpush
+    @endif
 </x-app-layout>

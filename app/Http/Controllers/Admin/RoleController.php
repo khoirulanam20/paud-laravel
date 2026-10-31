@@ -35,7 +35,8 @@ class RoleController extends Controller
         ],
         'Lembaga & Guru' => [
             ['name' => 'menu.data-pengajar', 'label' => 'Data Guru'],
-            ['name' => 'menu.presensi-guru', 'label' => 'Presensi Guru'],
+                ['name' => 'menu.presensi-guru', 'label' => 'Presensi Guru'],
+                ['name' => 'menu.pengaturan-presensi-guru', 'label' => 'Pengaturan Presensi Guru'],
             ['name' => 'menu.monev-guru', 'label' => 'Monev Guru'],
             ['name' => 'menu.monev-guru-kriteria', 'label' => 'Kriteria Monev Guru'],
             ['name' => 'menu.sarana', 'label' => 'Sarana'],
@@ -78,6 +79,8 @@ class RoleController extends Controller
 
     public function index()
     {
+        $this->ensurePermissionsExist();
+
         $roles = $this->scopedRolesQuery()->with('permissions')->get();
         $permissionGroups = $this->permissionGroups;
 
@@ -165,6 +168,18 @@ class RoleController extends Controller
 
         return redirect()->route('admin.role.index')
             ->with('success', 'Role "'.$roleName.'" berhasil dihapus.');
+    }
+
+    private function ensurePermissionsExist(): void
+    {
+        foreach ($this->permissionGroups as $permissions) {
+            foreach ($permissions as $perm) {
+                Permission::firstOrCreate([
+                    'name' => $perm['name'],
+                    'guard_name' => 'web',
+                ]);
+            }
+        }
     }
 
     private function scopedRolesQuery()

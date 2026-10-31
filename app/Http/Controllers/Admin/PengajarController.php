@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\CanUploadImage;
 use App\Models\Kelas;
 use App\Models\Pengajar;
+use App\Models\PresensiShift;
 use App\Models\User;
 use App\Support\PaginationPerPage;
 use App\Support\PendidikanTerakhir;
@@ -23,8 +24,9 @@ class PengajarController extends Controller
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas', 'presensiShift'])->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $presensiShifts = PresensiShift::where('sekolah_id', $sekolah_id)->orderBy('sort_order')->orderBy('id')->get();
         $pendidikanOptions = PendidikanTerakhir::options();
         foreach ($pengajars as $p) {
             if (filled($p->pendidikan) && ! in_array($p->pendidikan, $pendidikanOptions, true)) {
@@ -33,7 +35,7 @@ class PengajarController extends Controller
         }
         $pendidikanOptions = array_values(array_unique($pendidikanOptions));
 
-        return view('admin.pengajar.index', compact('pengajars', 'kelas', 'pendidikanOptions'));
+        return view('admin.pengajar.index', compact('pengajars', 'kelas', 'pendidikanOptions', 'presensiShifts'));
     }
 
     public function export(Request $request)
@@ -62,6 +64,8 @@ class PengajarController extends Controller
 
     public function store(Request $request)
     {
+        $sekolah_id = auth()->user()->sekolah_id;
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
@@ -73,9 +77,15 @@ class PengajarController extends Controller
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
             'kelas_id' => 'nullable|array',
             'kelas_id.*' => 'exists:kelas,id',
+            'presensi_shift_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('presensi_shifts', 'id')->where(fn ($q) => $q->where('sekolah_id', $sekolah_id)),
+            ],
         ]);
 
-        $sekolah_id = auth()->user()->sekolah_id;
+        $defaultShiftId = PresensiShift::where('sekolah_id', $sekolah_id)->where('is_default', true)->value('id')
+            ?? PresensiShift::where('sekolah_id', $sekolah_id)->orderBy('id')->value('id');
 
         $user = User::create([
             'name' => $request->name,
@@ -88,6 +98,7 @@ class PengajarController extends Controller
         $data = [
             'user_id' => $user->id,
             'sekolah_id' => $sekolah_id,
+            'presensi_shift_id' => $request->input('presensi_shift_id') ?: $defaultShiftId,
             'name' => $request->name,
             'jabatan' => $request->jabatan,
             'nik' => $request->nik,
@@ -119,6 +130,8 @@ class PengajarController extends Controller
             $pendidikanPilihan[] = $pengajar->pendidikan;
         }
 
+        $sekolahId = (int) auth()->user()->sekolah_id;
+
         $request->validate([
             'name' => 'required|string|max:255',
             'jabatan' => 'nullable|string|max:255',
@@ -129,10 +142,16 @@ class PengajarController extends Controller
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
             'kelas_id' => 'nullable|array',
             'kelas_id.*' => 'exists:kelas,id',
+            'presensi_shift_id' => [
+                'required',
+                'integer',
+                Rule::exists('presensi_shifts', 'id')->where(fn ($q) => $q->where('sekolah_id', $sekolahId)),
+            ],
         ]);
 
         $dataArr = [
             'name' => $request->name,
+            'presensi_shift_id' => $request->presensi_shift_id,
             'jabatan' => $request->jabatan,
             'nik' => $request->nik,
             'alamat' => $request->alamat,

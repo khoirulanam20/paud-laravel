@@ -16,6 +16,7 @@ class Pengajar extends Model
     protected $fillable = [
         'user_id',
         'sekolah_id',
+        'presensi_shift_id',
         'name',
         'jabatan',
         'education_history',
@@ -35,6 +36,11 @@ class Pengajar extends Model
     public function sekolah(): BelongsTo
     {
         return $this->belongsTo(Sekolah::class);
+    }
+
+    public function presensiShift(): BelongsTo
+    {
+        return $this->belongsTo(PresensiShift::class);
     }
 
     public function gajiPengajars(): HasMany

@@ -11,7 +11,7 @@ final class AdminSettingsNav
     private const SETTINGS_PERMS = [
         'menu.role',
         'menu.pengguna',
-        'menu.presensi-guru',
+        'menu.pengaturan-presensi-guru',
         'menu.log-aktivitas',
         'menu.setting-akuntansi',
         'menu.pengaturan-ai',
@@ -79,7 +79,7 @@ final class AdminSettingsNav
     }
 
     /**
-     * @return list<array{route: string, label: string, pattern: string, perm?: string, admin_sekolah_only?: bool, hub_member?: bool}>
+     * @return list<array{route: string, label: string, pattern: string, perm?: string, admin_sekolah_only?: bool, hub_member?: bool, except_roles?: list<string>}>
      */
     private static function tabDefinitions(): array
     {
@@ -88,7 +88,7 @@ final class AdminSettingsNav
             ['route' => 'profile.sekolah.edit', 'label' => 'Profil Sekolah', 'pattern' => 'profile.sekolah.*', 'admin_sekolah_only' => true],
             ['route' => 'admin.role.index', 'label' => 'Role', 'pattern' => 'admin.role.*', 'perm' => 'menu.role'],
             ['route' => 'admin.pengguna.index', 'label' => 'Pengguna', 'pattern' => 'admin.pengguna.*', 'perm' => 'menu.pengguna'],
-            ['route' => 'admin.presensi-setting.index', 'label' => 'Presensi Guru', 'pattern' => 'admin.presensi-setting.*', 'perm' => 'menu.presensi-guru'],
+            ['route' => 'admin.presensi-setting.index', 'label' => 'Presensi Guru', 'pattern' => 'admin.presensi-setting.*', 'perm' => 'menu.pengaturan-presensi-guru', 'except_roles' => ['Pengajar', 'Wali Kelas']],
             ['route' => 'admin.activity-log.index', 'label' => 'Log Aktivitas', 'pattern' => 'admin.activity-log.*', 'perm' => 'menu.log-aktivitas'],
             ['route' => 'admin.akuntansi-setting.index', 'label' => 'Akuntansi', 'pattern' => 'admin.akuntansi-setting.*', 'perm' => 'menu.setting-akuntansi'],
             ['route' => 'admin.ai-persona.index', 'label' => 'AI', 'pattern' => 'admin.ai-persona.*', 'perm' => 'menu.pengaturan-ai'],
@@ -120,6 +120,12 @@ final class AdminSettingsNav
         }
 
         if (! empty($tab['admin_sekolah_only']) && ! $user->hasRole('Admin Sekolah')) {
+            return false;
+        }
+
+        if (! empty($tab['except_roles'])
+            && ! $user->hasAnyRole(['Admin Sekolah', 'Lembaga'])
+            && $user->hasAnyRole((array) $tab['except_roles'])) {
             return false;
         }
 

@@ -3,34 +3,47 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PresensiShift;
 use App\Models\Sekolah;
 use App\Models\SekolahHariLibur;
 use App\Models\SekolahJamKerja;
 use App\Support\ActivityLogger;
 use App\Support\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class JamKerjaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $this->authorizePengaturanPresensi();
+
         $sekolah = Sekolah::findOrFail(TenantContext::requireSekolahId());
 
-        $this->pastikanJadwalLengkap($sekolah);
+        $this->pastikanShiftDanJadwalLengkap($sekolah);
+
+        $shifts = $sekolah->presensiShifts()->get();
+        $activeShift = $this->resolveActiveShift($shifts, $request->integer('shift'));
 
         return view('admin.presensi-setting.index', [
             'sekolah' => $sekolah,
-            'jadwals' => $sekolah->jamKerjas()->get()->keyBy('hari'),
+            'shifts' => $shifts,
+            'activeShift' => $activeShift,
+            'jadwals' => $activeShift->jamKerjas()->get()->keyBy('hari'),
             'hariLiburs' => $sekolah->hariLiburs()->get(),
         ]);
     }
 
     public function update(Request $request)
     {
+        $this->authorizePengaturanPresensi();
+
         $sekolah = Sekolah::findOrFail(TenantContext::requireSekolahId());
-        $this->pastikanJadwalLengkap($sekolah);
+        $shift = $this->findTenantShift($sekolah, (int) $request->input('presensi_shift_id'));
 
         $validated = $request->validate([
+            'presensi_shift_id' => ['required', 'integer'],
             'radius_m' => ['nullable', 'integer', 'min:10', 'max:5000'],
             'location_coordinate' => [
                 'nullable',
@@ -72,21 +85,22 @@ class JamKerjaController extends Controller
             'jadwal.*.toleransi_pulang_menit' => ['nullable', 'integer', 'min:0', 'max:600'],
         ]);
 
-        $update = ['radius_m' => $validated['radius_m'] ?? null];
-
+        $koordinat = null;
         if ($request->has('location_coordinate')) {
-            $koordinat = preg_replace('/\s+/', '', trim((string) $request->input('location_coordinate', ''))) ?? '';
-
-            $update['location_coordinate'] = $koordinat === '' ? null : $koordinat;
+            $raw = preg_replace('/\s+/', '', trim((string) $request->input('location_coordinate', ''))) ?? '';
+            $koordinat = $raw === '' ? null : $raw;
         }
 
-        $sekolah->update($update);
+        $shift->update([
+            'radius_m' => $validated['radius_m'] ?? null,
+            'location_coordinate' => $koordinat,
+        ]);
 
         foreach ($validated['jadwal'] as $hari => $row) {
             $isKerja = (bool) ($row['is_kerja'] ?? false);
 
             SekolahJamKerja::withoutSekolahScope()
-                ->where('sekolah_id', $sekolah->id)
+                ->where('presensi_shift_id', $shift->id)
                 ->where('hari', (int) $hari)
                 ->update([
                     'is_kerja' => $isKerja,
@@ -97,17 +111,129 @@ class JamKerjaController extends Controller
                 ]);
         }
 
-        ActivityLogger::log('Pengaturan presensi guru diperbarui', $sekolah, [
-            'radius_m' => $sekolah->radius_m,
+        ActivityLogger::log('Pengaturan presensi shift diperbarui', $shift, [
+            'shift' => $shift->name,
+            'radius_m' => $shift->radius_m,
         ]);
 
         return redirect()
+            ->route('admin.presensi-setting.index', ['shift' => $shift->id])
+            ->with('success', 'Pengaturan shift "'.$shift->name.'" berhasil disimpan.');
+    }
+
+    public function storeShift(Request $request)
+    {
+        $this->authorizeKelolaShift();
+
+        $sekolah = Sekolah::findOrFail(TenantContext::requireSekolahId());
+        $this->pastikanShiftDanJadwalLengkap($sekolah);
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('presensi_shifts', 'name')->where(fn ($q) => $q->where('sekolah_id', $sekolah->id)),
+            ],
+        ]);
+
+        $default = $sekolah->presensiShifts()->where('is_default', true)->first()
+            ?? $sekolah->presensiShifts()->orderBy('id')->firstOrFail();
+
+        $maxSort = (int) $sekolah->presensiShifts()->max('sort_order');
+
+        $shift = PresensiShift::withoutSekolahScope()->create([
+            'sekolah_id' => $sekolah->id,
+            'name' => $validated['name'],
+            'location_coordinate' => $default->location_coordinate,
+            'radius_m' => $default->radius_m,
+            'is_default' => false,
+            'sort_order' => $maxSort + 1,
+        ]);
+
+        foreach ($default->jamKerjas as $row) {
+            SekolahJamKerja::withoutSekolahScope()->create([
+                'sekolah_id' => $sekolah->id,
+                'presensi_shift_id' => $shift->id,
+                'hari' => $row->hari,
+                'is_kerja' => $row->is_kerja,
+                'jam_masuk' => $row->jam_masuk,
+                'jam_pulang' => $row->jam_pulang,
+                'toleransi_masuk_menit' => $row->toleransi_masuk_menit,
+                'toleransi_pulang_menit' => $row->toleransi_pulang_menit,
+            ]);
+        }
+
+        ActivityLogger::log('Shift presensi ditambahkan', $shift);
+
+        return redirect()
+            ->route('admin.presensi-setting.index', ['shift' => $shift->id])
+            ->with('success', 'Shift "'.$shift->name.'" berhasil ditambahkan.');
+    }
+
+    public function updateShift(Request $request, PresensiShift $presensiShift)
+    {
+        $this->authorizeKelolaShift();
+
+        $sekolah = Sekolah::findOrFail(TenantContext::requireSekolahId());
+        $shift = $this->findTenantShift($sekolah, $presensiShift->id);
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('presensi_shifts', 'name')
+                    ->where(fn ($q) => $q->where('sekolah_id', $sekolah->id))
+                    ->ignore($shift->id),
+            ],
+        ]);
+
+        $shift->update(['name' => $validated['name']]);
+
+        return redirect()
+            ->route('admin.presensi-setting.index', ['shift' => $shift->id])
+            ->with('success', 'Nama shift diperbarui.');
+    }
+
+    public function destroyShift(PresensiShift $presensiShift)
+    {
+        $this->authorizeKelolaShift();
+
+        $sekolah = Sekolah::findOrFail(TenantContext::requireSekolahId());
+        $shift = $this->findTenantShift($sekolah, $presensiShift->id);
+
+        if ($shift->is_default) {
+            throw ValidationException::withMessages([
+                'shift' => 'Shift default tidak dapat dihapus.',
+            ]);
+        }
+
+        if ($sekolah->presensiShifts()->count() <= 1) {
+            throw ValidationException::withMessages([
+                'shift' => 'Minimal harus ada satu shift.',
+            ]);
+        }
+
+        if ($shift->pengajars()->exists()) {
+            throw ValidationException::withMessages([
+                'shift' => 'Shift masih dipakai guru. Pindahkan guru ke shift lain terlebih dahulu.',
+            ]);
+        }
+
+        $shift->delete();
+
+        ActivityLogger::log('Shift presensi dihapus', $sekolah, ['shift' => $shift->name]);
+
+        return redirect()
             ->route('admin.presensi-setting.index')
-            ->with('success', 'Pengaturan presensi guru berhasil disimpan.');
+            ->with('success', 'Shift "'.$shift->name.'" berhasil dihapus.');
     }
 
     public function storeLibur(Request $request)
     {
+        $this->authorizePengaturanPresensi();
+
         $sekolah = Sekolah::findOrFail(TenantContext::requireSekolahId());
 
         $validated = $request->validate([
@@ -134,12 +260,14 @@ class JamKerjaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.presensi-setting.index')
+            ->route('admin.presensi-setting.index', $request->only('shift'))
             ->with('success', 'Hari libur berhasil disimpan.');
     }
 
-    public function destroyLibur(SekolahHariLibur $hariLibur)
+    public function destroyLibur(Request $request, SekolahHariLibur $hariLibur)
     {
+        $this->authorizePengaturanPresensi();
+
         $sekolahId = TenantContext::requireSekolahId();
 
         abort_unless((int) $hariLibur->sekolah_id === (int) $sekolahId, 403);
@@ -152,14 +280,82 @@ class JamKerjaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.presensi-setting.index')
+            ->route('admin.presensi-setting.index', $request->only('shift'))
             ->with('success', 'Hari libur berhasil dihapus.');
     }
 
-    private function pastikanJadwalLengkap(Sekolah $sekolah): void
+    private function authorizePengaturanPresensi(): void
+    {
+        $user = auth()->user();
+        if ($user?->hasAnyRole(['Admin Sekolah', 'Lembaga'])) {
+            return;
+        }
+
+        abort_if($user?->hasAnyRole(['Pengajar', 'Wali Kelas']), 403);
+        abort_unless($user?->can('menu.pengaturan-presensi-guru'), 403);
+    }
+
+    private function authorizeKelolaShift(): void
+    {
+        abort_unless(auth()->user()?->hasRole('Admin Sekolah'), 403);
+    }
+
+    private function findTenantShift(Sekolah $sekolah, int $shiftId): PresensiShift
+    {
+        return PresensiShift::withoutSekolahScope()
+            ->where('sekolah_id', $sekolah->id)
+            ->whereKey($shiftId)
+            ->firstOrFail();
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, PresensiShift>  $shifts
+     */
+    private function resolveActiveShift($shifts, int $requestedId): PresensiShift
+    {
+        if ($requestedId > 0) {
+            $match = $shifts->firstWhere('id', $requestedId);
+            if ($match !== null) {
+                return $match;
+            }
+        }
+
+        return $shifts->firstWhere('is_default', true) ?? $shifts->firstOrFail();
+    }
+
+    private function pastikanShiftDanJadwalLengkap(Sekolah $sekolah): void
+    {
+        $shift = PresensiShift::withoutSekolahScope()
+            ->where('sekolah_id', $sekolah->id)
+            ->where('is_default', true)
+            ->first();
+
+        if ($shift === null) {
+            $shift = PresensiShift::withoutSekolahScope()->create([
+                'sekolah_id' => $sekolah->id,
+                'name' => 'Reguler',
+                'location_coordinate' => $sekolah->location_coordinate,
+                'radius_m' => $sekolah->radius_m,
+                'is_default' => true,
+                'sort_order' => 0,
+            ]);
+        }
+
+        $this->pastikanJadwalLengkapUntukShift($sekolah, $shift);
+
+        PresensiShift::withoutSekolahScope()
+            ->where('sekolah_id', $sekolah->id)
+            ->where('id', '!=', $shift->id)
+            ->get()
+            ->each(function (PresensiShift $other) use ($sekolah): void {
+                $this->pastikanJadwalLengkapUntukShift($sekolah, $other);
+            });
+    }
+
+    private function pastikanJadwalLengkapUntukShift(Sekolah $sekolah, PresensiShift $shift): void
     {
         $ada = SekolahJamKerja::withoutSekolahScope()
-            ->where('sekolah_id', $sekolah->id)
+            ->where('presensi_shift_id', $shift->id)
             ->pluck('hari')
             ->all();
 
@@ -172,6 +368,7 @@ class JamKerjaController extends Controller
 
             SekolahJamKerja::withoutSekolahScope()->create([
                 'sekolah_id' => $sekolah->id,
+                'presensi_shift_id' => $shift->id,
                 'hari' => $hari,
                 'is_kerja' => $kerja,
                 'jam_masuk' => $kerja ? '07:00' : null,

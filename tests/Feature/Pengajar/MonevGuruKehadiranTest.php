@@ -7,6 +7,7 @@ use App\Models\Lembaga;
 use App\Models\MonevGuruKriteria;
 use App\Models\Pengajar;
 use App\Models\PresensiPengajar;
+use App\Models\PresensiShift;
 use App\Models\Sekolah;
 use App\Models\SekolahJamKerja;
 use App\Models\User;
@@ -84,9 +85,19 @@ class MonevGuruKehadiranTest extends TestCase
         ]);
         $this->assignRoleForSchool($guruUser, 'Pengajar', $sekolah->id);
 
+        $shift = PresensiShift::withoutSekolahScope()->create([
+            'sekolah_id' => $sekolah->id,
+            'name' => 'Reguler',
+            'location_coordinate' => '-6.200000,106.816666',
+            'radius_m' => 100,
+            'is_default' => true,
+            'sort_order' => 0,
+        ]);
+
         $pengajar = Pengajar::create([
             'user_id' => $guruUser->id,
             'sekolah_id' => $sekolah->id,
+            'presensi_shift_id' => $shift->id,
             'name' => 'Guru Kehadiran',
         ]);
 
@@ -116,18 +127,28 @@ class MonevGuruKehadiranTest extends TestCase
 
     private function seedJadwalKerja(Sekolah $sekolah): void
     {
+        $shift = PresensiShift::withoutSekolahScope()
+            ->where('sekolah_id', $sekolah->id)
+            ->where('is_default', true)
+            ->firstOrFail();
+
         foreach (range(1, 7) as $hari) {
             $kerja = $hari <= 5;
 
-            SekolahJamKerja::withoutSekolahScope()->create([
-                'sekolah_id' => $sekolah->id,
-                'hari' => $hari,
-                'is_kerja' => $kerja,
-                'jam_masuk' => $kerja ? '07:00:00' : null,
-                'jam_pulang' => $kerja ? '13:00:00' : null,
-                'toleransi_masuk_menit' => 10,
-                'toleransi_pulang_menit' => 10,
-            ]);
+            SekolahJamKerja::withoutSekolahScope()->updateOrCreate(
+                [
+                    'presensi_shift_id' => $shift->id,
+                    'hari' => $hari,
+                ],
+                [
+                    'sekolah_id' => $sekolah->id,
+                    'is_kerja' => $kerja,
+                    'jam_masuk' => $kerja ? '07:00:00' : null,
+                    'jam_pulang' => $kerja ? '13:00:00' : null,
+                    'toleransi_masuk_menit' => 10,
+                    'toleransi_pulang_menit' => 10,
+                ],
+            );
         }
     }
 

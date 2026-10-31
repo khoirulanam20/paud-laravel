@@ -18,7 +18,7 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Guru</th><th>Email Login</th><th>Jabatan / Posisi</th><th>Penempatan Kelas</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Guru</th><th>Email Login</th><th>Shift Presensi</th><th>Jabatan / Posisi</th><th>Penempatan Kelas</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($pengajars as $p)
                         <tr>
@@ -26,6 +26,7 @@
                                 <x-foto-profil :path="$p->photo" :name="$p->name" size="sm" />
                                 <span class="font-semibold" style="color:#2C2C2C;">{{ $p->name }}</span></div></td>
                             <td><span class="badge badge-teal">{{ $p->user->email ?? '-' }}</span></td>
+                            <td><span class="text-sm" style="color:#6B6560;">{{ $p->presensiShift?->name ?? '-' }}</span></td>
                             <td>{{ $p->jabatan ?? '-' }}</td>
                             <td>
                                 @if($p->kelas && $p->kelas->count() > 0)
@@ -44,7 +45,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="5" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada data guru.</td></tr>
+                        <tr><td colspan="6" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada data guru.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -87,6 +88,17 @@
                                     @endforelse
                                 </div>
                             </div>
+                        </div>
+                        <div>
+                            <label class="input-label">Shift Presensi</label>
+                            <select name="presensi_shift_id" class="input-field @error('presensi_shift_id') border-red-500 @enderror" required>
+                                @forelse($presensiShifts as $shift)
+                                    <option value="{{ $shift->id }}" @selected(old('presensi_shift_id') == $shift->id || ($shift->is_default && ! old('presensi_shift_id')))>{{ $shift->name }}</option>
+                                @empty
+                                    <option value="">Buat shift di Pengaturan Presensi dulu</option>
+                                @endforelse
+                            </select>
+                            @error('presensi_shift_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -151,6 +163,14 @@
                                 <span class="text-xs italic text-gray-400">Belum ada data kelas</span>
                                 @endforelse
                             </div>
+                        </div>
+                        <div>
+                            <label class="input-label">Shift Presensi</label>
+                            <select name="presensi_shift_id" x-model="editData.presensi_shift_id" class="input-field" required>
+                                @foreach($presensiShifts as $shift)
+                                    <option value="{{ $shift->id }}">{{ $shift->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="input-label">NIK KTP</label><input type="text" name="nik" x-model="editData.nik" class="input-field"></div>
