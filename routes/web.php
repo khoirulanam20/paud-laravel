@@ -386,6 +386,9 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
     Route::post('presensi-guru', [PresensiPengajarController::class, 'store'])->name('presensi-guru.store');
     Route::get('presensi-setting', [JamKerjaController::class, 'index'])->name('presensi-setting.index');
     Route::put('presensi-setting', [JamKerjaController::class, 'update'])->name('presensi-setting.update');
+    Route::post('presensi-setting/shifts', [JamKerjaController::class, 'storeShift'])->name('presensi-setting.shifts.store');
+    Route::patch('presensi-setting/shifts/{presensiShift}', [JamKerjaController::class, 'updateShift'])->name('presensi-setting.shifts.update');
+    Route::delete('presensi-setting/shifts/{presensiShift}', [JamKerjaController::class, 'destroyShift'])->name('presensi-setting.shifts.destroy');
     Route::post('presensi-setting/libur', [JamKerjaController::class, 'storeLibur'])->name('presensi-setting.libur.store');
     Route::delete('presensi-setting/libur/{hariLibur}', [JamKerjaController::class, 'destroyLibur'])->name('presensi-setting.libur.destroy');
     Route::redirect('presensi-guru/pengaturan', '/admin/presensi-setting');
