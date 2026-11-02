@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3" data-tour="page-header">
             <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
                 <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -10,16 +10,18 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
-            showCreateModal: false,
-            showEditModal: false,
+            showCreateModal: @js($errors->any() && old('_method') !== 'PUT'),
+            showEditModal: @js($errors->any() && old('_method') === 'PUT'),
             showDeleteModal: false,
-            editData: { id: '', name: '', email: '', role: '' },
+            createData: { role: '', kelas_id: '' },
+            editData: { id: '', name: '', email: '', role: '', kelas_id: '' },
             deleteData: { id: '', name: '' },
-            openEdit(user) { this.editData = { id: user.id, name: user.name, email: user.email, role: user.role }; this.showEditModal = true; },
+            openEdit(user) { this.editData = { id: user.id, name: user.name, email: user.email, role: user.role, kelas_id: user.kelas_id || '' }; this.showEditModal = true; },
             openDelete(user) { this.deleteData = { id: user.id, name: user.name }; this.showDeleteModal = true; },
          }">
+        <x-settings-tabs />
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -41,16 +43,17 @@
                     <h3 class="section-title">Daftar Pengguna</h3>
                     <p class="section-subtitle">Kelola pengguna yang memiliki akses ke sistem</p>
                 </div>
-                <button @click="showCreateModal = true" class="btn-primary">
-                    <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <div class="flex items-center gap-2">
+                    <x-export-excel route="admin.pengguna.export" />
+                    <button @click="showCreateModal = true" class="btn-primary shrink-0 h-9 w-9 md:h-11 md:w-11 p-0" title="Tambah Pengguna" aria-label="Tambah Pengguna">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Tambah Pengguna
-                </button>
+                    </svg></button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="data-table w-full">
+                <table class="data-table w-full" data-tour="admin-pengguna-table">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -86,12 +89,13 @@
                                             'id' => $pengguna->id,
                                             'name' => $pengguna->name,
                                             'email' => $pengguna->email,
-                                            'role' => $pengguna->roles->first()?->name ?? '',
+                                            'role' => $pengguna->hasRole('Wali Kelas') ? 'Wali Kelas' : ($pengguna->roles->first()?->name ?? ''),
+                                            'kelas_id' => $pengguna->kelas_id ?? $pengguna->pengajar?->waliKelas->first()?->id,
                                         ]) }})"
-                                            class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
+                                            class="row-action-icon" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                         @if($pengguna->id !== auth()->id())
                                         <button @click="openDelete({{ json_encode(['id' => $pengguna->id, 'name' => $pengguna->name]) }})"
-                                            class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                            class="row-action-icon" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                                         @else
                                         <span class="text-xs px-3 py-1.5 rounded-lg" style="color:#9E9790;background:#EFECE8;cursor:not-allowed;" title="Tidak dapat menghapus akun sendiri">Hapus</span>
                                         @endif
@@ -112,11 +116,10 @@
                 </table>
             </div>
 
-            @if($penggunas->hasPages())
-                <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
-                    {{ $penggunas->links() }}
-                </div>
-            @endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$penggunas" />
+                {{ $penggunas->links() }}
+            </div>
         </div>
 
         <!-- CREATE MODAL -->
@@ -128,11 +131,12 @@
                     <div class="modal-body space-y-4">
                         <div>
                             <label class="input-label">Nama Lengkap</label>
-                            <input type="text" name="name" required placeholder="Nama pengguna" class="input-field">
+                            <input type="text" name="name" required placeholder="Nama pengguna" class="input-field" value="{{ old('name') }}">
                         </div>
                         <div>
                             <label class="input-label">Email</label>
-                            <input type="email" name="email" required placeholder="email@example.com" class="input-field">
+                            <input type="email" name="email" required placeholder="email@example.com" class="input-field @error('email') border-red-500 @enderror" value="{{ old('email') }}">
+                            @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="input-label">Password</label>
@@ -140,12 +144,23 @@
                         </div>
                         <div>
                             <label class="input-label">Role</label>
-                            <select name="role" required class="input-field">
+                            <select name="role" required class="input-field" x-model="createData.role">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->name }}">{{ $role->name }}</option>
                                 @endforeach
                             </select>
+                            <p class="text-[11px] mt-1" style="color:#9E9790;">Untuk guru PAUD, gunakan menu Data Guru. Role Pengajar tidak perlu dibuat di sini.</p>
+                        </div>
+                        <div x-show="createData.role === 'Wali Kelas'" x-cloak>
+                            <label class="input-label">Kelas Wali</label>
+                            <select name="kelas_id" class="input-field" :required="createData.role === 'Wali Kelas'" x-model="createData.kelas_id">
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach($kelas as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] mt-1" style="color:#9E9790;">Saat role `Wali Kelas` dipilih, kelas akan otomatis terhubung ke akun ini.</p>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -169,7 +184,8 @@
                         </div>
                         <div>
                             <label class="input-label">Email</label>
-                            <input type="email" name="email" x-model="editData.email" required class="input-field">
+                            <input type="email" name="email" x-model="editData.email" required class="input-field @error('email') border-red-500 @enderror" value="{{ old('email') }}">
+                            @error('email')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="input-label">Password <span class="text-xs" style="color:#9E9790;">(kosongkan jika tidak diubah)</span></label>
@@ -177,12 +193,22 @@
                         </div>
                         <div>
                             <label class="input-label">Role</label>
-                            <select name="role" required class="input-field">
+                            <select name="role" required class="input-field" x-model="editData.role">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->name }}" :selected="editData.role === '{{ $role->name }}'">{{ $role->name }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div x-show="editData.role === 'Wali Kelas'" x-cloak>
+                            <label class="input-label">Kelas Wali</label>
+                            <select name="kelas_id" class="input-field" :required="editData.role === 'Wali Kelas'" x-model="editData.kelas_id">
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach($kelas as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] mt-1" style="color:#9E9790;">Kelas akan otomatis terisi sesuai penugasan wali kelas pengguna ini.</p>
                         </div>
                     </div>
                     <div class="modal-footer">

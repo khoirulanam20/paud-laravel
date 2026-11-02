@@ -4,7 +4,7 @@ namespace App\Support;
 
 class TourRegistry
 {
-    /** @see modalRouteKey() — camelCase types e.g. addSiswa */
+    /** @see modalRouteKey()  camelCase types e.g. addSiswa */
     private const MODAL_TYPE_PATTERN = '[a-zA-Z][a-zA-Z0-9]*';
 
     private static ?array $routes = null;
@@ -26,7 +26,20 @@ class TourRegistry
             return [];
         }
 
-        return self::all()[$route] ?? [];
+        $steps = self::all()[$route] ?? [];
+
+        while ($steps !== []) {
+            $element = $steps[0]['element'] ?? null;
+            if (is_string($element) && str_contains($element, 'data-tour="nav-')) {
+                array_shift($steps);
+
+                continue;
+            }
+
+            break;
+        }
+
+        return $steps;
     }
 
     /**
@@ -36,7 +49,8 @@ class TourRegistry
     {
         return array_values(array_filter(
             self::steps($route),
-            fn (array $step) => empty($step['openModal']),
+            fn (array $step) => empty($step['openModal'])
+                && ! str_contains($step['element'] ?? '', 'data-tour="nav-'),
         ));
     }
 

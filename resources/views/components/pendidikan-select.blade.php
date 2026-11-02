@@ -16,7 +16,7 @@
     @if($required) required @endif
     {{ $attributes->merge(['class' => 'input-field']) }}
 >
-    <option value="">— Pilih pendidikan terakhir —</option>
+    <option value=""> Pilih pendidikan terakhir </option>
     @foreach ($opts as $opt)
         <option value="{{ $opt }}" @selected($current === $opt)>{{ $opt }}</option>
     @endforeach

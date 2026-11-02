@@ -67,8 +67,9 @@ class AiProvider
             throw new \InvalidArgumentException('Base URL tidak valid.');
         }
 
-        if (strtolower($parsed['scheme'] ?? '') !== 'https') {
-            throw new \InvalidArgumentException('Base URL custom wajib menggunakan HTTPS.');
+        $scheme = strtolower($parsed['scheme'] ?? '');
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            throw new \InvalidArgumentException('Base URL custom harus diawali http:// atau https://');
         }
 
         $host = strtolower($parsed['host']);

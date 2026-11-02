@@ -29,13 +29,15 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * DemoSeeder — data demo untuk website PAUD.
+ * Demo  data contoh untuk website PAUD (local/staging saja).
  *
- * Jalankan setelah RoleSeeder:
+ * Jalankan setelah ReferenceSeeder (butuh lembaga + sekolah):
  *   php artisan db:seed --class=Database\Seeders\DemoSeeder
  *
- * atau via DatabaseSeeder:
- *   php artisan db:seed
+ * Atau setup dev lengkap:
+ *   php artisan db:seed --class=Database\Seeders\DevSetupSeeder
+ *
+ * Risiko: menambah user @example.com, anak demo, menimpa CMS.
  *
  * Kredensial akun demo (password: password):
  *
@@ -47,15 +49,13 @@ use Illuminate\Support\Facades\Hash;
  *   | Pengajar        | pengajar@example.com   |
  *   | Orang Tua       | ortu@example.com       |
  *
- * Data yang di-seed:
- *   - 1 lembaga (Yayasan Pendidikan Anak Bangsa)
- *   - 1 sekolah (PAUD Bintang Kecil)
- *   - 5 role & 5 user demo
+ * Data yang di-seed (butuh lembaga + sekolah dari ReferenceSeeder):
+ *   - User demo tambahan (wali kelas, dll.)
  *   - 2 pengajar + 2 kelas + pivot kelas_pengajar
  *   - 2 anak (status approved) milik akun orang tua
  *   - 5 indikator matrikulasi (Kognitif, Motorik, Sosial-Emosional, Bahasa, Seni)
  *   - Pencapaian untuk setiap anak di tiap matrikulasi (total 10)
- *   - 5 agenda (kegiatan) — hari ini sampai 4 hari lalu
+ *   - 5 agenda (kegiatan)  hari ini sampai 4 hari lalu
  *   - 7 master kegiatan rutin (Agama, Kognitif, Motorik)
  *   - Kegiatan rutin harian untuk 2 anak x 7 kegiatan x 3 hari
  *   - Presensi siswa (2 anak x 7 hari terakhir)
@@ -69,39 +69,43 @@ use Illuminate\Support\Facades\Hash;
  *   - SkalaPencapaian default (BB/MB/BSH/BSB)
  *   - 50 token AI untuk sekolah demo
  *
- * Semua operasi idempotent — aman dijalankan berulang kali.
+ * Semua operasi idempotent  aman dijalankan berulang kali.
  */
 class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Fondasi — role, lembaga, sekolah, user dasar
-        $this->call(RoleSeeder::class);
+        if (app()->environment('production')) {
+            $this->command->error('DemoSeeder diblokir di production.');
+
+            return;
+        }
 
         $lembaga = Lembaga::first();
         $sekolah = Sekolah::first();
 
         if (! $lembaga || ! $sekolah) {
-            $this->command->error('Lembaga atau sekolah tidak ditemukan setelah RoleSeeder. Batalkan DemoSeeder.');
+            $this->command->error('Lembaga atau sekolah tidak ditemukan. Jalankan ReferenceSeeder dulu.');
+
             return;
         }
 
-        // 2. Tambah user yang belum ada di RoleSeeder
+        // 1. Tambah user yang belum ada di RoleSeeder
         $users = $this->seedDemoUsers($lembaga, $sekolah);
 
-        // 3. Struktur sekolah — pengajar, kelas, anak
+        // 2. Struktur sekolah  pengajar, kelas, anak
         $schoolData = $this->seedSekolahData($sekolah, $users);
 
-        // 4. Data akademik — skala, matrikulasi, pencapaian, agenda, kegiatan rutin
+        // 3. Data akademik  skala, matrikulasi, pencapaian, agenda, kegiatan rutin
         $this->seedAkademik($sekolah, $schoolData);
 
-        // 5. Presensi — siswa & pengajar
+        // 4. Presensi  siswa & pengajar
         $this->seedPresensi($sekolah, $schoolData);
 
-        // 6. Operasional — kesehatan, menu makanan, sarana, cashflow, kritik saran, CMS
+        // 5. Operasional  kesehatan, menu makanan, sarana, cashflow, kritik saran, CMS
         $this->seedOperasional($sekolah, $schoolData, $users);
 
-        // 7. Token AI
+        // 6. Token AI
         $this->seedAiTokens($sekolah, $users['admin']);
 
         $this->command->info('DemoSeeder selesai. Semua akun demo siap digunakan.');
@@ -187,7 +191,7 @@ class DemoSeeder extends Seeder
             ]
         );
 
-        // Kelas Melati — dengan wali kelas
+        // Kelas Melati  dengan wali kelas
         $kelasMelati = Kelas::firstOrCreate(
             ['sekolah_id' => $sekolah->id, 'name' => 'Kelas Melati'],
             [
@@ -196,7 +200,7 @@ class DemoSeeder extends Seeder
             ]
         );
 
-        // Kelas Mawar — tanpa wali kelas
+        // Kelas Mawar  tanpa wali kelas
         $kelasMawar = Kelas::firstOrCreate(
             ['sekolah_id' => $sekolah->id, 'name' => 'Kelas Mawar'],
             [
@@ -205,10 +209,10 @@ class DemoSeeder extends Seeder
             ]
         );
 
-        // Pivot: guru biasa mengajar di Kelas Melati
-        $kelasMelati->pengajars()->syncWithoutDetaching([$pengajarGuru->id]);
+        // Pivot: wali kelas + guru biasa mengajar di Kelas Melati
+        $kelasMelati->pengajars()->syncWithoutDetaching([$pengajarWali->id, $pengajarGuru->id]);
 
-        // Anak 1 — Adinda, di Kelas Melati
+        // Anak 1  Adinda, di Kelas Melati
         $anakAdinda = Anak::firstOrCreate(
             ['sekolah_id' => $sekolah->id, 'name' => 'Adinda Putri'],
             [
@@ -225,7 +229,7 @@ class DemoSeeder extends Seeder
             ]
         );
 
-        // Anak 2 — Bima, di Kelas Mawar
+        // Anak 2  Bima, di Kelas Mawar
         $anakBima = Anak::firstOrCreate(
             ['sekolah_id' => $sekolah->id, 'name' => 'Bima Sakti'],
             [
@@ -254,7 +258,7 @@ class DemoSeeder extends Seeder
         // Skala pencapaian default
         SkalaPencapaian::seedDefaultsForSekolah($sekolah->id);
 
-        // Matrikulasi — indikator PAUD
+        // Matrikulasi  indikator PAUD
         $matrikulasiData = [
             ['indicator' => 'Menyebut warna dasar', 'aspek' => 'Kognitif', 'description' => 'Anak mampu menyebutkan minimal 3 warna dasar (merah, kuning, biru)'],
             ['indicator' => 'Melompat dengan satu kaki', 'aspek' => 'Motorik Kasar', 'description' => 'Anak mampu melompat dengan satu kaki sejauh 2-3 langkah'],
@@ -278,7 +282,7 @@ class DemoSeeder extends Seeder
             $matrikulasiIds[] = $matrikulasi->id;
         }
 
-        // Pencapaian — 2 anak x 5 matrikulasi = 10 record
+        // Pencapaian  2 anak x 5 matrikulasi = 10 record
         $skorVariasi = ['BSH', 'MB', 'BSB', 'BB', 'BSH'];
         $feedbackList = [
             'Sudah mulai menunjukkan perkembangan yang baik, terus semangat!',
@@ -639,9 +643,9 @@ class DemoSeeder extends Seeder
             'hero_subtitle' => 'Tempat terbaik untuk tumbuh, belajar, dan bermain bersama teman-teman baru!',
             'about_title' => 'Tentang PAUD Bintang Kecil',
             'about_text' => 'PAUD Bintang Kecil adalah lembaga pendidikan anak usia dini yang berdiri sejak tahun 2020. Kami mengutamakan perkembangan optimal anak melalui pendidikan yang menyenangkan, aman, dan penuh kasih sayang.',
-            'kontak_alamat' => 'Jl. Merdeka No. 10, Jakarta Selatan',
-            'kontak_telepon' => '021-87654321',
-            'kontak_email' => 'info@paudbintangkecil.sch.id',
+            'kontak_alamat' => 'Jl. Taman Lembayung No.47, Sendangguwo, Kec. Tembalang, Kota Semarang, Jawa Tengah (50273)',
+            'kontak_telepon' => '085117494221',
+            'kontak_email' => 'admin@firstudio.id',
             'kontak_jam' => 'Senin-Jumat: 07.00-16.00 WIB',
             'footer_text' => 'Tumbuh bersama, bahagia bersama. 💛',
         ];

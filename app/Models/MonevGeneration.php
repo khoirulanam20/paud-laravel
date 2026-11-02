@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MonevGeneration extends Model
 {
-    use HasUuids;
+    use BelongsToSekolah, HasUuids;
 
     public const STATUS_PENDING = 'pending';
 

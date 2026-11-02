@@ -11,9 +11,13 @@ class AnakRegistrationService
 {
     use CanUploadImage;
 
-    public function createPendingForParent(User $parent, array $data, ?UploadedFile $photo = null): Anak
-    {
-        return $this->createForParent($parent, $data, 'pending', $parent->sekolah_id, $photo);
+    public function createPendingForParent(
+        User $parent,
+        array $data,
+        int $sekolahId,
+        ?UploadedFile $photo = null
+    ): Anak {
+        return $this->createForParent($parent, $data, 'pending', $sekolahId, $photo);
     }
 
     public function createApprovedForParent(
@@ -61,6 +65,6 @@ class AnakRegistrationService
             $attributes['photo'] = $this->uploadImage($photo, 'anak');
         }
 
-        return Anak::create($attributes);
+        return Anak::withoutSekolahScope()->create($attributes);
     }
 }

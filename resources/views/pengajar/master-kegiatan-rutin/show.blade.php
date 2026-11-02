@@ -1,7 +1,24 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8" x-data="{ 
+    <x-slot name="header">
+        <div class="flex items-center gap-3">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background:#1A6B6B;">
+                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </div>
+            <h2 class="font-bold text-xl" style="color:#2C2C2C;">Detail Kegiatan Rutin</h2>
+        </div>
+    </x-slot>
+
+    <div class="app-page-shell" x-data="{ 
         openModal: false, 
         openDetailModal: false,
+        showImageModal: false,
+        activeImage: null,
+        activeDownloadUrl: null,
+        activeMediaType: 'image',
+        docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
         selectedAnak: null, 
         statusValue: '',
         keteranganValue: '',
@@ -9,6 +26,32 @@
         filterMulai: '{{ date('Y-m-01') }}',
         filterSampai: '{{ date('Y-m-t') }}',
         isLoadingDetail: false,
+        openMedia(url, downloadUrl) {
+            this.activeImage = url;
+            this.activeDownloadUrl = downloadUrl ?? null;
+            this.activeMediaType = (typeof window.isVideoPath === 'function' && window.isVideoPath(url)) ? 'video' : 'image';
+            this.showImageModal = true;
+        },
+        async onRutinPhotoChange(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+                const prepared = await window.documentationUploadProcess(file, this);
+                const dt = new DataTransfer();
+                dt.items.add(prepared);
+                e.target.files = dt.files;
+            } catch (err) {
+                alert(err?.message || 'Gagal memproses file.');
+                e.target.value = '';
+            }
+        },
+        submitRutinForm(event) {
+            if (this.docUploadActive) {
+                event.preventDefault();
+                return;
+            }
+            event.target.submit();
+        },
         initAnak(id, name, status, keterangan) {
             this.selectedAnak = { id, name };
             this.statusValue = status || '';
@@ -21,7 +64,7 @@
             this.isLoadingDetail = true;
             
             try {
-                const is_admin = {{ auth()->user()->hasRole('Admin Sekolah') ? 'true' : 'false' }};
+                const is_admin = {{ auth()->user()->usesAdminKegiatanRutinRoutes() ? 'true' : 'false' }};
                 const prefix = is_admin ? '/admin' : '/pengajar';
                 let res = await fetch(`${prefix}/master-kegiatan-rutin/detail/{{ $masterKegiatanRutin->id }}/${id}?mulai=${this.filterMulai}&sampai=${this.filterSampai}`);
                 let json = await res.json();
@@ -38,100 +81,95 @@
             }
         }
     }">
-        <div class="mb-6 flex items-center gap-4" data-tour="page-header">
-            <a href="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.index') }}" class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition shadow-sm">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            </a>
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 leading-tight">{{ $masterKegiatanRutin->nama_kegiatan }}</h2>
-                <p class="text-sm text-gray-500 mt-1">Aspek: {{ $masterKegiatanRutin->aspek }}</p>
-            </div>
-        </div>
-        
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="kegiatan-rutin-summary">
-            <div>
-                <h3 class="text-lg font-bold text-gray-800">Daftar Siswa</h3>
-                <p class="text-xs text-gray-500">Isi status pencapaian untuk tanggal di bawah ini.</p>
-            </div>
-            <form method="GET" action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.show', $masterKegiatanRutin) }}" class="flex flex-wrap gap-3 items-end">
-                <div class="w-full sm:w-auto">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 ml-1">Tanggal</label>
-                    <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field py-2 text-sm" onchange="this.form.submit()">
-                </div>
-                <div class="w-full sm:w-auto">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 ml-1">Kelas</label>
-                    <select name="kelas_id" class="input-field py-2 text-sm min-w-[120px]" onchange="this.form.submit()">
-                        <option value="">- Pilih Kelas -</option>
-                        @foreach($classList as $c)
-                            <option value="{{ $c->id }}" @selected($kelasId == $c->id)>{{ $c->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </form>
-        </div>
-
         @if(session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-100 text-green-700 rounded-xl flex items-center gap-3 animate-fade-in shadow-sm">
-                <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                <p class="text-sm font-bold">{{ session('success') }}</p>
+            <div class="alert-success mb-5">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ session('success') }}
             </div>
         @endif
 
-        <div class="card overflow-hidden border-none shadow-sm shadow-gray-200" data-tour="kegiatan-rutin-records">
+        <div class="mb-4">
+            <a href="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.index') }}" class="btn-secondary text-sm">← Kegiatan Rutin</a>
+        </div>
+
+        <div class="card overflow-hidden" data-tour="kegiatan-rutin-records">
+            <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
+                <div class="min-w-0 mb-3 md:mb-4" data-tour="page-header">
+                    <h3 class="section-title mb-0">{{ $masterKegiatanRutin->nama_kegiatan }}</h3>
+                    <p class="section-subtitle mt-1">Aspek: {{ $masterKegiatanRutin->aspek }} · Isi pencapaian per tanggal</p>
+                </div>
+                <form method="GET" action="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.show', $masterKegiatanRutin) }}" class="toolbar-form w-full" data-tour="kegiatan-rutin-summary">
+                    <div class="toolbar-field md:min-w-[10rem] md:max-w-[12rem]">
+                        <label class="input-label">Tanggal</label>
+                        <input type="date" name="tanggal" value="{{ $tanggal }}" class="input-field w-full">
+                    </div>
+                    <div class="toolbar-field md:min-w-[10rem] md:max-w-[14rem]">
+                        <label class="input-label">Kelas</label>
+                        <select name="kelas_id" class="input-field w-full">
+                            <option value="">— Pilih kelas —</option>
+                            @foreach($classList as $c)
+                                <option value="{{ $c->id }}" @selected($kelasId == $c->id)>{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="toolbar-actions">
+                        <x-toolbar.filter-icon label="Terapkan" />
+                        <x-filter-reset :href="route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.show', $masterKegiatanRutin)" compact />
+                    </div>
+                </form>
+            </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
+                <table class="data-table">
                     <thead>
-                        <tr class="bg-gray-50/50">
-                            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Nama Siswa</th>
-                            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Status Pencapaian</th>
-                            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">Keterangan</th>
-                            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-center">Aksi</th>
+                        <tr>
+                            <th>Nama Siswa</th>
+                            <th>Status Pencapaian</th>
+                            <th>Keterangan</th>
+                            <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
+                    <tbody>
                         @forelse($anaks as $anak)
-                            @php 
-                                $r = $rutins->get($anak->id); 
+                            @php
+                                $r = $rutins->get($anak->id);
                             @endphp
-                            <tr class="hover:bg-gray-50/30 transition">
-                                <td class="px-6 py-4 font-bold text-gray-900">{{ $anak->name }}</td>
-                                <td class="px-6 py-4">
+                            <tr>
+                                <td class="font-semibold" style="color:#2C2C2C;">{{ $anak->name }}</td>
+                                <td>
                                     @if($r && $r->status_pencapaian)
-                                        <span class="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 w-fit">
-                                            {{ $r->status_pencapaian }}
-                                        </span>
+                                        <span class="badge badge-teal">{{ $r->status_pencapaian }}</span>
                                     @else
-                                        <span class="text-xs text-gray-300 italic">Belum Diisi</span>
+                                        <span class="text-xs italic" style="color:#9E9790;">Belum diisi</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4">
+                                <td>
                                     <div class="flex items-start gap-3">
                                         @if($r?->photo)
-                                            <div class="h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="window.open('{{ Storage::url($r->photo) }}')">
+                                            <div class="h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($r->photo) }}'; activeDownloadUrl = '{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'kegiatan-rutin.photo.download', $r) }}'; showImageModal = true">
                                                 <img src="{{ Storage::url($r->photo) }}" class="h-full w-full object-cover">
                                             </div>
                                         @endif
                                         <span class="text-xs text-gray-500 line-clamp-2 max-w-xs">{{ $r?->keterangan ?? '-' }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <button type="button" 
+                                <td class="text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button type="button"
                                             @click="initAnak('{{ $anak->id }}', '{{ addslashes($anak->name) }}', '{{ $r?->status_pencapaian }}', '{{ addslashes($r?->keterangan ?? '') }}')"
-                                            class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-[#1A6B6B] hover:text-white transition group border border-gray-100 shadow-sm text-[#1A6B6B]" title="Isi Capaian">
-                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                            class="row-action-icon" style="color:#1A6B6B;background:#D0E8E8;" title="Isi Capaian" aria-label="Isi Capaian">
+                                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                         </button>
-                                        <button type="button" 
+                                        <button type="button"
                                             @click="loadDetail('{{ $anak->id }}', '{{ addslashes($anak->name) }}')"
-                                            class="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition group border border-gray-100 shadow-sm text-indigo-500" title="Detail Riwayat">
-                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                            class="row-action-icon" style="color:#1A6B6B;background:#E8F5F5;" title="Detail Riwayat" aria-label="Detail Riwayat">
+                                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">
+                                <td colspan="4" class="py-12 text-center" style="color:#9E9790;">
                                     Pilih kelas untuk melihat daftar siswa.
                                 </td>
                             </tr>
@@ -150,7 +188,7 @@
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <form action="{{ route((auth()->user()->hasRole('Admin Sekolah') ? 'admin.' : 'pengajar.').'master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                <form action="{{ route((auth()->user()->kegiatanRutinRoutePrefix()).'master-kegiatan-rutin.store-rutin', $masterKegiatanRutin) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 relative" @submit.prevent="submitRutinForm($event)">
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <input type="hidden" name="kelas_id" value="{{ $kelasId }}">
@@ -178,13 +216,15 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Foto Dokumentasi (Opsional)</label>
-                            <input type="file" name="photo" class="input-field w-full text-xs" accept="image/*">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Foto / Video Dokumentasi (Opsional)</label>
+                            <x-documentation-upload-progress />
+                            <input type="file" name="photo" class="input-field w-full text-xs" accept="image/*,video/*" :disabled="docUploadActive" @change="onRutinPhotoChange($event)">
+                            <p class="text-[10px] text-gray-400 mt-1">Foto & video dikompres di perangkat Anda sebelum diunggah.</p>
                         </div>
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20">
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg shadow-[#1A6B6B]/20" :disabled="docUploadActive">
                             Simpan Perubahan
                         </button>
                     </div>
@@ -230,7 +270,7 @@
                                     <div class="font-bold text-gray-900" x-text="item.tanggal_formatted"></div>
                                     <div class="flex items-center gap-2">
                                         <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100" x-text="item.status_pencapaian"></span>
-                                        <form :action="( {{ auth()->user()->hasRole('Admin Sekolah') ? 'true' : 'false' }} ? '/admin' : '/pengajar' ) + '/master-kegiatan-rutin/rutin/' + item.id" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan ini?')">
+                                        <form :action="( {{ auth()->user()->usesAdminKegiatanRutinRoutes() ? 'true' : 'false' }} ? '/admin' : '/pengajar' ) + '/master-kegiatan-rutin/rutin/' + item.id" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-400 hover:text-red-600 transition p-1">
@@ -242,8 +282,14 @@
                                 
                                 <div class="flex flex-col sm:flex-row gap-4">
                                     <template x-if="item.photo_url">
-                                        <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="window.open(item.photo_url)">
-                                            <img :src="item.photo_url" class="w-full h-full object-cover">
+                                        <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden border border-gray-100 shadow-sm cursor-pointer relative" @click="openMedia(item.photo_url, item.photo_download_url)">
+                                            <template x-if="item.photo_url && typeof window.isVideoPath === 'function' && window.isVideoPath(item.photo_url)">
+                                                <video :src="item.photo_url" class="w-full h-full object-cover" muted playsinline></video>
+                                                <span class="absolute inset-0 flex items-center justify-center text-white text-lg bg-black/30">▶</span>
+                                            </template>
+                                            <template x-if="!(item.photo_url && typeof window.isVideoPath === 'function' && window.isVideoPath(item.photo_url))">
+                                                <img :src="item.photo_url" class="w-full h-full object-cover">
+                                            </template>
                                         </div>
                                     </template>
                                     <template x-if="item.keterangan">
@@ -259,5 +305,7 @@
                 </div>
             </div>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

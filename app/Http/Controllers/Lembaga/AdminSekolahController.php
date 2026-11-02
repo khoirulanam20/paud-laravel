@@ -3,19 +3,22 @@
 namespace App\Http\Controllers\Lembaga;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Sekolah;
+use App\Models\User;
+use App\Support\ActivityLogger;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 
 class AdminSekolahController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $lembaga_id = auth()->user()->lembaga_id;
-        $admins = User::role('Admin Sekolah')->where('lembaga_id', $lembaga_id)->with('sekolah')->latest()->paginate(10);
+        $admins = User::role('Admin Sekolah')->where('lembaga_id', $lembaga_id)->with('sekolah')->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->get();
+
         return view('lembaga.admin_sekolah.index', compact('admins', 'sekolahs'));
     }
 
@@ -40,6 +43,8 @@ class AdminSekolahController extends Controller
         ]);
 
         $user->assignRole('Admin Sekolah');
+
+        ActivityLogger::log('Role Admin Sekolah ditetapkan', $user, ['sekolah_id' => $user->sekolah_id]);
 
         return redirect()->route('lembaga.admin-sekolah.index')->with('success', 'Admin Sekolah berhasil ditambahkan.');
     }
@@ -77,6 +82,7 @@ class AdminSekolahController extends Controller
     {
         abort_if($admin_sekolah->lembaga_id !== auth()->user()->lembaga_id, 403);
         $admin_sekolah->delete();
+
         return redirect()->route('lembaga.admin-sekolah.index')->with('success', 'Admin Sekolah berhasil dihapus.');
     }
 }

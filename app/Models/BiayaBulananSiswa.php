@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BiayaBulananSiswa extends Model
 {
+    use BelongsToSekolah, LogsScopedActivity;
+
     protected $fillable = [
         'sekolah_id',
         'anak_id',
@@ -38,6 +42,6 @@ class BiayaBulananSiswa extends Model
 
     public function getBiayaBulananFormatted(): string
     {
-        return 'Rp ' . number_format($this->biaya_bulanan, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya_bulanan, 0, ',', '.');
     }
 }

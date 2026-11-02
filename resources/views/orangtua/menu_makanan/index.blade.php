@@ -5,31 +5,30 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Jadwal Menu Makanan</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" 
-         x-data="{ showImageModal: false, activeImage: null }">
+    <div class="app-page-shell" 
+         x-data="{ showImageModal: false, activeImage: null, activeDownloadUrl: null }">
 
-        <div class="card overflow-hidden mb-6">
-            <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
-                <div class="space-y-6">
+        <div class="card mb-6">
+            <div class="card-pad border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
+                <div class="space-y-4 md:space-y-6">
                     <div class="space-y-1">
-                        <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Menu Makanan</h3>
-                        <p class="text-sm font-medium" style="color:#9E9790;">Pilih rentang tanggal untuk melihat jadwal menu mingguan</p>
+                        <h3 class="text-base sm:text-xl font-bold" style="color:#2C2C2C;">Filter Menu Makanan</h3>
                     </div>
                     
-                    <form data-tour="ortu-menu-date-filter" method="get" action="{{ route('orangtua.menu-makanan.index') }}" class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end">
-                        <div class="col-span-1 lg:col-span-4 min-w-0">
+                    <form data-tour="ortu-menu-date-filter" method="get" action="{{ route('orangtua.menu-makanan.index') }}" class="filter-toolbar-inline">
+                        <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Tanggal Dari</label>
-                            <input type="date" name="start_date" value="{{ $startDate }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                            <input type="date" name="start_date" value="{{ $startDate }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
                         </div>
-                        <div class="col-span-1 lg:col-span-4 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Sampai Dengan</label>
-                            <input type="date" name="end_date" value="{{ $endDate }}" class="input-field w-full h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
+                            <input type="date" name="end_date" value="{{ $endDate }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10 transition focus:border-teal-500" required style="background:white;">
                         </div>
-                        <div class="col-span-2 lg:col-span-4">
-                            <button type="submit" class="btn-primary w-full h-11 font-bold shadow-lg shadow-teal-900/10 flex items-center justify-center gap-2">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                                <span>Tampilkan Menu</span>
+                        <div class="filter-toolbar-actions">
+                            <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Tampilkan Menu" aria-label="Tampilkan Menu">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
+                            <x-filter-reset :href="route('orangtua.menu-makanan.index')" compact />
                         </div>
                     </form>
                 </div>
@@ -46,27 +45,27 @@
         </div>
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+            <div class="card-pad border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="section-title">🍱 Jadwal Menu Makanan</h3>
-                        <p class="section-subtitle">Menu gizi seimbang untuk tumbuh kembang ananda</p>
+                        <h3 class="section-title">Jadwal Menu Makanan</h3>
+                        
                     </div>
                 </div>
             </div>
             <div class="divide-y" data-tour="ortu-menu-list" style="divide-color:rgba(0,0,0,0.05);">
                 @forelse($menus as $m)
-                <div class="px-5 sm:px-6 py-5 flex flex-col sm:flex-row gap-4 sm:gap-6">
+                <div class="card-pad flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="flex gap-2 shrink-0 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
                         @if($m->photo)
-                            <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0" 
-                                 @click="activeImage = '{{ Storage::url($m->photo) }}'; showImageModal = true">
+                            <div class="h-20 w-20 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0" 
+                                 @click="activeImage = '{{ Storage::url($m->photo) }}'; activeDownloadUrl = '{{ route('orangtua.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo']) }}'; showImageModal = true">
                                 <img src="{{ Storage::url($m->photo) }}" class="w-full h-full object-cover">
                             </div>
                         @endif
                         @if($m->photo_kegiatan)
-                            <div class="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0"
-                                 @click="activeImage = '{{ Storage::url($m->photo_kegiatan) }}'; showImageModal = true">
+                            <div class="h-20 w-20 sm:h-28 sm:w-28 rounded-2xl overflow-hidden border border-gray-100 cursor-pointer shadow-sm hover:ring-2 hover:ring-teal-500/20 transition-all shrink-0"
+                                 @click="activeImage = '{{ Storage::url($m->photo_kegiatan) }}'; activeDownloadUrl = '{{ route('orangtua.menu-makanan.photo.download', ['menu_makanan' => $m, 'field' => 'photo_kegiatan']) }}'; showImageModal = true">
                                 <img src="{{ Storage::url($m->photo_kegiatan) }}" class="w-full h-full object-cover">
                             </div>
                         @endif
@@ -118,21 +117,12 @@
                 </div>
                 @endforelse
             </div>
-            @if(method_exists($menus, 'hasPages') && $menus->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $menus->links() }}</div>@endif
-        </div>
-
-        {{-- Modal Preview Gambar --}}
-        <div x-show="showImageModal" 
-             class="modal-overlay modal-overlay--dark"
-             style="display: none;"
-             x-transition
-             @keydown.escape.window="showImageModal = false">
-            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
-                <button class="absolute -top-10 right-0 text-white hover:text-gray-300 transition" @click="showImageModal = false">
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white">
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$menus" />
+                {{ $menus->links() }}
             </div>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

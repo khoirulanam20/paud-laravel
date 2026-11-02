@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "postinstall": "mkdir -p public/ffmpeg && cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm public/ffmpeg/"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
@@ -16,9 +17,16 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "@ffmpeg/core": "^0.12.6",
+        "@ffmpeg/ffmpeg": "^0.12.15",
+        "@ffmpeg/util": "^0.12.2",
         "@fullcalendar/core": "^6.1.20",
         "@fullcalendar/daygrid": "^6.1.20",
         "@fullcalendar/list": "^6.1.20",
-        "driver.js": "^1.4.0"
+        "@hotwired/turbo": "^8.0.23",
+        "driver.js": "^1.4.0",
+        "echarts": "^6.1.0",
+        "leaflet": "^1.9.4",
+        "motion": "^12.41.0"
     }
 }

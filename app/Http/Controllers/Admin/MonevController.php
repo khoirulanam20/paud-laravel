@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Concerns\HandlesMonevGeneration;
 use App\Http\Controllers\Concerns\HandlesMonevPdfExport;
 use App\Http\Controllers\Controller;
@@ -12,12 +13,14 @@ use App\Models\MonevSummary;
 use App\Services\AiTokenService;
 use App\Services\MonevSummaryService;
 use App\Support\AiTokenFeature;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 
 class MonevController extends Controller
 {
     use HandlesMonevGeneration;
     use HandlesMonevPdfExport;
+    use DownloadsExcel;
 
     public function __construct(
         protected MonevSummaryService $monevService,
@@ -33,11 +36,11 @@ class MonevController extends Controller
             $request->integer('bulan') ?: null
         );
 
-        $kelasList = Kelas::where('sekolah_id', $sekolahId)->orderBy('name')->get();
+        $kelasList = $user->applyScopedKelas(Kelas::where('sekolah_id', $sekolahId)->orderBy('name'), 'id')->get();
         $filterKelasId = $request->filled('kelas_id') ? (int) $request->kelas_id : null;
         $search = $request->string('search')->toString();
 
-        $anaks = $this->monevService->paginateAnaksForSekolah($sekolahId, $filterKelasId, $search);
+        $anaks = $this->monevService->paginateAnaksForSekolah($sekolahId, $filterKelasId, $search, PaginationPerPage::resolve($request));
 
         $summaries = MonevSummary::query()
             ->whereIn('anak_id', $anaks->pluck('id'))
@@ -71,6 +74,44 @@ class MonevController extends Controller
             'hasTokens',
             'tokenFallbackMonev'
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $sekolahId = (int) $user->sekolah_id;
+        [$tahun, $bulan] = $this->monevService->parsePeriodeFromRequest(
+            $request->integer('tahun') ?: null,
+            $request->integer('bulan') ?: null
+        );
+
+        $filterKelasId = $request->filled('kelas_id') ? (int) $request->kelas_id : null;
+        $search = $request->string('search')->toString();
+        $anaks = $this->monevService->anaksForSekolah($sekolahId, $filterKelasId, $search);
+
+        $summaries = MonevSummary::query()
+            ->whereIn('anak_id', $anaks->pluck('id'))
+            ->forPeriode($tahun, $bulan)
+            ->get()
+            ->keyBy('anak_id');
+
+        $rows = $anaks->map(function (Anak $anak) use ($summaries) {
+            $summary = $summaries->get($anak->id);
+
+            return [
+                $anak->name,
+                $anak->kelas?->name ?? '-',
+                $summary ? ($summary->sumber === 'otomatis' ? 'Otomatis' : 'Manual') : 'Belum ada',
+                $summary?->generated_at?->format('Y-m-d H:i') ?? '-',
+            ];
+        })->all();
+
+        return $this->downloadExcel(
+            ['Nama Siswa', 'Kelas', 'Status', 'Tanggal Generate'],
+            $rows,
+            sprintf('monev-%04d-%02d.xlsx', $tahun, $bulan),
+            'Monev Matrikulasi'
+        );
     }
 
     public function show(Anak $anak, Request $request)

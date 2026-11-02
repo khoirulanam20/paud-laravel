@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SekolahAiChatDataAccess extends Model
 {
+    use BelongsToSekolah;
+
     protected $table = 'sekolah_ai_chat_data_access';
 
     protected $fillable = [

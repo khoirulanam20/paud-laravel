@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
             showInputModal: false,
             showHistoryModal: false,
@@ -68,33 +68,48 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if($errors->any())
+            <div class="alert-danger mb-5">
+                <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
+            </div>
+        @endif
 
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex flex-col gap-4 border-b" style="border-color: rgba(0,0,0,0.06);">
-                <form data-tour="admin-kesehatan-filter" method="get" class="flex flex-wrap items-end gap-3">
-                    <div>
-                        <label class="input-label">Filter Kelas</label>
-                        <select name="kelas_id" class="input-field min-w-[12rem]" onchange="this.form.submit()">
-                            <option value="">Semua Kelas</option>
-                            @foreach($kelas as $k)
-                                <option value="{{ $k->id }}" @selected(request('kelas_id') == $k->id)>{{ $k->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex-1 min-w-[15rem]">
-                        <label class="input-label">Cari Nama Siswa</label>
-                        <div class="relative">
-                            <input type="text" name="search" value="{{ request('search') }}" class="input-field pl-10" placeholder="Ketik nama siswa...">
-                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary">Filter</button>
-                </form>
+            <div class="px-4 md:px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                <h3 class="section-title">Data kesehatan & kebersihan</h3>
+                <p class="section-subtitle">Antropometri terbaru per siswa, kebersihan gigi/telinga/kuku, dan riwayat pemeriksaan.</p>
             </div>
 
-            <div class="overflow-x-auto">
+            <form data-tour="admin-kesehatan-filter" method="get" action="{{ route('admin.kesehatan.index') }}" class="card-pad toolbar-form border-b w-full" style="border-color:rgba(0,0,0,0.06);">
+                <div class="toolbar-field md:min-w-[10rem] md:max-w-[12rem]">
+                    <label class="input-label">Kelas</label>
+                    <select name="kelas_id" class="input-field w-full">
+                        <option value="">Semua kelas</option>
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}" @selected((string) request('kelas_id') === (string) $k->id)>{{ $k->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="toolbar-field md:min-w-[12rem] md:flex-[2]">
+                    <label class="input-label">Cari siswa</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="input-field w-full" placeholder="Nama siswa…">
+                </div>
+                <div class="toolbar-field md:min-w-[9rem] md:max-w-[11rem]">
+                    <label class="input-label">Pemeriksaan</label>
+                    <select name="pemeriksaan" class="input-field w-full">
+                        <option value="" @selected(! request('pemeriksaan'))>Semua</option>
+                        <option value="sudah" @selected(request('pemeriksaan') === 'sudah')>Sudah pernah</option>
+                        <option value="belum" @selected(request('pemeriksaan') === 'belum')>Belum ada data</option>
+                    </select>
+                </div>
+                <div class="toolbar-actions">
+                    <x-toolbar.filter-icon label="Filter" variant="secondary" />
+                    <x-filter-reset :href="route('admin.kesehatan.index')" compact />
+                    <x-export-excel route="admin.kesehatan.export" :icon-only="true" />
+                </div>
+            </form>
+
+            <div class="table-responsive">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -104,7 +119,7 @@
                             <th>Kebersihan (G/T/K)</th>
                             <th>Alergi</th>
                             <th>Pemeriksaan Terakhir</th>
-                            <th class="text-center">Aksi</th>
+                            <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,25 +189,28 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <button type="button" @if($loop->first) data-tour="admin-kesehatan-action-riwayat" data-tour-open-modal="history" @endif @click="openHistory({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Riwayat</button>
-                                        <button type="button" @if($loop->first) data-tour="admin-kesehatan-action-input" data-tour-open-modal="create" @endif @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
+                                    <div class="flex flex-wrap items-center justify-end gap-1.5">
+                                        <x-table.action-icon type="button" label="Riwayat" variant="detail"
+                                            @if($loop->first) data-tour="admin-kesehatan-action-riwayat" data-tour-open-modal="history" @endif
+                                            @click="openHistory(@js($anak))" />
+                                        <x-table.action-icon type="button" label="Input data" variant="edit"
+                                            @if($loop->first) data-tour="admin-kesehatan-action-input" data-tour-open-modal="create" @endif
+                                            @click="openInput(@js($anak))" />
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-12 text-center text-gray-400">Belum ada data siswa.</td>
+                                <td colspan="7" class="py-6 md:py-12 text-center" style="color:#9E9790;">Tidak ada siswa sesuai filter.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            @if($anaks->hasPages())
-                <div class="px-6 py-4 border-t" style="border-color: rgba(0,0,0,0.06);">
-                    {{ $anaks->links() }}
-                </div>
-            @endif
+            <div class="px-4 md:px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$anaks" />
+                {{ $anaks->links() }}
+            </div>
         </div>
 
         <!-- INPUT MODAL -->

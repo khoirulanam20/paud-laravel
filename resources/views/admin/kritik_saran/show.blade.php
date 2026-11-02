@@ -1,19 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3" data-tour="page-header">
-                <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
-                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                    </svg>
-                </div>
-                <h2 class="font-bold text-xl" style="color: #2C2C2C;">Detail kritik &amp; saran</h2>
+        <div class="flex items-center gap-3" data-tour="page-header">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;">
+                <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
             </div>
-            <a href="{{ route('admin.kritik-saran.index') }}" class="btn-secondary text-sm">← Kembali ke daftar</a>
+            <h2 class="font-bold text-xl" style="color: #2C2C2C;">Detail Kritik &amp; Saran</h2>
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto space-y-6">
+    <div class="app-page-shell space-y-6" x-data="{ showImageModal: false, activeImage: '', activeDownloadUrl: null }">
+        <div class="mb-2"><a href="{{ route('admin.kritik-saran.index') }}" class="btn-secondary text-sm">← Kritik &amp; Saran</a></div>
         @if(session('success'))
             <div class="alert-success">
                 <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -29,7 +27,7 @@
             <dl class="px-6 py-5 space-y-3 text-sm">
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-44 shrink-0" style="color:#6B6560;">Sekolah tujuan</dt>
-                    <dd style="color:#2C2C2C;">{{ $kritik_saran->sekolah?->name ?? '—' }}</dd>
+                    <dd style="color:#2C2C2C;">{{ $kritik_saran->sekolah?->name ?? '' }}</dd>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-44 shrink-0 align-top" style="color:#6B6560;">Kelas &amp; anak</dt>
@@ -64,11 +62,11 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-40 shrink-0" style="color:#6B6560;">Nama (akun)</dt>
-                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->name ?? '—' }}</dd>
+                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->name ?? '' }}</dd>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <dt class="font-semibold w-40 shrink-0" style="color:#6B6560;">Email</dt>
-                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->email ?? '—' }}</dd>
+                    <dd style="color:#2C2C2C;">{{ $kritik_saran->user?->email ?? '' }}</dd>
                 </div>
                 @if($kritik_saran->nama_bapak || $kritik_saran->nik_bapak || $kritik_saran->nama_anak)
                     <div class="pt-2 border-t" style="border-color:rgba(0,0,0,0.06);"></div>
@@ -99,7 +97,17 @@
                 <h3 class="section-title">Isi pesan</h3>
             </div>
             <div class="px-6 py-5">
-                <p class="text-sm leading-relaxed whitespace-pre-wrap" style="color:#2C2C2C;">{{ $kritik_saran->message }}</p>
+                <div class="flex flex-col sm:flex-row gap-5">
+                    @if($kritik_saran->photo)
+                        <div class="w-full sm:w-48 shrink-0 rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($kritik_saran->photo) }}'; activeDownloadUrl = '{{ route('admin.kritik-saran.photo.download', $kritik_saran) }}'; showImageModal = true">
+                            <img src="{{ Storage::url($kritik_saran->photo) }}" class="w-full h-48 sm:h-32 object-cover hover:scale-105 transition duration-300" alt="Lampiran foto">
+                        </div>
+                    @endif
+                    <div class="flex-1">
+                        <h3 class="text-xs font-bold uppercase tracking-wide mb-2" style="color:#6B6560;">Pesan orang tua</h3>
+                        <p class="text-sm leading-relaxed whitespace-pre-wrap" style="color:#2C2C2C;">{{ $kritik_saran->message }}</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -153,5 +161,7 @@
                 </div>
             </form>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

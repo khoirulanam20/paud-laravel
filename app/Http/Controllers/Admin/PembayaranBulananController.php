@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Controllers\Controller;
 use App\Models\Diskon;
 use App\Models\Kelas;
@@ -9,28 +11,70 @@ use App\Models\PembayaranBulanan;
 use App\Models\PembayaranBulananItem;
 use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
+use App\Support\PaginationPerPage;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PembayaranBulananController extends Controller
 {
+    use DownloadsExcel;
+    use DownloadsPublicPhoto;
+
     public function __construct(
         private RekapBiayaService $rekapBiayaService,
         private AkuntansiService $akuntansiService
     ) {}
 
+    /** @return list<int>|null null = akses semua kelas sekolah */
+    private function waliKelasIds(): ?array
+    {
+        return auth()->user()->scopedKelasIds();
+    }
+
+    private function assertPembayaranAccessible(PembayaranBulanan $pembayaran): void
+    {
+        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        $kelasIds = $this->waliKelasIds();
+        if ($kelasIds === null) {
+            return;
+        }
+
+        $pembayaran->loadMissing('anak');
+        abort_unless(in_array((int) $pembayaran->anak->kelas_id, $kelasIds, true), 403);
+    }
+
+    private function scopeToWaliKelas(Builder $query): Builder
+    {
+        $kelasIds = $this->waliKelasIds();
+        if ($kelasIds !== null) {
+            $query->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
+        }
+
+        return $query;
+    }
+
     public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
+        $waliKelasIds = $this->waliKelasIds();
 
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
         $kelasId = $request->input('kelas_id');
         $status = $request->input('status');
 
+        if ($kelasId && $waliKelasIds !== null && ! in_array((int) $kelasId, $waliKelasIds, true)) {
+            abort(403);
+        }
+
         $query = PembayaranBulanan::where('sekolah_id', $sekolah_id)
             ->where('periode_bulan', $bulan)
             ->where('periode_tahun', $tahun)
             ->with(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy', 'items']);
+
+        $this->scopeToWaliKelas($query);
 
         if ($kelasId) {
             $query->whereHas('anak', function ($q) use ($kelasId) {
@@ -42,13 +86,20 @@ class PembayaranBulananController extends Controller
             $query->where('status', $status);
         }
 
-        $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20);
+        $pembayarans = $query->orderBy('created_at', 'desc')->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
-        $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $kelasQuery = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name');
+        if ($waliKelasIds !== null) {
+            $kelasQuery->whereIn('id', $waliKelasIds);
+        }
+        $kelas = $kelasQuery->get();
 
-        $summary = PembayaranBulanan::where('sekolah_id', $sekolah_id)
+        $summaryQuery = PembayaranBulanan::where('sekolah_id', $sekolah_id)
             ->where('periode_bulan', $bulan)
-            ->where('periode_tahun', $tahun)
+            ->where('periode_tahun', $tahun);
+        $this->scopeToWaliKelas($summaryQuery);
+
+        $summary = $summaryQuery
             ->selectRaw('
                 COUNT(*) as total_tagihan,
                 SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending,
@@ -64,9 +115,67 @@ class PembayaranBulananController extends Controller
         ));
     }
 
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $bulan = (int) $request->input('bulan', now()->month);
+        $tahun = (int) $request->input('tahun', now()->year);
+        $kelasId = $request->input('kelas_id');
+        $status = $request->input('status');
+
+        if ($kelasId && $this->waliKelasIds() !== null && ! in_array((int) $kelasId, $this->waliKelasIds(), true)) {
+            abort(403);
+        }
+
+        $query = PembayaranBulanan::where('sekolah_id', $sekolah_id)
+            ->where('periode_bulan', $bulan)
+            ->where('periode_tahun', $tahun)
+            ->with(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'items']);
+
+        $this->scopeToWaliKelas($query);
+
+        if ($kelasId) {
+            $query->whereHas('anak', fn ($q) => $q->where('kelas_id', $kelasId));
+        }
+
+        if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {
+            $query->where('status', $status);
+        }
+
+        $pembayarans = $query->orderBy('created_at', 'desc')->get();
+
+        $rows = $pembayarans->map(function (PembayaranBulanan $p) {
+            $biayaLain = $p->items->sum('nominal');
+            $diskonLabel = $p->nilai_diskon > 0
+                ? ($p->diskon?->nama_diskon.' (-'.number_format($p->nilai_diskon, 0, ',', '.').')')
+                : '-';
+
+            return [
+                $p->anak?->name ?? '-',
+                $p->anak?->kelas?->name ?? '-',
+                $p->biayaBulananSekolah?->nama_biaya ?? '-',
+                $p->hari_hadir ?? '-',
+                (float) $p->biaya_per_hari,
+                (float) $biayaLain,
+                (float) $p->subtotal,
+                $diskonLabel,
+                (float) $p->total_bayar,
+                ucfirst($p->status),
+            ];
+        })->all();
+
+        return $this->downloadExcel(
+            ['Siswa', 'Kelas', 'Biaya', 'Hadir', 'Biaya/Bln', 'Biaya Lain', 'Subtotal', 'Diskon', 'Total', 'Status'],
+            $rows,
+            sprintf('rekap-pembayaran-%02d-%d.xlsx', $bulan, $tahun),
+            'Rekap Pembayaran',
+            [4, 5, 6, 8],
+        );
+    }
+
     public function show(PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
         $pembayaran->load(['anak', 'anak.kelas', 'biayaBulananSekolah', 'diskon', 'approvedBy', 'details.editedBy', 'items']);
 
@@ -76,6 +185,7 @@ class PembayaranBulananController extends Controller
     public function generatePreview(Request $request)
     {
         $sekolahId = auth()->user()->sekolah_id;
+        $waliKelasIds = $this->waliKelasIds();
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
@@ -92,18 +202,43 @@ class PembayaranBulananController extends Controller
                 continue;
             }
 
+            if ($waliKelasIds !== null && ! in_array((int) $anak->kelas_id, $waliKelasIds, true)) {
+                continue;
+            }
+
             $biayaBulanan = (float) $assignment->biaya_bulanan;
             $hariHadir = $this->rekapBiayaService->hitungHariHadir($anak->id, $bulan, $tahun);
+
+            $existingForPeriod = PembayaranBulanan::where('anak_id', $anak->id)
+                ->where('biaya_bulanan_sekolah_id', $biaya->id)
+                ->where('periode_bulan', $bulan)
+                ->where('periode_tahun', $tahun)
+                ->orderByDesc('id')
+                ->get();
+
+            $pending = $existingForPeriod->first(fn (PembayaranBulanan $p) => $p->status === 'pending');
+            $existingStatus = 'none';
+            if ($pending) {
+                $existingStatus = 'pending';
+            } elseif ($existingForPeriod->isNotEmpty()) {
+                $existingStatus = $existingForPeriod->first()->status;
+            }
+
+            $isTagihanTambahan = $pending === null && in_array($existingStatus, ['approved', 'rejected'], true);
+            $subtotalPreview = $isTagihanTambahan ? 0.0 : $biayaBulanan;
+
             $preview[] = [
-                'key' => $anak->id . '_' . $biaya->id,
+                'key' => $anak->id.'_'.$biaya->id,
                 'anak_id' => $anak->id,
                 'anak_name' => $anak->name,
+                'kelas_id' => $anak->kelas_id,
                 'kelas_name' => $anak->kelas->name ?? '-',
                 'biaya_id' => $biaya->id,
                 'biaya_name' => $biaya->nama_biaya,
-                'hari_hadir' => $hariHadir,
-                'biaya_bulanan' => $biayaBulanan,
-                'subtotal' => $biayaBulanan,
+                'hari_hadir' => $isTagihanTambahan ? 0 : $hariHadir,
+                'biaya_bulanan' => $isTagihanTambahan ? 0 : $biayaBulanan,
+                'subtotal' => $subtotalPreview,
+                'existing_status' => $existingStatus,
             ];
         }
 
@@ -126,6 +261,9 @@ class PembayaranBulananController extends Controller
             'tagihan.*' => 'required|string|regex:/^\d+_\d+$/',
             'diskon' => 'nullable|array',
             'diskon.*' => 'nullable|exists:diskons,id',
+            'diskon_manual' => 'nullable|array',
+            'diskon_manual.*.nominal' => 'nullable|numeric|min:0',
+            'diskon_manual.*.keterangan' => 'nullable|string|max:255',
             'biaya_tambahan' => 'nullable|array',
         ]);
 
@@ -144,6 +282,30 @@ class PembayaranBulananController extends Controller
                 if ($diskonId && in_array((string) $key, $selectedKeys, true)) {
                     $diskonPerTagihan[(string) $key] = (int) $diskonId;
                 }
+            }
+        }
+
+        $diskonManualPerTagihan = [];
+        if ($request->filled('diskon_manual')) {
+            foreach ($request->diskon_manual as $key => $row) {
+                if (! in_array((string) $key, $selectedKeys, true)) {
+                    continue;
+                }
+                $nominal = (float) ($row['nominal'] ?? 0);
+                $keterangan = trim((string) ($row['keterangan'] ?? ''));
+                if ($nominal <= 0) {
+                    continue;
+                }
+                if ($keterangan === '') {
+                    return back()->withErrors([
+                        'diskon_manual' => 'Keterangan diskon manual wajib diisi jika nominal diskon diisi.',
+                    ])->withInput();
+                }
+                $diskonManualPerTagihan[(string) $key] = [
+                    'nominal' => $nominal,
+                    'keterangan' => $keterangan,
+                ];
+                unset($diskonPerTagihan[(string) $key]);
             }
         }
 
@@ -172,46 +334,74 @@ class PembayaranBulananController extends Controller
             $request->tahun,
             $diskonPerTagihan,
             $selectedKeys,
-            $biayaTambahan
+            $biayaTambahan,
+            $diskonManualPerTagihan
         );
+
+        $setting = \App\Models\AkuntansiSetting::forSekolah($sekolah_id);
+        $catatanAkuntansi = $setting->isCash()
+            ? ' Jurnal & cashflow baru muncul setelah tagihan ditandai lunas (metode Tunai di Pengaturan Akuntansi).'
+            : ' Jurnal tagihan (piutang/pendapatan) dibuat otomatis; cashflow muncul saat lunas.';
 
         return redirect()
             ->route('admin.pembayaran-bulanan.index', [
                 'bulan' => $request->bulan,
                 'tahun' => $request->tahun,
             ])
-            ->with('success', "Berhasil generate {$pembayarans->count()} tagihan.");
+            ->with('success', "Berhasil generate {$pembayarans->count()} tagihan.{$catatanAkuntansi}");
     }
 
     public function destroy(PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
-
-        if ($pembayaran->status !== 'pending') {
-            return redirect()
-                ->route('admin.pembayaran-bulanan.index', [
-                    'bulan' => $pembayaran->periode_bulan,
-                    'tahun' => $pembayaran->periode_tahun,
-                ])
-                ->withErrors(['tagihan' => 'Hanya tagihan berstatus Menunggu yang bisa dihapus.']);
-        }
+        $this->assertPembayaranAccessible($pembayaran);
 
         $bulan = $pembayaran->periode_bulan;
         $tahun = $pembayaran->periode_tahun;
-        $pembayaran->delete();
+
+        if (! $pembayaran->canBeDeleted()) {
+            return redirect()
+                ->route('admin.pembayaran-bulanan.index', compact('bulan', 'tahun'))
+                ->withErrors(['tagihan' => 'Tagihan lunas tidak bisa dihapus. Buka detail tagihan → Batalkan pelunasan, lalu hapus dari daftar.']);
+        }
+
+        DB::transaction(function () use ($pembayaran) {
+            $this->akuntansiService->hapusJurnalUntukPembayaranPending($pembayaran);
+            $pembayaran->delete();
+        });
 
         return redirect()
             ->route('admin.pembayaran-bulanan.index', compact('bulan', 'tahun'))
             ->with('success', 'Tagihan berhasil dihapus.');
     }
 
+    public function batalkanLunas(PembayaranBulanan $pembayaran)
+    {
+        $this->assertPembayaranAccessible($pembayaran);
+
+        try {
+            $this->akuntansiService->batalkanPelunasanPembayaran($pembayaran);
+        } catch (\Throwable $e) {
+            return redirect()
+                ->route('admin.pembayaran-bulanan.show', $pembayaran)
+                ->withErrors(['tagihan' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('admin.pembayaran-bulanan.show', $pembayaran)
+            ->with('success', 'Pelunasan dibatalkan. Tagihan kembali Menunggu  bisa dihapus dari daftar jika perlu.');
+    }
+
     /** @return list<string> */
     private function validTagihanKeys(int $sekolahId): array
     {
+        $waliKelasIds = $this->waliKelasIds();
         $keys = [];
         foreach ($this->rekapBiayaService->getSiswaDenganBiayaBulanan($sekolahId) as $assignment) {
             if ($assignment->anak && $assignment->biayaBulananSekolah) {
-                $keys[] = $assignment->anak_id . '_' . $assignment->biaya_bulanan_sekolah_id;
+                if ($waliKelasIds !== null && ! in_array((int) $assignment->anak->kelas_id, $waliKelasIds, true)) {
+                    continue;
+                }
+                $keys[] = $assignment->anak_id.'_'.$assignment->biaya_bulanan_sekolah_id;
             }
         }
 
@@ -220,13 +410,52 @@ class PembayaranBulananController extends Controller
 
     public function updateDiskon(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
         $request->validate([
-            'diskon_id' => 'nullable|exists:diskons,id',
+            'diskon_mode' => 'required|in:none,master,manual',
+            'diskon_id' => 'nullable|required_if:diskon_mode,master|exists:diskons,id',
+            'diskon_manual_nominal' => 'nullable|required_if:diskon_mode,manual|numeric|min:1',
+            'diskon_manual_keterangan' => 'nullable|required_if:diskon_mode,manual|string|max:255',
         ]);
 
-        $pembayaran->update(['diskon_id' => $request->diskon_id]);
+        if ($request->diskon_mode === 'manual') {
+            $nominal = (float) $request->diskon_manual_nominal;
+            $maks = (float) $pembayaran->subtotal + $pembayaran->getTotalBiayaTambahan();
+            if ($nominal > $maks) {
+                return back()->withErrors([
+                    'diskon_manual_nominal' => 'Nominal diskon tidak boleh melebihi total tagihan.',
+                ])->withInput();
+            }
+
+            $pembayaran->update([
+                'diskon_id' => null,
+                'nilai_diskon' => round($nominal, 2),
+                'diskon_keterangan' => trim($request->diskon_manual_keterangan),
+            ]);
+        } elseif ($request->diskon_mode === 'master') {
+            $diskon = Diskon::query()
+                ->where('id', $request->diskon_id)
+                ->where('sekolah_id', $pembayaran->sekolah_id)
+                ->where('is_aktif', true)
+                ->first();
+
+            if (! $diskon) {
+                return back()->withErrors(['diskon_id' => 'Diskon tidak valid.'])->withInput();
+            }
+
+            $pembayaran->update([
+                'diskon_id' => $diskon->id,
+                'diskon_keterangan' => null,
+            ]);
+        } else {
+            $pembayaran->update([
+                'diskon_id' => null,
+                'nilai_diskon' => 0,
+                'diskon_keterangan' => null,
+            ]);
+        }
+
         $this->rekapBiayaService->hitungBiaya($pembayaran);
 
         return redirect()
@@ -236,25 +465,34 @@ class PembayaranBulananController extends Controller
 
     public function approve(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
+        abort_if($pembayaran->isApproved(), 403, 'Tagihan sudah lunas.');
 
-        // Buat jurnal double-entry
-        $jurnal = $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
+        try {
+            // Satu transaksi: jurnal dan status lunas harus berubah bersamaan, supaya klik ganda tidak membuat jurnal dobel.
+            DB::transaction(function () use ($pembayaran, $request) {
+                $this->akuntansiService->buatJurnalSaatApprove($pembayaran, auth()->id());
 
-        $this->rekapBiayaService->approvePembayaran(
-            $pembayaran,
-            auth()->id(),
-            $request->catatan_admin
-        );
+                $this->rekapBiayaService->approvePembayaran(
+                    $pembayaran,
+                    auth()->id(),
+                    $request->catatan_admin
+                );
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()
+                ->route('admin.pembayaran-bulanan.show', $pembayaran)
+                ->withErrors(['approve' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('admin.pembayaran-bulanan.show', $pembayaran)
-            ->with('success', 'Pembayaran berhasil disetujui.');
+            ->with('success', 'Pembayaran berhasil ditandai lunas.');
     }
 
     public function reject(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
 
         $request->validate([
             'catatan_admin' => 'required|string',
@@ -273,7 +511,7 @@ class PembayaranBulananController extends Controller
 
     public function storeItem(Request $request, PembayaranBulanan $pembayaran)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
         abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
 
         $request->validate([
@@ -295,7 +533,7 @@ class PembayaranBulananController extends Controller
 
     public function updateItem(Request $request, PembayaranBulanan $pembayaran, PembayaranBulananItem $item)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
         abort_if($item->pembayaran_bulanan_id !== $pembayaran->id, 404);
         abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
 
@@ -318,7 +556,7 @@ class PembayaranBulananController extends Controller
 
     public function destroyItem(Request $request, PembayaranBulanan $pembayaran, PembayaranBulananItem $item)
     {
-        abort_if($pembayaran->sekolah_id !== auth()->user()->sekolah_id, 403);
+        $this->assertPembayaranAccessible($pembayaran);
         abort_if($item->pembayaran_bulanan_id !== $pembayaran->id, 404);
         abort_if(! $pembayaran->isPending(), 403, 'Hanya tagihan pending yang bisa diubah.');
 
@@ -329,5 +567,16 @@ class PembayaranBulananController extends Controller
         return redirect()
             ->route('admin.pembayaran-bulanan.show', $pembayaran)
             ->with('success', 'Biaya tambahan berhasil dihapus.');
+    }
+
+    public function downloadBukti(PembayaranBulanan $pembayaran, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        $this->assertPembayaranAccessible($pembayaran);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $pembayaran->bukti_transfer,
+            $this->slugPhotoFilename('bukti-transfer-'.$pembayaran->id, $pembayaran->bukti_transfer)
+        );
     }
 }

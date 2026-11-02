@@ -2,26 +2,33 @@
 
 namespace App\Http\Controllers\Pengajar;
 
+use App\Http\Controllers\Concerns\DownloadsPhotoArchive;
+use App\Http\Controllers\Concerns\ResolvesPencapaianBundlePhoto;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\StoresDocumentationMedia;
 use App\Models\Anak;
 use App\Models\Kegiatan;
 use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Models\Pengajar;
 use App\Services\AiTokenService;
+use App\Services\PhotoArchiveService;
 use App\Support\AiTokenFeature;
+use App\Support\DocumentationMedia;
 use App\Support\FilterAspekPencapaian;
 use App\Support\LabelSkorPencapaian;
+use App\Support\PaginationPerPage;
 use App\Support\TanggalRentang;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use App\Http\Traits\CanUploadImage;
 
 class PencapaianController extends Controller
 {
-    use CanUploadImage;
+    use DownloadsPhotoArchive;
+    use ResolvesPencapaianBundlePhoto;
+    use StoresDocumentationMedia;
 
     public function __construct(
         protected AiTokenService $tokenService
@@ -35,9 +42,9 @@ class PencapaianController extends Controller
     private function assertAnakDalamLingkupPencapaian(Anak $anak, Pengajar $pengajar): void
     {
         abort_if($anak->sekolah_id !== $pengajar->sekolah_id, 403);
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-        if (!empty($kelasIds)) {
-            abort_if(!in_array((int) $anak->kelas_id, $kelasIds, true), 403);
+        $kelasIds = $pengajar->accessibleKelasIds();
+        if (! empty($kelasIds)) {
+            abort_if(! in_array((int) $anak->kelas_id, $kelasIds, true), 403);
         }
     }
 
@@ -52,8 +59,8 @@ class PencapaianController extends Controller
         $tanggalSampai = $range ? $range[1] : null;
 
         $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
-        if (!empty($kelasIds)) {
+        $kelasIds = $pengajar->accessibleKelasIds();
+        if (! empty($kelasIds)) {
             $anakQuery->whereIn('kelas_id', $kelasIds);
         }
         $anaks = $anakQuery->get();
@@ -72,7 +79,7 @@ class PencapaianController extends Controller
             $hariQuery->whereDate('created_at', '<=', $tanggalSampai);
         }
 
-        if (!empty($kelasIds)) {
+        if (! empty($kelasIds)) {
             $hariQuery->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
         } else {
             // Jika guru belum punya kelas, pastikan dia hanya melihat pencapaian dari sekolahnya
@@ -94,7 +101,7 @@ class PencapaianController extends Controller
             return FilterAspekPencapaian::groupHasMatch($filterAspek, $groupsAll[$k]);
         })->values();
 
-        $perPage = 15;
+        $perPage = PaginationPerPage::resolve($request);
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $total = $keysFiltered->count();
         $sliceKeys = $keysFiltered->slice(($currentPage - 1) * $perPage, $perPage)->values();
@@ -113,29 +120,42 @@ class PencapaianController extends Controller
         );
 
         $editBundles = [];
+        $bundlePhotoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+            ? 'adminkelas.pencapaian.photos.download-bundle'
+            : 'pengajar.pencapaian.photos.download-bundle';
+
         foreach ($groupsAll as $k => $rows) {
             $first = $rows->first();
             $nilai = [];
             $catatan = [];
             $photoUrl = null;
+            $photoPath = null;
             foreach ($rows as $r) {
                 if ($r->matrikulasi_id) {
                     $key = (string) $r->matrikulasi_id;
                     $nilai[$key] = $r->score;
                     $catatan[$key] = $r->feedback ?? '';
                 }
-                if (filled($r->photo) && !$photoUrl) {
-                    $photoUrl = asset('storage/' . $r->photo);
+                if (filled($r->photo) && ! $photoUrl) {
+                    $photoPath = $r->photo;
+                    $photoUrl = DocumentationMedia::publicAssetPath($r->photo);
                 }
             }
             $editBundles[$k] = [
                 'bundle_key' => $k,
-                'anak_id'    => $first->anak_id,
-                'kegiatan_id'=> $first->kegiatan_id,
-                'nilai'      => $nilai,
-                'catatan'    => $catatan,
-                'has_photo'  => !!$photoUrl,
-                'photo_url'  => $photoUrl,
+                'anak_id' => $first->anak_id,
+                'kegiatan_id' => $first->kegiatan_id,
+                'nilai' => $nilai,
+                'catatan' => $catatan,
+                'has_photo' => (bool) $photoUrl,
+                'is_video' => $photoPath ? DocumentationMedia::isVideoPath($photoPath) : false,
+                'photo_url' => $photoUrl,
+                'photo_download_url' => $photoUrl
+                    ? route($bundlePhotoDownloadRoute, [
+                        'anak_id' => $first->anak_id,
+                        'kegiatan_id' => $first->kegiatan_id,
+                    ])
+                    : null,
             ];
         }
 
@@ -154,7 +174,7 @@ class PencapaianController extends Controller
 
         $filterAnakId = $request->filled('filter_anak_id') ? (int) $request->input('filter_anak_id') : null;
         $filterKelasId = $request->filled('filter_kelas_id') ? (int) $request->input('filter_kelas_id') : null;
-        $availableKelas = $pengajar->kelas()->orderBy('name')->get();
+        $availableKelas = $pengajar->accessibleKelas();
 
         $tokenBalance = $this->tokenService->getBalance((int) $sekolah_id);
         $hasTokens = $tokenBalance > 0;
@@ -191,10 +211,10 @@ class PencapaianController extends Controller
             'nilai.*' => ['required', 'string', Rule::in($scoreCodes)],
             'catatan' => 'nullable|array',
             'catatan.*' => 'nullable|string|max:2000',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => DocumentationMedia::singleFileRules(),
         ]);
 
-        $kelasIds = $pengajar->kelas()->pluck('kelas.id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
 
         $kegiatan = Kegiatan::query()
             ->where('id', $request->integer('kegiatan_id'))
@@ -257,7 +277,7 @@ class PencapaianController extends Controller
             if ($existing?->photo) {
                 Storage::disk('public')->delete($existing->photo);
             }
-            $photoPath = $this->uploadImage($request->file('photo'), 'pencapaian');
+            $photoPath = $this->storeDocumentationMedia($request->file('photo'), 'pencapaian', 'pencapaian-videos');
         } else {
             $photoPath = Pencapaian::query()
                 ->where('anak_id', $anak->id)
@@ -333,10 +353,10 @@ class PencapaianController extends Controller
             'kegiatan_id' => 'required|exists:kegiatans,id',
         ]);
 
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->accessibleKelasIds();
         $anak = Anak::findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
-        
+
         $kegiatan = Kegiatan::query()
             ->where('id', $request->integer('kegiatan_id'))
             ->whereIn('kelas_id', $kelasIds)
@@ -383,5 +403,56 @@ class PencapaianController extends Controller
         }
 
         return $q;
+    }
+
+    public function downloadPhotos(Request $request, PhotoArchiveService $photoArchive)
+    {
+        $pengajar = $this->getPengajar();
+        $kelasIds = $pengajar->accessibleKelasIds();
+        $range = TanggalRentang::dariSampaiQuery($request, null);
+        $filterAspekRaw = (string) $request->input('aspek', '');
+        $filterAspek = $filterAspekRaw === '' ? null : $filterAspekRaw;
+
+        $hariQuery = Pencapaian::query()
+            ->with(['anak', 'kegiatan', 'matrikulasi'])
+            ->whereNotNull('photo')
+            ->orderByDesc('updated_at');
+
+        if ($range) {
+            $hariQuery->whereDate('created_at', '>=', $range[0])
+                ->whereDate('created_at', '<=', $range[1]);
+        }
+
+        if (! empty($kelasIds)) {
+            $hariQuery->whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds));
+        } else {
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('sekolah_id', $pengajar->sekolah_id));
+        }
+
+        if ($request->filled('filter_anak_id')) {
+            $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
+        }
+        if ($request->filled('filter_kelas_id')) {
+            $kid = (int) $request->input('filter_kelas_id');
+            abort_if(! empty($kelasIds) && ! in_array($kid, $kelasIds, true), 403);
+            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', $kid));
+        }
+
+        $records = $hariQuery->get()
+            ->filter(fn (Pencapaian $p) => FilterAspekPencapaian::groupHasMatch($filterAspek, collect([$p])));
+
+        $entries = $photoArchive->entriesFromPencapaian($records->values());
+
+        return $this->downloadPhotoArchive($entries, 'foto-pencapaian-'.now()->format('Y-m-d').'.zip');
+    }
+
+    public function downloadBundlePhoto(Request $request, PhotoArchiveService $photoArchive)
+    {
+        return $this->downloadPencapaianBundlePhoto($request, $photoArchive);
+    }
+
+    protected function authorizePencapaianBundleAnak(Anak $anak): void
+    {
+        $this->assertAnakDalamLingkupPencapaian($anak, $this->getPengajar());
     }
 }

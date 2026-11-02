@@ -9,6 +9,7 @@ use App\Models\Anak;
 use App\Models\MonevGeneration;
 use App\Models\MonevManualTrigger;
 use App\Models\MonevSummary;
+use App\Models\Sekolah;
 use App\Models\SekolahAiPersona;
 use App\Models\SekolahAiTokenTransaction;
 use App\Models\User;
@@ -28,9 +29,9 @@ class MonevSummaryService
         protected AiTokenService $tokenService
     ) {}
 
-    public function resolveAiServiceForSekolah(int $sekolahId): ?SumopodAIService
+    public function resolveAiServiceForSekolah(int $sekolahId): ?FallbackAiService
     {
-        $sekolah = \App\Models\Sekolah::find($sekolahId);
+        $sekolah = Sekolah::find($sekolahId);
         $lembagaId = $sekolah?->lembaga_id;
 
         if (! $lembagaId) {
@@ -39,14 +40,10 @@ class MonevSummaryService
 
         $aiSetting = AiSetting::where('lembaga_id', $lembagaId)->first();
 
-        if (! $aiSetting || ! $aiSetting->hasValidApiKey()) {
-            return null;
-        }
-
-        return $aiSetting->toAiService();
+        return $aiSetting?->resolveAiService();
     }
 
-    public function resolveAiServiceForUser(User $user): ?SumopodAIService
+    public function resolveAiServiceForUser(User $user): ?FallbackAiService
     {
         $lembagaId = $user->lembaga_id;
 
@@ -62,11 +59,7 @@ class MonevSummaryService
 
         $aiSetting = AiSetting::where('lembaga_id', $lembagaId)->first();
 
-        if (! $aiSetting || ! $aiSetting->hasValidApiKey()) {
-            return null;
-        }
-
-        return $aiSetting->toAiService();
+        return $aiSetting?->resolveAiService();
     }
 
     public function assertCanStartSelectedGeneration(
@@ -349,6 +342,8 @@ class MonevSummaryService
             $query->where('kelas_id', $kelasId);
         }
 
+        auth()->user()?->applyScopedKelas($query);
+
         $this->applySearchFilter($query, $search);
 
         return $query;
@@ -408,8 +403,8 @@ class MonevSummaryService
         }
 
         $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', '%' . $search . '%')
-                ->orWhere('nickname', 'like', '%' . $search . '%');
+            $q->where('name', 'like', '%'.$search.'%')
+                ->orWhere('nickname', 'like', '%'.$search.'%');
         });
     }
 
@@ -471,7 +466,7 @@ class MonevSummaryService
         int $bulan,
         string $sumber,
         ?User $by = null,
-        ?SumopodAIService $ai = null
+        SumopodAIService|FallbackAiService|null $ai = null
     ): MonevSummary {
         $existing = MonevSummary::query()
             ->where('anak_id', $anak->id)
@@ -531,7 +526,7 @@ class MonevSummaryService
                 'bulan' => $bulan,
                 'sumber' => $sumber,
             ],
-            'Generate ringkasan monev: ' . $anak->displayName(),
+            'Generate ringkasan monev: '.$anak->displayName(),
             function () use ($aiService, $stats, $personaPrompt, $anak, $tahun, $bulan, $sumber, $by) {
                 $ringkasan = $aiService->generateMonevSummary(
                     $stats['anak_name'],
@@ -587,7 +582,7 @@ class MonevSummaryService
         int $bulan,
         string $sumber,
         ?User $by = null,
-        ?SumopodAIService $ai = null
+        SumopodAIService|FallbackAiService|null $ai = null
     ): array {
         $generated = 0;
         $skipped = 0;
@@ -610,7 +605,7 @@ class MonevSummaryService
                 $this->generateForAnak($anak, $tahun, $bulan, $sumber, $by, $ai);
                 $generated++;
             } catch (\Throwable $e) {
-                $errors[] = $anak->displayName() . ': ' . $e->getMessage();
+                $errors[] = $anak->displayName().': '.$e->getMessage();
             }
         }
 
@@ -642,6 +637,12 @@ class MonevSummaryService
         ?int $kelasId = null
     ): MonevGeneration {
         $this->assertCanStartManualGeneration($by, $tahun, $bulan, $sekolahId, $kelasId);
+
+        $aiCheckId = $sekolahId ?? (int) $anaks->first()?->sekolah_id;
+        if ($aiCheckId && ! $this->resolveAiServiceForSekolah($aiCheckId)) {
+            throw new MonevManualGenerationException('API Key AI belum dikonfigurasi. Minta admin lembaga untuk mengisi Pengaturan AI.');
+        }
+
         $this->assertSufficientTokensForAnaks(
             $anaks,
             $this->resolveSekolahIdForTokenCheck($anaks, $sekolahId),
@@ -802,7 +803,7 @@ class MonevSummaryService
 
                     if ($remaining > 0) {
                         $generation->failed += $remaining;
-                        $generation->appendError('Proses generate timeout — beberapa siswa tidak selesai diproses.');
+                        $generation->appendError('Proses generate timeout  beberapa siswa tidak selesai diproses.');
                     }
 
                     $status = $generation->failed > 0 && $generation->completed === 0 && $generation->skipped === 0

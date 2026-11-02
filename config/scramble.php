@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Api\ApiSecurityStrategy;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 
 return [
@@ -138,4 +139,10 @@ return [
     ],
 
     'extensions' => [],
+
+    /*
+     * Dokumentasikan bearer token Sanctum hanya pada route yang memang memakai
+     * middleware auth:sanctum. Route publik tetap ditandai tanpa security.
+     */
+    'security_strategy' => ApiSecurityStrategy::class,
 ];

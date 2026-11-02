@@ -2,19 +2,49 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Controllers\Controller;
-use App\Models\Sarana;
-use Illuminate\Http\Request;
 use App\Http\Traits\CanUploadImage;
+use App\Models\Sarana;
+use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SaranaController extends Controller
 {
     use CanUploadImage;
-    public function index()
+    use DownloadsExcel;
+    use DownloadsPublicPhoto;
+
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $saranas = Sarana::where('sekolah_id', $sekolah_id)->latest()->paginate(10);
+        $saranas = Sarana::where('sekolah_id', $sekolah_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
+
         return view('admin.sarana.index', compact('saranas'));
+    }
+
+    public function export(Request $request)
+    {
+        $rows = Sarana::where('sekolah_id', auth()->user()->sekolah_id)
+            ->latest()
+            ->get()
+            ->map(fn (Sarana $s) => [
+                $s->name,
+                $s->lokasi ?? '-',
+                $s->jenis ?? '-',
+                $s->quantity,
+                $s->condition ?? '-',
+            ])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Nama Sarana', 'Lokasi', 'Jenis', 'Jumlah', 'Kondisi'],
+            $rows,
+            'sarana-'.now()->format('Y-m-d').'.xlsx',
+            'Sarana'
+        );
     }
 
     public function store(Request $request)
@@ -67,7 +97,7 @@ class SaranaController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($sarana->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($sarana->photo);
+                Storage::disk('public')->delete($sarana->photo);
             }
             $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'sarana');
         }
@@ -81,9 +111,21 @@ class SaranaController extends Controller
     {
         abort_if($sarana->sekolah_id !== auth()->user()->sekolah_id, 403);
         if ($sarana->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($sarana->photo);
+            Storage::disk('public')->delete($sarana->photo);
         }
         $sarana->delete();
+
         return redirect()->route('admin.sarana.index')->with('success', 'Data Sarana berhasil dihapus.');
+    }
+
+    public function downloadPhoto(Sarana $sarana, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        abort_if($sarana->sekolah_id !== auth()->user()->sekolah_id, 403);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $sarana->photo,
+            $this->slugPhotoFilename($sarana->name ?? 'sarana', $sarana->photo)
+        );
     }
 }

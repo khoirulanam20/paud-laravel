@@ -3,41 +3,47 @@
 namespace App\Http\Controllers\AdminKelas;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
+use App\Models\Pengajar;
+use App\Models\User;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Traits\CanUploadImage;
+use Illuminate\Support\Facades\Storage;
 
 class AnakController extends Controller
 {
     use CanUploadImage;
+
     public function index(Request $request)
     {
         $user = auth()->user();
-        $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelas = $pengajar->kelas;
+        $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
+        $kelas = $pengajar->waliKelas()->orderBy('name')->get();
         $kelasIds = $kelas->pluck('id')->toArray();
 
         $query = Anak::whereIn('kelas_id', $kelasIds)->with('kelas')->orderBy('name');
         if ($request->filled('kelas_id') && in_array($request->kelas_id, $kelasIds)) {
             $query->where('kelas_id', $request->kelas_id);
         }
-        $anaks = $query->paginate(20);
+        $anaks = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
+
         return view('adminkelas.anak.index', compact('anaks', 'kelas'));
     }
 
     public function show(Anak $anak)
     {
         $user = auth()->user();
-        $pengajar = \App\Models\Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
+        $kelasIds = $pengajar->waliKelas()->pluck('id')->toArray();
 
         abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
 
         $anak->load([
             'user',
             'kelas',
-            'kesehatans' => fn($q) => $q->orderBy('tanggal_pemeriksaan', 'desc')
+            'kesehatans' => fn ($q) => $q->orderBy('tanggal_pemeriksaan', 'desc'),
         ]);
 
         return view('adminkelas.anak.show', compact('anak'));
@@ -54,13 +60,13 @@ class AnakController extends Controller
             'parent_name' => 'nullable|string|max:255',
         ]);
 
-        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
         $sekolah_id = $pengajar->sekolah_id;
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $kelasIds = $pengajar->waliKelas()->pluck('id')->toArray();
         abort_unless(in_array($request->kelas_id, $kelasIds), 403);
 
-        $user = \App\Models\User::create([
-            'name' => $request->parent_name ?: $request->name . ' Parent',
+        $user = User::create([
+            'name' => $request->parent_name ?: $request->name.' Parent',
             'email' => $request->email,
             'password' => Hash::make('password123'),
             'sekolah_id' => $sekolah_id,
@@ -95,8 +101,8 @@ class AnakController extends Controller
 
     public function update(Request $request, Anak $anak)
     {
-        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $kelasIds = $pengajar->waliKelas()->pluck('id')->toArray();
         abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
 
         $request->validate([
@@ -124,7 +130,7 @@ class AnakController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($anak->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+                Storage::disk('public')->delete($anak->photo);
             }
             $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'anak');
         }
@@ -140,13 +146,13 @@ class AnakController extends Controller
 
     public function destroy(Anak $anak)
     {
-        $pengajar = \App\Models\Pengajar::where('user_id', auth()->id())->firstOrFail();
-        $kelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $pengajar = Pengajar::where('user_id', auth()->id())->firstOrFail();
+        $kelasIds = $pengajar->waliKelas()->pluck('id')->toArray();
         abort_unless(in_array($anak->kelas_id, $kelasIds), 403);
 
         $user = $anak->user;
         if ($anak->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+            Storage::disk('public')->delete($anak->photo);
         }
         $anak->delete();
         if ($user && $user->hasRole('Orang Tua')) {

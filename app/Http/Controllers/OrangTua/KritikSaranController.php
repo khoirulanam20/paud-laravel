@@ -2,21 +2,28 @@
 
 namespace App\Http\Controllers\OrangTua;
 
+use App\Support\TenantContext;
+
 use App\Http\Controllers\Controller;
-use App\Models\KritikSaran;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Concerns\DownloadsPublicPhoto;
 use App\Http\Traits\CanUploadImage;
+use App\Models\KritikSaran;
+use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class KritikSaranController extends Controller
 {
     use CanUploadImage;
-    public function index()
+    use DownloadsPublicPhoto;
+
+    public function index(Request $request)
     {
         $feedbacks = KritikSaran::query()
             ->where('user_id', auth()->id())
             ->with('sekolah')
             ->latest()
-            ->paginate(15);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('orangtua.kritik_saran.index', compact('feedbacks'));
     }
@@ -38,7 +45,7 @@ class KritikSaranController extends Controller
         ]);
 
         $data = [
-            'sekolah_id' => auth()->user()->sekolah_id,
+            'sekolah_id' => TenantContext::requireSekolahId(),
             'user_id' => auth()->id(),
             'message' => $request->message,
             'status' => 'Terkirim',
@@ -71,7 +78,7 @@ class KritikSaranController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($kritik_saran->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($kritik_saran->photo);
+                Storage::disk('public')->delete($kritik_saran->photo);
             }
             $data['photo'] = $this->uploadImage($request->file('photo'), 'kritik-saran');
         }
@@ -89,11 +96,22 @@ class KritikSaranController extends Controller
         }
 
         if ($kritik_saran->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($kritik_saran->photo);
+            Storage::disk('public')->delete($kritik_saran->photo);
         }
 
         $kritik_saran->delete();
 
         return redirect()->route('orangtua.kritik-saran.index')->with('success', 'Pesan Anda berhasil dihapus.');
+    }
+
+    public function downloadPhoto(KritikSaran $kritik_saran, \App\Services\PhotoArchiveService $photoArchive)
+    {
+        abort_if((int) $kritik_saran->user_id !== (int) auth()->id(), 403);
+
+        return $this->downloadPublicPhoto(
+            $photoArchive,
+            $kritik_saran->photo,
+            $this->slugPhotoFilename('kritik-saran-'.$kritik_saran->id, $kritik_saran->photo)
+        );
     }
 }

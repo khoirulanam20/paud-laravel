@@ -44,12 +44,57 @@ return [
         ['element' => '[data-tour="lembaga-kritik-list"]', 'title' => 'Daftar Masukan', 'description' => 'Setiap kartu menampilkan pengirim, isi pesan, dan status tanggapan.', 'side' => 'top'],
     ],
 
-    'lembaga.ai-setting.index' => [
-        ['element' => '[data-tour="nav-lembaga.ai-setting.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Konfigurasi layanan AI dan token untuk seluruh yayasan dari sini.', 'side' => 'right'],
+    'lembaga.activity-log.index' => [
+        ['element' => '[data-tour="nav-lembaga.activity-log.index"]', 'title' => 'Menu Log Aktivitas', 'description' => 'Pantau riwayat perubahan data di seluruh cabang sekolah.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Log Aktivitas', 'description' => 'Riwayat perubahan data berdasarkan scope lembaga Anda.', 'side' => 'bottom'],
+        ['element' => '[data-tour="activity-log-filter"]', 'title' => 'Filter', 'description' => 'Saring berdasarkan tanggal, event, atau kata kunci.', 'side' => 'bottom'],
+    ],
+
+    // ─── SUPERADMIN ────────────────────────────────────────────
+
+    'superadmin.dashboard' => [
+        ['element' => '[data-tour="nav-superadmin.dashboard"]', 'title' => 'Menu Dashboard', 'description' => 'Ringkasan kesehatan platform untuk superadmin.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Dashboard', 'description' => 'Ringkasan total lembaga, sekolah, pengguna, dan konfigurasi AI.', 'side' => 'bottom'],
+        ['element' => '[data-tour="superadmin-dashboard-stats"]', 'title' => 'Ringkasan', 'description' => 'Kartu ringkasan metrik utama platform.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.lembaga.index' => [
+        ['element' => '[data-tour="nav-superadmin.lembaga.index"]', 'title' => 'Menu Lembaga', 'description' => 'Kelola data lembaga/yayasan di platform.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Kelola Lembaga', 'description' => 'Tambah, edit, dan hapus lembaga.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.admin-lembaga.index' => [
+        ['element' => '[data-tour="nav-superadmin.admin-lembaga.index"]', 'title' => 'Menu Admin Lembaga', 'description' => 'Kelola akun admin lembaga.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Admin Lembaga', 'description' => 'Tambah, edit, dan hapus akun admin lembaga.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.sekolah.index' => [
+        ['element' => '[data-tour="nav-superadmin.sekolah.index"]', 'title' => 'Menu Sekolah', 'description' => 'Monitoring sekolah di seluruh platform.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Monitoring Sekolah', 'description' => 'Lihat daftar sekolah dan filter berdasarkan lembaga.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.cms.index' => [
+        ['element' => '[data-tour="nav-superadmin.cms.index"]', 'title' => 'Menu CMS Website', 'description' => 'Kelola konten website (banner, teks, gambar).', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'CMS Website', 'description' => 'Perbarui konten website dan simpan perubahan.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.users.index' => [
+        ['element' => '[data-tour="nav-superadmin.users.index"]', 'title' => 'Menu Superadmin', 'description' => 'Kelola akun superadmin.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Kelola Superadmin', 'description' => 'Tambah, edit, dan hapus akun superadmin.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.activity-log.index' => [
+        ['element' => '[data-tour="nav-superadmin.activity-log.index"]', 'title' => 'Menu Log Aktivitas', 'description' => 'Pantau audit log seluruh platform.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Log Aktivitas', 'description' => 'Riwayat perubahan data di seluruh scope.', 'side' => 'bottom'],
+        ['element' => '[data-tour="activity-log-filter"]', 'title' => 'Filter', 'description' => 'Saring berdasarkan tanggal, event, atau kata kunci.', 'side' => 'bottom'],
+    ],
+
+    'superadmin.ai-setting.index' => [
+        ['element' => '[data-tour="nav-superadmin.ai-setting.index"]', 'title' => 'Menu Pengaturan AI', 'description' => 'Konfigurasi layanan AI dan token per lembaga dari sini.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan AI', 'description' => 'Atur provider, model, API key, dan saldo token per sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="lembaga-ai-tabs"]', 'title' => 'Tab Pengaturan', 'description' => 'Pilih tab Provider & API atau Token Sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="lembaga-ai-status"]', 'title' => 'Status AI', 'description' => 'Banner ini menunjukkan apakah layanan AI aktif atau belum dikonfigurasi.', 'side' => 'bottom'],
-        ['element' => '[data-tour="lembaga-ai-form"]', 'title' => 'Form Konfigurasi', 'description' => 'Isi provider, model, dan API key. Gunakan tombol uji koneksi sebelum menyimpan.', 'side' => 'top'],
+        ['element' => '[data-tour="superadmin-ai-tabs"]', 'title' => 'Tab Pengaturan', 'description' => 'Pilih tab Provider & API atau Token Sekolah.', 'side' => 'bottom'],
+        ['element' => '[data-tour="superadmin-ai-status"]', 'title' => 'Status AI', 'description' => 'Banner ini menunjukkan apakah layanan AI aktif atau belum dikonfigurasi.', 'side' => 'bottom'],
+        ['element' => '[data-tour="superadmin-ai-form"]', 'title' => 'Form Konfigurasi', 'description' => 'Isi provider, model, dan API key. Gunakan tombol uji koneksi sebelum menyimpan.', 'side' => 'top'],
     ],
 
     // ─── ADMIN SEKOLAH ─────────────────────────────────────────
@@ -111,7 +156,7 @@ return [
         [
             ['element' => '[data-tour="nav-admin.kesehatan.index"]', 'title' => 'Menu Kesehatan Siswa', 'description' => 'Pantau dan catat data kesehatan seluruh siswa.', 'side' => 'right'],
             ['element' => '[data-tour="page-header"]', 'title' => 'Kesehatan Siswa', 'description' => 'Data berat badan, tinggi badan, alergi, dan kebersihan siswa.', 'side' => 'bottom'],
-            ['element' => '[data-tour="admin-kesehatan-filter"]', 'title' => 'Filter Siswa', 'description' => 'Saring berdasarkan kelas atau cari nama siswa tertentu.', 'side' => 'bottom'],
+            ['element' => '[data-tour="admin-kesehatan-filter"]', 'title' => 'Filter Siswa', 'description' => 'Saring kelas, nama, atau status pemeriksaan — lalu Filter, Reset, atau export Excel.', 'side' => 'bottom'],
             ['element' => '[data-tour="admin-kesehatan-action-riwayat"]', 'title' => 'Riwayat', 'description' => 'Lihat riwayat pemeriksaan kesehatan dan kebersihan siswa.', 'side' => 'left'],
             ['element' => '[data-tour="admin-kesehatan-action-input"]', 'title' => 'Input Data', 'description' => 'Catat pemeriksaan kesehatan dan kebersihan siswa.', 'side' => 'left'],
         ],
@@ -139,6 +184,7 @@ return [
         [
             ['element' => '[data-tour="nav-admin.skala-pencapaian.index"]', 'title' => 'Menu Skala Capaian', 'description' => 'Atur skala penilaian pencapaian siswa (mis. Berkembang, Cakap).', 'side' => 'right'],
             ['element' => '[data-tour="page-header"]', 'title' => 'Skala Capaian', 'description' => 'Definisi tingkat pencapaian yang dipakai saat evaluasi siswa.', 'side' => 'bottom'],
+            ['element' => '[data-tour="admin-skala-filter"]', 'title' => 'Filter & Aksi', 'description' => 'Cari kode/label, saring status, export Excel, atau tambah skala baru.', 'side' => 'bottom'],
         ],
         tour_table_actions(
             'admin-skala',
@@ -203,25 +249,25 @@ return [
 
     'admin.pengajar.index' => array_merge(
         [
-            ['element' => '[data-tour="nav-admin.pengajar.index"]', 'title' => 'Menu Data Pengajar', 'description' => 'Kelola akun dan data guru/pengajar di sekolah.', 'side' => 'right'],
-            ['element' => '[data-tour="page-header"]', 'title' => 'Data Pengajar', 'description' => 'Daftar pengajar beserta jabatan, kelas, dan kontak.', 'side' => 'bottom'],
+            ['element' => '[data-tour="nav-admin.pengajar.index"]', 'title' => 'Menu Data Guru', 'description' => 'Kelola akun dan data guru di sekolah.', 'side' => 'right'],
+            ['element' => '[data-tour="page-header"]', 'title' => 'Data Guru', 'description' => 'Daftar guru beserta jabatan, kelas, dan kontak.', 'side' => 'bottom'],
         ],
         tour_table_actions(
             'admin-pengajar',
-            'Registrasi Pengajar',
-            'Daftarkan pengajar baru beserta akun login dan penugasan kelas.',
+            'Registrasi Guru',
+            'Daftarkan guru baru beserta akun login dan penugasan kelas.',
             'Edit',
-            'Ubah data pengajar dan penugasan kelas.',
+            'Ubah data guru dan penugasan kelas.',
             'Hapus',
-            'Nonaktifkan atau hapus akun pengajar.',
+            'Nonaktifkan atau hapus akun guru.',
         ),
     ),
 
     'admin.presensi-guru.index' => [
         ['element' => '[data-tour="nav-admin.presensi-guru.index"]', 'title' => 'Menu Presensi Guru', 'description' => 'Catat kehadiran pengajar setiap hari.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Presensi Guru', 'description' => 'Input absensi harian seluruh pengajar di sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-presensi-guru-date"]', 'title' => 'Pilih Tanggal', 'description' => 'Tentukan tanggal presensi yang ingin dicatat atau diubah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-presensi-guru-input-table"]', 'title' => 'Daftar Pengajar', 'description' => 'Tandai Hadir/Tidak Hadir dan isi keterangan, lalu simpan.', 'side' => 'top'],
+        ['element' => '[data-tour="admin-presensi-guru-date"]', 'title' => 'Filter Harian', 'description' => 'Pilih tanggal, cari pengajar, atau export rekap.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-presensi-guru-input-table"]', 'title' => 'Daftar Guru', 'description' => 'Tandai Hadir/Tidak Hadir dan isi keterangan, lalu simpan.', 'side' => 'top'],
     ],
 
     'admin.sarana.index' => array_merge(
@@ -240,27 +286,25 @@ return [
         ),
     ),
 
-    'admin.menu-makanan.index' => array_merge(
-        [
-            ['element' => '[data-tour="nav-admin.menu-makanan.index"]', 'title' => 'Menu Makanan', 'description' => 'Kelola menu makan harian yang dilihat orang tua.', 'side' => 'right'],
-            ['element' => '[data-tour="page-header"]', 'title' => 'Menu Makanan', 'description' => 'Input dan pantau menu makan siswa per hari.', 'side' => 'bottom'],
-        ],
-        tour_table_actions(
-            'admin-menu',
-            'Input Menu',
-            'Tambahkan menu makan baru beserta info gizi dan foto.',
-            'Edit',
-            'Perbarui daftar hidangan, gizi, atau foto menu.',
-            'Hapus',
-            'Hapus jadwal menu yang sudah tidak relevan.',
-        ),
-    ),
+    'admin.menu-makanan.index' => [
+        ['element' => '[data-tour="nav-admin.menu-makanan.index"]', 'title' => 'Menu Makanan', 'description' => 'Kelola menu makan harian yang dilihat orang tua.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Menu Makanan', 'description' => 'Kalender menu makan harian siswa — navigasi per bulan seperti Agenda Belajar.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-menu-filter"]', 'title' => 'Cari & Filter', 'description' => 'Cari hidangan atau info gizi, saring yang punya foto, lalu reset atau input menu baru.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-menu-calendar"]', 'title' => 'Kalender Menu', 'description' => 'Klik entri di kalender untuk detail, edit, atau hapus menu harian.', 'side' => 'top'],
+    ],
+
+    'admin.akun.index' => [
+        ['element' => '[data-tour="nav-admin.akun.index"]', 'title' => 'Menu Kode Rekening & Akun', 'description' => 'Master akun untuk RKAS, cashflow, dan jurnal.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Kode Rekening & Akun', 'description' => 'Kelola master akun dan kode rekening sekolah.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-akun-filter-tabs"]', 'title' => 'Filter', 'description' => 'Saring akun berdasarkan kategori.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-akun-table"]', 'title' => 'Daftar Akun', 'description' => 'Tabel master akun yang digunakan oleh modul akuntansi.', 'side' => 'top'],
+    ],
 
     'admin.cashflow.index' => array_merge(
         [
             ['element' => '[data-tour="nav-admin.cashflow.index"]', 'title' => 'Menu Cashflow', 'description' => 'Catat pemasukan dan pengeluaran keuangan sekolah.', 'side' => 'right'],
-            ['element' => '[data-tour="page-header"]', 'title' => 'Cashflow', 'description' => 'Ringkasan keuangan dan riwayat transaksi sekolah.', 'side' => 'bottom'],
-            ['element' => '[data-tour="admin-cashflow-stats"]', 'title' => 'Ringkasan Keuangan', 'description' => 'Kartu statistik menampilkan total pemasukan, pengeluaran, dan saldo.', 'side' => 'bottom'],
+            ['element' => '[data-tour="page-header"]', 'title' => 'Cashflow', 'description' => 'Riwayat transaksi kas. Ringkasan agregat ada di Laporan Keuangan.', 'side' => 'bottom'],
+            ['element' => '[data-tour="admin-cashflow-table"]', 'title' => 'Riwayat transaksi', 'description' => 'Filter periode dan jenis, lalu catat atau ubah transaksi di sini.', 'side' => 'top'],
         ],
         tour_table_actions(
             'admin-cashflow',
@@ -272,6 +316,32 @@ return [
             'Hapus catatan transaksi yang salah input.',
         ),
     ),
+
+    'admin.jurnal.index' => [
+        ['element' => '[data-tour="nav-admin.jurnal.index"]', 'title' => 'Menu Jurnal Umum', 'description' => 'Lihat jurnal manual dan jurnal otomatis dari transaksi.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Jurnal Umum', 'description' => 'Daftar jurnal sekolah Anda.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-jurnal-table"]', 'title' => 'Daftar Jurnal', 'description' => 'Semua jurnal dan statusnya ditampilkan di tabel ini.', 'side' => 'top'],
+    ],
+
+    'admin.sumber-dana.index' => [
+        ['element' => '[data-tour="nav-admin.sumber-dana.index"]', 'title' => 'Menu Sumber Dana', 'description' => 'Kelola daftar sumber dana untuk RKAS.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Sumber Dana', 'description' => 'Tambah dan atur sumber dana sekolah (BOS, Komite, SPP, dll).', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-sumber-dana-table"]', 'title' => 'Daftar Sumber Dana', 'description' => 'Tabel sumber dana aktif/nonaktif.', 'side' => 'top'],
+    ],
+
+    'admin.rkas.index' => [
+        ['element' => '[data-tour="nav-admin.rkas.index"]', 'title' => 'Menu RKAS', 'description' => 'Kelola RKAS per tahun ajaran.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'RKAS', 'description' => 'Buat, edit, dan sinkronisasi RKAS.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-filter"]', 'title' => 'Tahun Ajaran', 'description' => 'Pilih tahun ajaran untuk melihat RKAS.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-table"]', 'title' => 'Daftar RKAS', 'description' => 'Daftar periode RKAS dan statusnya.', 'side' => 'top'],
+    ],
+
+    'admin.rkas.laporan' => [
+        ['element' => '[data-tour="nav-admin.rkas.laporan"]', 'title' => 'Menu Laporan RKAS', 'description' => 'Laporan komparasi RKAS dan cashflow.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Laporan RKAS', 'description' => 'Pilih periode lalu lihat komparasi RKAS vs realisasi.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-laporan-filter"]', 'title' => 'Filter Periode', 'description' => 'Pilih tahun ajaran dan semester.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-rkas-laporan-table"]', 'title' => 'Tabel Laporan', 'description' => 'Ringkasan komparasi RKAS dan realisasi.', 'side' => 'top'],
+    ],
 
     'admin.biaya-bulanan.index' => [
         ['element' => '[data-tour="nav-admin.biaya-bulanan.index"]', 'title' => 'Menu Biaya Bulanan', 'description' => 'Atur jenis biaya dan biaya bulanan per siswa sebelum generate tagihan.', 'side' => 'right'],
@@ -302,7 +372,7 @@ return [
     'admin.pembayaran-bulanan.index' => [
         ['element' => '[data-tour="nav-admin.pembayaran-bulanan.index"]', 'title' => 'Menu Rekap Pembayaran', 'description' => 'Generate dan kelola tagihan bulanan berdasarkan kehadiran siswa.', 'side' => 'right'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Rekap Pembayaran Bulanan', 'description' => 'Total tagihan = biaya bulanan + biaya lain − diskon.', 'side' => 'bottom'],
-        ['element' => '[data-tour="admin-pembayaran-stats"]', 'title' => 'Ringkasan Tagihan', 'description' => 'Statistik total, menunggu, disetujui, dan nominal yang sudah disetujui.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-pembayaran-stats"]', 'title' => 'Ringkasan Tagihan', 'description' => 'Statistik total, menunggu, lunas, dan nominal yang sudah lunas.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-pembayaran-filter"]', 'title' => 'Filter', 'description' => 'Saring tagihan berdasarkan bulan, tahun, kelas, atau status.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-pembayaran-generate-btn"]', 'title' => 'Generate Tagihan', 'description' => 'Buat tagihan bulanan untuk siswa yang sudah ada di Biaya Bulanan.', 'side' => 'left'],
         ['element' => '[data-tour="admin-pembayaran-table"]', 'title' => 'Daftar Tagihan', 'description' => 'Semua tagihan periode terpilih beserta status pembayarannya.', 'side' => 'top'],
@@ -319,6 +389,7 @@ return [
 
     'admin.orangtua-chat.index' => [
         ['element' => '[data-tour="nav-admin.orangtua-chat.index"]', 'title' => 'Menu Chat Orang Tua', 'description' => 'Pantau percakapan AI antara orang tua dan asisten sekolah.', 'side' => 'right'],
+        ['element' => '[data-tour="admin-chat-filter"]', 'title' => 'Filter', 'description' => 'Cari ortu/anak, filter kelas, atau status riwayat — lalu Filter atau Reset.', 'side' => 'bottom'],
         ['element' => '[data-tour="page-header"]', 'title' => 'Chat Orang Tua', 'description' => 'Riwayat percakapan chatbot yang digunakan orang tua.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-chat-table"]', 'title' => 'Riwayat Chat', 'description' => 'Lihat orang tua, anak terkait, jumlah pesan, dan cuplikan terakhir.', 'side' => 'top'],
         ['element' => '[data-tour="admin-chat-action-detail"]', 'title' => 'Detail', 'description' => 'Buka thread percakapan lengkap dengan orang tua.', 'side' => 'left'],
@@ -330,6 +401,30 @@ return [
         ['element' => '[data-tour="admin-ai-token-balance"]', 'title' => 'Saldo Token', 'description' => 'Lihat sisa token AI sekolah. Setiap generate memakai 1 token.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-ai-persona-tabs"]', 'title' => 'Tab Persona', 'description' => 'Pilih scope persona: chat orang tua, evaluasi pencapaian, atau monev.', 'side' => 'bottom'],
         ['element' => '[data-tour="admin-ai-persona-form"]', 'title' => 'Form Persona', 'description' => 'Tulis instruksi persona atau gunakan tombol Generate AI untuk membuatnya otomatis.', 'side' => 'top'],
+    ],
+
+    'admin.role.index' => [
+        ['element' => '[data-tour="nav-admin.role.index"]', 'title' => 'Menu Role', 'description' => 'Kelola role dan permission menu.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Manajemen Role', 'description' => 'Tambah/edit role dan atur izin akses.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-role-table"]', 'title' => 'Daftar Role', 'description' => 'Tabel role yang tersedia di sekolah.', 'side' => 'top'],
+    ],
+
+    'admin.pengguna.index' => [
+        ['element' => '[data-tour="nav-admin.pengguna.index"]', 'title' => 'Menu Pengguna', 'description' => 'Kelola akun pengguna internal (admin/pengajar/orang tua jika tersedia).', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Manajemen Pengguna', 'description' => 'Tambah/edit pengguna dan perannya.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-pengguna-table"]', 'title' => 'Daftar Pengguna', 'description' => 'Tabel pengguna yang terdaftar.', 'side' => 'top'],
+    ],
+
+    'admin.akuntansi-setting.index' => [
+        ['element' => '[data-tour="nav-admin.akuntansi-setting.index"]', 'title' => 'Menu Pengaturan Akuntansi', 'description' => 'Atur default akun untuk transaksi dan jurnal otomatis.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Pengaturan Akuntansi', 'description' => 'Konfigurasi default akun dan mapping kebutuhan akuntansi.', 'side' => 'bottom'],
+        ['element' => '[data-tour="admin-akuntansi-setting-form"]', 'title' => 'Form Pengaturan', 'description' => 'Ubah nilai lalu simpan perubahan.', 'side' => 'top'],
+    ],
+
+    'admin.activity-log.index' => [
+        ['element' => '[data-tour="nav-admin.activity-log.index"]', 'title' => 'Menu Log Aktivitas', 'description' => 'Audit log perubahan data di sekolah.', 'side' => 'right'],
+        ['element' => '[data-tour="page-header"]', 'title' => 'Log Aktivitas', 'description' => 'Riwayat perubahan data di sekolah Anda.', 'side' => 'bottom'],
+        ['element' => '[data-tour="activity-log-filter"]', 'title' => 'Filter', 'description' => 'Saring berdasarkan tanggal, event, atau kata kunci.', 'side' => 'bottom'],
     ],
 
     // ─── ADMIN KELAS ───────────────────────────────────────────
@@ -430,66 +525,48 @@ return [
     // ─── ORANG TUA ─────────────────────────────────────────────
 
     'orangtua.pencapaian.index' => [
-        ['element' => '[data-tour="nav-orangtua.pencapaian.index"]', 'title' => 'Menu Pencapaian', 'description' => 'Lihat perkembangan belajar anak Anda.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Pencapaian Anak', 'description' => 'Laporan pencapaian belajar anak dari kegiatan di sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-pencapaian-filter"]', 'title' => 'Filter Laporan', 'description' => 'Saring berdasarkan aspek, tanggal, atau pilih anak jika punya lebih dari satu.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-pencapaian-filter"]', 'title' => 'Pencapaian Anak', 'description' => 'Laporan pencapaian belajar anak dari kegiatan di sekolah. Saring berdasarkan aspek, tanggal, atau pilih anak.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-pencapaian-reports"]', 'title' => 'Laporan Pencapaian', 'description' => 'Setiap kartu berisi kegiatan, skala capaian, dan catatan guru.', 'side' => 'top'],
     ],
 
     'orangtua.chat.index' => [
-        ['element' => '[data-tour="nav-orangtua.chat.index"]', 'title' => 'Menu Chat', 'description' => 'Tanya jawab dengan asisten AI sekolah tentang anak Anda.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Chat Asisten', 'description' => 'Percakapan dengan chatbot sekolah untuk informasi seputar anak.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-chat-suggestions"]', 'title' => 'Pertanyaan Contoh', 'description' => 'Klik salah satu pertanyaan umum untuk memulai percakapan dengan cepat.', 'side' => 'top'],
+        ['element' => '[data-tour="ortu-chat-suggestions"]', 'title' => 'Chat Asisten', 'description' => 'Percakapan dengan chatbot sekolah. Klik pertanyaan contoh untuk memulai.', 'side' => 'top'],
         ['element' => '[data-tour="ortu-chat-input"]', 'title' => 'Ketik Pesan', 'description' => 'Tulis pertanyaan Anda di sini lalu kirim. Riwayat tersimpan otomatis.', 'side' => 'top'],
     ],
 
     'orangtua.monev.index' => [
-        ['element' => '[data-tour="nav-orangtua.monev.index"]', 'title' => 'Menu Monev', 'description' => 'Baca laporan monitoring & evaluasi bulanan anak.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Laporan Monev', 'description' => 'Ringkasan perkembangan anak per bulan dari sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-monev-filters"]', 'title' => 'Pilih Anak & Periode', 'description' => 'Pilih anak (jika ada lebih dari satu) serta bulan dan tahun laporan.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-monev-filters"]', 'title' => 'Laporan Monev', 'description' => 'Ringkasan perkembangan anak per bulan. Pilih anak serta bulan dan tahun laporan.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-monev-report"]', 'title' => 'Isi Laporan', 'description' => 'Baca analisis perkembangan anak yang dihasilkan sekolah.', 'side' => 'top'],
     ],
 
     'orangtua.kegiatan.index' => [
-        ['element' => '[data-tour="nav-orangtua.kegiatan.index"]', 'title' => 'Menu Agenda Belajar', 'description' => 'Lihat kegiatan belajar anak di sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Agenda Belajar', 'description' => 'Kalender jurnal kegiatan belajar anak Anda.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-kegiatan-calendar"]', 'title' => 'Kalender Kegiatan', 'description' => 'Klik tanggal yang ada jurnalnya untuk melihat detail kegiatan dan foto.', 'side' => 'top'],
+        ['element' => '[data-tour="ortu-kegiatan-calendar"]', 'title' => 'Agenda Belajar', 'description' => 'Kalender jurnal kegiatan belajar anak Anda. Klik tanggal yang ada jurnalnya.', 'side' => 'top'],
     ],
 
     'orangtua.kegiatan-rutin.index' => [
-        ['element' => '[data-tour="nav-orangtua.kegiatan-rutin.index"]', 'title' => 'Menu Kegiatan Rutin', 'description' => 'Pantau kegiatan rutin harian anak seperti makan dan tidur.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Kegiatan Rutin', 'description' => 'Riwayat kegiatan rutin anak yang dicatat guru setiap hari.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-rutin-filters"]', 'title' => 'Filter Riwayat', 'description' => 'Pilih anak, jenis kegiatan, dan rentang tanggal.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-rutin-filters"]', 'title' => 'Kegiatan Rutin', 'description' => 'Riwayat kegiatan rutin anak. Pilih anak, jenis kegiatan, dan rentang tanggal.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-rutin-results"]', 'title' => 'Hasil Kegiatan', 'description' => 'Klik item untuk melihat detail dan foto dokumentasi.', 'side' => 'top'],
     ],
 
     'orangtua.pembayaran.index' => [
-        ['element' => '[data-tour="nav-orangtua.pembayaran.index"]', 'title' => 'Menu Pembayaran', 'description' => 'Lihat tagihan bulanan dan unggah bukti transfer.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Pembayaran Bulanan', 'description' => 'Ringkasan tagihan anak Anda berdasarkan kehadiran di sekolah.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-pembayaran-summary"]', 'title' => 'Ringkasan per Anak', 'description' => 'Total belum dibayar dan sudah dibayar untuk setiap anak.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-pembayaran-summary"]', 'title' => 'Pembayaran Bulanan', 'description' => 'Ringkasan tagihan anak Anda berdasarkan kehadiran di sekolah.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-pembayaran-table"]', 'title' => 'Daftar Tagihan', 'description' => 'Semua tagihan per periode beserta status persetujuan sekolah.', 'side' => 'top'],
         ['element' => '[data-tour="ortu-pembayaran-action-detail"]', 'title' => 'Detail', 'description' => 'Buka rincian tagihan dan unggah bukti transfer.', 'side' => 'left'],
     ],
 
     'orangtua.presensi.index' => [
-        ['element' => '[data-tour="nav-orangtua.presensi.index"]', 'title' => 'Menu Kehadiran', 'description' => 'Pantau riwayat kehadiran anak di sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Kehadiran Anak', 'description' => 'Rekap absensi harian dan mingguan anak Anda.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-presensi-period-filter"]', 'title' => 'Filter Periode', 'description' => 'Pilih bulan atau minggu untuk melihat rekap kehadiran.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-presensi-period-filter"]', 'title' => 'Kehadiran Anak', 'description' => 'Rekap absensi harian dan mingguan. Pilih bulan atau minggu untuk melihat rekap.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-presensi-summary-cards"]', 'title' => 'Ringkasan Kehadiran', 'description' => 'Statistik hadir, izin, dan sakit per anak ditampilkan di sini.', 'side' => 'top'],
     ],
 
     'orangtua.menu-makanan.index' => [
-        ['element' => '[data-tour="nav-orangtua.menu-makanan.index"]', 'title' => 'Menu Makanan', 'description' => 'Lihat menu makan harian anak di sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Menu Makanan', 'description' => 'Daftar menu makan yang disajikan untuk siswa.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-menu-date-filter"]', 'title' => 'Filter Tanggal', 'description' => 'Pilih rentang tanggal lalu klik Tampilkan untuk melihat menu.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-menu-date-filter"]', 'title' => 'Menu Makanan', 'description' => 'Daftar menu makan siswa. Pilih rentang tanggal lalu klik Tampilkan.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-menu-list"]', 'title' => 'Daftar Menu', 'description' => 'Setiap hari menampilkan menu, foto, dan tombol suka/tidak suka.', 'side' => 'top'],
     ],
 
     'orangtua.kritik-saran.index' => array_merge(
         [
-            ['element' => '[data-tour="nav-orangtua.kritik-saran.index"]', 'title' => 'Menu Saran & Kritik', 'description' => 'Kirim masukan atau saran ke pihak sekolah.', 'side' => 'right'],
-            ['element' => '[data-tour="page-header"]', 'title' => 'Saran & Kritik', 'description' => 'Sampaikan masukan Anda dan lihat tanggapan dari sekolah.', 'side' => 'bottom'],
-            ['element' => '[data-tour="ortu-kritik-feed"]', 'title' => 'Riwayat Masukan', 'description' => 'Pesan yang sudah dikirim beserta tanggapan sekolah (jika ada).', 'side' => 'top'],
+            ['element' => '[data-tour="ortu-kritik-feed"]', 'title' => 'Saran & Kritik', 'description' => 'Sampaikan masukan Anda dan lihat tanggapan dari sekolah.', 'side' => 'top'],
         ],
         tour_table_actions(
             'ortu-kritik',
@@ -503,9 +580,7 @@ return [
     ),
 
     'orangtua.kesehatan.index' => [
-        ['element' => '[data-tour="nav-orangtua.kesehatan.index"]', 'title' => 'Menu Kesehatan Anak', 'description' => 'Pantau data kesehatan anak dari sekolah.', 'side' => 'right'],
-        ['element' => '[data-tour="page-header"]', 'title' => 'Kesehatan Anak', 'description' => 'Riwayat pemeriksaan kesehatan yang dicatat guru.', 'side' => 'bottom'],
-        ['element' => '[data-tour="ortu-kesehatan-metrics"]', 'title' => 'Data Terkini', 'description' => 'Berat badan, tinggi badan, lingkar kepala, dan info alergi terbaru.', 'side' => 'bottom'],
+        ['element' => '[data-tour="ortu-kesehatan-metrics"]', 'title' => 'Kesehatan Anak', 'description' => 'Riwayat pemeriksaan kesehatan. Berat badan, tinggi badan, lingkar kepala, dan info alergi terbaru.', 'side' => 'bottom'],
         ['element' => '[data-tour="ortu-kesehatan-timeline"]', 'title' => 'Riwayat Pemeriksaan', 'description' => 'Timeline lengkap pemeriksaan kesehatan dari waktu ke waktu.', 'side' => 'top'],
     ],
 

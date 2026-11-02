@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use App\Support\GuestCms;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
@@ -16,6 +17,9 @@ class GuestLayout extends Component
      */
     public function render(): View
     {
-        return view('layouts.guest', ['maxWidth' => $this->maxWidth]);
+        return view('layouts.guest', [
+            'maxWidth' => $this->maxWidth,
+            'cms' => GuestCms::data(),
+        ]);
     }
 }

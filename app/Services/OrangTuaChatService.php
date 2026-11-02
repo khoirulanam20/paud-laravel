@@ -33,6 +33,10 @@ class OrangTuaChatService
      */
     public function sendMessage(User $user, string $content): array
     {
+        if (! $this->tokenService->isChatOrangTuaEnabled((int) $user->sekolah_id)) {
+            throw new \RuntimeException('Fitur chat orang tua sedang dinonaktifkan oleh admin sekolah.');
+        }
+
         $ai = $this->monevService->resolveAiServiceForUser($user);
         if (! $ai) {
             throw new \RuntimeException(
@@ -49,7 +53,7 @@ class OrangTuaChatService
         $sekolahId = (int) $user->sekolah_id;
 
         $userMessage = $chat->messages()->create([
-            'role'    => OrangTuaChatMessage::ROLE_USER,
+            'role' => OrangTuaChatMessage::ROLE_USER,
             'content' => $content,
         ]);
 
@@ -63,14 +67,14 @@ class OrangTuaChatService
 
         foreach ($history->take(-self::HISTORY_LIMIT) as $msg) {
             $apiMessages[] = [
-                'role'    => $msg->role,
+                'role' => $msg->role,
                 'content' => $msg->content,
             ];
         }
 
         $apiMessages[] = [
-            'role'    => OrangTuaChatMessage::ROLE_USER,
-            'content' => $content,
+            'role' => OrangTuaChatMessage::ROLE_USER,
+            'content' => "[USER MESSAGE START]\n".$content."\n[USER MESSAGE END]",
         ];
 
         try {
@@ -84,7 +88,7 @@ class OrangTuaChatService
             );
         } catch (InsufficientAiTokensException $e) {
             $assistantMessage = $chat->messages()->create([
-                'role'    => OrangTuaChatMessage::ROLE_ASSISTANT,
+                'role' => OrangTuaChatMessage::ROLE_ASSISTANT,
                 'content' => $e->fallbackMessage,
             ]);
             $chat->touch();
@@ -93,14 +97,14 @@ class OrangTuaChatService
         }
 
         $assistantMessage = $chat->messages()->create([
-            'role'    => OrangTuaChatMessage::ROLE_ASSISTANT,
+            'role' => OrangTuaChatMessage::ROLE_ASSISTANT,
             'content' => $reply,
         ]);
 
         $chat->touch();
 
         return [
-            'user_message'      => $userMessage,
+            'user_message' => $userMessage,
             'assistant_message' => $assistantMessage,
         ];
     }

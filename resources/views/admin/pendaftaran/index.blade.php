@@ -1,16 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3" data-tour="page-header">
-            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3" /></svg></div>
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center" style="background: #1A6B6B;"><svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg></div>
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Pendaftaran Siswa Baru</h2>
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{ showRejectModal: false, rejectRoute: '', rejectData: {}, openReject(r, d){ this.rejectRoute=r; this.rejectData=d; this.showRejectModal=true; } }" @tour-close-modals.window="showRejectModal=false">
 
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
+
+        <form method="get" class="card card-pad toolbar-form mb-5">
+            <div class="toolbar-field md:min-w-[16rem] md:flex-[2]">
+                <label class="input-label">Cari Pendaftaran</label>
+                <input type="text" name="search" value="{{ request('search') }}" class="input-field"
+                    placeholder="Nama anak, orang tua, atau email...">
+            </div>
+            <div class="toolbar-actions">
+                <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Cari" aria-label="Cari">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+                <x-filter-reset :href="route('admin.pendaftaran.index')" compact />
+                <x-export-excel route="admin.pendaftaran.export" :icon-only="true" />
+            </div>
+        </form>
 
         {{-- PENDING --}}
         <div class="card overflow-hidden mb-6" data-tour="admin-pendaftaran-pending">
@@ -18,10 +35,10 @@
                 <div class="flex items-center gap-3">
                     <div>
                         <h3 class="section-title">Menunggu Persetujuan</h3>
-                        <p class="section-subtitle">{{ $pending->count() }} pendaftar baru membutuhkan tindakan</p>
+                        <p class="section-subtitle">{{ $pending->total() }} pendaftar baru membutuhkan tindakan</p>
                     </div>
-                    @if($pending->count() > 0)
-                    <span class="ml-auto inline-flex items-center justify-center h-7 px-3 rounded-full text-xs font-bold text-white" style="background:#FF8C42;">{{ $pending->count() }}</span>
+                    @if($pending->total() > 0)
+                    <span class="ml-auto inline-flex items-center justify-center h-7 px-3 rounded-full text-xs font-bold text-white" style="background:#FF8C42;">{{ $pending->total() }}</span>
                     @endif
                 </div>
             </div>
@@ -58,9 +75,9 @@
                                 <div class="flex items-center justify-end gap-2">
                                     <form method="POST" action="{{ route('admin.pendaftaran.approve', $a) }}">
                                         @csrf
-                                        <button type="submit" @if($loop->first) data-tour="admin-pendaftaran-action-approve" @endif class="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#1A6B6B;">Setujui</button>
+                                        <button type="submit" @if($loop->first) data-tour="admin-pendaftaran-action-approve" @endif class="row-action-icon shrink-0" style="background:#1A6B6B;" title="Setujui" aria-label="Setujui"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></button>
                                     </form>
-                                    <button @if($loop->first) data-tour="admin-pendaftaran-action-reject" data-tour-open-modal="reject" @endif @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Tolak</button>
+                                    <button @if($loop->first) data-tour="admin-pendaftaran-action-reject" data-tour-open-modal="reject" @endif @click="openReject('{{ route('admin.pendaftaran.reject', $a) }}', {{ json_encode(['name' => $a->name]) }})" class="row-action-icon" style="color:#C0392B;background:#FAD7D2;" title="Tolak" aria-label="Tolak"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
                                 </div>
                             </td>
                         </tr>
@@ -69,6 +86,10 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$pending" param="pending_per_page" />
+                {{ $pending->links() }}
             </div>
         </div>
 
@@ -101,7 +122,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($approved->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $approved->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$approved" param="approved_per_page" />
+                {{ $approved->links() }}
+            </div>
         </div>
 
         {{-- REJECTED --}}
@@ -131,7 +155,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($rejected->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $rejected->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$rejected" param="rejected_per_page" />
+                {{ $rejected->links() }}
+            </div>
         </div>
 
         {{-- REJECT MODAL --}}

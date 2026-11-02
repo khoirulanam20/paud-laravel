@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\OrangTua;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\HandlesMonevPdfExport;
+use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\MonevSummary;
+use App\Models\User;
 use App\Services\MonevSummaryService;
+use App\Support\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class MonevController extends Controller
 {
@@ -19,19 +22,13 @@ class MonevController extends Controller
 
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $sekolahId = TenantContext::requireSekolahId();
         [$tahun, $bulan] = $this->monevService->parsePeriodeFromRequest(
             $request->integer('tahun') ?: null,
             $request->integer('bulan') ?: null
         );
 
-        $anaks = Anak::query()
-            ->where('user_id', $user->id)
-            ->where('sekolah_id', $user->sekolah_id)
-            ->where('status', 'approved')
-            ->with('kelas')
-            ->orderBy('name')
-            ->get();
+        $anaks = $this->approvedAnaksForActiveSekolah($request->user(), $sekolahId);
 
         $selectedAnak = $this->resolveSelectedAnak($anaks, $request->integer('anak_id') ?: null);
 
@@ -48,10 +45,7 @@ class MonevController extends Controller
 
     public function show(Anak $anak, Request $request)
     {
-        $user = auth()->user();
-        abort_unless((int) $anak->user_id === (int) $user->id, 403);
-        abort_unless((int) $anak->sekolah_id === (int) $user->sekolah_id, 403);
-        abort_unless($anak->status === 'approved', 404);
+        $this->authorizeAnakForTenant($anak);
 
         [$tahun, $bulan] = $this->monevService->parsePeriodeFromRequest(
             $request->integer('tahun') ?: null,
@@ -67,10 +61,7 @@ class MonevController extends Controller
 
     public function exportPdf(Anak $anak, Request $request)
     {
-        $user = auth()->user();
-        abort_unless((int) $anak->user_id === (int) $user->id, 403);
-        abort_unless((int) $anak->sekolah_id === (int) $user->sekolah_id, 403);
-        abort_unless($anak->status === 'approved', 404);
+        $this->authorizeAnakForTenant($anak);
 
         $summary = $this->resolveMonevSummaryForExport($anak, $request, $this->monevService);
 
@@ -78,9 +69,39 @@ class MonevController extends Controller
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, Anak>  $anaks
+     * @return Collection<int, Anak>
      */
-    protected function resolveSelectedAnak($anaks, ?int $anakId): ?Anak
+    protected function approvedAnaksForActiveSekolah(User $user, int $sekolahId): Collection
+    {
+        return Anak::withoutSekolahScope()
+            ->where('user_id', $user->id)
+            ->where('sekolah_id', $sekolahId)
+            ->where('status', 'approved')
+            ->with('kelas')
+            ->orderBy('name')
+            ->get();
+    }
+
+    protected function authorizeAnakForTenant(Anak $anak): void
+    {
+        $user = auth()->user();
+        $sekolahId = TenantContext::requireSekolahId();
+
+        abort_unless(
+            Anak::withoutSekolahScope()
+                ->where('user_id', $user->id)
+                ->where('id', $anak->id)
+                ->where('sekolah_id', $sekolahId)
+                ->where('status', 'approved')
+                ->exists(),
+            403
+        );
+    }
+
+    /**
+     * @param  Collection<int, Anak>  $anaks
+     */
+    protected function resolveSelectedAnak(Collection $anaks, ?int $anakId): ?Anak
     {
         if ($anaks->isEmpty()) {
             return null;

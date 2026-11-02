@@ -3,27 +3,34 @@
 namespace App\Http\Controllers\Pengajar;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Traits\StoresDocumentationMedia;
+use App\Models\Anak;
+use App\Models\KegiatanRutin;
 use App\Models\MasterKegiatanRutin;
-use App\Models\Pengajar;
 use App\Models\Matrikulasi;
-use App\Http\Traits\CanUploadImage;
+use App\Models\Pengajar;
+use App\Support\DocumentationMedia;
+use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MasterKegiatanRutinController extends Controller
 {
-    use CanUploadImage;
-    public function index()
+    use StoresDocumentationMedia;
+
+    public function index(Request $request)
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        
+
         $masters = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
             ->where('sekolah_id', $pengajar->sekolah_id)
-            ->whereHas('kelas', function($q) use ($pengajar) {
-                $q->whereIn('kelas.id', $pengajar->kelas->pluck('id'));
+            ->whereHas('kelas', function ($q) use ($pengajar) {
+                $q->whereIn('kelas.id', $pengajar->accessibleKelasIds());
             })
             ->latest()
-            ->get();
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
 
         return view('pengajar.master-kegiatan-rutin.index', compact('masters'));
     }
@@ -32,8 +39,8 @@ class MasterKegiatanRutinController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        
-        $classList = $pengajar->kelas;
+
+        $classList = $pengajar->accessibleKelas();
         $matrikulasiList = Matrikulasi::where('sekolah_id', $pengajar->sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.create', compact('classList', 'matrikulasiList'));
@@ -74,7 +81,7 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
-        $classList = $pengajar->kelas;
+        $classList = $pengajar->accessibleKelas();
         $matrikulasiList = Matrikulasi::where('sekolah_id', $pengajar->sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.edit', compact('masterKegiatanRutin', 'classList', 'matrikulasiList'));
@@ -112,12 +119,12 @@ class MasterKegiatanRutinController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $teacherKelasIds = $pengajar->accessibleKelasIds();
 
         // Check if this master activity is linked to any of the teacher's classes
         $linkedToTeacher = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->exists();
 
-        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id && !$linkedToTeacher) {
+        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id && ! $linkedToTeacher) {
             abort(403);
         }
 
@@ -125,16 +132,16 @@ class MasterKegiatanRutinController extends Controller
         $kelasId = $request->input('kelas_id');
         $availableKelasIds = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->pluck('kelas.id')->toArray();
 
-        if (!$kelasId && !empty($availableKelasIds)) {
+        if (! $kelasId && ! empty($availableKelasIds)) {
             $kelasId = $availableKelasIds[0];
         }
 
-        if ($kelasId && !in_array($kelasId, $availableKelasIds)) {
+        if ($kelasId && ! in_array($kelasId, $availableKelasIds)) {
             abort(403, 'Kelas tidak ditautkan ke kegiatan ini atau Anda tidak mengampu kelas ini.');
         }
 
-        $anaks = $kelasId ? \App\Models\Anak::where('kelas_id', $kelasId)->get() : collect();
-        $rutins = $kelasId ? \App\Models\KegiatanRutin::where('kelas_id', $kelasId)
+        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
+        $rutins = $kelasId ? KegiatanRutin::where('kelas_id', $kelasId)
             ->where('master_kegiatan_rutin_id', $masterKegiatanRutin->id)
             ->where('tanggal', $tanggal)
             ->get()
@@ -153,25 +160,25 @@ class MasterKegiatanRutinController extends Controller
             'anak_id' => 'required|exists:anaks,id',
             'status_pencapaian' => 'required|string',
             'keterangan' => 'nullable|string',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => DocumentationMedia::singleFileRules(),
         ]);
 
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $teacherKelasIds = $pengajar->accessibleKelasIds();
 
         // Check if this master activity is linked to any of the teacher's classes
         $linkedToTeacher = $masterKegiatanRutin->kelas()->whereIn('kelas.id', $teacherKelasIds)->exists();
 
-        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id && !$linkedToTeacher) {
+        if ($masterKegiatanRutin->pengajar_id !== $pengajar->id && ! $linkedToTeacher) {
             abort(403);
         }
 
-        if (!in_array($request->kelas_id, $teacherKelasIds)) {
+        if (! in_array($request->kelas_id, $teacherKelasIds)) {
             abort(403, 'Anda tidak mengampu kelas ini.');
         }
 
-        $rutin = \App\Models\KegiatanRutin::where([
+        $rutin = KegiatanRutin::where([
             'sekolah_id' => $pengajar->sekolah_id,
             'kelas_id' => $request->kelas_id,
             'anak_id' => $request->anak_id,
@@ -189,15 +196,15 @@ class MasterKegiatanRutinController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($rutin && $rutin->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($rutin->photo);
+                Storage::disk('public')->delete($rutin->photo);
             }
-            $data['photo'] = $this->uploadImage($request->file('photo'), 'kegiatan-rutin');
+            $data['photo'] = $this->storeDocumentationMedia($request->file('photo'), 'kegiatan-rutin', 'kegiatan-rutin-videos');
         }
 
         if ($rutin) {
             $rutin->update($data);
         } else {
-            \App\Models\KegiatanRutin::create(array_merge($data, [
+            KegiatanRutin::create(array_merge($data, [
                 'sekolah_id' => $pengajar->sekolah_id,
                 'kelas_id' => $request->kelas_id,
                 'anak_id' => $request->anak_id,
@@ -209,21 +216,21 @@ class MasterKegiatanRutinController extends Controller
         return back()->with('success', 'Data pencapaian berhasil disimpan.');
     }
 
-    public function detail(Request $request, MasterKegiatanRutin $masterKegiatanRutin, \App\Models\Anak $anak)
+    public function detail(Request $request, MasterKegiatanRutin $masterKegiatanRutin, Anak $anak)
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $teacherKelasIds = $pengajar->kelas->pluck('id')->toArray();
+        $teacherKelasIds = $pengajar->accessibleKelasIds();
 
         // Check if student belongs to teacher's classes
-        if (!in_array($anak->kelas_id, $teacherKelasIds)) {
+        if (! in_array($anak->kelas_id, $teacherKelasIds)) {
             abort(403);
         }
 
         $mulai = $request->query('mulai', date('Y-m-01'));
         $sampai = $request->query('sampai', date('Y-m-t'));
 
-        $rutins = \App\Models\KegiatanRutin::where('anak_id', $anak->id)
+        $rutins = KegiatanRutin::where('anak_id', $anak->id)
             ->where('sekolah_id', $pengajar->sekolah_id)
             ->where('master_kegiatan_rutin_id', $masterKegiatanRutin->id)
             ->whereBetween('tanggal', [$mulai, $sampai])
@@ -236,7 +243,8 @@ class MasterKegiatanRutinController extends Controller
                     'tanggal' => $q->tanggal->format('Y-m-d'),
                     'status_pencapaian' => $q->status_pencapaian,
                     'keterangan' => $q->keterangan,
-                    'photo_url' => $q->photo ? \Illuminate\Support\Facades\Storage::url($q->photo) : null,
+                    'photo_url' => $q->photo ? Storage::url($q->photo) : null,
+                    'photo_download_url' => $q->photo ? route('pengajar.kegiatan-rutin.photo.download', $q) : null,
                 ];
             });
 
@@ -252,9 +260,9 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
-        foreach($masterKegiatanRutin->kegiatanRutins as $qr) {
+        foreach ($masterKegiatanRutin->kegiatanRutins as $qr) {
             if ($qr->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($qr->photo);
+                Storage::disk('public')->delete($qr->photo);
             }
         }
 
@@ -263,7 +271,7 @@ class MasterKegiatanRutinController extends Controller
         return redirect()->route('pengajar.master-kegiatan-rutin.index')->with('success', 'Master Kegiatan Rutin berhasil dihapus.');
     }
 
-    public function destroyRutinRecord(\App\Models\KegiatanRutin $kegiatanRutin)
+    public function destroyRutinRecord(KegiatanRutin $kegiatanRutin)
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
@@ -273,7 +281,7 @@ class MasterKegiatanRutinController extends Controller
         }
 
         if ($kegiatanRutin->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($kegiatanRutin->photo);
+            Storage::disk('public')->delete($kegiatanRutin->photo);
         }
 
         $kegiatanRutin->delete();

@@ -1,30 +1,37 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
+    <div class="mb-6">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-mint text-forest-deep text-xs font-semibold tracking-wide uppercase">
+            <span class="material-symbols-outlined text-[15px]">mark_email_read</span>
+            Verifikasi Email
+        </span>
+        <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-text-primary tracking-tight mt-2.5">
+            Konfirmasi alamat email
+        </h1>
+        <p class="text-sm text-text-secondary mt-1.5 leading-relaxed">
+            Terima kasih telah mendaftar. Silakan periksa inbox email Anda dan klik tautan verifikasi. Jika belum menerima, kami dapat mengirimkan ulang.
+        </p>
     </div>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <div class="alert-success mb-5">
+            <span class="material-symbols-outlined text-[20px] text-forest-deep shrink-0">check_circle</span>
+            <span class="text-xs sm:text-sm">Tautan verifikasi baru telah berhasil dikirim ke email Anda.</span>
         </div>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
+    <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pt-2">
+        <form method="POST" action="{{ route('verification.send') }}" class="flex-1">
             @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
+            <x-ascent-button>
+                <span class="material-symbols-outlined text-[19px]">forward_to_inbox</span>
+                <span>Kirim Ulang Email</span>
+            </x-ascent-button>
         </form>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Log Out') }}
+            <button type="submit" class="w-full sm:w-auto text-sm font-semibold text-text-secondary hover:text-forest-deep py-3 px-6 rounded-full border border-border-subtle bg-white hover:bg-surface-mint transition-colors">
+                Keluar
             </button>
         </form>
     </div>

@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class MasterKegiatanRutin extends Model
 {
+    use BelongsToSekolah, LogsScopedActivity;
+
     protected $fillable = [
         'sekolah_id',
         'pengajar_id',

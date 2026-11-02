@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\OrangTua;
-
 use App\Http\Controllers\Controller;
 use App\Models\MenuMakananVote;
 use Illuminate\Http\Request;

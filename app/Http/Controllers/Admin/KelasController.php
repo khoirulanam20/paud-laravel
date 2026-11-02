@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\Pengajar;
-use App\Models\User;
+use App\Services\WaliKelasAssignmentService;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class KelasController extends Controller
 {
-    public function index()
+    use DownloadsExcel;
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah. Hubungi lembaga.');
@@ -25,11 +28,39 @@ class KelasController extends Controller
             ->with(['waliKelas', 'pengajars'])
             ->withCount('anaks')
             ->latest()
-            ->paginate(10);
+            ->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
 
         return view('admin.kelas.index', compact('kelasList', 'pengajars'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        abort_if($sekolah_id === null, 403);
+
+        $kelasList = Kelas::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->with(['waliKelas', 'pengajars'])
+            ->withCount('anaks')
+            ->latest()
+            ->get();
+
+        $rows = $kelasList->map(fn (Kelas $k) => [
+            $k->name,
+            $k->waliKelas?->name ?? '-',
+            $k->description ?? '-',
+            $k->anaks_count,
+            $k->pengajars->pluck('name')->join(', ') ?: '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Nama Kelas', 'Wali Kelas', 'Deskripsi', 'Jumlah Siswa', 'Pengajar'],
+            $rows,
+            'data-kelas-'.now()->format('Y-m-d').'.xlsx',
+            'Kelola Kelas'
+        );
     }
 
     public function show(Kelas $kelas)
@@ -105,11 +136,12 @@ class KelasController extends Controller
         ]);
 
         if ($request->wali_kelas_id != $oldWaliId) {
+            $waliService = app(WaliKelasAssignmentService::class);
             if ($request->filled('wali_kelas_id')) {
-                $this->syncWaliKelasRole($request->wali_kelas_id);
+                $waliService->assignByPengajarId((int) $request->wali_kelas_id, $kelas->id);
             }
             if ($oldWaliId) {
-                $this->removeWaliKelasRoleIfNecessary($oldWaliId);
+                $waliService->removeRoleIfNoLongerWali((int) $oldWaliId);
             }
         }
 
@@ -128,7 +160,7 @@ class KelasController extends Controller
         $kelas->delete();
 
         if ($oldWaliId) {
-            $this->removeWaliKelasRoleIfNecessary($oldWaliId);
+            app(WaliKelasAssignmentService::class)->removeRoleIfNoLongerWali((int) $oldWaliId);
         }
 
         return redirect()->route('admin.kelas.index')->with('success', 'Data Kelas berhasil dihapus.');
@@ -171,24 +203,5 @@ class KelasController extends Controller
             );
         }
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-    }
-
-    private function syncWaliKelasRole($pengajarId)
-    {
-        $pengajar = Pengajar::find($pengajarId);
-        if ($pengajar && $pengajar->user) {
-            $pengajar->user->assignRole('Wali Kelas');
-        }
-    }
-
-    private function removeWaliKelasRoleIfNecessary($pengajarId)
-    {
-        $isStillWali = Kelas::where('wali_kelas_id', $pengajarId)->exists();
-        if (!$isStillWali) {
-            $pengajar = Pengajar::find($pengajarId);
-            if ($pengajar && $pengajar->user) {
-                $pengajar->user->removeRole('Wali Kelas');
-            }
-        }
     }
 }

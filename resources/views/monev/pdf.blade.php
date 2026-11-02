@@ -8,7 +8,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Monev {{ $anak->name }} — {{ $summary->periodeLabel() }}</title>
+    <title>Monev {{ $anak->name }}  {{ $summary->periodeLabel() }}</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -163,7 +163,7 @@
         <p style="font-size: 13px; font-weight: bold;">{{ $anak->name }}</p>
         <p class="meta">
             {{ $anak->sekolah?->name ?? 'Sekolah' }}
-            · Kelas {{ $anak->kelas?->name ?? '—' }}
+            · Kelas {{ $anak->kelas?->name ?? '' }}
             · {{ $anak->age }}
             · Periode {{ $summary->periodeLabel() }}
         </p>

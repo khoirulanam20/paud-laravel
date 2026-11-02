@@ -2,24 +2,31 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Kelas;
 use App\Models\Pengajar;
+use App\Models\PresensiShift;
 use App\Models\User;
+use App\Support\PaginationPerPage;
 use App\Support\PendidikanTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Traits\CanUploadImage;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class PengajarController extends Controller
 {
     use CanUploadImage;
-    public function index()
+    use DownloadsExcel;
+
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->latest()->paginate(10);
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas', 'presensiShift'])->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
         $kelas = Kelas::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $presensiShifts = PresensiShift::where('sekolah_id', $sekolah_id)->orderBy('sort_order')->orderBy('id')->get();
         $pendidikanOptions = PendidikanTerakhir::options();
         foreach ($pengajars as $p) {
             if (filled($p->pendidikan) && ! in_array($p->pendidikan, $pendidikanOptions, true)) {
@@ -28,11 +35,37 @@ class PengajarController extends Controller
         }
         $pendidikanOptions = array_values(array_unique($pendidikanOptions));
 
-        return view('admin.pengajar.index', compact('pengajars', 'kelas', 'pendidikanOptions'));
+        return view('admin.pengajar.index', compact('pengajars', 'kelas', 'pendidikanOptions', 'presensiShifts'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $pengajars = Pengajar::where('sekolah_id', $sekolah_id)->with(['user', 'kelas'])->latest()->get();
+
+        $rows = $pengajars->map(fn (Pengajar $p) => [
+            $p->name,
+            $p->user?->email ?? '-',
+            $p->jabatan ?? '-',
+            $p->kelas->pluck('name')->join(', ') ?: '-',
+            $p->nik ?? '-',
+            $p->phone ?? '-',
+            $p->pendidikan ?? '-',
+            $p->jenis_kelamin ?? '-',
+        ])->all();
+
+        return $this->downloadExcel(
+            ['Nama Guru', 'Email Login', 'Jabatan / Posisi', 'Penempatan Kelas', 'NIK', 'Telepon', 'Pendidikan', 'J/K'],
+            $rows,
+            'data-guru-'.now()->format('Y-m-d').'.xlsx',
+            'Data Guru'
+        );
     }
 
     public function store(Request $request)
     {
+        $sekolah_id = auth()->user()->sekolah_id;
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
@@ -44,9 +77,15 @@ class PengajarController extends Controller
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
             'kelas_id' => 'nullable|array',
             'kelas_id.*' => 'exists:kelas,id',
+            'presensi_shift_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('presensi_shifts', 'id')->where(fn ($q) => $q->where('sekolah_id', $sekolah_id)),
+            ],
         ]);
 
-        $sekolah_id = auth()->user()->sekolah_id;
+        $defaultShiftId = PresensiShift::where('sekolah_id', $sekolah_id)->where('is_default', true)->value('id')
+            ?? PresensiShift::where('sekolah_id', $sekolah_id)->orderBy('id')->value('id');
 
         $user = User::create([
             'name' => $request->name,
@@ -59,6 +98,7 @@ class PengajarController extends Controller
         $data = [
             'user_id' => $user->id,
             'sekolah_id' => $sekolah_id,
+            'presensi_shift_id' => $request->input('presensi_shift_id') ?: $defaultShiftId,
             'name' => $request->name,
             'jabatan' => $request->jabatan,
             'nik' => $request->nik,
@@ -78,7 +118,7 @@ class PengajarController extends Controller
             $pengajar->kelas()->sync($request->kelas_id);
         }
 
-        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil ditambahkan. Password default: password123');
+        return redirect()->route('admin.pengajar.index')->with('success', 'Data Guru berhasil ditambahkan. Password default: password123');
     }
 
     public function update(Request $request, Pengajar $pengajar)
@@ -90,6 +130,8 @@ class PengajarController extends Controller
             $pendidikanPilihan[] = $pengajar->pendidikan;
         }
 
+        $sekolahId = (int) auth()->user()->sekolah_id;
+
         $request->validate([
             'name' => 'required|string|max:255',
             'jabatan' => 'nullable|string|max:255',
@@ -100,10 +142,16 @@ class PengajarController extends Controller
             'jenis_kelamin' => 'nullable|in:Pria,Wanita',
             'kelas_id' => 'nullable|array',
             'kelas_id.*' => 'exists:kelas,id',
+            'presensi_shift_id' => [
+                'required',
+                'integer',
+                Rule::exists('presensi_shifts', 'id')->where(fn ($q) => $q->where('sekolah_id', $sekolahId)),
+            ],
         ]);
 
         $dataArr = [
             'name' => $request->name,
+            'presensi_shift_id' => $request->presensi_shift_id,
             'jabatan' => $request->jabatan,
             'nik' => $request->nik,
             'alamat' => $request->alamat,
@@ -114,7 +162,7 @@ class PengajarController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($pengajar->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajar->photo);
+                Storage::disk('public')->delete($pengajar->photo);
             }
             $dataArr['photo'] = $this->uploadImage($request->file('photo'), 'pengajar');
         }
@@ -128,23 +176,23 @@ class PengajarController extends Controller
 
         $pengajar->kelas()->sync($request->kelas_id ?? []);
 
-        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar berhasil diperbarui.');
+        return redirect()->route('admin.pengajar.index')->with('success', 'Data Guru berhasil diperbarui.');
     }
 
     public function destroy(Pengajar $pengajar)
     {
         abort_if($pengajar->sekolah_id !== auth()->user()->sekolah_id, 403);
-        
+
         $user = $pengajar->user;
         if ($pengajar->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($pengajar->photo);
+            Storage::disk('public')->delete($pengajar->photo);
         }
         $pengajar->delete();
-        
+
         if ($user) {
             $user->delete();
         }
 
-        return redirect()->route('admin.pengajar.index')->with('success', 'Data Pengajar dan akun login berhasil dihapus.');
+        return redirect()->route('admin.pengajar.index')->with('success', 'Data Guru dan akun login berhasil dihapus.');
     }
 }

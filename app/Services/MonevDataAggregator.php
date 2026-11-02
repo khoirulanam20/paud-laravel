@@ -58,8 +58,8 @@ class MonevDataAggregator
             }
 
             if ($p->matrikulasi) {
-                $label = ($p->matrikulasi->aspek ? $p->matrikulasi->aspek . ': ' : '')
-                    . $p->matrikulasi->indicator;
+                $label = ($p->matrikulasi->aspek ? $p->matrikulasi->aspek.': ' : '')
+                    .$p->matrikulasi->indicator;
                 $indikatorTercatat[$label] = true;
             }
 
@@ -88,7 +88,7 @@ class MonevDataAggregator
 
         return [
             'anak_name' => $anak->displayName(),
-            'kelas_name' => $anak->kelas?->name ?? '—',
+            'kelas_name' => $anak->kelas?->name ?? '',
             'usia' => $anak->age,
             'periode_label' => $this->periodeLabel($tahun, $bulan),
             'total_entri' => $pencapaians->count(),

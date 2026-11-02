@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
             showInputModal: false,
             showHistoryModal: false,
@@ -81,7 +81,8 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary">Cari</button>
+                    <x-toolbar.filter-icon label="Cari" />
+                    <x-filter-reset :href="route('adminkelas.kesehatan.index')" />
                 </form>
             </div>
 
@@ -166,8 +167,8 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <button type="button" @if($loop->first) data-tour="ak-kesehatan-action-riwayat" data-tour-open-modal="history" @endif @click="openHistory({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #E8F5F5;">Riwayat</button>
-                                        <button type="button" @if($loop->first) data-tour="ak-kesehatan-action-input" data-tour-open-modal="create" @endif @click="openInput({{ json_encode($anak) }})" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color: #1A6B6B; background: #D0E8E8;">Input Data</button>
+                                        <button type="button" @if($loop->first) data-tour="ak-kesehatan-action-riwayat" data-tour-open-modal="history" @endif @click="openHistory({{ json_encode($anak) }})" class="row-action-icon" style="color: #1A6B6B; background: #E8F5F5;" title="Riwayat" aria-label="Riwayat"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                                        <button type="button" @if($loop->first) data-tour="ak-kesehatan-action-input" data-tour-open-modal="create" @endif @click="openInput({{ json_encode($anak) }})" class="row-action-icon" style="color: #1A6B6B; background: #D0E8E8;" title="Input Data" aria-label="Input Data"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                     </div>
                                 </td>
                             </tr>
@@ -179,11 +180,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($anaks->hasPages())
-                <div class="px-6 py-4 border-t" style="border-color: rgba(0,0,0,0.06);">
-                    {{ $anaks->links() }}
-                </div>
-            @endif
+            <div class="px-6 py-4 border-t" style="border-color: rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$anaks" />
+                {{ $anaks->links() }}
+            </div>
         </div>
 
         <!-- INPUT MODAL -->

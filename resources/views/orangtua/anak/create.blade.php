@@ -10,20 +10,17 @@
         </div>
     </x-slot>
 
-    <div class="max-w-2xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8">
         <div class="card overflow-hidden">
-            <div class="px-6 py-5 border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF6F0;">
+            <div class="card-pad border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF6F0;">
                 <h3 class="section-title">Daftarkan Anak Baru</h3>
                 <p class="section-subtitle mt-1">
                     Data akan ditinjau Admin Sekolah sebelum anak aktif di sistem.
-                    @if($sekolah)
-                        Sekolah: <strong>{{ $sekolah->name }}</strong>
-                    @endif
                 </p>
             </div>
 
             @if($errors->any())
-                <div class="px-6 pt-5">
+                <div class="card-pad pt-5 pb-0">
                     <div class="alert-danger">
                         <ul class="list-disc pl-5 text-sm">
                             @foreach($errors->all() as $err)
@@ -34,8 +31,19 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('orangtua.anak.store') }}" enctype="multipart/form-data" class="px-6 py-5 space-y-5" data-tour="anak-create-form">
+            <form method="POST" action="{{ route('orangtua.anak.store') }}" enctype="multipart/form-data" class="card-pad space-y-5" data-tour="anak-create-form">
                 @csrf
+
+                <div>
+                    <label class="input-label" for="sekolah_id">Sekolah</label>
+                    <select id="sekolah_id" name="sekolah_id" class="input-field" required>
+                        <option value="">-- Pilih sekolah --</option>
+                        @foreach($sekolahs as $s)
+                            <option value="{{ $s->id }}" @selected(old('sekolah_id') == $s->id)>{{ $s->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('sekolah_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                </div>
 
                 <div>
                     <label class="input-label" for="name">Nama anak</label>

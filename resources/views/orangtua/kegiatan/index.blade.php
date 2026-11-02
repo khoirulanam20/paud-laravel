@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showDetailModal:false, showImageModal:false, activeImage:null, detailData:{},
+    <div class="app-page-shell" x-data="{ showDetailModal:false, showImageModal:false, activeImage:null, detailData:{},
             onCalClick(detail){
                 const p = detail.extendedProps || {};
                 if (p.mode !== 'readonly' || !p.detail) return;
@@ -18,6 +18,40 @@
                 this.showDetailModal = true;
             }
          }" @kegiatan-cal-click.window="onCalClick($event.detail)">
+
+        @if($anaks->count() > 1)
+            <div class="card mb-6">
+                <div class="card-pad border-b" style="border-color: rgba(0,0,0,0.06); background: #FAF9F6;">
+                    <form method="GET" class="filter-toolbar-inline">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <input type="hidden" name="month" value="{{ $month }}">
+                        <input type="hidden" name="day" value="{{ request('day') }}">
+                        <div class="filter-toolbar-field">
+                            <label class="input-label">Anak</label>
+                            <select name="anak_id" class="input-field w-full h-9 md:h-11">
+                                <option value="">Semua Anak</option>
+                                @foreach($anaks as $anak)
+                                    <option value="{{ $anak->id }}" @selected((int) $anakId === (int) $anak->id)>{{ $anak->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="filter-toolbar-field">
+                            <label class="input-label">Tampilan Agenda</label>
+                            <select name="semua_sekolah" class="input-field w-full h-9 md:h-11">
+                                <option value="0" @selected(! $semuaSekolah)>Kelas Anak Saja</option>
+                                <option value="1" @selected($semuaSekolah)>Semua Agenda Sekolah</option>
+                            </select>
+                        </div>
+                        <div class="filter-toolbar-actions">
+                            <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Terapkan" aria-label="Terapkan filter">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </button>
+                            <x-filter-reset :href="route('orangtua.kegiatan.index', ['year' => $year, 'month' => $month, 'day' => request('day')])" compact />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
 
         <div class="card overflow-hidden" data-tour="ortu-kegiatan-calendar">
             <div class="px-4 py-3 md:px-6 md:py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
@@ -29,7 +63,8 @@
         </div>
 
         {{-- DETAIL MODAL --}}
-        <div x-show="showDetailModal" class="modal-overlay" style="display:none;">
+        <template x-teleport="body">
+        <div x-show="showDetailModal" class="modal-overlay modal-overlay--blur" style="display:none;">
             <div x-show="showDetailModal" x-transition class="modal-box w-11/12 !max-w-none md:max-w-xl" @click.away="showDetailModal=false">
                 <div class="modal-header">
                     <h3 class="section-title">Detail: <span x-text="detailData.title"></span></h3>
@@ -90,7 +125,7 @@
                                     </div>
                                     <div>
                                         <p class="text-[10px] font-bold uppercase tracking-wider mb-1" style="color:#9E9790;">Aspek / Indikator</p>
-                                        <span class="font-semibold text-sm text-[#1A6B6B] block" x-text="pc.aspek || '—'"></span>
+                                        <span class="font-semibold text-sm text-[#1A6B6B] block" x-text="pc.aspek || ''"></span>
                                         <span x-show="pc.indicator" class="block mt-1 text-xs leading-relaxed break-words" style="color:#5A5A5A;"
                                             x-text="pc.indicator"></span>
                                     </div>
@@ -144,7 +179,7 @@
                                             </td>
                                             <td class="px-4 py-3 text-xs" style="color:#5A5A5A;">
                                                 <span class="font-semibold text-[#1A6B6B]"
-                                                    x-text="pc.aspek || '—'"></span>
+                                                    x-text="pc.aspek || ''"></span>
                                                 <span x-show="pc.indicator" class="block mt-0.5"
                                                     x-text="pc.indicator"></span>
                                             </td>
@@ -172,8 +207,10 @@
                 </div>
             </div>
         </div>
+        </template>
 
         {{-- Modal Preview Gambar --}}
+        <template x-teleport="body">
         <div x-show="showImageModal"
             class="modal-overlay modal-overlay--elevated modal-overlay--dark"
             style="display: none;" x-transition @keydown.escape.window="showImageModal = false">
@@ -190,5 +227,6 @@
                     class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
             </div>
         </div>
+        </template>
     </div>
 </x-app-layout>

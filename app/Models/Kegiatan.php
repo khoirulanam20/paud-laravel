@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -9,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Kegiatan extends Model
 {
+    use BelongsToSekolah, LogsScopedActivity;
+
     protected $fillable = [
         'sekolah_id',
         'pengajar_id',
@@ -21,6 +25,7 @@ class Kegiatan extends Model
     ];
 
     protected $casts = [
+        'date' => 'date',
         'photos' => 'array',
     ];
 

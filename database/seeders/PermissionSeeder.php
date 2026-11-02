@@ -6,6 +6,14 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
+/**
+ * Referensi  permission menu dan mapping hak akses per role.
+ *
+ *   php artisan db:seed --class=Database\Seeders\PermissionSeeder
+ *
+ * Atau via ReferenceSeeder / DevSetupSeeder.
+ * Risiko: syncPermissions() reset hak akses role ke default (custom permission hilang).
+ */
 class PermissionSeeder extends Seeder
 {
     public function run(): void
@@ -27,35 +35,47 @@ class PermissionSeeder extends Seeder
                 ['name' => 'menu.monev', 'label' => 'Monev'],
             ],
             'Lembaga & Guru' => [
-                ['name' => 'menu.data-pengajar', 'label' => 'Data Pengajar'],
+                ['name' => 'menu.data-pengajar', 'label' => 'Data Guru'],
                 ['name' => 'menu.presensi-guru', 'label' => 'Presensi Guru'],
+                ['name' => 'menu.pengaturan-presensi-guru', 'label' => 'Pengaturan Presensi Guru'],
+                ['name' => 'menu.monev-guru', 'label' => 'Monev Guru'],
+                ['name' => 'menu.monev-guru-kriteria', 'label' => 'Kriteria Monev Guru'],
                 ['name' => 'menu.sarana', 'label' => 'Sarana'],
                 ['name' => 'menu.menu-makanan', 'label' => 'Menu Makanan'],
             ],
             'Akuntansi' => [
-                ['name' => 'menu.akun-coa', 'label' => 'Akun (COA)'],
+                ['name' => 'menu.akun-coa', 'label' => 'Kode Rekening & Akun'],
                 ['name' => 'menu.cashflow', 'label' => 'Cashflow'],
+                ['name' => 'menu.tabungan-investasi', 'label' => 'Tabungan & Investasi'],
                 ['name' => 'menu.jurnal-umum', 'label' => 'Jurnal Umum'],
-                ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
+                ['name' => 'menu.laporan-keuangan', 'label' => 'Laporan Keuangan'],
+            ],
+            'RKAS' => [
+                ['name' => 'menu.sumber-dana', 'label' => 'Sumber Dana'],
+                ['name' => 'menu.rkas', 'label' => 'RKAS'],
+                ['name' => 'menu.laporan-rkas', 'label' => 'Laporan RKAS'],
             ],
             'Biaya & Pembayaran' => [
                 ['name' => 'menu.biaya-harian', 'label' => 'Biaya Bulanan'],
                 ['name' => 'menu.diskon', 'label' => 'Diskon'],
                 ['name' => 'menu.rekap-pembayaran', 'label' => 'Rekap Pembayaran'],
-            ],
-            'Laporan Keuangan' => [
-                ['name' => 'menu.arus-kas', 'label' => 'Arus Kas (PSAK 2)'],
-                ['name' => 'menu.neraca', 'label' => 'Neraca'],
-                ['name' => 'menu.laba-rugi', 'label' => 'Laba Rugi'],
+                ['name' => 'menu.gaji-guru', 'label' => 'Gaji Guru'],
             ],
             'Masukan & Komunikasi' => [
                 ['name' => 'menu.kritik-saran', 'label' => 'Kritik & Saran'],
+                ['name' => 'menu.pengumuman', 'label' => 'Pengumuman'],
                 ['name' => 'menu.chat-orangtua', 'label' => 'Chat Orang Tua'],
-                ['name' => 'menu.pengaturan-ai', 'label' => 'Pengaturan AI'],
             ],
-            'Manajemen Akses' => [
+            'Pengaturan' => [
                 ['name' => 'menu.role', 'label' => 'Role'],
                 ['name' => 'menu.pengguna', 'label' => 'Pengguna'],
+                ['name' => 'menu.log-aktivitas', 'label' => 'Log Aktivitas'],
+            ],
+            'Pengaturan Akuntansi' => [
+                ['name' => 'menu.setting-akuntansi', 'label' => 'Setting Akuntansi'],
+            ],
+            'Pengaturan AI' => [
+                ['name' => 'menu.pengaturan-ai', 'label' => 'Pengaturan AI'],
             ],
         ];
 
@@ -73,9 +93,23 @@ class PermissionSeeder extends Seeder
 
         // Mapping hak akses per role default (sesuai akses sebelum RBAC)
         $rolePermissions = [
-            'Lembaga' => $allPermissionNames, // Super admin: akses semua
-            'Admin Sekolah' => $allPermissionNames, // Full akses semua menu admin
-            'Wali Kelas' => $allPermissionNames, // Share route dgn Admin Sekolah via middleware role:Admin Sekolah|Wali Kelas
+            'Superadmin' => [],
+            'Lembaga' => $allPermissionNames,
+            'Admin Sekolah' => $allPermissionNames,
+            'Wali Kelas' => [
+                'menu.matrikulasi',
+                'menu.agenda-belajar',
+                'menu.kegiatan-rutin',
+                'menu.pencapaian-siswa',
+                'menu.presensi-siswa',
+                'menu.kesehatan-siswa',
+                'menu.monev',
+                'menu.kritik-saran',
+                'menu.pengumuman',
+                'menu.chat-orangtua',
+                'menu.pengaturan-ai',
+                'menu.rekap-pembayaran',
+            ],
             'Pengajar' => [
                 'menu.kegiatan-rutin',
                 'menu.agenda-belajar',

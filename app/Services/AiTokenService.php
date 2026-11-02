@@ -40,12 +40,28 @@ class AiTokenService
         return SekolahAiSetting::query()->firstOrCreate(
             ['sekolah_id' => $sekolahId],
             [
+                'chat_orangtua_enabled' => true,
                 'fallback_monev' => null,
                 'fallback_pencapaian' => null,
                 'fallback_chat' => null,
                 'fallback_persona' => null,
             ]
         );
+    }
+
+    public function isChatOrangTuaEnabled(int $sekolahId): bool
+    {
+        $settings = SekolahAiSetting::query()->where('sekolah_id', $sekolahId)->first();
+
+        return $settings === null || $settings->chat_orangtua_enabled;
+    }
+
+    public function updateChatOrangTuaEnabled(int $sekolahId, bool $enabled): SekolahAiSetting
+    {
+        $settings = $this->resolveSettings($sekolahId);
+        $settings->update(['chat_orangtua_enabled' => $enabled]);
+
+        return $settings->fresh();
     }
 
     public function updateFallbacks(int $sekolahId, array $data): SekolahAiSetting

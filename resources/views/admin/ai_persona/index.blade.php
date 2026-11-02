@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
             activeTab: @js($activeTab),
             tokenBalance: @js($tokenBalance),
@@ -95,6 +95,7 @@
                 }
             }
          }">
+        <x-settings-tabs />
 
         @if(session('success'))
             <div class="alert-success mb-5">
@@ -142,7 +143,7 @@
             </div>
             <div>
                 <div class="font-bold text-sm" style="color:#2C2C2C;">
-                    {{ $aiConfigured ? 'AI Aktif — siap generate persona' : 'AI Belum Dikonfigurasi' }}
+                    {{ $aiConfigured ? 'AI Aktif  siap generate persona' : 'AI Belum Dikonfigurasi' }}
                 </div>
                 <div class="text-xs mt-1" style="color:#6B6560;">
                     Setiap tab punya persona sendiri untuk fungsi AI berbeda. Nonaktifkan persona jika ingin pakai default sistem.
@@ -150,21 +151,23 @@
             </div>
         </div>
 
-        <div data-tour="admin-ai-persona-tabs" class="flex flex-wrap gap-2 mb-6">
-            @foreach(AiPersonaScope::labels() as $scope => $label)
-                <a href="{{ route('admin.ai-persona.index', ['tab' => $scope]) }}"
-                   class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === $scope ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
-                   @if($activeTab === $scope) style="background:#1A6B6B" @endif>
-                    {{ $label }}
-                </a>
-            @endforeach
-            @if(auth()->user()->hasRole('Admin Sekolah'))
-                <a href="{{ route('admin.ai-persona.index', ['tab' => AiPersonaScope::TAB_LOG_AI]) }}"
-                   class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === AiPersonaScope::TAB_LOG_AI ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
-                   @if($activeTab === AiPersonaScope::TAB_LOG_AI) style="background:#1A6B6B" @endif>
-                    Log AI
-                </a>
-            @endif
+        <div data-tour="admin-ai-persona-tabs" class="card p-4 mb-5">
+            <div class="flex flex-wrap gap-2">
+                @foreach(AiPersonaScope::labels() as $scope => $label)
+                    <a href="{{ route('admin.ai-persona.index', ['tab' => $scope]) }}"
+                       class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === $scope ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
+                       @if($activeTab === $scope) style="background:#1A6B6B" @endif>
+                        {{ $label }}
+                    </a>
+                @endforeach
+                @if(auth()->user()->hasRole('Admin Sekolah'))
+                    <a href="{{ route('admin.ai-persona.index', ['tab' => AiPersonaScope::TAB_LOG_AI]) }}"
+                       class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all {{ $activeTab === AiPersonaScope::TAB_LOG_AI ? 'text-white border-transparent shadow-md' : 'text-[#6B6560] border-black/10 bg-white hover:bg-black/5' }}"
+                       @if($activeTab === AiPersonaScope::TAB_LOG_AI) style="background:#1A6B6B" @endif>
+                        Log AI
+                    </a>
+                @endif
+            </div>
         </div>
 
         @if(auth()->user()->hasRole('Admin Sekolah') && $activeTab === AiPersonaScope::TAB_LOG_AI)
@@ -192,8 +195,8 @@
                                         <td class="px-4 py-3 font-semibold" style="color:{{ $tx->amount >= 0 ? '#1A6B6B' : '#DC2626' }};">
                                             {{ $tx->amount >= 0 ? '+' : '' }}{{ number_format($tx->amount) }}
                                         </td>
-                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->description ?? '—' }}</td>
-                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->createdBy?->name ?? '—' }}</td>
+                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->description ?? '' }}</td>
+                                        <td class="px-6 py-3 text-xs" style="color:#6B6560;">{{ $tx->createdBy?->name ?? '' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -205,11 +208,10 @@
                             </tbody>
                         </table>
                     </div>
-                    @if(isset($tokenTransactions) && $tokenTransactions->hasPages())
-                        <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
-                            {{ $tokenTransactions->appends(['tab' => AiPersonaScope::TAB_LOG_AI])->links() }}
-                        </div>
-                    @endif
+                    <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                        <x-per-page-selector :paginator="$tokenTransactions" />
+                        {{ $tokenTransactions->appends(['tab' => AiPersonaScope::TAB_LOG_AI])->links() }}
+                    </div>
                 </div>
         @endif
 
@@ -229,7 +231,7 @@
 
                 <div class="card overflow-hidden mb-6">
                     <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                        <h3 class="section-title">Generate — {{ AiPersonaScope::label($scope) }}</h3>
+                        <h3 class="section-title">Generate  {{ AiPersonaScope::label($scope) }}</h3>
                         <p class="section-subtitle mt-1">{{ AiPersonaScope::generateContext($scope) }}</p>
                     </div>
                     <div class="px-6 py-6 space-y-4">
@@ -243,7 +245,7 @@
                             :disabled="generateLoading['{{ $scope }}'] || {{ $aiConfigured ? 'false' : 'true' }} || tokenBalance < 1"
                             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all disabled:opacity-50"
                             style="color:#1A6B6B; background:#D0E8E8; border-color:#1A6B6B33;">
-                            <span x-show="!generateLoading['{{ $scope }}']">Generate dengan AI (1 token)</span>
+                            <span x-show="!generateLoading['{{ $scope }}']">Generate dengan AI</span>
                             <span x-show="generateLoading['{{ $scope }}']">Men-generate...</span>
                         </button>
                         <p class="text-xs" style="color:#DC2626;" x-show="tokenBalance < 1" x-cloak>Token habis. Minta lembaga untuk menambah token.</p>
@@ -287,6 +289,25 @@
                 </div>
 
                 @if($scope === AiPersonaScope::CHAT_ORANGTUA)
+                    <div class="card overflow-hidden mb-6">
+                        <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
+                            <h3 class="section-title">Aktifkan Chat Orang Tua</h3>
+                            <p class="section-subtitle mt-1">Nonaktifkan untuk menyembunyikan menu chat wali murid dan memblokir pengiriman pesan baru.</p>
+                        </div>
+                        <form action="{{ route('admin.ai-persona.chat-enabled.update') }}" method="POST">
+                            @csrf
+                            <div class="px-6 py-6 flex items-center gap-3">
+                                <input type="hidden" name="chat_orangtua_enabled" value="0">
+                                <input type="checkbox" name="chat_orangtua_enabled" value="1" id="chat_orangtua_enabled"
+                                    class="rounded border-gray-300 text-[#1A6B6B] focus:ring-[#1A6B6B]"
+                                    {{ old('chat_orangtua_enabled', $aiSettings->chat_orangtua_enabled ?? true) ? 'checked' : '' }}>
+                                <label for="chat_orangtua_enabled" class="text-sm font-medium" style="color:#2C2C2C;">Chat orang tua aktif</label>
+                            </div>
+                            <div class="px-6 pb-6 flex justify-end border-t pt-5" style="border-color:rgba(0,0,0,0.06);">
+                                <button type="submit" class="btn-primary">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
                     <div class="card overflow-hidden mb-6">
                         <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
                             <h3 class="section-title">Akses Data Chat</h3>
@@ -351,7 +372,7 @@
 
                 <div class="card overflow-hidden">
                     <div class="px-6 py-4 border-b" style="border-color:rgba(0,0,0,0.06);">
-                        <h3 class="section-title">Pengaturan — {{ AiPersonaScope::label($scope) }}</h3>
+                        <h3 class="section-title">Pengaturan  {{ AiPersonaScope::label($scope) }}</h3>
                     </div>
                     <form data-tour="admin-ai-persona-form" action="{{ route('admin.ai-persona.update') }}" method="POST">
                         @csrf
@@ -389,7 +410,7 @@
                                 <div>
                                     <label class="input-label">4. Jenis Kelamin</label>
                                     <select name="gender" class="input-field" x-model="fields['{{ $scope }}'].gender">
-                                        <option value="">— Pilih —</option>
+                                        <option value=""> Pilih </option>
                                         <option value="perempuan">Perempuan</option>
                                         <option value="laki_laki">Laki-laki</option>
                                         <option value="netral">Netral</option>

@@ -34,7 +34,7 @@ final class MonevSummaryPresenter
         $parsed = [];
 
         foreach ($markers as $key => [$tag, $title, $icon]) {
-            $pattern = '/\[' . preg_quote($tag, '/') . '\]\s*(.*?)(?=\[(?:GAMBARAN_UMUM|KEKUATAN|PERHATIAN|REKOMENDASI)\]|$)/s';
+            $pattern = '/\['.preg_quote($tag, '/').'\]\s*(.*?)(?=\[(?:GAMBARAN_UMUM|KEKUATAN|PERHATIAN|REKOMENDASI)\]|$)/s';
             if (preg_match($pattern, $text, $matches)) {
                 $content = trim($matches[1]);
                 if ($content !== '') {
@@ -62,7 +62,7 @@ final class MonevSummaryPresenter
         foreach ($paragraphs as $i => $paragraph) {
             [$title, $icon] = $fallbackTitles[$i] ?? ['Ringkasan', 'chart'];
             $parsed[] = [
-                'key' => 'section_' . $i,
+                'key' => 'section_'.$i,
                 'title' => $title,
                 'icon' => $icon,
                 'content' => $paragraph,
@@ -208,7 +208,7 @@ final class MonevSummaryPresenter
             $i++;
         }
 
-        return 'conic-gradient(from -90deg, ' . implode(', ', $parts) . ')';
+        return 'conic-gradient(from -90deg, '.implode(', ', $parts).')';
     }
 
     /**
@@ -291,7 +291,7 @@ final class MonevSummaryPresenter
             }
 
             if ($others !== []) {
-                $points[] = 'Distribusi capaian lainnya: ' . implode(', ', $others) . '.';
+                $points[] = 'Distribusi capaian lainnya: '.implode(', ', $others).'.';
             }
         }
 

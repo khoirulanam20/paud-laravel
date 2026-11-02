@@ -3,16 +3,20 @@
 namespace App\Http\Controllers\Lembaga;
 
 use App\Http\Controllers\Controller;
+use App\Models\KomponenGaji;
+use App\Models\MonevGuruKriteria;
 use App\Models\Sekolah;
 use App\Models\SkalaPencapaian;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 
 class SekolahController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $lembaga_id = auth()->user()->lembaga_id;
-        $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->latest()->paginate(10);
+        $sekolahs = Sekolah::where('lembaga_id', $lembaga_id)->latest()->paginate(PaginationPerPage::resolve($request))->withQueryString();
+
         return view('lembaga.sekolah.index', compact('sekolahs'));
     }
 
@@ -29,9 +33,12 @@ class SekolahController extends Controller
             'name' => $request->name,
             'address' => $request->address,
             'phone' => $request->phone,
+            'status' => Sekolah::STATUS_ACTIVE,
         ]);
 
         SkalaPencapaian::seedDefaultsForSekolah($sekolah->id);
+        MonevGuruKriteria::seedDefaultsForSekolah($sekolah->id);
+        KomponenGaji::seedDefaultsForSekolah($sekolah->id);
 
         return redirect()->route('lembaga.sekolah.index')->with('success', 'Sekolah berhasil ditambahkan.');
     }
@@ -55,6 +62,7 @@ class SekolahController extends Controller
     {
         abort_if($sekolah->lembaga_id !== auth()->user()->lembaga_id, 403);
         $sekolah->delete();
+
         return redirect()->route('lembaga.sekolah.index')->with('success', 'Sekolah berhasil dihapus.');
     }
 }

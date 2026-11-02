@@ -4,8 +4,11 @@ namespace App\Http\Controllers\AdminKelas;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
+use App\Models\Kelas;
 use App\Models\Kesehatan;
 use App\Models\Pengajar;
+use App\Support\PaginationPerPage;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class KesehatanController extends Controller
@@ -14,17 +17,17 @@ class KesehatanController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelasIds = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
-        $query = Anak::whereIn('kelas_id', $kelasIds)->with(['kelas', 'kesehatans' => function($q) {
+        $query = Anak::whereIn('kelas_id', $kelasIds)->with(['kelas', 'kesehatans' => function ($q) {
             $q->latest('tanggal_pemeriksaan')->limit(1);
         }]);
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
-        $anaks = $query->orderBy('name')->paginate(20);
+        $anaks = $query->orderBy('name')->paginate(PaginationPerPage::resolve($request))->withQueryString();
 
         return view('adminkelas.kesehatan.index', compact('anaks'));
     }
@@ -55,17 +58,18 @@ class KesehatanController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelasIds = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
-        if (!in_array($anak->kelas_id, $kelasIds)) {
+        if (! in_array($anak->kelas_id, $kelasIds)) {
             abort(403);
         }
 
         $histories = Kesehatan::where('anak_id', $anak->id)
             ->orderBy('tanggal_pemeriksaan', 'desc')
             ->get()
-            ->map(function($q) {
-                $tanggal = \Carbon\Carbon::parse($q->tanggal_pemeriksaan);
+            ->map(function ($q) {
+                $tanggal = Carbon::parse($q->tanggal_pemeriksaan);
+
                 return [
                     'id' => $q->id,
                     'tanggal_pemeriksaan' => $tanggal->format('Y-m-d'),
@@ -87,9 +91,9 @@ class KesehatanController extends Controller
     {
         $user = auth()->user();
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
-        $kelasIds = \App\Models\Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
+        $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
-        if (!in_array($kesehatan->anak->kelas_id, $kelasIds)) {
+        if (! in_array($kesehatan->anak->kelas_id, $kelasIds)) {
             abort(403);
         }
 

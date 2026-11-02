@@ -2,20 +2,32 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SekolahAiSetting extends Model
 {
+    use BelongsToSekolah, LogsScopedActivity;
+
     public const DEFAULT_FALLBACK = 'Maaf, fitur ini sedang terbatas.';
 
     protected $fillable = [
         'sekolah_id',
+        'chat_orangtua_enabled',
         'fallback_monev',
         'fallback_pencapaian',
         'fallback_chat',
         'fallback_persona',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'chat_orangtua_enabled' => 'boolean',
+        ];
+    }
 
     public function sekolah(): BelongsTo
     {

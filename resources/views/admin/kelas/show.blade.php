@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" data-tour="kelas-siswa-list">
+    <div class="app-page-shell" data-tour="kelas-siswa-list">
         @include('admin.kelas.partials.kelas-siswa-panels')
     </div>
 </x-app-layout>

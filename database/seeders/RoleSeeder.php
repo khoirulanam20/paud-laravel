@@ -2,24 +2,33 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use App\Models\User;
 use App\Models\Lembaga;
 use App\Models\Sekolah;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
+/**
+ * Referensi  role default, lembaga/sekolah dasar, dan user @example.com.
+ *
+ *   php artisan db:seed --class=Database\Seeders\RoleSeeder
+ *
+ * Atau via ReferenceSeeder / DevSetupSeeder.
+ * Additive (firstOrCreate)  tidak menghapus data, tapi bisa menambah entitas demo jika belum ada.
+ */
 class RoleSeeder extends Seeder
 {
     public function run(): void
     {
         // Define Roles
         $roles = [
+            'Superadmin',
             'Lembaga',
             'Admin Sekolah',
             'Wali Kelas',
             'Pengajar',
-            'Orang Tua'
+            'Orang Tua',
         ];
 
         foreach ($roles as $role) {
@@ -30,25 +39,33 @@ class RoleSeeder extends Seeder
         $lembaga = Lembaga::firstOrCreate([
             'name' => 'Yayasan Pendidikan Anak Bangsa',
             'address' => 'Jl. Pendidikan No. 1, Jakarta',
-            'phone' => '021-12345678'
+            'phone' => '021-12345678',
         ]);
 
         $sekolah = Sekolah::firstOrCreate([
             'lembaga_id' => $lembaga->id,
             'name' => 'PAUD Bintang Kecil',
             'address' => 'Jl. Merdeka No. 10, Jakarta',
-            'phone' => '021-87654321'
+            'phone' => '021-87654321',
         ]);
 
         // Seed 1 User per Role
         $users = [
+            [
+                'name' => 'Super Admin',
+                'email' => 'superadmin@example.com',
+                'password' => Hash::make('password'),
+                'lembaga_id' => null,
+                'sekolah_id' => null,
+                'role' => 'Superadmin',
+            ],
             [
                 'name' => 'Admin Lembaga',
                 'email' => 'lembaga@example.com',
                 'password' => Hash::make('password'),
                 'lembaga_id' => $lembaga->id,
                 'sekolah_id' => null,
-                'role' => 'Lembaga'
+                'role' => 'Lembaga',
             ],
             [
                 'name' => 'Admin Sekolah',
@@ -56,7 +73,7 @@ class RoleSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'lembaga_id' => $lembaga->id,
                 'sekolah_id' => $sekolah->id,
-                'role' => 'Admin Sekolah'
+                'role' => 'Admin Sekolah',
             ],
             [
                 'name' => 'Pengajar Budi',
@@ -64,7 +81,7 @@ class RoleSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'lembaga_id' => null,
                 'sekolah_id' => $sekolah->id,
-                'role' => 'Pengajar'
+                'role' => 'Pengajar',
             ],
             [
                 'name' => 'Orang Tua Siti',
@@ -72,8 +89,8 @@ class RoleSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'lembaga_id' => null,
                 'sekolah_id' => $sekolah->id,
-                'role' => 'Orang Tua'
-            ]
+                'role' => 'Orang Tua',
+            ],
         ];
 
         foreach ($users as $userData) {

@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
 use App\Models\Anak;
 use App\Models\Pencapaian;
 use App\Models\SkalaPencapaian;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class SkalaPencapaianController extends Controller
 {
+    use DownloadsExcel;
     private function sekolahId(): ?int
     {
         $id = auth()->user()->sekolah_id;
@@ -18,18 +21,61 @@ class SkalaPencapaianController extends Controller
         return $id !== null ? (int) $id : null;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $sekolah_id = $this->sekolahId();
         abort_if($sekolah_id === null, 403, 'Akun tidak terikat sekolah.');
 
-        $skalas = SkalaPencapaian::query()
+        $query = SkalaPencapaian::query()
+            ->where('sekolah_id', $sekolah_id)
+            ->orderBy('sort_order')
+            ->orderBy('code');
+
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', '%'.$search.'%')
+                    ->orWhere('label', 'like', '%'.$search.'%');
+            });
+        }
+
+        $status = (string) $request->input('status', '');
+        if ($status === 'aktif') {
+            $query->where('is_active', true);
+        } elseif ($status === 'nonaktif') {
+            $query->where('is_active', false);
+        }
+
+        $skalas = $query->paginate(PaginationPerPage::resolve($request))->withQueryString();
+
+        return view('admin.skala-pencapaian.index', compact('skalas'));
+    }
+
+    public function export(Request $request)
+    {
+        $sekolah_id = $this->sekolahId();
+        abort_if($sekolah_id === null, 403);
+
+        $rows = SkalaPencapaian::query()
             ->where('sekolah_id', $sekolah_id)
             ->orderBy('sort_order')
             ->orderBy('code')
-            ->paginate(20);
+            ->get()
+            ->map(fn (SkalaPencapaian $s) => [
+                $s->code,
+                $s->label,
+                $s->color ?? '-',
+                $s->sort_order,
+                $s->is_active ? 'Aktif' : 'Nonaktif',
+            ])
+            ->all();
 
-        return view('admin.skala-pencapaian.index', compact('skalas'));
+        return $this->downloadExcel(
+            ['Kode', 'Label', 'Warna', 'Urutan', 'Status'],
+            $rows,
+            'skala-capaian-'.now()->format('Y-m-d').'.xlsx',
+            'Skala Capaian'
+        );
     }
 
     public function store(Request $request)

@@ -30,6 +30,7 @@ class TambahAnakTest extends TestCase
         $fixtures = $this->createOrtuWithApprovedAnak();
 
         $response = $this->actingAs($fixtures['ortu'])->post(route('orangtua.anak.store'), [
+            'sekolah_id' => $fixtures['sekolah']->id,
             'name' => 'Anak Kedua',
             'dob' => '2021-03-10',
             'catatan_ortu' => 'Catatan uji anak kedua.',
@@ -90,7 +91,7 @@ class TambahAnakTest extends TestCase
         $ortu = User::factory()->create([
             'email' => 'ortu-tambah-anak@test.com',
             'password' => Hash::make('password'),
-            'sekolah_id' => $sekolah->id,
+            'sekolah_id' => null,
             'name' => 'Budi Ortu',
         ]);
         $ortu->assignRole('Orang Tua');

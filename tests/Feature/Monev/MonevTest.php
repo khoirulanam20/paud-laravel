@@ -403,7 +403,7 @@ AI);
 
         $ortuUser = User::factory()->create([
             'email' => 'ortu-monev@test.com',
-            'sekolah_id' => $f['sekolah']->id,
+            'sekolah_id' => null,
         ]);
         $ortuUser->assignRole('Orang Tua');
 
@@ -439,7 +439,7 @@ AI);
 
         $ortuUser = User::factory()->create([
             'email' => 'ortu-other@test.com',
-            'sekolah_id' => $f['sekolah']->id,
+            'sekolah_id' => null,
         ]);
         $ortuUser->assignRole('Orang Tua');
 
@@ -788,7 +788,7 @@ TEXT);
 
         $ortuUser = User::factory()->create([
             'email' => 'ortu-pdf@test.com',
-            'sekolah_id' => $f['sekolah']->id,
+            'sekolah_id' => null,
         ]);
         $ortuUser->assignRole('Orang Tua');
         $f['anak']->update(['user_id' => $ortuUser->id]);

@@ -13,9 +13,9 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto space-y-6" x-data="{ showImageModal: false, activeImage: '' }">
+    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto space-y-6" x-data="{ showImageModal: false, activeImage: '', activeDownloadUrl: null }">
         <div class="card overflow-hidden" data-tour="kritik-message">
-            <div class="px-6 py-4 border-b flex flex-wrap items-center justify-between gap-2" style="border-color:rgba(0,0,0,0.06);">
+            <div class="card-pad border-b page-toolbar" style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wide" style="color:#9E9790;">{{ $kritik_saran->created_at->translatedFormat('d F Y, H:i') }}</p>
                     <p class="text-sm mt-1" style="color:#6B6560;">
@@ -24,12 +24,12 @@
                         @endif
                     </p>
                 </div>
-                <span class="badge badge-teal">{{ $kritik_saran->status ?? '—' }}</span>
+                <span class="badge badge-teal">{{ $kritik_saran->status ?? '' }}</span>
             </div>
-            <div class="px-6 py-5">
+            <div class="card-body-pad">
                 <div class="flex flex-col sm:flex-row gap-5">
                     @if($kritik_saran->photo)
-                        <div class="w-full sm:w-48 shrink-0 rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($kritik_saran->photo) }}'; showImageModal = true">
+                        <div class="w-full sm:w-48 shrink-0 rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer" @click="activeImage = '{{ Storage::url($kritik_saran->photo) }}'; activeDownloadUrl = '{{ route('orangtua.kritik-saran.photo.download', $kritik_saran) }}'; showImageModal = true">
                             <img src="{{ Storage::url($kritik_saran->photo) }}" class="w-full h-48 sm:h-32 object-cover hover:scale-105 transition duration-300">
                         </div>
                     @endif
@@ -42,14 +42,14 @@
         </div>
 
         <div class="card overflow-hidden border-2" style="border-color:#1A6B6B; background: linear-gradient(180deg, #F0FAFA 0%, #fff 48%);" data-tour="kritik-response">
-            <div class="px-6 py-4 border-b" style="border-color:rgba(26,107,107,0.15); background:rgba(26,107,107,0.06);">
+            <div class="card-pad border-b" style="border-color:rgba(26,107,107,0.15); background:rgba(26,107,107,0.06);">
                 <h3 class="section-title flex items-center gap-2">
                     <svg class="h-5 w-5 shrink-0" style="color:#1A6B6B;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                     Tanggapan sekolah
                 </h3>
                 <p class="section-subtitle mt-1">Umpan balik dari admin sekolah untuk masukan Anda.</p>
             </div>
-            <div class="px-6 py-5">
+            <div class="card-body-pad">
                 @if(filled($kritik_saran->umpan_balik))
                     <p class="text-sm leading-relaxed whitespace-pre-wrap" style="color:#2C2C2C;">{{ $kritik_saran->umpan_balik }}</p>
                 @else
@@ -58,19 +58,6 @@
             </div>
         </div>
 
-        {{-- Modal Preview Gambar --}}
-        <div x-show="showImageModal" 
-             class="modal-overlay modal-overlay--elevated modal-overlay--dark"
-             style="display: none;"
-             x-transition
-             @keydown.escape.window="showImageModal = false">
-            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
-                <button class="absolute -top-12 right-0 text-white hover:text-gray-300 transition flex items-center gap-2" @click="showImageModal = false">
-                    <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <img :src="activeImage" class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
-            </div>
-        </div>
+        <x-image-lightbox />
     </div>
 </x-app-layout>

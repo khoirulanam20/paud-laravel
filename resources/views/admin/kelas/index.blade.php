@@ -5,7 +5,7 @@
             <h2 class="font-bold text-xl" style="color: #2C2C2C;">Kelola Kelas & Ruang Lingkup</h2>
         </div>
     </x-slot>
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{
+    <div class="app-page-shell" x-data="{
         showCreateModal:false,
         showEditModal:false,
         showDeleteModal:false,
@@ -41,9 +41,12 @@
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
+            <div class="card-pad page-toolbar border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Daftar Kelas</h3><p class="section-subtitle">Struktur pembagian kelas beserta admin pengelolanya</p></div>
-                <button data-tour="admin-kelas-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>Buat Kelas Baru</button>
+                <div class="toolbar-actions">
+                    <x-export-excel route="admin.kelas.export" />
+                    <button data-tour="admin-kelas-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary toolbar-primary shrink-0 h-9 w-9 md:h-11 md:w-11 p-0" title="Buat Kelas Baru" aria-label="Buat Kelas Baru"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg></button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
@@ -76,9 +79,9 @@
                                         'pengajar_ids' => $k->pengajars->pluck('id')->toArray(),
                                     ];
                                 @endphp
-                                <button type="button" @if($loop->first) data-tour="admin-kelas-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js(route('admin.kelas.siswa-modal', $k)), @js($k->name))" class="text-xs font-semibold px-3 py-1.5 rounded-lg transition" style="color:#1A6B6B;background:#E8F5F5;">Detail</button>
-                                <button type="button" @if($loop->first) data-tour="admin-kelas-action-edit" data-tour-open-modal="edit" @endif @click="openEdit(@js($kelasEditPayload))" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                <button @if($loop->first) data-tour="admin-kelas-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.kelas.destroy', $k->id) }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                <button type="button" @if($loop->first) data-tour="admin-kelas-action-detail" data-tour-open-modal="detail" @endif @click="openDetail(@js(route('admin.kelas.siswa-modal', $k)), @js($k->name))" class="row-action-icon" style="color:#1A6B6B;background:#E8F5F5;" title="Detail" aria-label="Detail"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                                <button type="button" @if($loop->first) data-tour="admin-kelas-action-edit" data-tour-open-modal="edit" @endif @click="openEdit(@js($kelasEditPayload))" class="row-action-icon" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                                <button @if($loop->first) data-tour="admin-kelas-action-delete" data-tour-demo-action="delete" @endif @click="openDelete('{{ route('admin.kelas.destroy', $k->id) }}')" class="row-action-icon" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                             </div></td>
                         </tr>
                         @empty
@@ -87,7 +90,10 @@
                     </tbody>
                 </table>
             </div>
-            @if($kelasList->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $kelasList->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$kelasList" />
+                {{ $kelasList->links() }}
+            </div>
         </div>
 
         <!-- CREATE MODAL -->
@@ -143,7 +149,7 @@
                         <div>
                             <label class="input-label">Tentukan Wali Kelas</label>
                             <select name="wali_kelas_id" x-model="editData.wali_id" class="input-field @error('wali_kelas_id') border-red-500 @enderror">
-                                <option value="">— Pilih Pengajar —</option>
+                                <option value=""> Pilih Guru </option>
                                 @foreach($pengajars as $p)
                                     <template x-if="editData.pengajar_ids && editData.pengajar_ids.includes({{ $p->id }})">
                                         <option value="{{ $p->id }}">{{ $p->name }}</option>
@@ -152,10 +158,10 @@
                             </select>
                             @error('wali_kelas_id')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                             <div class="mt-1.5 p-2 rounded-lg bg-teal-50 border border-teal-100" x-show="editData.pengajar_ids && editData.pengajar_ids.length > 0">
-                                <p class="text-[10px] text-teal-800">Hanya menampilkan pengajar yang terdaftar di kelas ini.</p>
+                                <p class="text-[10px] text-teal-800">Hanya menampilkan guru yang terdaftar di kelas ini.</p>
                             </div>
                             <div class="mt-1.5 p-2 rounded-lg bg-red-50 border border-red-100" x-show="!editData.pengajar_ids || editData.pengajar_ids.length === 0">
-                                <p class="text-[10px] text-red-700">Belum ada pengajar di kelas ini. Tambahkan pengajar di menu <b>Data Pengajar</b> dulu.</p>
+                                <p class="text-[10px] text-red-700">Belum ada guru di kelas ini. Tambahkan guru di menu <b>Data Guru</b> dulu.</p>
                             </div>
                         </div>
 

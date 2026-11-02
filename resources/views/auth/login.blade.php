@@ -1,39 +1,68 @@
 <x-guest-layout>
     <x-auth-session-status class="mb-5" :status="session('status')" />
-    
-    <h2 class="text-2xl font-bold mb-1" style="color: #2C2C2C;">Selamat Datang</h2>
-    <p class="text-sm mb-6" style="color: #9E9790;">Masuk ke akun Anda untuk melanjutkan</p>
+
+    <div class="mb-6">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-mint text-forest-deep text-xs font-semibold tracking-wide uppercase">
+            <span class="material-symbols-outlined text-[15px]">login</span>
+            Portal Masuk
+        </span>
+        <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-text-primary tracking-tight mt-2.5">
+            Selamat datang kembali
+        </h1>
+        <p class="text-sm text-text-secondary mt-1.5 leading-relaxed">
+            Masuk ke akun Anda untuk mengelola daycare atau memantau kegiatan ananda.
+        </p>
+    </div>
 
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
         <div>
             <x-input-label for="email" :value="__('Alamat Email')" />
-            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="email@contoh.com" />
+            <x-auth-field-wrap icon="fa-solid fa-envelope">
+                <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="email@contoh.com" />
+            </x-auth-field-wrap>
             <x-input-error :messages="$errors->get('email')" class="mt-1" />
         </div>
 
         <div>
             <x-input-label for="password" :value="__('Kata Sandi')" />
-            <x-text-input id="password" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+            <x-auth-field-wrap icon="fa-solid fa-lock">
+                <x-text-input id="password" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+            </x-auth-field-wrap>
             <x-input-error :messages="$errors->get('password')" class="mt-1" />
         </div>
 
-        <div class="flex items-center justify-between">
-            <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
-                <input id="remember_me" type="checkbox" class="rounded text-teal-600 border-gray-300 shadow-sm" name="remember" style="accent-color: #1A6B6B;">
-                <span class="text-sm" style="color: #6B6560;">Ingat Saya</span>
+        <div class="flex items-center justify-between gap-3 flex-wrap pt-1 pb-1">
+            <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer select-none">
+                <input id="remember_me" type="checkbox" class="rounded-md border-border-subtle text-forest-deep focus:ring-forest-deep/20" name="remember">
+                <span class="text-sm text-text-secondary">Ingat saya</span>
             </label>
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" class="text-sm font-medium hover:underline" style="color: #1A6B6B;">Lupa password?</a>
+                <a href="{{ route('password.request') }}" class="text-sm font-semibold text-forest-deep hover:underline">
+                    Lupa kata sandi?
+                </a>
             @endif
         </div>
 
-        <x-primary-button class="w-full justify-center py-3">
-            Masuk ke Sistem
-        </x-primary-button>
-        <div class="text-center">
-            <a href="{{ route('guest.pendaftaran') }}" class="text-sm font-medium hover:underline" style="color: #1A6B6B;">Belum punya akun? Daftar</a>
+        <x-ascent-button>
+            <span class="material-symbols-outlined text-[19px]">login</span>
+            <span>Masuk ke Sistem</span>
+        </x-ascent-button>
+
+        <div class="pt-5 mt-6 border-t border-border-subtle/80 text-center space-y-2">
+            <p class="text-xs text-text-secondary">Belum memiliki akun terdaftar?</p>
+            <div class="flex items-center justify-center gap-3 text-xs sm:text-sm font-semibold">
+                <a href="{{ route('guest.pendaftaran') }}" class="text-forest-deep hover:underline inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">child_care</span>
+                    Daftar Siswa
+                </a>
+                <span class="text-text-secondary/40">•</span>
+                <a href="{{ route('guest.daftar-sekolah') }}" class="text-forest-deep hover:underline inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">school</span>
+                    Daftar Sekolah
+                </a>
+            </div>
         </div>
     </form>
 </x-guest-layout>

@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PembayaranBulanan extends Model
 {
+    use BelongsToSekolah, LogsScopedActivity;
+
     protected $fillable = [
         'sekolah_id',
         'anak_id',
@@ -20,6 +24,8 @@ class PembayaranBulanan extends Model
         'subtotal',
         'diskon_id',
         'nilai_diskon',
+        'diskon_keterangan',
+        'is_tagihan_tambahan',
         'total_bayar',
         'status',
         'bukti_transfer',
@@ -39,6 +45,7 @@ class PembayaranBulanan extends Model
             'biaya_per_hari' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'nilai_diskon' => 'decimal:2',
+            'is_tagihan_tambahan' => 'boolean',
             'total_bayar' => 'decimal:2',
             'approved_at' => 'datetime',
         ];
@@ -91,7 +98,7 @@ class PembayaranBulanan extends Model
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
         ];
 
-        return ($bulan[$this->periode_bulan] ?? '') . ' ' . $this->periode_tahun;
+        return ($bulan[$this->periode_bulan] ?? '').' '.$this->periode_tahun;
     }
 
     public function getTotalBiayaTambahan(): float
@@ -101,27 +108,27 @@ class PembayaranBulanan extends Model
 
     public function getTotalBiayaTambahanFormatted(): string
     {
-        return 'Rp ' . number_format($this->getTotalBiayaTambahan(), 0, ',', '.');
+        return 'Rp '.number_format($this->getTotalBiayaTambahan(), 0, ',', '.');
     }
 
     public function getTotalFormatted(): string
     {
-        return 'Rp ' . number_format($this->total_bayar, 0, ',', '.');
+        return 'Rp '.number_format($this->total_bayar, 0, ',', '.');
     }
 
     public function getSubtotalFormatted(): string
     {
-        return 'Rp ' . number_format($this->subtotal, 0, ',', '.');
+        return 'Rp '.number_format($this->subtotal, 0, ',', '.');
     }
 
     public function getNilaiDiskonFormatted(): string
     {
-        return 'Rp ' . number_format($this->nilai_diskon, 0, ',', '.');
+        return 'Rp '.number_format($this->nilai_diskon, 0, ',', '.');
     }
 
     public function getBiayaPerHariFormatted(): string
     {
-        return 'Rp ' . number_format($this->biaya_per_hari, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya_per_hari, 0, ',', '.');
     }
 
     public function isPending(): bool
@@ -139,6 +146,11 @@ class PembayaranBulanan extends Model
         return $this->status === 'rejected';
     }
 
+    public function canBeDeleted(): bool
+    {
+        return ! $this->isApproved();
+    }
+
     public function getStatusBadgeAttribute(): string
     {
         return match ($this->status) {
@@ -153,7 +165,7 @@ class PembayaranBulanan extends Model
     {
         return match ($this->status) {
             'pending' => 'Menunggu',
-            'approved' => 'Disetujui',
+            'approved' => 'Lunas',
             'rejected' => 'Ditolak',
             default => ucfirst($this->status),
         };

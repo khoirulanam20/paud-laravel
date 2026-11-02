@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="app-page-shell">
         @include('monev._index-content', [
             'indexRoute' => route('admin.monev.index'),
             'generateRoute' => route('admin.monev.generate'),
@@ -20,6 +20,7 @@
             'statusRoute' => $activeGeneration ? route('admin.monev.generation.status', $activeGeneration) : null,
             'activeGeneration' => $activeGeneration,
             'tourPrefix' => 'admin-monev',
+            'exportRoute' => 'admin.monev.export',
         ])
     </div>
 </x-app-layout>

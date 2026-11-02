@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Traits\CanUploadImage;
 use App\Models\Anak;
 use App\Models\Lembaga;
 use App\Models\Pengajar;
@@ -15,11 +16,11 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Http\Traits\CanUploadImage;
 
 class ProfileController extends Controller
 {
     use CanUploadImage;
+
     /**
      * Display the user's profile form.
      */
@@ -34,6 +35,12 @@ class ProfileController extends Controller
 
         if ($user->hasRole('Lembaga')) {
             $lembaga = Lembaga::find($user->lembaga_id);
+            $activeSekolahId = session('active_sekolah_id');
+            if ($activeSekolahId) {
+                $sekolah = Sekolah::where('id', $activeSekolahId)
+                    ->where('lembaga_id', $user->lembaga_id)
+                    ->first();
+            }
         }
         if ($user->hasRole('Admin Sekolah')) {
             $sekolah = Sekolah::find($user->sekolah_id);
@@ -52,18 +59,103 @@ class ProfileController extends Controller
         return view('profile.edit', compact('user', 'sekolah', 'lembaga', 'pengajar', 'anaks'));
     }
 
+    public function editSekolah(Request $request): View
+    {
+        $user = $request->user();
+        $user->loadMissing(['pengajar:id,user_id,photo,name', 'anaks:id,user_id,photo,name']);
+
+        $sekolah = null;
+        $lembaga = null;
+        $pengajar = null;
+        $anaks = null;
+
+        if ($user->hasRole('Admin Sekolah')) {
+            $sekolah = Sekolah::find($user->sekolah_id);
+        } elseif ($user->hasRole('Lembaga')) {
+            $lembaga = Lembaga::find($user->lembaga_id);
+            $activeSekolahId = session('active_sekolah_id');
+            abort_if(! $activeSekolahId, 403);
+            $sekolah = Sekolah::where('id', $activeSekolahId)
+                ->where('lembaga_id', $user->lembaga_id)
+                ->first();
+        } else {
+            abort(403);
+        }
+
+        abort_if(! $sekolah, 404);
+
+        $profileMode = 'sekolah';
+
+        return view('profile.edit', compact('user', 'sekolah', 'lembaga', 'pengajar', 'anaks', 'profileMode'));
+    }
+
     public function updateSekolah(Request $request): RedirectResponse
     {
-        $sekolah = Sekolah::findOrFail($request->user()->sekolah_id);
-        $request->validate([
-            'name' => 'required|string',
-            'alamat' => 'nullable|string',
-            'nisn' => 'nullable|string',
-            'phone' => 'nullable|string',
-        ]);
-        $sekolah->update($request->only('name', 'alamat', 'nisn', 'phone'));
+        $user = $request->user();
+        $sekolah = null;
+        if ($user->hasRole('Admin Sekolah')) {
+            $sekolah = Sekolah::findOrFail($user->sekolah_id);
+        } elseif ($user->hasRole('Lembaga')) {
+            $activeSekolahId = session('active_sekolah_id');
+            abort_if(! $activeSekolahId, 403);
+            $sekolah = Sekolah::where('id', $activeSekolahId)
+                ->where('lembaga_id', $user->lembaga_id)
+                ->firstOrFail();
+        } else {
+            abort(403);
+        }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-sekolah-updated');
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'npsn' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:50',
+            'location_coordinate' => [
+                'nullable',
+                'string',
+                'max:100',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! filled($value)) {
+                        return;
+                    }
+
+                    $raw = trim((string) $value);
+                    $raw = preg_replace('/\s+/', '', $raw) ?? $raw;
+                    $parts = explode(',', $raw);
+                    if (count($parts) !== 2) {
+                        $fail('Koordinat lokasi harus berformat "lat,lng".');
+
+                        return;
+                    }
+
+                    $lat = filter_var($parts[0], FILTER_VALIDATE_FLOAT);
+                    $lng = filter_var($parts[1], FILTER_VALIDATE_FLOAT);
+                    if ($lat === false || $lng === false) {
+                        $fail('Koordinat lokasi harus berupa angka desimal.');
+
+                        return;
+                    }
+
+                    if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+                        $fail('Koordinat lokasi di luar rentang yang valid.');
+                    }
+                },
+            ],
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->only('name', 'address', 'phone', 'location_coordinate');
+        $data['nisn'] = $request->input('npsn');
+        if ($request->hasFile('photo')) {
+            if (filled($sekolah->photo)) {
+                Storage::disk('public')->delete($sekolah->photo);
+            }
+            $data['photo'] = $this->uploadImage($request->file('photo'), 'sekolah');
+        }
+
+        $sekolah->update($data);
+
+        return Redirect::route('profile.sekolah.edit')->with('status', 'profile-sekolah-updated');
     }
 
     public function updatePengajar(Request $request): RedirectResponse
@@ -128,7 +220,7 @@ class ProfileController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($anak->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($anak->photo);
+                Storage::disk('public')->delete($anak->photo);
             }
             $data['photo'] = $this->uploadImage($request->file('photo'), 'anak');
         }

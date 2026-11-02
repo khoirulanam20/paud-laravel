@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
+use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Diskon extends Model
 {
+    use BelongsToSekolah, LogsScopedActivity;
+
     protected $fillable = [
         'sekolah_id',
         'nama_diskon',
@@ -38,10 +42,10 @@ class Diskon extends Model
     public function getNilaiFormatted(): string
     {
         if ($this->tipe === 'persentase') {
-            return $this->nilai . '%';
+            return $this->nilai.'%';
         }
 
-        return 'Rp ' . number_format($this->nilai, 0, ',', '.');
+        return 'Rp '.number_format($this->nilai, 0, ',', '.');
     }
 
     public function hitungDiskon(float $subtotal): float

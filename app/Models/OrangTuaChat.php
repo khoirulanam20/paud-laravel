@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSekolah;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrangTuaChat extends Model
 {
+    use BelongsToSekolah;
+
     protected $table = 'orangtua_chats';
 
     protected $fillable = [

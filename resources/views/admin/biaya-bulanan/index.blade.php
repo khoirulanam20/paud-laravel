@@ -10,10 +10,12 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
              showCreateModal: false,
              showAddSiswaModal: false,
+             showDeleteBiayaModal: false,
+             deleteBiayaRoute: '',
              filterKelasId: '',
              selectedIds: [],
              semuaAnak: @js($semuaAnak),
@@ -31,7 +33,7 @@
                  this.filterKelasId = '';
                  this.showAddSiswaModal = true;
              }
-         }" @tour-close-modals.window="showCreateModal=false; showAddSiswaModal=false">
+         }" @tour-close-modals.window="showCreateModal=false; showAddSiswaModal=false; showDeleteBiayaModal=false">
 
         @if(session('success'))
             <div class="alert-success mb-5">{{ session('success') }}</div>
@@ -47,24 +49,28 @@
             <div class="card p-6" data-tour="admin-biaya-jenis">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="section-title">Jenis Biaya</h3>
-                    <button data-tour="admin-biaya-add-jenis-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary text-xs px-3 py-1.5">+ Tambah</button>
+                    <x-toolbar.add-icon label="Tambah jenis biaya" data-tour="admin-biaya-add-jenis-btn" data-tour-open-modal="create" @click="showCreateModal=true" />
                 </div>
                 <div class="space-y-2">
                     @forelse($semuaBiaya as $biaya)
-                        <a href="{{ route('admin.biaya-bulanan.index', ['biaya_id' => $biaya->id, 'kelas_id' => $kelasId]) }}"
-                           class="block p-3 rounded-lg border transition {{ $biayaTerpilih && $biayaTerpilih->id === $biaya->id ? 'border-[#1A6B6B] bg-[#D0E8E8]' : 'border-black/5 hover:bg-gray-50' }}">
-                            <div class="flex items-center justify-between">
-                                <div>
+                        <div class="p-3 rounded-lg border transition {{ $biayaTerpilih && $biayaTerpilih->id === $biaya->id ? 'border-[#1A6B6B] bg-[#D0E8E8]' : 'border-black/5 hover:bg-gray-50' }}">
+                            <div class="flex items-start justify-between gap-2">
+                                <a href="{{ route('admin.biaya-bulanan.index', ['biaya_id' => $biaya->id, 'kelas_id' => $kelasId]) }}" class="flex-1 min-w-0">
                                     <p class="font-semibold text-sm" style="color:#2C2C2C;">{{ $biaya->nama_biaya }}</p>
                                     <p class="text-xs mt-0.5" style="color:#9E9790;">Default: {{ $biaya->getNominalDefaultFormatted() }}</p>
+                                </a>
+                                <div class="flex flex-col items-end gap-1 shrink-0">
+                                    @if($biaya->is_aktif)
+                                        <span class="badge badge-green text-[10px]">Aktif</span>
+                                    @else
+                                        <span class="badge badge-gray text-[10px]">Nonaktif</span>
+                                    @endif
+                                    <button type="button"
+                                            @click="deleteBiayaRoute='{{ route('admin.biaya-bulanan.destroy', $biaya) }}'; showDeleteBiayaModal=true"
+                                            class="text-[10px] font-semibold px-2 py-1 rounded" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
                                 </div>
-                                @if($biaya->is_aktif)
-                                    <span class="badge badge-green text-[10px]">Aktif</span>
-                                @else
-                                    <span class="badge badge-gray text-[10px]">Nonaktif</span>
-                                @endif
                             </div>
-                        </a>
+                        </div>
                     @empty
                         <p class="text-sm text-center py-4" style="color:#9E9790;">Belum ada jenis biaya.</p>
                     @endforelse
@@ -88,8 +94,10 @@
                                         <option value="{{ $k->id }}" {{ $k->id == $kelasId ? 'selected' : '' }}>{{ $k->name }}</option>
                                     @endforeach
                                 </select>
+                                <x-filter-reset :href="route('admin.biaya-bulanan.index', ['biaya_id' => $biayaTerpilih->id])" />
                             </form>
-                            <button type="button" data-tour="admin-biaya-add-siswa-btn" data-tour-open-modal="addSiswa" @click="openAddSiswa()" class="btn-primary text-sm">+ Tambah Siswa</button>
+                            <x-export-excel route="admin.biaya-bulanan.export" class="text-sm" />
+                            <x-toolbar.add-icon label="Tambah Siswa" data-tour="admin-biaya-add-siswa-btn" data-tour-open-modal="addSiswa" @click="openAddSiswa()" />
                         </div>
                     </div>
 
@@ -137,9 +145,18 @@
                             </tbody>
                         </table>
                     </div>
-                    @if($siswaTerassign->count() > 0)
-                        <div class="px-6 py-4 border-t flex justify-end" style="border-color:rgba(0,0,0,0.06);">
-                            <button type="submit" form="form-update-biaya" data-tour="admin-biaya-save-btn" class="btn-primary">Simpan Biaya Bulanan</button>
+                    @if($siswaTerassign->total() > 0)
+                        <div class="px-6 py-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style="border-color:rgba(0,0,0,0.06);">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <x-per-page-selector :paginator="$siswaTerassign" />
+                                {{ $siswaTerassign->withQueryString()->links() }}
+                            </div>
+                            <button type="submit" form="form-update-biaya" data-tour="admin-biaya-save-btn" class="btn-primary shrink-0">Simpan Biaya Bulanan</button>
+                        </div>
+                    @elseif($siswaTerassign->hasPages())
+                        <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                            <x-per-page-selector :paginator="$siswaTerassign" />
+                            {{ $siswaTerassign->withQueryString()->links() }}
                         </div>
                     @endif
                 @else
@@ -234,5 +251,13 @@
             </div>
         </div>
         @endif
+
+        <x-confirm-modal
+            show="showDeleteBiayaModal"
+            action-binding="deleteBiayaRoute"
+            method="DELETE"
+            title="Hapus jenis biaya?"
+            message="Jenis biaya yang sudah memiliki riwayat pembayaran akan dinonaktifkan, bukan dihapus."
+        />
     </div>
 </x-app-layout>

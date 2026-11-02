@@ -10,7 +10,9 @@ use App\Models\OrangTuaChat;
 use App\Models\OrangTuaChatMessage;
 use App\Models\Pengajar;
 use App\Models\Sekolah;
+use App\Models\SekolahAiToken;
 use App\Models\User;
+use App\Services\OrangTuaChatContextBuilder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -154,7 +156,7 @@ class ChatTest extends TestCase
     {
         $f = $this->createFixtures();
 
-        \App\Models\SekolahAiToken::query()
+        SekolahAiToken::query()
             ->where('sekolah_id', $f['sekolah']->id)
             ->update(['balance' => 0]);
 
@@ -193,7 +195,7 @@ class ChatTest extends TestCase
     {
         $f = $this->createFixtures();
 
-        $prompt = app(\App\Services\OrangTuaChatContextBuilder::class)->buildSystemPrompt($f['ortu']);
+        $prompt = app(OrangTuaChatContextBuilder::class)->buildSystemPrompt($f['ortu']);
 
         $this->assertStringContainsString('Ayah/Bunda', $prompt);
         $this->assertStringContainsString($f['ortu']->name, $prompt);

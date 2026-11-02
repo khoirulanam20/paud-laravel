@@ -7,6 +7,12 @@
     </x-slot>
 
     @php
+        $photoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+            ? 'adminkelas.pencapaian.photos.download'
+            : 'pengajar.pencapaian.photos.download';
+        $bundlePhotoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+            ? 'adminkelas.pencapaian.photos.download-bundle'
+            : 'pengajar.pencapaian.photos.download-bundle';
         $sekolahId = (int) ($skalas->first()?->sekolah_id ?? auth()->user()->sekolah_id ?? 0);
         $skalaOptions = $skalas->map(fn ($s) => ['code' => $s->code, 'label' => $s->label])->values()->all();
         $filterAspek = $filterAspek ?? null;
@@ -57,30 +63,47 @@
                 'display_label' => $a->nickname ? $a->name . ' (' . $a->nickname . ')' : $a->name,
             ];
         }
+        $kelasOptions = $availableKelas
+            ->map(fn ($kelas) => ['id' => $kelas->id, 'name' => $kelas->name])
+            ->values()
+            ->all();
         $flags = JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
-        $payloadJson = json_encode(['kegiatanData' => $kegiatanData, 'anakMap' => $anakMap, 'editBundles' => $editBundles], $flags);
+        $payloadJson = json_encode(['kegiatanData' => $kegiatanData, 'anakMap' => $anakMap, 'editBundles' => $editBundles, 'kelasOptions' => $kelasOptions], $flags);
         if ($payloadJson === false) { $payloadJson = '{}'; }
     @endphp
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+    <div class="app-page-shell"
          x-data="{
             hasTokens: @js($hasTokens ?? false),
             tokenFallbackPencapaian: @js($tokenFallbackPencapaian ?? 'Maaf, fitur ini sedang terbatas.'),
             skalaOptions: @js($skalaOptions),
             showCreateModal: false, showEditModal: false, showDeleteBundleModal: false,
+            showImageModal: false, activeImage: null, activeDownloadUrl: null, activeMediaType: 'image',
             deleteBundleAnak: '', deleteBundleKeg: '', payload: {},
-            selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
+            selectedKelasId: '', selectedAnakId: '', selectedKegiatanId: '', selectedKegiatanIdEdit: '',
             editBundleKey: null, editNilai: {}, editCatatan: {}, createNilai: {}, createCatatan: {},
-            isCompressing: false, compressedFile: null,
+            docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
+            compressedFile: null,
             aiLoading: {}, aiSuggestions: {},
             init() {
                 const el = document.getElementById('pencapaian-payload-json');
                 if (el) { try { this.payload = JSON.parse(el.textContent); } catch (e) { this.payload = { kegiatanData: {}, anakMap: {}, editBundles: {} }; } }
             },
+            openMedia(url, downloadUrl) {
+                this.activeImage = url;
+                this.activeDownloadUrl = downloadUrl ?? null;
+                this.activeMediaType = (typeof window.isVideoPath === 'function' && window.isVideoPath(url)) ? 'video' : 'image';
+                this.showImageModal = true;
+            },
             async handleFile(e) {
                 const file = e.target.files[0]; if (!file) return;
-                this.isCompressing = true;
-                try { this.compressedFile = await window.compressImage(file); } finally { this.isCompressing = false; }
+                try {
+                    this.compressedFile = await window.documentationUploadProcess(file, this);
+                } catch (err) {
+                    alert(err?.message || 'Gagal memproses file.');
+                    e.target.value = '';
+                    this.compressedFile = null;
+                }
             },
             submitWithCompression(formRef) {
                 const form = this.$refs[formRef];
@@ -140,6 +163,13 @@
             get kegiatanData() { return this.payload.kegiatanData || {}; },
             get anakMap() { return this.payload.anakMap || {}; },
             get editBundles() { return this.payload.editBundles || {}; },
+            get kelasOptions() { return this.payload.kelasOptions || []; },
+            get filteredAnaks() {
+                const items = Object.values(this.anakMap);
+                if (this.kelasOptions.length <= 1) return items;
+                if (!this.selectedKelasId) return [];
+                return items.filter(anak => String(anak.kelas_id) === String(this.selectedKelasId));
+            },
             get filteredKegiatans() {
                 if (!this.selectedAnakId) return [];
                 const anakKelas = this.anakMap[this.selectedAnakId]?.kelas_id;
@@ -158,6 +188,7 @@
                 (this.matrikulasiOptions || []).forEach(o => { this.createNilai[String(o.id)] = ''; this.createCatatan[String(o.id)] = ''; });
             },
             openCreateModal() {
+                this.selectedKelasId = this.kelasOptions.length === 1 ? String(this.kelasOptions[0].id) : '';
                 this.selectedAnakId = ''; this.selectedKegiatanId = '';
                 this.createNilai = {}; this.createCatatan = {}; this.aiSuggestions = {};
                 this.showCreateModal = true;
@@ -190,6 +221,7 @@
         <script type="application/json" id="pencapaian-payload-json">{!! $payloadJson !!}</script>
 
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ session('success') }}</div>@endif
+        @if(session('warning'))<div class="alert-danger mb-5">{{ session('warning') }}</div>@endif
         @if($errors->any())
             <div class="alert-danger mb-5">
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
@@ -203,48 +235,50 @@
         @endif
 
         {{-- Filter Card --}}
-        <div class="card overflow-hidden mb-6">
+        <div class="card mb-6">
             <div class="px-6 py-6 border-b" style="background:#FAF6F0; border-color: rgba(0,0,0,0.06);">
                 <div class="space-y-6">
                     <div class="space-y-1">
                         <h3 class="text-xl font-bold" style="color:#2C2C2C;">Filter Evaluasi</h3>
                         <p class="text-sm font-medium" style="color:#9E9790;">Cari data berdasarkan rentang tanggal, kelas, dan indikator aspek</p>
                     </div>
-                    <form data-tour="pg-pencapaian-filter" method="get" action="{{ route('pengajar.pencapaian.index') }}" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 items-end">
-                        <div class="col-span-1 lg:col-span-2 min-w-0">
+                    <form data-tour="pg-pencapaian-filter" method="get" action="{{ route('pengajar.pencapaian.index') }}" class="filter-toolbar-inline">
+                        <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Dari</label>
-                            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                         </div>
-                        <div class="col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Sampai</label>
-                            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                         </div>
-                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Kelas</label>
-                            <select name="filter_kelas_id" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <select name="filter_kelas_id" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                                 <option value="">Semua Kelas</option>
                                 @foreach($availableKelas as $k)<option value="{{ $k->id }}" @selected($filterKelasId === (int) $k->id)>{{ $k->name }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Anak</label>
-                            <select name="filter_anak_id" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <select name="filter_anak_id" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                                 <option value="">Semua Anak</option>
                                 @foreach($anaks as $a)<option value="{{ $a->id }}" @selected($filterAnakId === (int) $a->id)>{{ $a->name }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="col-span-2 md:col-span-1 lg:col-span-2 min-w-0">
+                        <div class="filter-toolbar-field">
                             <label class="text-[11px] font-bold uppercase tracking-wider mb-1.5 block" style="color:#1A6B6B;">Aspek</label>
-                            <select name="aspek" class="input-field w-full h-11 text-xs font-bold border-black/10" style="background:white;">
+                            <select name="aspek" class="input-field w-full h-9 md:h-11 text-xs font-bold border-black/10" style="background:white;">
                                 <option value="">Semua Aspek</option>
                                 <option value="{{ \App\Support\FilterAspekPencapaian::UMUM }}" @selected($filterAspekRaw === \App\Support\FilterAspekPencapaian::UMUM)>Umum / Tanpa Aspek</option>
                                 @foreach($aspekPilihan as $asp)<option value="{{ $asp }}" @selected($filterAspekRaw === $asp)>{{ $asp }}</option>@endforeach
                             </select>
                         </div>
-                        <div class="col-span-2 lg:col-span-2">
-                            <button type="submit" class="btn-primary w-full h-11 font-bold flex items-center justify-center gap-2">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>Cari Data
+                        <div class="filter-toolbar-actions">
+                            <button type="submit" class="btn-primary h-9 w-9 md:h-11 md:w-11 p-0 shrink-0" title="Cari Data" aria-label="Cari Data">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
+                            <x-filter-reset :href="route('pengajar.pencapaian.index')" compact />
+                            <x-download-photos :route="$photoDownloadRoute" :icon-only="true" />
                         </div>
                     </form>
                 </div>
@@ -270,7 +304,7 @@
         <div class="card overflow-hidden">
             <div class="px-6 py-4 flex items-center justify-between border-b" style="border-color:rgba(0,0,0,0.06);">
                 <div><h3 class="section-title">Laporan per Kegiatan & Aspek</h3><p class="section-subtitle">Satu baris = satu anak + satu kegiatan; nilai per indikator matrikulasi.</p></div>
-                <button type="button" data-tour="pg-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary"><svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>Buat Evaluasi</button>
+                <button type="button" data-tour="pg-pencapaian-add-btn" data-tour-open-modal="create" @click="openCreateModal()" class="btn-primary shrink-0 h-9 w-9 md:h-11 md:w-11 p-0" title="Buat Evaluasi" aria-label="Buat Evaluasi"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg></button>
             </div>
 
             {{-- Mobile Card View --}}
@@ -281,7 +315,12 @@
                         <div class="relative rounded-2xl bg-white border border-black/5 shadow-sm p-4 hover:shadow-md transition">
                             <div class="flex items-start gap-3 mb-4">
                                 @if($first->photo)
-                                    <img src="{{ asset('storage/' . $first->photo) }}" class="h-16 w-16 object-cover rounded-xl shadow-sm shrink-0" onclick="window.open(this.src)">
+                                    @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
+                                    <x-documentation-thumbnail
+                                        :path="$first->photo"
+                                        class="h-16 w-16 rounded-xl shadow-sm cursor-pointer"
+                                        @click="openMedia('{{ $mediaUrl }}', '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')"
+                                    />
                                 @else
                                     <div class="h-16 w-16 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-black/5"><svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
                                 @endif
@@ -320,16 +359,25 @@
             {{-- Desktop Table View --}}
             <div class="hidden lg:block overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Bukti</th><th>Anak</th><th>Kegiatan</th><th>Aspek &amp; Nilai</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th class="w-28 min-w-[7rem]">Bukti</th><th>Anak</th><th>Kegiatan</th><th>Aspek &amp; Nilai</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($groupedPencapaian as $bundleKey => $rows)
                             @php $first = $rows->first(); @endphp
                             <tr>
-                                <td>
+                                <td class="w-28 min-w-[7rem] align-middle">
                                     @if($first->photo)
-                                        <div class="h-10 w-10 relative group rounded overflow-hidden shadow-sm border border-black/5 cursor-pointer" onclick="window.open('{{ asset('storage/' . $first->photo) }}')">
-                                            <img src="{{ asset('storage/' . $first->photo) }}" class="h-full w-full object-cover">
-                                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
+                                        @php $mediaUrl = \App\Support\DocumentationMedia::publicAssetPath($first->photo); @endphp
+                                        <div class="flex items-center gap-2">
+                                            <div class="relative group cursor-pointer shrink-0" @click="openMedia('{{ $mediaUrl }}', '{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}')">
+                                                <x-documentation-thumbnail
+                                                    :path="$first->photo"
+                                                    class="h-14 w-14 rounded-lg"
+                                                />
+                                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded pointer-events-none"><svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></div>
+                                            </div>
+                                            <a href="{{ route($bundlePhotoDownloadRoute, ['anak_id' => $first->anak_id, 'kegiatan_id' => $first->kegiatan_id]) }}"
+                                                class="text-[10px] font-bold uppercase tracking-wide text-teal-700 hover:underline"
+                                                title="Unduh foto">Unduh</a>
                                         </div>
                                     @else
                                         <div class="h-10 w-10 bg-gray-100 rounded flex items-center justify-center"><svg class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
@@ -346,7 +394,7 @@
                                 </td>
                                 <td>
                                     @if($first->kegiatan)<div class="font-medium text-sm" style="color:#2C2C2C;">{{ $first->kegiatan->title }}</div><div class="text-xs" style="color:#9E9790;">{{ \Carbon\Carbon::parse($first->kegiatan->date)->format('d M Y') }}</div>
-                                    @else—@endif
+                                    @else@endif
                                 </td>
                                 <td class="min-w-[240px]">
                                     <div class="space-y-2">
@@ -367,8 +415,8 @@
                                 <td class="whitespace-nowrap text-sm">{{ \Carbon\Carbon::parse($first->created_at)->format('d M Y') }}</td>
                                 <td class="text-right">
                                     <div class="flex flex-wrap items-center justify-end gap-2">
-                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-edit" data-tour-open-modal="edit" @endif @click="openEditBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#1A6B6B;background:#D0E8E8;">Edit</button>
-                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-delete" data-tour-demo-action="delete" @endif @click="openDeleteBundle('{{ $bundleKey }}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="color:#C0392B;background:#FAD7D2;">Hapus</button>
+                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-edit" data-tour-open-modal="edit" @endif @click="openEditBundle('{{ $bundleKey }}')" class="row-action-icon" style="color:#1A6B6B;background:#D0E8E8;" title="Edit" aria-label="Edit"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                                        <button type="button" @if($loop->first) data-tour="pg-pencapaian-action-delete" data-tour-demo-action="delete" @endif @click="openDeleteBundle('{{ $bundleKey }}')" class="row-action-icon" style="color:#C0392B;background:#FAD7D2;" title="Hapus" aria-label="Hapus"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                                     </div>
                                 </td>
                             </tr>
@@ -378,17 +426,16 @@
                     </tbody>
                 </table>
             </div>
-            @if($groupedPencapaian->hasPages())<div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">{{ $groupedPencapaian->links() }}</div>@endif
+            <div class="px-6 py-4 border-t" style="border-color:rgba(0,0,0,0.06);">
+                <x-per-page-selector :paginator="$groupedPencapaian" />
+                {{ $groupedPencapaian->links() }}
+            </div>
         </div>
 
         {{-- CREATE MODAL --}}
         <div x-show="showCreateModal" class="modal-overlay" style="display:none;"
-            @click.self="!isCompressing && (showCreateModal=false)">
+            @click.self="!docUploadActive && (showCreateModal=false)">
             <div x-show="showCreateModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
-                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
-                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
-                    <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
-                </div>
                 <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data" x-ref="createForm" @submit.prevent="submitWithCompression('createForm')">
                     @csrf
                     <input type="hidden" name="tanggal_dari" value="{{ $tanggalDari }}">
@@ -397,26 +444,37 @@
                     @if($filterAspekRaw !== '')<input type="hidden" name="aspek" value="{{ $filterAspekRaw }}">@endif
                     <div class="modal-header"><h3 class="section-title">Rekam Pencapaian</h3></div>
                     <div class="modal-body space-y-4">
+                        <div x-show="kelasOptions.length > 1">
+                            <label class="input-label">Kelas <span class="text-red-500">*</span></label>
+                            <select class="input-field" x-model="selectedKelasId" @change="selectedAnakId = ''; selectedKegiatanId = ''; resetCreateMatrices()">
+                                <option value=""> Pilih Kelas </option>
+                                <template x-for="kelas in kelasOptions" :key="kelas.id">
+                                    <option :value="kelas.id" x-text="kelas.name"></option>
+                                </template>
+                            </select>
+                            <p class="text-xs mt-1.5" style="color:#6B6560;">Pilih kelas dulu untuk mempermudah penyaringan siswa saat guru mengampu lebih dari satu kelas.</p>
+                        </div>
                         <div data-tour="modal-create-section-siswa">
                             <label class="input-label">Target Siswa <span class="text-red-500">*</span></label>
-                            <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''">
-                                <option value="">— Pilih Siswa —</option>
-                                @foreach($anaks as $a)
-                                    <option value="{{ $a->id }}">{{ $a->name }}@if($a->nickname) ({{ $a->nickname }})@endif</option>
-                                @endforeach
+                            <select name="anak_id" required class="input-field" x-model="selectedAnakId" @change="selectedKegiatanId = ''" :disabled="kelasOptions.length > 1 && !selectedKelasId">
+                                <option value=""> Pilih Siswa </option>
+                                <template x-for="anak in filteredAnaks" :key="anak.id">
+                                    <option :value="anak.id" x-text="anak.display_label"></option>
+                                </template>
                             </select>
+                            <p class="text-xs mt-1.5" style="color:#9E9790;" x-show="kelasOptions.length > 1 && !selectedKelasId">Pilih kelas terlebih dahulu.</p>
                             <p class="text-xs mt-1.5" style="color:#6B6560;" x-show="selectedAnakId && anakMap[selectedAnakId]?.nickname">
                                 <span class="font-semibold">Nama panggilan:</span>
                                 <span x-text="anakMap[selectedAnakId]?.nickname"></span>
-                                <span class="text-[10px] italic" style="color:#9E9790;"> — dipakai saran AI</span>
+                                <span class="text-[10px] italic" style="color:#9E9790;">  dipakai saran AI</span>
                             </p>
                         </div>
                         <div data-tour="modal-create-section-kegiatan" x-show="selectedAnakId">
                             <label class="input-label">Jurnal Kegiatan <span class="text-red-500">*</span></label>
                             <select name="kegiatan_id" required class="input-field" x-model="selectedKegiatanId" @change="resetCreateMatrices()">
-                                <option value="">— Pilih —</option>
+                                <option value=""> Pilih </option>
                                 <template x-for="k in filteredKegiatans" :key="k.id">
-                                    <option :value="k.id" x-text="k.date_label + ' — ' + k.title"></option>
+                                    <option :value="k.id" x-text="k.date_label + '  ' + k.title"></option>
                                 </template>
                             </select>
                             <p class="text-xs mt-1" style="color:#9E9790;">Hanya menampilkan kegiatan yang sudah memiliki dokumentasi foto (sudah dilaksanakan), belum ada pencapaiannya, dan siswa <strong>hadir</strong> (sudah dipresensi) pada kegiatan tersebut.</p>
@@ -430,9 +488,9 @@
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <div :data-tour="index === 0 ? 'modal-create-section-skala' : null">
                                     <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="createNilai[String(opt.id)]">
-                                        <option value="">— Skala Capaian —</option>
+                                        <option value=""> Skala Capaian </option>
                                         <template x-for="sk in skalaOptions" :key="sk.code">
-                                            <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                            <option :value="sk.code" x-text="sk.code + '  ' + sk.label"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -472,24 +530,21 @@
                             </div>
                         </template>
                         <div data-tour="modal-create-section-evidence">
-                            <label class="input-label">Foto bukti (opsional, berlaku untuk seluruh aspek)</label>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror" @change="handleFile($event)">
+                            <label class="input-label">Foto / video bukti (opsional)</label>
+                            <x-documentation-upload-progress />
+                            <input type="file" name="photo" accept="image/*,video/*" class="input-field py-1.5 text-xs @error('photo') border-red-500 @enderror" :disabled="docUploadActive" @change="handleFile($event)">
                             @error('photo')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary" :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0">Simpan Evaluasi</button></div>
+                    <div class="modal-footer"><button type="button" @click="showCreateModal=false" class="btn-secondary" :disabled="docUploadActive">Batal</button><button type="submit" data-tour="modal-create-submit" class="btn-primary" :disabled="!selectedKegiatanId || matrikulasiOptions.length === 0 || docUploadActive">Simpan Evaluasi</button></div>
                 </form>
             </div>
         </div>
 
         {{-- EDIT MODAL --}}
         <div x-show="showEditModal" class="modal-overlay" style="display:none;"
-            @click.self="!isCompressing && (showEditModal=false)">
+            @click.self="!docUploadActive && (showEditModal=false)">
             <div x-show="showEditModal" x-transition class="modal-box max-w-lg w-full relative" @click.stop>
-                <div x-show="isCompressing" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
-                    <div class="h-12 w-12 border-4 border-teal-600/30 border-t-teal-600 rounded-full animate-spin"></div>
-                    <p class="mt-4 text-sm font-bold text-teal-800">Mengoptimalkan Foto...</p>
-                </div>
                 <form action="{{ route('pengajar.pencapaian.sync') }}" method="POST" enctype="multipart/form-data" x-ref="editForm" @submit.prevent="submitWithCompression('editForm')">
                     <input type="hidden" name="_is_edit" value="1">
                     @csrf
@@ -522,9 +577,9 @@
                             <div class="p-3 bg-gray-50 rounded-xl border border-black/5 space-y-2">
                                 <div class="text-xs font-black text-teal-800" x-text="opt.label"></div>
                                 <select class="input-field bg-white" required :name="'nilai[' + opt.id + ']'" x-model="editNilai[String(opt.id)]">
-                                    <option value="" disabled>— Pilih Capaian —</option>
+                                    <option value="" disabled> Pilih Capaian </option>
                                     <template x-for="sk in skalaOptions" :key="'edit-' + sk.code">
-                                        <option :value="sk.code" x-text="sk.code + ' — ' + sk.label"></option>
+                                        <option :value="sk.code" x-text="sk.code + '  ' + sk.label"></option>
                                     </template>
                                 </select>
                                 <div class="space-y-1.5">
@@ -567,23 +622,42 @@
                             <label class="input-label">Dokumentasi (Evidence)</label>
                             <template x-if="editBundles[editBundleKey]?.has_photo">
                                 <div class="mb-3">
-                                    <div class="text-[11px] mb-2 flex items-center gap-1.5 font-bold" style="color:#1A6B6B;">
-                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                        Foto Sebelumnya:
+                                    <div class="text-[11px] mb-2 flex items-center justify-between gap-2 font-bold" style="color:#1A6B6B;">
+                                        <div class="flex items-center gap-1.5">
+                                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                            Foto Sebelumnya:
+                                        </div>
+                                        <a :href="editBundles[editBundleKey]?.photo_download_url"
+                                            class="text-[10px] font-bold uppercase tracking-wide underline hover:no-underline"
+                                            x-show="editBundles[editBundleKey]?.photo_download_url">Unduh</a>
                                     </div>
-                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group" style="border-color:#1A6B6B22;">
-                                        <img :src="editBundles[editBundleKey].photo_url" class="w-full h-full object-cover">
-                                        <a :href="editBundles[editBundleKey].photo_url" target="_blank" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        </a>
+                                    <div class="relative w-32 h-32 rounded-xl overflow-hidden border-2 shadow-sm group cursor-pointer bg-stone-200"
+                                        style="border-color:#1A6B6B22;"
+                                        @click="openMedia(editBundles[editBundleKey].photo_url, editBundles[editBundleKey].photo_download_url)">
+                                        <template x-if="showEditModal && editBundles[editBundleKey]?.is_video">
+                                            <video
+                                                :src="(editBundles[editBundleKey].photo_url || '') + '#t=0.1'"
+                                                class="w-full h-full object-cover bg-stone-300"
+                                                muted playsinline preload="metadata"
+                                                @loadedmetadata="window.seekDocumentationVideoPreview($event.target)"></video>
+                                        </template>
+                                        <template x-if="!editBundles[editBundleKey]?.is_video">
+                                            <img
+                                                :src="editBundles[editBundleKey].photo_url"
+                                                class="w-full h-full object-cover"
+                                                alt="">
+                                        </template>
+                                        <span x-show="editBundles[editBundleKey]?.is_video"
+                                            class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded bg-black/55 text-white text-[10px] pointer-events-none">▶</span>
                                     </div>
                                     <p class="text-[10px] mt-2 italic" style="color:#9E9790;">Upload file baru untuk mengganti foto.</p>
                                 </div>
                             </template>
-                            <input type="file" name="photo" accept="image/*" class="input-field py-1.5 text-xs" @change="handleFile($event)">
+                            <x-documentation-upload-progress />
+                            <input type="file" name="photo" accept="image/*,video/*" class="input-field py-1.5 text-xs" :disabled="docUploadActive" @change="handleFile($event)">
                         </div>
                     </div>
-                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary">Update Evaluasi</button></div>
+                    <div class="modal-footer"><button type="button" @click="showEditModal=false" class="btn-secondary" :disabled="docUploadActive">Batal</button><button type="submit" data-tour="modal-edit-submit" class="btn-primary" :disabled="docUploadActive">Update Evaluasi</button></div>
                 </form>
             </div>
         </div>
@@ -610,5 +684,7 @@
                 </form>
             </div>
         </div>
+
+        <x-image-lightbox />
     </div>
 </x-app-layout>

@@ -12,6 +12,7 @@ use App\Services\AiPersonaService;
 use App\Services\AiTokenService;
 use App\Support\AiChatDataSource;
 use App\Support\AiPersonaScope;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,7 +52,7 @@ class AiPersonaController extends Controller
         }
 
         $tokenTransactions = $activeTab === AiPersonaScope::TAB_LOG_AI
-            ? $this->tokenService->paginateTransactionsForSekolah($sekolahId)
+            ? $this->tokenService->paginateTransactionsForSekolah($sekolahId, PaginationPerPage::resolve($request))
             : null;
 
         return view('admin.ai_persona.index', compact(
@@ -108,7 +109,7 @@ class AiPersonaController extends Controller
 
         return redirect()
             ->route('admin.ai-persona.index', ['tab' => $scope])
-            ->with('success', 'Persona ' . AiPersonaScope::label($scope) . ' berhasil disimpan.');
+            ->with('success', 'Persona '.AiPersonaScope::label($scope).' berhasil disimpan.');
     }
 
     public function updateDataAccess(Request $request): RedirectResponse
@@ -154,7 +155,7 @@ class AiPersonaController extends Controller
                 SekolahAiTokenTransaction::TYPE_PERSONA,
                 auth()->user(),
                 ['scope' => $scope],
-                'Generate persona: ' . AiPersonaScope::label($scope),
+                'Generate persona: '.AiPersonaScope::label($scope),
                 fn () => $this->personaService->generate($sekolah, $scope, $request->input('brief'))
             );
         } catch (InsufficientAiTokensException $e) {
@@ -209,5 +210,21 @@ class AiPersonaController extends Controller
         return redirect()
             ->route('admin.ai-persona.index', ['tab' => $tab])
             ->with('success', 'Pesan fallback berhasil disimpan.');
+    }
+
+    public function updateChatEnabled(Request $request): RedirectResponse
+    {
+        $sekolahId = $this->sekolahId();
+        abort_if($sekolahId === null, 403, 'Akun tidak terikat sekolah.');
+
+        $request->validate([
+            'chat_orangtua_enabled' => ['sometimes', 'boolean'],
+        ]);
+
+        $this->tokenService->updateChatOrangTuaEnabled($sekolahId, $request->boolean('chat_orangtua_enabled'));
+
+        return redirect()
+            ->route('admin.ai-persona.index', ['tab' => AiPersonaScope::CHAT_ORANGTUA])
+            ->with('success', 'Pengaturan chat orang tua berhasil disimpan.');
     }
 }

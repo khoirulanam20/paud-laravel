@@ -22,6 +22,6 @@ class IndonesianMonths
 
     public static function label(int $bulan, int $tahun): string
     {
-        return (self::NAMES[$bulan] ?? (string) $bulan) . ' ' . $tahun;
+        return (self::NAMES[$bulan] ?? (string) $bulan).' '.$tahun;
     }
 }

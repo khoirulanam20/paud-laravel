@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Pengajar;
 
 use App\Http\Controllers\Controller;
-use App\Models\Anak;
-use App\Models\Presensi;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PresensiController extends Controller

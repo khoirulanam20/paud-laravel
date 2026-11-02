@@ -2,34 +2,76 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\DownloadsExcel;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Traits\StoresDocumentationMedia;
+use App\Models\Anak;
+use App\Models\KegiatanRutin;
+use App\Models\Kelas;
 use App\Models\MasterKegiatanRutin;
-use App\Models\Pengajar;
 use App\Models\Matrikulasi;
-use App\Http\Traits\CanUploadImage;
+use App\Models\Pengajar;
+use App\Support\DocumentationMedia;
+use App\Support\PaginationPerPage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MasterKegiatanRutinController extends Controller
 {
-    use CanUploadImage;
-    public function index()
+    use DownloadsExcel;
+    use StoresDocumentationMedia;
+
+    public function index(Request $request)
     {
         $sekolah_id = auth()->user()->sekolah_id;
-        
+        $waliKelasIds = $this->waliKelasIds();
+
         $masters = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
             ->where('sekolah_id', $sekolah_id)
+            ->when($waliKelasIds !== null, function ($query) use ($waliKelasIds) {
+                $query->whereHas('kelas', fn ($q) => $q->whereIn('kelas.id', $waliKelasIds));
+            })
             ->latest()
-            ->get();
+            ->paginate(PaginationPerPage::resolve($request))
+            ->withQueryString();
 
         return view('pengajar.master-kegiatan-rutin.index', compact('masters'));
+    }
+
+    public function export()
+    {
+        $sekolah_id = auth()->user()->sekolah_id;
+        $waliKelasIds = $this->waliKelasIds();
+
+        $rows = MasterKegiatanRutin::with(['kelas', 'matrikulasi'])
+            ->where('sekolah_id', $sekolah_id)
+            ->when($waliKelasIds !== null, function ($query) use ($waliKelasIds) {
+                $query->whereHas('kelas', fn ($q) => $q->whereIn('kelas.id', $waliKelasIds));
+            })
+            ->latest()
+            ->get()
+            ->map(fn (MasterKegiatanRutin $m) => [
+                $m->nama_kegiatan,
+                $m->aspek ?? '-',
+                $m->matrikulasi?->indicator ?? '-',
+                $m->kelas->pluck('name')->join(', ') ?: '-',
+            ])
+            ->all();
+
+        return $this->downloadExcel(
+            ['Nama Kegiatan', 'Aspek', 'Matrikulasi', 'Peserta (Kelas)'],
+            $rows,
+            'kegiatan-rutin-master-'.now()->format('Y-m-d').'.xlsx',
+            'Master Kegiatan Rutin'
+        );
     }
 
     public function create()
     {
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
-        
-        $classList = \App\Models\Kelas::where('sekolah_id', $sekolah_id)->get();
+
+        $classList = $this->kelasOptions($sekolah_id, $this->waliKelasIds());
         $matrikulasiList = Matrikulasi::where('sekolah_id', $sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.create', compact('classList', 'matrikulasiList'));
@@ -45,10 +87,12 @@ class MasterKegiatanRutinController extends Controller
             'kelas_ids.*' => 'exists:kelas,id',
         ]);
 
+        $this->assertKelasIdsInScope($request->kelas_ids);
+
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
         $pengajar_id = Pengajar::where('sekolah_id', $sekolah_id)->first()->id ?? null;
-        if (!$pengajar_id) {
+        if (! $pengajar_id) {
             return back()->withErrors(['error' => 'Tambahkan minimal 1 data pengajar terlebih dahulu agar bisa membuat Master Kegiatan Rutin.']);
         }
 
@@ -74,7 +118,9 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
-        $classList = \App\Models\Kelas::where('sekolah_id', $sekolah_id)->get();
+        $this->assertMasterInScope($masterKegiatanRutin);
+
+        $classList = $this->kelasOptions($sekolah_id, $this->waliKelasIds());
         $matrikulasiList = Matrikulasi::where('sekolah_id', $sekolah_id)->get();
 
         return view('pengajar.master-kegiatan-rutin.edit', compact('masterKegiatanRutin', 'classList', 'matrikulasiList'));
@@ -89,6 +135,8 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        $this->assertMasterInScope($masterKegiatanRutin);
+
         $request->validate([
             'nama_kegiatan' => 'required|string|max:255',
             'aspek' => 'required|string|max:255',
@@ -96,6 +144,8 @@ class MasterKegiatanRutinController extends Controller
             'kelas_ids' => 'required|array',
             'kelas_ids.*' => 'exists:kelas,id',
         ]);
+
+        $this->assertKelasIdsInScope($request->kelas_ids);
 
         $masterKegiatanRutin->update([
             'nama_kegiatan' => $request->nama_kegiatan,
@@ -117,26 +167,38 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        $this->assertMasterInScope($masterKegiatanRutin);
+
+        $waliKelasIds = $this->waliKelasIds();
         $tanggal = $request->input('tanggal', date('Y-m-d'));
         $kelasId = $request->input('kelas_id');
-        $kelasIds = $masterKegiatanRutin->kelas->pluck('id')->toArray();
+        $masterKelasIds = $masterKegiatanRutin->kelas->pluck('id')->toArray();
+        $availableKelasIds = $waliKelasIds !== null
+            ? array_values(array_intersect($masterKelasIds, $waliKelasIds))
+            : $masterKelasIds;
 
-        if (!$kelasId && !empty($kelasIds)) {
-            $kelasId = $kelasIds[0];
+        if (! $kelasId && ! empty($availableKelasIds)) {
+            $kelasId = $availableKelasIds[0];
         }
 
-        if ($kelasId && !in_array($kelasId, $kelasIds)) {
+        if ($kelasId && ! in_array((int) $kelasId, $masterKelasIds, true)) {
             abort(403, 'Kelas tidak ditautkan ke kegiatan ini.');
         }
 
-        $anaks = $kelasId ? \App\Models\Anak::where('kelas_id', $kelasId)->get() : collect();
-        $rutins = $kelasId ? \App\Models\KegiatanRutin::where('kelas_id', $kelasId)
+        if ($kelasId && $waliKelasIds !== null && ! in_array((int) $kelasId, $waliKelasIds, true)) {
+            abort(403, 'Kelas tidak dalam cakupan Anda.');
+        }
+
+        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
+        $rutins = $kelasId ? KegiatanRutin::where('kelas_id', $kelasId)
             ->where('master_kegiatan_rutin_id', $masterKegiatanRutin->id)
             ->where('tanggal', $tanggal)
             ->get()
             ->keyBy('anak_id') : collect();
 
-        $classList = $masterKegiatanRutin->kelas;
+        $classList = $masterKegiatanRutin->kelas()
+            ->when($waliKelasIds !== null, fn ($q) => $q->whereIn('kelas.id', $waliKelasIds))
+            ->get();
 
         return view('pengajar.master-kegiatan-rutin.show', compact('masterKegiatanRutin', 'classList', 'anaks', 'rutins', 'tanggal', 'kelasId'));
     }
@@ -149,7 +211,7 @@ class MasterKegiatanRutinController extends Controller
             'anak_id' => 'required|exists:anaks,id',
             'status_pencapaian' => 'required|string',
             'keterangan' => 'nullable|string',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => DocumentationMedia::singleFileRules(),
         ]);
 
         $user = auth()->user();
@@ -158,10 +220,13 @@ class MasterKegiatanRutinController extends Controller
         if ($masterKegiatanRutin->sekolah_id !== $sekolah_id) {
             abort(403);
         }
-        
+
+        $this->assertMasterInScope($masterKegiatanRutin);
+        $this->assertKelasIdInScope((int) $request->kelas_id);
+
         $pengajar_id = $masterKegiatanRutin->pengajar_id ?? (Pengajar::where('sekolah_id', $sekolah_id)->first()->id ?? null);
 
-        $rutin = \App\Models\KegiatanRutin::where([
+        $rutin = KegiatanRutin::where([
             'sekolah_id' => $sekolah_id,
             'kelas_id' => $request->kelas_id,
             'anak_id' => $request->anak_id,
@@ -179,15 +244,15 @@ class MasterKegiatanRutinController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($rutin && $rutin->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($rutin->photo);
+                Storage::disk('public')->delete($rutin->photo);
             }
-            $data['photo'] = $this->uploadImage($request->file('photo'), 'kegiatan-rutin');
+            $data['photo'] = $this->storeDocumentationMedia($request->file('photo'), 'kegiatan-rutin', 'kegiatan-rutin-videos');
         }
 
         if ($rutin) {
             $rutin->update($data);
         } else {
-            \App\Models\KegiatanRutin::create(array_merge($data, [
+            KegiatanRutin::create(array_merge($data, [
                 'sekolah_id' => $sekolah_id,
                 'kelas_id' => $request->kelas_id,
                 'anak_id' => $request->anak_id,
@@ -199,15 +264,18 @@ class MasterKegiatanRutinController extends Controller
         return back()->with('success', 'Data pencapaian berhasil disimpan.');
     }
 
-    public function detail(Request $request, MasterKegiatanRutin $masterKegiatanRutin, \App\Models\Anak $anak)
+    public function detail(Request $request, MasterKegiatanRutin $masterKegiatanRutin, Anak $anak)
     {
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
 
+        $this->assertMasterInScope($masterKegiatanRutin);
+        $this->assertAnakInScope($anak);
+
         $mulai = $request->query('mulai', date('Y-m-01'));
         $sampai = $request->query('sampai', date('Y-m-t'));
 
-        $rutins = \App\Models\KegiatanRutin::where('anak_id', $anak->id)
+        $rutins = KegiatanRutin::where('anak_id', $anak->id)
             ->where('sekolah_id', $sekolah_id)
             ->where('master_kegiatan_rutin_id', $masterKegiatanRutin->id)
             ->whereBetween('tanggal', [$mulai, $sampai])
@@ -220,7 +288,7 @@ class MasterKegiatanRutinController extends Controller
                     'tanggal' => $q->tanggal->format('Y-m-d'),
                     'status_pencapaian' => $q->status_pencapaian,
                     'keterangan' => $q->keterangan,
-                    'photo_url' => $q->photo ? \Illuminate\Support\Facades\Storage::url($q->photo) : null,
+                    'photo_url' => $q->photo ? Storage::url($q->photo) : null,
                 ];
             });
 
@@ -236,9 +304,11 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
-        foreach($masterKegiatanRutin->kegiatanRutins as $qr) {
+        $this->assertMasterInScope($masterKegiatanRutin);
+
+        foreach ($masterKegiatanRutin->kegiatanRutins as $qr) {
             if ($qr->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($qr->photo);
+                Storage::disk('public')->delete($qr->photo);
             }
         }
 
@@ -247,7 +317,7 @@ class MasterKegiatanRutinController extends Controller
         return redirect()->route('admin.master-kegiatan-rutin.index')->with('success', 'Master Kegiatan Rutin berhasil dihapus.');
     }
 
-    public function destroyRutinRecord(\App\Models\KegiatanRutin $kegiatanRutin)
+    public function destroyRutinRecord(KegiatanRutin $kegiatanRutin)
     {
         $user = auth()->user();
         $sekolah_id = $user->sekolah_id;
@@ -256,12 +326,75 @@ class MasterKegiatanRutinController extends Controller
             abort(403);
         }
 
+        $this->assertKelasIdInScope((int) $kegiatanRutin->kelas_id);
+
         if ($kegiatanRutin->photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($kegiatanRutin->photo);
+            Storage::disk('public')->delete($kegiatanRutin->photo);
         }
 
         $kegiatanRutin->delete();
 
         return back()->with('success', 'Catatan pencapaian berhasil dihapus.');
+    }
+
+    /** @return list<int>|null */
+    private function waliKelasIds(): ?array
+    {
+        return auth()->user()->scopedKelasIds();
+    }
+
+    /** @param  list<int>|null  $waliKelasIds */
+    private function kelasOptions(int $sekolahId, ?array $waliKelasIds)
+    {
+        $query = Kelas::where('sekolah_id', $sekolahId)->orderBy('name');
+        if ($waliKelasIds !== null) {
+            $query->whereIn('id', $waliKelasIds);
+        }
+
+        return $query->get();
+    }
+
+    private function assertMasterInScope(MasterKegiatanRutin $master): void
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($waliKelasIds === [], 403);
+
+        $linked = $master->kelas()->whereIn('kelas.id', $waliKelasIds)->exists();
+        abort_unless($linked, 403);
+    }
+
+    /** @param  list<int>  $kelasIds */
+    private function assertKelasIdsInScope(array $kelasIds): void
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($waliKelasIds === [], 403);
+
+        foreach ($kelasIds as $kelasId) {
+            abort_unless(in_array((int) $kelasId, $waliKelasIds, true), 403);
+        }
+    }
+
+    private function assertKelasIdInScope(int $kelasId): void
+    {
+        $waliKelasIds = $this->waliKelasIds();
+        if ($waliKelasIds === null) {
+            return;
+        }
+
+        abort_if($waliKelasIds === [], 403);
+        abort_unless(in_array($kelasId, $waliKelasIds, true), 403);
+    }
+
+    private function assertAnakInScope(Anak $anak): void
+    {
+        $this->assertKelasIdInScope((int) $anak->kelas_id);
     }
 }

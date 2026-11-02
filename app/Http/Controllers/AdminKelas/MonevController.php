@@ -13,6 +13,7 @@ use App\Models\Pengajar;
 use App\Services\AiTokenService;
 use App\Services\MonevSummaryService;
 use App\Support\AiTokenFeature;
+use App\Support\PaginationPerPage;
 use Illuminate\Http\Request;
 
 class MonevController extends Controller
@@ -48,7 +49,7 @@ class MonevController extends Controller
             : ($kelasList->count() === 1 ? (int) $kelasList->first()->id : null);
 
         $search = $request->string('search')->toString();
-        $anaks = $this->monevService->paginateAnaksForKelasIds($kelasIds, $filterKelasId, $search);
+        $anaks = $this->monevService->paginateAnaksForKelasIds($kelasIds, $filterKelasId, $search, PaginationPerPage::resolve($request));
 
         $summaries = MonevSummary::query()
             ->whereIn('anak_id', $anaks->pluck('id'))

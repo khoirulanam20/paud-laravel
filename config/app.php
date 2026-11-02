@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Bintang Kecil'),
+    'name' => env('APP_NAME', 'DaycareAI'),
 
     /*
     |--------------------------------------------------------------------------
@@ -78,7 +78,10 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'id'),
+
+    /** Locale untuk Carbon (nama hari/bulan di UI). Default Indonesia. */
+    'date_locale' => env('APP_DATE_LOCALE', 'id'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 

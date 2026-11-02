@@ -10,8 +10,18 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
-            tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false, isCompressing: false,
+    @php
+        $kegiatanPhotoDownloadRoute = auth()->user()->hasRole('Wali Kelas')
+            ? 'adminkelas.kegiatan.photos.download'
+            : 'pengajar.kegiatan.photos.download';
+        $kegiatanPhotoSingleBase = auth()->user()->hasRole('Wali Kelas')
+            ? url('adminkelas/kegiatan')
+            : url('pengajar/kegiatan');
+    @endphp
+
+    <div class="app-page-shell" x-data="{ showCreateModal:false, showEditModal:false, showDeleteModal:false, showDetailModal:false, showDocModal:false, showPhotoDeleteModal:false, showImageModal:false, activeImage:null, activeDownloadUrl:null, activeMediaType:'image', editData:{}, deleteRoute:'', detailData:{}, detailEditPayload:{},
+            tempNewPhotos: [], tempDeletedPhotos: [], isUploading: false,
+            docUploadActive: false, docUploadProgress: 0, docUploadLabel: '',
             photoToDelete: {id:null, path:''},
             openEdit(d){ 
                 this.editData = JSON.parse(JSON.stringify(d)); 
@@ -43,29 +53,35 @@
             immediateDelete(id, path) {
                 this.confirmDeletePhoto(id, path);
             },
+            isVideoUrl(url) {
+                return typeof window.isVideoPath === 'function' && window.isVideoPath(url);
+            },
+            openMedia(url, downloadUrl) {
+                this.activeImage = url;
+                this.activeDownloadUrl = downloadUrl ?? null;
+                this.activeMediaType = this.isVideoUrl(url) ? 'video' : 'image';
+                this.showImageModal = true;
+            },
             async addPhotos(e) {
                 const files = Array.from(e.target.files);
                 if (files.length === 0) return;
-                
-                this.isCompressing = true;
                 try {
-                    for (let file of files) {
-                        const compressedBlob = await this.compressImage(file);
-                        const fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
-                        const compressedFile = new File([compressedBlob], fileName, { type: 'image/jpeg' });
-                        
+                    for (let i = 0; i < files.length; i++) {
+                        const prepared = await window.documentationUploadProcess(files[i], this, {
+                            fileIndex: i,
+                            fileTotal: files.length,
+                        });
+                        const kind = (window.isVideoFile && window.isVideoFile(prepared)) ? 'video' : 'image';
                         this.tempNewPhotos.push({
-                            file: compressedFile,
-                            preview: URL.createObjectURL(compressedFile)
+                            file: prepared,
+                            preview: URL.createObjectURL(prepared),
+                            kind,
                         });
                     }
-                } finally {
-                    this.isCompressing = false;
+                } catch (err) {
+                    alert(err?.message || 'Gagal memproses file.');
                 }
                 e.target.value = '';
-            },
-            async compressImage(file) {
-                return window.compressImage(file);
             },
             removeNewPhoto(index) {
                 URL.revokeObjectURL(this.tempNewPhotos[index].preview);
@@ -104,29 +120,28 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>{{ session('success') }}</div>@endif
+        @if(session('warning'))<div class="alert-danger mb-5">{{ session('warning') }}</div>@endif
         @if($errors->any())
             <div class="alert-danger mb-5">
                 <ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
         </div>@endif
 
         <div class="card overflow-hidden mb-6" data-tour="pg-kegiatan-calendar">
-            <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b"
+            <div class="card-pad page-toolbar border-b"
                 style="border-color:rgba(0,0,0,0.06);">
                 <div>
                     <h3 class="section-title">Kalender Agenda Saya</h3>
                     <p class="section-subtitle">Klik entri untuk detail, edit, atau hapus.</p>
                 </div>
-                <button type="button" data-tour="pg-kegiatan-add-btn" data-tour-open-modal="create" @click="showCreateModal=true" class="btn-primary shrink-0"><svg
-                        class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>Buat Entri Jurnal</button>
+                <x-toolbar.add-icon label="Buat Entri Jurnal" data-tour="pg-kegiatan-add-btn" data-tour-open-modal="create"
+                    type="button" @click="showCreateModal=true" />
             </div>
-            <form method="get" class="px-6 py-4 flex flex-wrap items-end gap-4 border-b"
+            <form method="get" class="card-pad toolbar-form border-b"
                 style="border-color:rgba(0,0,0,0.06);">
                 <input type="hidden" name="year" value="{{ $year }}">
                 <input type="hidden" name="month" value="{{ $month }}">
                 <input type="hidden" name="day" value="{{ request('day') }}">
-                <div class="min-w-[200px]">
+                <div class="toolbar-field">
                     <label class="input-label">Filter Kelas</label>
                     <select name="kelas_id" class="input-field" onchange="this.form.submit()">
                         <option value="">Semua Kelas</option>
@@ -135,7 +150,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="min-w-[220px]">
+                <div class="toolbar-field">
                     <label class="input-label">Filter matrikulasi</label>
                     <select name="matrikulasi_id" class="input-field" onchange="this.form.submit()">
                         <option value="">Semua</option>
@@ -146,13 +161,10 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="btn-secondary h-11">Tampilkan</button>
-                    @if(request()->anyFilled(['kelas_id', 'matrikulasi_id', 'day']))
-                        <a href="{{ route('pengajar.kegiatan.index') }}" class="btn-secondary h-11 flex items-center justify-center bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700" title="Reset Filter">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </a>
-                    @endif
+                <div class="toolbar-actions">
+                    <x-toolbar.filter-icon label="Tampilkan" variant="secondary" />
+                    <x-filter-reset :href="route('pengajar.kegiatan.index')" compact />
+                    <x-download-photos :route="$kegiatanPhotoDownloadRoute" :icon-only="true" />
                 </div>
             </form>
             <div class="p-4 md:p-6">
@@ -194,8 +206,17 @@
                                 <div
                                     class="relative aspect-square rounded-xl overflow-hidden border bg-gray-100 shadow-sm transition-all hover:shadow-md flex flex-col group">
                                     <div class="relative-grow h-full w-full overflow-hidden">
-                                        <img :src="url" class="w-full h-full object-cover cursor-pointer"
-                                            @click.stop="activeImage = url; showImageModal = true">
+                                        <template x-if="isVideoUrl(url)">
+                                            <div class="w-full h-full bg-gray-900 flex items-center justify-center cursor-pointer relative"
+                                                @click.stop="openMedia(url, `{{ $kegiatanPhotoSingleBase }}/${detailData.id}/photos/download?index=${idx}`)">
+                                                <video :src="url" class="w-full h-full object-cover opacity-80" muted playsinline></video>
+                                                <span class="absolute inset-0 flex items-center justify-center text-white text-3xl drop-shadow">▶</span>
+                                            </div>
+                                        </template>
+                                        <template x-if="!isVideoUrl(url)">
+                                            <img :src="url" class="w-full h-full object-cover cursor-pointer"
+                                                @click.stop="openMedia(url, `{{ $kegiatanPhotoSingleBase }}/${detailData.id}/photos/download?index=${idx}`)">
+                                        </template>
                                     </div>
                                     <button type="button"
                                         @click="immediateDelete(detailData.id, detailData.photo_urls_raw[idx])"
@@ -246,7 +267,7 @@
                                             </td>
                                             <td class="px-4 py-3 text-xs" style="color:#5A5A5A;">
                                                 <span class="font-semibold text-[#1A6B6B]"
-                                                    x-text="pc.aspek || '—'"></span>
+                                                    x-text="pc.aspek || ''"></span>
                                                 <span x-show="pc.indicator" class="block mt-0.5"
                                                     x-text="pc.indicator"></span>
                                             </td>
@@ -270,16 +291,14 @@
                     </div>
                 </div>
                 <div class="modal-footer flex flex-wrap gap-2">
-                    <button type="button" @click="showDetailModal=false; openDoc(detailEditPayload)" class="btn-primary"
-                        x-show="detailEditPayload.id" style="background:#10B981; border-color:#10B981;">
-                        <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    <button type="button" @click="showDetailModal=false; openDoc(detailEditPayload)" class="btn-primary shrink-0 h-9 w-9 md:h-11 md:w-11 p-0"
+                        x-show="detailEditPayload.id" style="background:#10B981; border-color:#10B981;" title="Dokumentasi" aria-label="Dokumentasi">
+                        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Dokumentasi
-                    </button>
+                        </svg></button>
                     <button type="button" @click="showDetailModal=false; openEdit(detailEditPayload)"
                         data-tour-open-modal="edit" class="btn-secondary">Edit</button>
                     <button type="button" @click="openDelete(deleteRoute); showDetailModal=false" data-tour-open-modal="delete" class="btn-danger"
@@ -498,19 +517,6 @@
                     </p>
                 </div>
 
-                {{-- Compressing Overlay --}}
-                <div x-show="isCompressing"
-                    class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-[4px] flex flex-col items-center justify-center">
-                    <div class="relative h-16 w-16">
-                        <div class="absolute inset-0 border-4 border-teal-100 rounded-full"></div>
-                        <div
-                            class="absolute inset-0 border-4 border-teal-500 rounded-full animate-spin border-t-transparent">
-                        </div>
-                    </div>
-                    <p class="mt-4 text-sm font-bold text-teal-800 uppercase tracking-widest">Memproses Foto...</p>
-                    <p class="mt-1 text-[10px] text-teal-600 font-medium">Mengoptimalkan gambar agar lebih ringan</p>
-                </div>
-
                 <form :action="`/pengajar/kegiatan/${editData.id}`" method="POST" enctype="multipart/form-data"
                     x-ref="docForm">
                     @csrf @method('PUT')
@@ -538,18 +544,22 @@
                     <div class="modal-body space-y-6 pt-2">
                         <div
                             class="p-6 rounded-2xl border-2 border-dashed bg-teal-50/30 flex flex-col items-center justify-center border-teal-200/50">
+                            <div class="w-full max-w-md mb-4 px-2">
+                                <x-documentation-upload-progress />
+                            </div>
                             <label
                                 class="btn-primary cursor-pointer px-8 py-3 shadow-md hover:shadow-lg transition-all scale-105 active:scale-95"
+                                :class="docUploadActive ? 'opacity-60 pointer-events-none' : ''"
                                 style="background:#10B981; border-color:#10B981;">
                                 <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                     stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Tambah Foto
-                                <input type="file" accept="image/*" multiple class="hidden" @change="addPhotos($event)">
+                                Tambah Foto / Video
+                                <input type="file" accept="image/*,video/*" multiple class="hidden" :disabled="docUploadActive" @change="addPhotos($event)">
                             </label>
                             <p class="text-[12px] font-bold text-teal-800 mt-4 text-center">Bisa pilih lebih dari satu
-                                foto sekaligus</p>
+                                foto atau video sekaligus</p>
                         </div>
 
                         <div class="space-y-6">
@@ -561,7 +571,8 @@
                                     <template x-for="(p, index) in tempNewPhotos" :key="index">
                                         <div
                                             class="relative aspect-square rounded-xl overflow-hidden border-2 border-teal-100 group shadow-sm">
-                                            <img :src="p.preview" class="w-full h-full object-cover">
+                                            <video x-show="p.kind === 'video'" :src="p.preview" class="w-full h-full object-cover" muted playsinline></video>
+                                            <img x-show="p.kind !== 'video'" :src="p.preview" class="w-full h-full object-cover">
                                             <div
                                                 class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                                                 <button type="button" @click="removeNewPhoto(index)"
@@ -638,23 +649,7 @@
             </div>
         </div>
 
-        {{-- Modal Preview Gambar --}}
-        <div x-show="showImageModal"
-            class="modal-overlay modal-overlay--elevated modal-overlay--dark"
-            style="display: none;" x-transition @keydown.escape.window="showImageModal = false">
-            <div class="relative max-w-4xl w-full" @click.away="showImageModal = false">
-                <button
-                    class="absolute -top-12 right-0 text-white hover:text-gray-300 transition flex items-center gap-2"
-                    @click="showImageModal = false">
-                    <span class="text-xs font-bold uppercase tracking-widest text-white/50">Klik di mana saja untuk tutup</span>
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                <img :src="activeImage"
-                    class="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl bg-white shadow-black/20">
-            </div>
-        </div>
+        <x-image-lightbox />
 
     </div>
 </x-app-layout>

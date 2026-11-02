@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-4 md:py-8 px-3 md:px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="app-page-shell">
         @if($kelasList->count() > 1 && !$filterKelasId && $isCurrentMonth && $canManual === false)
             <div class="alert-danger mb-5 text-sm">Pilih kelas terlebih dahulu untuk generate ringkasan manual.</div>
         @endif
