@@ -119,7 +119,8 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        // Dijalankan langsung (bukan DOMContentLoaded): navigasi Turbo tidak memicu event itu lagi.
+        (function () {
             const statusEl = document.getElementById('geo-status');
 
             function setStatus(text, color) {
@@ -155,14 +156,19 @@
                             }
                             form.submit();
                         },
-                        function () {
+                        function (error) {
                             button.disabled = false;
-                            setStatus('Gagal mengambil lokasi. Izinkan akses lokasi lalu coba lagi.', '#C0392B');
+                            const messages = {
+                                1: 'Izin lokasi ditolak. Aktifkan izin lokasi untuk aplikasi ini di pengaturan HP, lalu coba lagi.',
+                                2: 'Lokasi tidak tersedia. Pastikan GPS/Lokasi HP menyala, lalu coba lagi.',
+                                3: 'Pengambilan lokasi terlalu lama. Coba di tempat terbuka atau pastikan GPS menyala, lalu coba lagi.',
+                            };
+                            setStatus(messages[error && error.code] || 'Gagal mengambil lokasi. Coba lagi.', '#C0392B');
                         },
-                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
                     );
                 });
             });
-        });
+        })();
     </script>
 </x-app-layout>
