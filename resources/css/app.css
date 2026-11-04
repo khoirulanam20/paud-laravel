@@ -1022,6 +1022,80 @@
         padding-top: 1rem;
     }
 
+    .confirm-dialog.modal-box {
+        max-width: min(100%, 26rem);
+    }
+
+    .confirm-dialog__header {
+        @apply shrink-0 flex justify-end px-3 pt-3 md:px-4 md:pt-4;
+    }
+
+    .confirm-dialog__close {
+        @apply inline-flex h-9 w-9 items-center justify-center rounded-lg transition;
+        color: var(--text-muted);
+    }
+
+    .confirm-dialog__close:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--text-primary);
+    }
+
+    .confirm-dialog__body {
+        @apply pt-0 pb-5 md:pb-6;
+    }
+
+    .confirm-dialog__hero {
+        @apply flex flex-col items-center gap-4 text-center;
+    }
+
+    .confirm-dialog__icon {
+        @apply flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl;
+    }
+
+    .confirm-dialog__copy {
+        @apply min-w-0 space-y-1;
+    }
+
+    .confirm-dialog__title {
+        @apply text-base md:text-lg font-bold leading-snug;
+        color: var(--text-primary);
+    }
+
+    .confirm-dialog__message {
+        @apply text-sm leading-relaxed;
+        color: var(--text-muted);
+    }
+
+    .confirm-dialog__slot {
+        @apply mt-5 space-y-3 text-left;
+    }
+
+    .confirm-dialog-preview {
+        @apply rounded-xl border px-4 py-3;
+        border-color: var(--border-thin);
+        background: var(--cream-inset);
+    }
+
+    .confirm-dialog-preview__label {
+        @apply text-[10px] font-bold uppercase tracking-wider mb-2;
+        color: var(--text-muted);
+    }
+
+    .confirm-dialog-hint {
+        @apply rounded-lg px-3 py-2.5 text-xs leading-relaxed;
+        background: #FFF8E7;
+        border: 1px solid #F0E6D0;
+        color: #6B5B3A;
+    }
+
+    .confirm-dialog__footer {
+        @apply flex-col-reverse gap-2.5 sm:flex-row sm:justify-end sm:gap-3;
+    }
+
+    .confirm-dialog__footer :is(.btn-secondary, .btn-danger) {
+        @apply w-full justify-center sm:w-auto min-h-[2.75rem];
+    }
+
     /* Scrollbar terlihat jelas (modal detail siswa, dll.) */
     .modal-detail-scrollbar {
         scrollbar-width: thin;

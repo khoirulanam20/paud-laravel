@@ -92,8 +92,11 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    <x-table.action-icon :href="route('admin.orangtua-chat.show', $chat)" label="Detail" variant="detail"
-                                        @if($loop->first) data-tour="admin-chat-action-detail" @endif />
+                                    @if($loop->first)
+                                        <x-table.action-icon :href="route('admin.orangtua-chat.show', $chat)" label="Detail" variant="detail" data-tour="admin-chat-action-detail" />
+                                    @else
+                                        <x-table.action-icon :href="route('admin.orangtua-chat.show', $chat)" label="Detail" variant="detail" />
+                                    @endif
                                 </td>
                             </tr>
                         @empty

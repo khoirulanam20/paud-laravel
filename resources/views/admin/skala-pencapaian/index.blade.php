@@ -11,9 +11,10 @@
         showDeleteModal:false,
         editData:{},
         deleteRoute:'',
+        deleteTarget:null,
         openEdit(d){this.editData=d;this.showEditModal=true},
-        openDelete(r){this.deleteRoute=r;this.showDeleteModal=true}
-    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false">
+        openDelete(r,t){this.deleteRoute=r;this.deleteTarget=t;this.showDeleteModal=true}
+    }" @tour-close-modals.window="showCreateModal=false; showEditModal=false; showDeleteModal=false; deleteTarget=null">
         @if(session('success'))<div class="alert-success mb-5"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>{{ session('success') }}</div>@endif
         @if($errors->any())<div class="alert-danger mb-5"><ul class="list-disc pl-5 text-sm">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul></div>@endif
         <div class="card overflow-hidden">
@@ -74,12 +75,13 @@
                                     ];
                                 @endphp
                                 <div class="flex flex-wrap items-center justify-end gap-1.5">
-                                    <x-table.action-icon type="button" label="Edit" variant="edit"
-                                        @if($loop->first) data-tour="admin-skala-action-edit" data-tour-open-modal="edit" @endif
-                                        @click="openEdit(@js($payload))" />
-                                    <x-table.action-icon type="button" label="Hapus" variant="delete"
-                                        @if($loop->first) data-tour="admin-skala-action-delete" data-tour-demo-action="delete" @endif
-                                        @click="openDelete('{{ route('admin.skala-pencapaian.destroy', $s) }}')" />
+                                    @if($loop->first)
+                                        <x-table.action-icon type="button" label="Edit" variant="edit" data-tour="admin-skala-action-edit" data-tour-open-modal="edit" @click="openEdit({{ Js::from($payload) }})" />
+                                        <x-table.action-icon type="button" label="Hapus" variant="delete" data-tour="admin-skala-action-delete" data-tour-demo-action="delete" @click="openDelete('{{ route('admin.skala-pencapaian.destroy', $s) }}', {{ Js::from(['code' => $s->code, 'label' => $s->label, 'color' => $s->color]) }})" />
+                                    @else
+                                        <x-table.action-icon type="button" label="Edit" variant="edit" @click="openEdit({{ Js::from($payload) }})" />
+                                        <x-table.action-icon type="button" label="Hapus" variant="delete" @click="openDelete('{{ route('admin.skala-pencapaian.destroy', $s) }}', {{ Js::from(['code' => $s->code, 'label' => $s->label, 'color' => $s->color]) }})" />
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -166,17 +168,30 @@
             </div>
         </div>
 
-        <div x-show="showDeleteModal" data-tour="modal-delete" class="modal-overlay" style="display:none;">
-            <div x-show="showDeleteModal" x-transition class="modal-box max-w-sm" @click.away="showDeleteModal=false">
-                <form :action="deleteRoute" method="POST">
-                    @csrf @method('DELETE')
-                    <div class="modal-body text-center py-6">
-                        <h3 class="section-title">Hapus skala capaian?</h3>
-                        <p class="section-subtitle mt-1">Tidak dapat dihapus jika masih dipakai di data pencapaian.</p>
-                    </div>
-                    <div class="modal-footer"><button type="button" @click="showDeleteModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-danger">Ya, hapus</button></div>
-                </form>
+        <x-confirm-modal
+            data-tour="modal-delete"
+            show="showDeleteModal"
+            action-binding="deleteRoute"
+            method="DELETE"
+            title="Hapus skala capaian?"
+            message="Tindakan ini permanen dan tidak bisa dibatalkan."
+            submit="Hapus skala"
+        >
+            <div x-show="deleteTarget" x-cloak class="confirm-dialog-preview">
+                <p class="confirm-dialog-preview__label">Yang akan dihapus</p>
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="font-mono text-sm font-bold shrink-0" style="color:#2C2C2C;" x-text="deleteTarget?.code"></span>
+                    <span class="text-sm truncate min-w-0" style="color:var(--text-muted);" x-text="deleteTarget?.label"></span>
+                    <span
+                        class="ml-auto shrink-0 inline-block w-9 h-5 rounded-md border"
+                        :style="'background:' + (deleteTarget?.color || '#eee') + ';border-color:rgba(0,0,0,0.12);'"
+                        :title="deleteTarget?.color"
+                    ></span>
+                </div>
             </div>
-        </div>
+            <p class="confirm-dialog-hint">
+                Skala yang masih dipakai di data pencapaian tidak bisa dihapus. Nonaktifkan lewat <strong>Edit</strong> jika ingin menyembunyikan dari form penilaian.
+            </p>
+        </x-confirm-modal>
     </div>
 </x-app-layout>
