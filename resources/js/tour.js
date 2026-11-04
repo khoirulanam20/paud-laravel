@@ -999,6 +999,11 @@ document.addEventListener('click', (event) => {
     const demoAction = event.target.closest('[data-tour-demo-action]');
     const type = openTrigger?.dataset.tourOpenModal ?? demoAction?.dataset.tourDemoAction;
 
+    // ponytail: hapus langsung buka modal — sub-tour delete mengganggu operasional
+    if (type === 'delete') {
+        return;
+    }
+
     if (type) {
         const ctx = getContext();
         if (!ctx?.modalSteps?.[type]?.length) {

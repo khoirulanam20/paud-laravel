@@ -124,7 +124,22 @@
                     </thead>
                     <tbody>
                         @forelse($anaks as $anak)
-                            @php $latest = $anak->kesehatans->first(); @endphp
+                            @php
+                                $latest = $anak->kesehatans->first();
+                                $anakAlpine = [
+                                    'id' => $anak->id,
+                                    'name' => $anak->name,
+                                    'kesehatans' => $latest ? [[
+                                        'berat_badan' => $latest->berat_badan,
+                                        'tinggi_badan' => $latest->tinggi_badan,
+                                        'lingkar_kepala' => $latest->lingkar_kepala,
+                                        'gigi' => $latest->gigi,
+                                        'telinga' => $latest->telinga,
+                                        'kuku' => $latest->kuku,
+                                        'alergi' => $latest->alergi,
+                                    ]] : [],
+                                ];
+                            @endphp
                             <tr>
                                 <td>
                                     <div class="flex items-center gap-3">
@@ -190,12 +205,13 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="flex flex-wrap items-center justify-end gap-1.5">
-                                        <x-table.action-icon type="button" label="Riwayat" variant="detail"
-                                            @if($loop->first) data-tour="admin-kesehatan-action-riwayat" data-tour-open-modal="history" @endif
-                                            @click="openHistory(@js($anak))" />
-                                        <x-table.action-icon type="button" label="Input data" variant="edit"
-                                            @if($loop->first) data-tour="admin-kesehatan-action-input" data-tour-open-modal="create" @endif
-                                            @click="openInput(@js($anak))" />
+                                        @if($loop->first)
+                                            <x-table.action-icon type="button" label="Riwayat" variant="detail" data-tour="admin-kesehatan-action-riwayat" data-tour-open-modal="history" @click="openHistory({{ Js::from($anakAlpine) }})" />
+                                            <x-table.action-icon type="button" label="Input data" variant="edit" data-tour="admin-kesehatan-action-input" data-tour-open-modal="create" @click="openInput({{ Js::from($anakAlpine) }})" />
+                                        @else
+                                            <x-table.action-icon type="button" label="Riwayat" variant="detail" @click="openHistory({{ Js::from($anakAlpine) }})" />
+                                            <x-table.action-icon type="button" label="Input data" variant="edit" @click="openInput({{ Js::from($anakAlpine) }})" />
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

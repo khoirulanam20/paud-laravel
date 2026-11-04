@@ -68,8 +68,11 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    <x-table.action-icon :href="route('pengajar.monev-guru.show', $e)" label="Detail" variant="detail"
-                                        @if($loop->first) data-tour="pengajar-monev-guru-action-detail" @endif />
+                                    @if($loop->first)
+                                        <x-table.action-icon :href="route('pengajar.monev-guru.show', $e)" label="Detail" variant="detail" data-tour="pengajar-monev-guru-action-detail" />
+                                    @else
+                                        <x-table.action-icon :href="route('pengajar.monev-guru.show', $e)" label="Detail" variant="detail" />
+                                    @endif
                                 </td>
                             </tr>
                         @empty

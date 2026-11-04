@@ -79,7 +79,7 @@
                                 <td class="text-right">
                                     @php $payload = ['id'=>$k->id,'nama'=>$k->nama,'deskripsi'=>$k->deskripsi,'bobot'=>$k->bobot,'urutan'=>$k->urutan,'is_active'=>$k->is_active]; @endphp
                                     <div class="flex flex-wrap justify-end gap-1.5">
-                                        <x-table.action-icon type="button" label="Edit" variant="edit" @click="openEdit(@js($payload))" />
+                                        <x-table.action-icon type="button" label="Edit" variant="edit" @click="openEdit({{ Js::from($payload) }})" />
                                         <x-table.action-icon type="button" label="Hapus" variant="delete" @click="openDelete('{{ route('admin.monev-guru.kriteria.destroy', $k) }}')" />
                                     </div>
                                 </td>

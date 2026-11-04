@@ -154,8 +154,8 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="flex flex-wrap items-center justify-end gap-1.5">
-                                        <x-table.action-icon type="button" label="Detail" variant="detail" @click="openDetail(@js($detailPayload))" />
-                                        <x-table.action-icon type="button" label="Edit" variant="edit" @click="openEdit(@js($editPayload))" />
+                                        <x-table.action-icon type="button" label="Detail" variant="detail" @click="openDetail({{ Js::from($detailPayload) }})" />
+                                        <x-table.action-icon type="button" label="Edit" variant="edit" @click="openEdit({{ Js::from($editPayload) }})" />
                                         <x-table.action-icon type="button" label="Hapus" variant="delete" @click="openDelete('{{ route('admin.pengumuman.destroy', $p) }}')" />
                                     </div>
                                 </td>
