@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\FiltersByKelasRiwayat;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pencapaian extends Model
 {
-    use LogsScopedActivity;
+    use FiltersByKelasRiwayat, LogsScopedActivity;
 
     protected $guarded = [];
 

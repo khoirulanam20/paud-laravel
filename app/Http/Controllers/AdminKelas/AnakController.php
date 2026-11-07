@@ -44,6 +44,7 @@ class AnakController extends Controller
             'user',
             'kelas',
             'kesehatans' => fn ($q) => $q->orderBy('tanggal_pemeriksaan', 'desc'),
+            'riwayatKelas',
         ]);
 
         return view('adminkelas.anak.show', compact('anak'));

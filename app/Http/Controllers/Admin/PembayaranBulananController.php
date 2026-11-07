@@ -12,6 +12,7 @@ use App\Models\PembayaranBulananItem;
 use App\Services\AkuntansiService;
 use App\Services\RekapBiayaService;
 use App\Support\PaginationPerPage;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,9 +78,9 @@ class PembayaranBulananController extends Controller
         $this->scopeToWaliKelas($query);
 
         if ($kelasId) {
-            $query->whereHas('anak', function ($q) use ($kelasId) {
-                $q->where('kelas_id', $kelasId);
-            });
+            $dari = Carbon::create($tahun, $bulan, 1)->startOfDay();
+            $sampai = (clone $dari)->endOfMonth();
+            $query->diKelasSelama((int) $kelasId, $dari, $sampai);
         }
 
         if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {
@@ -135,7 +136,9 @@ class PembayaranBulananController extends Controller
         $this->scopeToWaliKelas($query);
 
         if ($kelasId) {
-            $query->whereHas('anak', fn ($q) => $q->where('kelas_id', $kelasId));
+            $dari = Carbon::create($tahun, $bulan, 1)->startOfDay();
+            $sampai = (clone $dari)->endOfMonth();
+            $query->diKelasSelama((int) $kelasId, $dari, $sampai);
         }
 
         if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {

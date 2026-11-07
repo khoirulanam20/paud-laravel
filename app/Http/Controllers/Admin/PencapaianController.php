@@ -77,7 +77,7 @@ class PencapaianController extends Controller
             $hariQuery->where('anak_id', $aid);
         }
         if ($this->kelasFilterInScope($request)) {
-            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
+            $hariQuery->diKelasPada((int) $request->input('filter_kelas_id'), 'pencapaians.created_at');
         }
 
         $hariAll = $hariQuery->get();
@@ -207,7 +207,7 @@ class PencapaianController extends Controller
             $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
         }
         if ($this->kelasFilterInScope($request)) {
-            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
+            $hariQuery->diKelasPada((int) $request->input('filter_kelas_id'), 'pencapaians.created_at');
         }
 
         $rows = $hariQuery->get()
@@ -278,7 +278,7 @@ class PencapaianController extends Controller
             $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
         }
         if ($this->kelasFilterInScope($request)) {
-            $hariQuery->whereHas('anak', fn ($q) => $q->where('kelas_id', (int) $request->input('filter_kelas_id')));
+            $hariQuery->diKelasPada((int) $request->input('filter_kelas_id'), 'pencapaians.created_at');
         }
 
         return $hariQuery;

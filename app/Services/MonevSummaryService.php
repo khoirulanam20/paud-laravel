@@ -202,7 +202,9 @@ class MonevSummaryService
     public function anakMatchesGenerationScope(Anak $anak, MonevGeneration $generation): bool
     {
         if ($generation->kelas_id) {
-            return (int) $anak->kelas_id === (int) $generation->kelas_id;
+            $akhirBulan = Carbon::create((int) $generation->tahun, (int) $generation->bulan, 1)->endOfMonth();
+
+            return $anak->kelasPada($akhirBulan) === (int) $generation->kelas_id;
         }
 
         if ($generation->sekolah_id) {

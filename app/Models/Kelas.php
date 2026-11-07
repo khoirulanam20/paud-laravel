@@ -10,7 +10,7 @@ class Kelas extends Model
 {
     use BelongsToSekolah, LogsScopedActivity;
 
-    protected $fillable = ['sekolah_id', 'name', 'description', 'wali_kelas_id'];
+    protected $fillable = ['sekolah_id', 'name', 'description', 'wali_kelas_id', 'tingkat', 'usia_min_bulan'];
 
     public function sekolah()
     {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToSekolah;
 use App\Models\Concerns\LogsScopedActivity;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -68,6 +69,29 @@ class Anak extends Model
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(Kelas::class);
+    }
+
+    public function riwayatKelas(): HasMany
+    {
+        return $this->hasMany(AnakKelasRiwayat::class)->orderBy('mulai');
+    }
+
+    /** Kelas tempat siswa berada pada tanggal tertentu (riwayat, eksklusif selesai). */
+    public function kelasPada(Carbon $tanggal): ?int
+    {
+        $row = $this->riwayatKelas()->get()->first(function (AnakKelasRiwayat $r) use ($tanggal) {
+            $mulai = Carbon::parse($r->mulai)->startOfDay();
+            if ($tanggal->lt($mulai)) {
+                return false;
+            }
+            if ($r->selesai === null) {
+                return true;
+            }
+
+            return $tanggal->lt(Carbon::parse($r->selesai)->startOfDay());
+        });
+
+        return $row?->kelas_id !== null ? (int) $row->kelas_id : null;
     }
 
     public function kesehatans(): HasMany

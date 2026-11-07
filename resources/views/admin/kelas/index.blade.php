@@ -50,13 +50,14 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="data-table">
-                    <thead><tr><th>Nama Kelas</th><th>Wali Kelas</th><th>Deskripsi</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
+                    <thead><tr><th>Nama Kelas</th><th>Tingkat</th><th>Wali Kelas</th><th>Deskripsi</th><th>Jumlah Siswa</th><th class="text-right">Aksi</th></tr></thead>
                     <tbody>
                         @forelse($kelasList as $k)
                         <tr>
                             <td>
                                 <span class="font-semibold" style="color:#2C2C2C;">{{ $k->name }}</span>
                             </td>
+                            <td><span class="badge badge-teal">{{ $k->tingkat ? 'T'.$k->tingkat : '-' }}</span>@if($k->usia_min_bulan !== null)<span class="text-xs block" style="color:#9E9790;">min {{ $k->usia_min_bulan }} bln</span>@endif</td>
                             <td>
                                 @if($k->waliKelas)
                                     <div class="flex items-center gap-2">
@@ -75,6 +76,8 @@
                                         'id' => $k->id,
                                         'name' => $k->name,
                                         'description' => $k->description,
+                                        'tingkat' => $k->tingkat,
+                                        'usia_min_bulan' => $k->usia_min_bulan,
                                         'wali_id' => $k->wali_kelas_id,
                                         'pengajar_ids' => $k->pengajars->pluck('id')->toArray(),
                                     ];
@@ -85,7 +88,7 @@
                             </div></td>
                         </tr>
                         @empty
-                        <tr><td colspan="5" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
+                        <tr><td colspan="6" class="py-6 md:py-12 text-center" style="color:#9E9790;">Belum ada kelas yang dibuat.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -108,6 +111,18 @@
                             <label class="input-label">Nama Kelas</label>
                             <input type="text" name="name" required class="input-field @error('name') border-red-500 @enderror" placeholder="Contoh: Kelas TK A - Mawar" value="{{ old('name') }}">
                             @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="input-label">Tingkat (urutan jenjang)</label>
+                                <input type="number" name="tingkat" min="1" max="20" class="input-field @error('tingkat') border-red-500 @enderror" placeholder="cth: 1" value="{{ old('tingkat') }}">
+                                @error('tingkat')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Usia min (bulan)</label>
+                                <input type="number" name="usia_min_bulan" min="0" max="120" class="input-field @error('usia_min_bulan') border-red-500 @enderror" placeholder="cth: 48" value="{{ old('usia_min_bulan') }}">
+                                @error('usia_min_bulan')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
                         <div>
                             <label class="input-label">Deskripsi (Opsional)</label>
@@ -141,6 +156,18 @@
                             <input type="text" name="name" x-model="editData.name" required class="input-field @error('name') border-red-500 @enderror">
                             @error('name')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="input-label">Tingkat</label>
+                                <input type="number" name="tingkat" x-model="editData.tingkat" min="1" max="20" class="input-field @error('tingkat') border-red-500 @enderror">
+                                @error('tingkat')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="input-label">Usia min (bulan)</label>
+                                <input type="number" name="usia_min_bulan" x-model="editData.usia_min_bulan" min="0" max="120" class="input-field @error('usia_min_bulan') border-red-500 @enderror">
+                                @error('usia_min_bulan')<p class="text-[10px] text-red-500 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
                         <div>
                             <label class="input-label">Deskripsi</label>
                             <textarea name="description" x-model="editData.description" rows="2" class="input-field @error('description') border-red-500 @enderror"></textarea>
@@ -152,7 +179,7 @@
                                 <option value=""> Pilih Guru </option>
                                 @foreach($pengajars as $p)
                                     <template x-if="editData.pengajar_ids && editData.pengajar_ids.includes({{ $p->id }})">
-                                        <option value="{{ $p->id }}">{{ $p->name }}</option>
+                                        <option value="{{ $p->id }}" :selected="editData.wali_id == {{ $p->id }}">{{ $p->name }}</option>
                                     </template>
                                 @endforeach
                             </select>

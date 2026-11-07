@@ -166,6 +166,8 @@
                         @endif
                     </div>
                 </div>
+
+                @include('admin.anak.partials.riwayat-kelas')
             </div>
         </div>
     </div>

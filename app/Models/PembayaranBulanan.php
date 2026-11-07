@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSekolah;
+use App\Models\Concerns\FiltersByKelasRiwayat;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PembayaranBulanan extends Model
 {
-    use BelongsToSekolah, LogsScopedActivity;
+    use BelongsToSekolah, FiltersByKelasRiwayat, LogsScopedActivity;
 
     protected $fillable = [
         'sekolah_id',

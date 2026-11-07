@@ -98,10 +98,10 @@ class DashboardController extends Controller
                 $data['presensiHariIniCount'] = Presensi::whereIn('kelas_id', $waliKelasIds)
                     ->whereDate('tanggal', Carbon::today())
                     ->count();
-                $data['kesehatanHariIniCount'] = Kesehatan::whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $waliKelasIds))
+                $data['kesehatanHariIniCount'] = Kesehatan::diKelasPada($waliKelasIds->all(), 'tanggal_pemeriksaan')
                     ->whereDate('tanggal_pemeriksaan', Carbon::today())
                     ->count();
-                $data['monevHariIniCount'] = Pencapaian::whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $waliKelasIds))
+                $data['monevHariIniCount'] = Pencapaian::diKelasPada($waliKelasIds->all(), 'pencapaians.created_at')
                     ->whereDate('created_at', Carbon::today())
                     ->count();
             }
@@ -124,7 +124,7 @@ class DashboardController extends Controller
 
                     $data['kegiatanSayaHariIni'] = Kegiatan::whereIn('kelas_id', $kelasIds)->whereDate('date', Carbon::today())->count();
                     $data['totalKegiatanSaya'] = Kegiatan::whereIn('kelas_id', $kelasIds)->count();
-                    $data['totalEvaluasiSaya'] = Pencapaian::whereHas('anak', fn ($q) => $q->whereIn('kelas_id', $kelasIds))->count();
+                    $data['totalEvaluasiSaya'] = Pencapaian::diKelasPada($kelasIds, 'pencapaians.created_at')->count();
                 } else {
                     $data['totalAnakSekolah'] = Anak::where('sekolah_id', $sekolahId)->where('status', 'approved')->count();
                     $data['dashboardAnakLabel'] = 'Siswa di sekolah';

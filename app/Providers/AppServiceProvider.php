@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Anak;
+use App\Observers\AnakObserver;
 use App\View\Composers\TourComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -26,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Anak::observe(AnakObserver::class);
+
         app()->setLocale((string) config('app.locale', 'id'));
         Carbon::setLocale((string) config('app.date_locale', 'id'));
 

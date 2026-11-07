@@ -50,13 +50,15 @@ class KelasController extends Controller
         $rows = $kelasList->map(fn (Kelas $k) => [
             $k->name,
             $k->waliKelas?->name ?? '-',
+            $k->tingkat ?? '-',
+            $k->usia_min_bulan ?? '-',
             $k->description ?? '-',
             $k->anaks_count,
             $k->pengajars->pluck('name')->join(', ') ?: '-',
         ])->all();
 
         return $this->downloadExcel(
-            ['Nama Kelas', 'Wali Kelas', 'Deskripsi', 'Jumlah Siswa', 'Pengajar'],
+            ['Nama Kelas', 'Wali Kelas', 'Tingkat', 'Usia Min (bln)', 'Deskripsi', 'Jumlah Siswa', 'Pengajar'],
             $rows,
             'data-kelas-'.now()->format('Y-m-d').'.xlsx',
             'Kelola Kelas'
@@ -94,12 +96,16 @@ class KelasController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'tingkat' => 'nullable|integer|min:1|max:20',
+            'usia_min_bulan' => 'nullable|integer|min:0|max:120',
         ]);
 
         $newKelas = Kelas::create([
             'sekolah_id' => $sekolah_id,
             'name' => $request->name,
             'description' => $request->description,
+            'tingkat' => $request->tingkat,
+            'usia_min_bulan' => $request->usia_min_bulan,
         ]);
 
         return redirect()->route('admin.kelas.index')->with('success', 'Kelas berhasil dibuat.');
@@ -116,6 +122,8 @@ class KelasController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'tingkat' => 'nullable|integer|min:1|max:20',
+            'usia_min_bulan' => 'nullable|integer|min:0|max:120',
             'wali_kelas_id' => [
                 'nullable',
                 'exists:pengajars,id',
@@ -132,6 +140,8 @@ class KelasController extends Controller
         $kelas->update([
             'name' => $request->name,
             'description' => $request->description,
+            'tingkat' => $request->tingkat,
+            'usia_min_bulan' => $request->usia_min_bulan,
             'wali_kelas_id' => $request->wali_kelas_id,
         ]);
 

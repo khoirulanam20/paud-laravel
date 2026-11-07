@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\FiltersByKelasRiwayat;
 use App\Models\Concerns\LogsScopedActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Kesehatan extends Model
 {
-    use LogsScopedActivity;
+    use FiltersByKelasRiwayat, LogsScopedActivity;
 
     protected $fillable = [
         'anak_id',

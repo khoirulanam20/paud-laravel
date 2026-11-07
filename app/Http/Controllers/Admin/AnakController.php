@@ -98,10 +98,25 @@ class AnakController extends Controller
             'user',
             'kelas',
             'kesehatans' => fn ($q) => $q->orderBy('tanggal_pemeriksaan', 'desc'),
-            'pencapaians' => fn ($q) => $q->with(['kegiatan', 'matrikulasi'])->latest(),
+            'riwayatKelas',
         ]);
 
-        return view('admin.anak.show', compact('anak'));
+        // Paginasi per kegiatan (satu kegiatan = satu kartu berisi banyak aspek).
+        $kegiatanPage = $anak->pencapaians()
+            ->selectRaw('kegiatan_id, MAX(created_at) as terakhir')
+            ->groupBy('kegiatan_id')
+            ->orderByDesc('terakhir')
+            ->paginate(5, ['*'], 'pencapaian_page')
+            ->fragment('pencapaian');
+
+        $pencapaianGroups = $anak->pencapaians()
+            ->whereIn('kegiatan_id', $kegiatanPage->pluck('kegiatan_id'))
+            ->with(['kegiatan', 'matrikulasi'])
+            ->latest()
+            ->get()
+            ->groupBy('kegiatan_id');
+
+        return view('admin.anak.show', compact('anak', 'kegiatanPage', 'pencapaianGroups'));
     }
 
     public function store(Request $request)

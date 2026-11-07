@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\JurnalController;
 use App\Http\Controllers\Admin\KegiatanController;
 use App\Http\Controllers\Admin\KegiatanRutinController;
 use App\Http\Controllers\Admin\KelasController;
+use App\Http\Controllers\Admin\KenaikanKelasController;
 use App\Http\Controllers\Admin\KesehatanController;
 // Lembaga Controllers
 use App\Http\Controllers\Admin\KritikSaranController as AdminKritikSaranController;
@@ -346,6 +347,11 @@ Route::middleware(['auth', 'tenant.context', 'admin.menu', 'lembaga.sekolah', 's
 
     Route::get('kelas/{kelas}/siswa-modal', [KelasController::class, 'siswaModal'])->name('kelas.siswa-modal');
     Route::get('kelas/{kelas}', [KelasController::class, 'show'])->name('kelas.show');
+    Route::get('kenaikan-kelas', [KenaikanKelasController::class, 'index'])->name('kenaikan-kelas.index');
+    Route::get('kenaikan-kelas/preview', [KenaikanKelasController::class, 'preview'])->name('kenaikan-kelas.preview');
+    Route::post('kenaikan-kelas', [KenaikanKelasController::class, 'store'])->name('kenaikan-kelas.store');
+    Route::get('kenaikan-kelas/{batch}', [KenaikanKelasController::class, 'show'])->name('kenaikan-kelas.show');
+    Route::delete('kenaikan-kelas/{batch}', [KenaikanKelasController::class, 'destroy'])->name('kenaikan-kelas.destroy');
     Route::resource('kegiatan', KegiatanController::class)->except(['create', 'edit', 'show']);
     Route::post('pencapaian/sync', [App\Http\Controllers\Admin\PencapaianController::class, 'sync'])->name('pencapaian.sync');
     Route::delete('pencapaian/bundle', [App\Http\Controllers\Admin\PencapaianController::class, 'destroyBundle'])->name('pencapaian.destroy-bundle');
