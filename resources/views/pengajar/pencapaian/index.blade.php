@@ -41,6 +41,7 @@
                 'id'                  => $kg->id,
                 'kelas_id'            => $kg->kelas_id,
                 'title'               => $kg->title,
+                'date' => \Carbon\Carbon::parse($kg->date)->toDateString(),
                 'date_label'          => \Carbon\Carbon::parse($kg->date)->format('d M Y'),
                 'is_executed'         => !empty($kg->photos),
                 'pencapaian_anak_ids' => $pencapaianAnak[$kg->id] ?? [],
@@ -53,6 +54,7 @@
                 ])->values()->all()
             ];
         }
+        $kelasMulai = \App\Services\KelasRiwayatService::mulaiKelasSaatIni($anaks->pluck('id')->all());
         $anakMap = [];
         foreach ($anaks as $a) {
             $anakMap[$a->id] = [
@@ -60,6 +62,7 @@
                 'name' => $a->name,
                 'nickname' => $a->nickname,
                 'kelas_id' => $a->kelas_id,
+                'kelas_mulai' => $kelasMulai[$a->id] ?? null,
                 'display_label' => $a->nickname ? $a->name . ' (' . $a->nickname . ')' : $a->name,
             ];
         }
@@ -174,8 +177,10 @@
                 if (!this.selectedAnakId) return [];
                 const anakKelas = this.anakMap[this.selectedAnakId]?.kelas_id;
                 const anakId = parseInt(this.selectedAnakId);
+                const mulai = this.anakMap[this.selectedAnakId]?.kelas_mulai; // hanya kegiatan saat/setelah masuk kelas ini
                 return Object.values(this.kegiatanData).filter(k =>
                     k.kelas_id == anakKelas &&
+                    (!mulai || k.date >= mulai) &&
                     k.is_executed === true &&
                     !(k.pencapaian_anak_ids || []).includes(anakId) &&
                     (k.present_anak_ids || []).includes(anakId)

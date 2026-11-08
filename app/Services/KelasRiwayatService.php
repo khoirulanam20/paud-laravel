@@ -90,4 +90,22 @@ class KelasRiwayatService
 
         return $row?->kelas_id !== null ? (int) $row->kelas_id : null;
     }
+
+    /**
+     * Tanggal mulai di kelas saat ini per siswa yang naik/pindah kelas.
+     *
+     * @param  array<int, int>  $anakIds
+     * @return array<int, string> anak_id => Y-m-d; siswa tanpa riwayat tidak ada di hasil (= tanpa batas).
+     */
+    public static function mulaiKelasSaatIni(array $anakIds): array
+    {
+        return AnakKelasRiwayat::withoutSekolahScope()
+            ->whereIn('anak_id', $anakIds)
+            ->whereNull('selesai')
+            ->where('alasan', '!=', 'masuk') // siswa baru/backfill: tanggal 'masuk' bukan batas kegiatan
+            ->orderBy('mulai')
+            ->pluck('mulai', 'anak_id')
+            ->map(fn ($d) => Carbon::parse($d)->toDateString())
+            ->all();
+    }
 }

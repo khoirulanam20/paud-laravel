@@ -13,6 +13,7 @@ use App\Models\Kelas;
 use App\Models\Matrikulasi;
 use App\Models\Pencapaian;
 use App\Services\AiTokenService;
+use App\Services\KelasRiwayatService;
 use App\Services\PhotoArchiveService;
 use App\Support\AiTokenFeature;
 use App\Support\DocumentationMedia;
@@ -335,6 +336,14 @@ class PencapaianController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['kegiatan_id' => 'Data Siswa dan Jurnal Kegiatan harus berada di kelas yang sama.']);
+        }
+
+        if ($tgl = (KelasRiwayatService::mulaiKelasSaatIni([$anak->id])[$anak->id] ?? null)) {
+            if ($kegiatan->date->toDateString() < $tgl) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['kegiatan_id' => 'Kegiatan ini berlangsung sebelum siswa masuk kelas saat ini.']);
+            }
         }
 
         // Pencapaian hanya bisa diinput 1 kali per kegiatan per anak (blokir jika belum pernah ada & ini bukan edit)
