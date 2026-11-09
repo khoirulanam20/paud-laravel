@@ -229,6 +229,13 @@ class KenaikanKelasService
                     });
                     $lulus++;
                 } else {
+                    // Tinggal kelas: mulai periode baru di kelas yang sama (batas kegiatan pencapaian).
+                    KelasRiwayatService::tutup($anak, $tanggalEfektif, 'tinggal');
+                    KelasRiwayatService::buka($anak, Kelas::withoutSekolahScope()->find($kelasAsalId), [
+                        'mulai' => $tanggalEfektif,
+                        'alasan' => 'tinggal',
+                        'batch_id' => $batch->id,
+                    ]);
                     $tinggal++;
                 }
 
@@ -270,7 +277,7 @@ class KenaikanKelasService
             $items = $batch->items()->with('anak')->get();
 
             foreach ($items as $item) {
-                if (in_array($item->aksi, ['naik', 'pindah'], true)) {
+                if (in_array($item->aksi, ['naik', 'pindah', 'tinggal'], true)) {
                     // Hapus baris riwayat batch, buka kembali baris asal.
                     AnakKelasRiwayat::withoutSekolahScope()
                         ->where('batch_id', $batch->id)
@@ -302,7 +309,6 @@ class KenaikanKelasService
 
                     $item->anak?->updateQuietly(['kelas_id' => $item->kelas_asal_id, 'status' => 'approved']);
                 }
-                // tinggal: tak ada perubahan — lewati.
             }
 
             $batch->update([
