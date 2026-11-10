@@ -19,7 +19,7 @@ class KesehatanController extends Controller
         $pengajar = Pengajar::where('user_id', $user->id)->firstOrFail();
         $kelasIds = Kelas::where('wali_kelas_id', $pengajar->id)->pluck('id')->toArray();
 
-        $query = Anak::whereIn('kelas_id', $kelasIds)->with(['kelas', 'kesehatans' => function ($q) {
+        $query = Anak::whereIn('kelas_id', $kelasIds)->where('status', 'approved')->with(['kelas', 'kesehatans' => function ($q) {
             $q->latest('tanggal_pemeriksaan')->limit(1);
         }]);
 

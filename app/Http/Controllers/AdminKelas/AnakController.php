@@ -23,7 +23,7 @@ class AnakController extends Controller
         $kelas = $pengajar->waliKelas()->orderBy('name')->get();
         $kelasIds = $kelas->pluck('id')->toArray();
 
-        $query = Anak::whereIn('kelas_id', $kelasIds)->with('kelas')->orderBy('name');
+        $query = Anak::whereIn('kelas_id', $kelasIds)->where('status', 'approved')->with('kelas')->orderBy('name');
         if ($request->filled('kelas_id') && in_array($request->kelas_id, $kelasIds)) {
             $query->where('kelas_id', $request->kelas_id);
         }

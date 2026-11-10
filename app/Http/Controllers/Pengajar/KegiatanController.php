@@ -66,7 +66,7 @@ class KegiatanController extends Controller
         $calendarEvents = $kegiatans->map(fn (Kegiatan $k) => KegiatanCalendar::toPengajarEvent($k))->values()->all();
 
         $matrikulasis = Matrikulasi::where('sekolah_id', $sekolah_id)->orderBy('aspek')->get();
-        $anaks = Anak::where('sekolah_id', $sekolah_id)->orderBy('name')->get();
+        $anaks = Anak::where('sekolah_id', $sekolah_id)->where('status', 'approved')->orderBy('name')->get();
 
         return view('pengajar.kegiatan.index', compact('calendarEvents', 'year', 'month', 'matrikulasis', 'anaks', 'kelas'));
     }

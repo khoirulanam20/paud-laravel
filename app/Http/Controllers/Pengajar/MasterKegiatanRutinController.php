@@ -140,7 +140,7 @@ class MasterKegiatanRutinController extends Controller
             abort(403, 'Kelas tidak ditautkan ke kegiatan ini atau Anda tidak mengampu kelas ini.');
         }
 
-        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
+        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->where('status', 'approved')->get() : collect();
         $rutins = $kelasId ? KegiatanRutin::where('kelas_id', $kelasId)
             ->where('master_kegiatan_rutin_id', $masterKegiatanRutin->id)
             ->where('tanggal', $tanggal)

@@ -59,7 +59,7 @@ class PencapaianController extends Controller
         $tanggalDari = $range ? $range[0] : null;
         $tanggalSampai = $range ? $range[1] : null;
 
-        $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
+        $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->where('status', 'approved')->orderBy('name');
         $kelasIds = $pengajar->accessibleKelasIds();
         if (! empty($kelasIds)) {
             $anakQuery->whereIn('kelas_id', $kelasIds);
@@ -237,7 +237,7 @@ class PencapaianController extends Controller
                 ->withErrors(['kegiatan_id' => 'Kegiatan ini belum memiliki indikator matrikulasi. Tambahkan di Jurnal Kegiatan terlebih dahulu.']);
         }
 
-        $anak = Anak::findOrFail($request->integer('anak_id'));
+        $anak = Anak::where('status', 'approved')->findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
 
         if ($anak->kelas_id !== $kegiatan->kelas_id) {
@@ -363,7 +363,7 @@ class PencapaianController extends Controller
         ]);
 
         $kelasIds = $pengajar->accessibleKelasIds();
-        $anak = Anak::findOrFail($request->integer('anak_id'));
+        $anak = Anak::where('status', 'approved')->findOrFail($request->integer('anak_id'));
         $this->assertAnakDalamLingkupPencapaian($anak, $pengajar);
 
         $kegiatan = Kegiatan::query()

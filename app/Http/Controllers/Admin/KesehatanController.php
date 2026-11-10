@@ -17,7 +17,7 @@ class KesehatanController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Anak::where('sekolah_id', $user->sekolah_id)->with(['kelas', 'kesehatans' => function ($q) {
+        $query = Anak::where('sekolah_id', $user->sekolah_id)->where('status', 'approved')->with(['kelas', 'kesehatans' => function ($q) {
             $q->latest('tanggal_pemeriksaan')->limit(1);
         }]);
         $user->applyScopedKelas($query);
@@ -46,7 +46,7 @@ class KesehatanController extends Controller
     public function export(Request $request)
     {
         $user = auth()->user();
-        $query = Anak::where('sekolah_id', $user->sekolah_id)->with(['kelas', 'kesehatans' => fn ($q) => $q->latest('tanggal_pemeriksaan')->limit(1)]);
+        $query = Anak::where('sekolah_id', $user->sekolah_id)->where('status', 'approved')->with(['kelas', 'kesehatans' => fn ($q) => $q->latest('tanggal_pemeriksaan')->limit(1)]);
         $user->applyScopedKelas($query);
 
         if ($request->filled('kelas_id')) {

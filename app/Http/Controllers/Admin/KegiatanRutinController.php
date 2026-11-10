@@ -40,7 +40,7 @@ class KegiatanRutinController extends Controller
             abort(403);
         }
 
-        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
+        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->where('status', 'approved')->get() : collect();
 
         $masters = $kelasId ? MasterKegiatanRutin::whereHas('kelas', function ($query) use ($kelasId) {
             $query->where('kelas.id', $kelasId);
@@ -77,7 +77,7 @@ class KegiatanRutinController extends Controller
             abort(403);
         }
 
-        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
+        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->where('status', 'approved')->get() : collect();
         $masters = $kelasId ? MasterKegiatanRutin::whereHas('kelas', fn ($q) => $q->where('kelas.id', $kelasId))->get() : collect();
         $rutins = $kelasId ? KegiatanRutin::where('kelas_id', $kelasId)->where('tanggal', $tanggal)->get()->keyBy(fn ($r) => $r->anak_id.'_'.$r->master_kegiatan_rutin_id) : collect();
 

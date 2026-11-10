@@ -32,7 +32,7 @@ class KegiatanRutinController extends Controller
             $kelasId = $kelasIds[0];
         }
 
-        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->get() : collect();
+        $anaks = $kelasId ? Anak::where('kelas_id', $kelasId)->where('status', 'approved')->get() : collect();
 
         $masters = $kelasId ? MasterKegiatanRutin::whereHas('kelas', function ($query) use ($kelasId) {
             $query->where('kelas.id', $kelasId);

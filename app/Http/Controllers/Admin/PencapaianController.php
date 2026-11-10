@@ -47,7 +47,7 @@ class PencapaianController extends Controller
         $tanggalDari = $range ? $range[0] : null;
         $tanggalSampai = $range ? $range[1] : null;
 
-        $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->orderBy('name');
+        $anakQuery = Anak::query()->where('sekolah_id', $sekolah_id)->where('status', 'approved')->orderBy('name');
         $user->applyScopedKelas($anakQuery);
         if ($this->kelasFilterInScope($request)) {
             $anakQuery->where('kelas_id', (int) $request->input('filter_kelas_id'));
@@ -327,7 +327,7 @@ class PencapaianController extends Controller
                 ->withErrors(['kegiatan_id' => 'Kegiatan ini belum memiliki indikator matrikulasi. Tambahkan di Jurnal Kegiatan terlebih dahulu.']);
         }
 
-        $anak = Anak::where('id', $request->integer('anak_id'))->where('sekolah_id', $sekolah_id)->firstOrFail();
+        $anak = Anak::where('id', $request->integer('anak_id'))->where('sekolah_id', $sekolah_id)->where('status', 'approved')->firstOrFail();
 
         $this->assertKelasInScope($anak->kelas_id);
         $this->assertKelasInScope($kegiatan->kelas_id);
@@ -453,7 +453,7 @@ class PencapaianController extends Controller
             'kegiatan_id' => 'required|exists:kegiatans,id',
         ]);
 
-        $anak = Anak::where('id', $request->integer('anak_id'))->where('sekolah_id', $sekolah_id)->firstOrFail();
+        $anak = Anak::where('id', $request->integer('anak_id'))->where('sekolah_id', $sekolah_id)->where('status', 'approved')->firstOrFail();
         $kegiatan = Kegiatan::where('id', $request->integer('kegiatan_id'))->where('sekolah_id', $sekolah_id)->firstOrFail();
         $this->assertKelasInScope($anak->kelas_id);
         $this->assertKelasInScope($kegiatan->kelas_id);
