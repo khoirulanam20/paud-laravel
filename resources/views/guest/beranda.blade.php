@@ -1,7 +1,8 @@
 <x-guest-scandinavian :cms="$cms" title="Beranda">
     @php
         $brand = \App\Support\GuestBrand::name();
-        $heroPhoto = !empty($cms['hero_photo']) ? \Illuminate\Support\Facades\Storage::url($cms['hero_photo']) : asset('images/guest/scandinavian/hero-nature.jpg');
+        $heroPath = $cms['hero_left_photo'] ?? null ?: ($cms['hero_right_photo'] ?? null) ?: ($cms['hero_photo'] ?? null);
+        $heroPhoto = $heroPath ? \Illuminate\Support\Facades\Storage::url($heroPath) : asset('images/guest/scandinavian/hero-nature.jpg');
         $aboutPhoto = !empty($cms['about_photo']) ? \Illuminate\Support\Facades\Storage::url($cms['about_photo']) : asset('images/guest/scandinavian/atelier-nature.jpg');
         $faqPhoto = !empty($cms['faq_image']) ? \Illuminate\Support\Facades\Storage::url($cms['faq_image']) : asset('images/guest/scandinavian/atelier-nature.jpg');
 

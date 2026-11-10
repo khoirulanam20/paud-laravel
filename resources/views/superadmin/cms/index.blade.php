@@ -65,7 +65,7 @@
                         <div><label class="input-label text-xs">Badge hero 1</label><input type="text" name="hero_badge_primary" value="{{ $cms['hero_badge_primary'] }}" class="input-field"></div>
                         <div><label class="input-label text-xs">Badge hero 2</label><input type="text" name="hero_badge_secondary" value="{{ $cms['hero_badge_secondary'] }}" class="input-field"></div>
                     </div>
-                    <p class="text-sm" style="color:#6B6560;">Dua gambar dekor kiri &amp; kanan hero (desktop). Tampil ±150–175 px lebar, proporsi asli dipertahankan.</p>
+                    <p class="text-sm" style="color:#6B6560;">Dua gambar dekor kiri &amp; kanan hero (desktop). Tampil ±150–175 px lebar, proporsi asli dipertahankan. Beranda saat ini menampilkan satu gambar hero: Gambar kiri dipakai lebih dulu, lalu Gambar kanan.</p>
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
                             <label class="input-label text-xs">Gambar kiri</label>
