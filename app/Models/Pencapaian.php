@@ -23,6 +23,12 @@ class Pencapaian extends Model
         return $this->belongsTo(Pengajar::class);
     }
 
+    /** Kelas pencapaian = kelas kegiatannya (tetap walau siswa dipindah/dinaikkan). */
+    public function scopeDiKelas(\Illuminate\Database\Eloquent\Builder $query, int|array $kelasIds): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereHas('kegiatan', fn ($q) => $q->whereIn('kelas_id', (array) $kelasIds));
+    }
+
     public function kegiatan(): BelongsTo
     {
         return $this->belongsTo(Kegiatan::class);

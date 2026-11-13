@@ -93,7 +93,7 @@ class PencapaianController extends Controller
         }
         if ($request->filled('filter_kelas_id')) {
             $kid = (int) $request->input('filter_kelas_id');
-            $hariQuery->diKelasPada($kid, 'pencapaians.created_at');
+            $hariQuery->diKelas($kid);
         }
         $hariAll = $hariQuery->get();
         $groupsAll = $hariAll->groupBy(fn ($p) => $p->anak_id.'_'.$p->kegiatan_id);
@@ -444,7 +444,7 @@ class PencapaianController extends Controller
         if ($request->filled('filter_kelas_id')) {
             $kid = (int) $request->input('filter_kelas_id');
             abort_if(! empty($kelasIds) && ! in_array($kid, $kelasIds, true), 403);
-            $hariQuery->diKelasPada($kid, 'pencapaians.created_at');
+            $hariQuery->diKelas($kid);
         }
 
         $records = $hariQuery->get()

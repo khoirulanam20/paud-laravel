@@ -329,7 +329,7 @@ class DashboardChartData
         $monthLabels = self::lastMonths(4)->map(fn (Carbon $m) => $m->translatedFormat('M Y'))->all();
         foreach (self::lastMonths(4) as $month) {
             $evaluasiSeries[] = Pencapaian::query()
-                ->diKelasPada($kelasIds->all(), 'pencapaians.created_at')
+                ->diKelas($kelasIds->all())
                 ->whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
                 ->count();
@@ -385,7 +385,7 @@ class DashboardChartData
                 ->count())->all();
 
             $evalSeries = $months->map(fn (Carbon $month) => Pencapaian::query()
-                ->diKelasPada($kelasIds->all(), 'pencapaians.created_at')
+                ->diKelas($kelasIds->all())
                 ->whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
                 ->count())->all();

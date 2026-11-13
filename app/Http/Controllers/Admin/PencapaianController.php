@@ -78,7 +78,7 @@ class PencapaianController extends Controller
             $hariQuery->where('anak_id', $aid);
         }
         if ($this->kelasFilterInScope($request)) {
-            $hariQuery->diKelasPada((int) $request->input('filter_kelas_id'), 'pencapaians.created_at');
+            $hariQuery->diKelas((int) $request->input('filter_kelas_id'));
         }
 
         $hariAll = $hariQuery->get();
@@ -208,7 +208,7 @@ class PencapaianController extends Controller
             $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
         }
         if ($this->kelasFilterInScope($request)) {
-            $hariQuery->diKelasPada((int) $request->input('filter_kelas_id'), 'pencapaians.created_at');
+            $hariQuery->diKelas((int) $request->input('filter_kelas_id'));
         }
 
         $rows = $hariQuery->get()
@@ -279,7 +279,7 @@ class PencapaianController extends Controller
             $hariQuery->where('anak_id', (int) $request->input('filter_anak_id'));
         }
         if ($this->kelasFilterInScope($request)) {
-            $hariQuery->diKelasPada((int) $request->input('filter_kelas_id'), 'pencapaians.created_at');
+            $hariQuery->diKelas((int) $request->input('filter_kelas_id'));
         }
 
         return $hariQuery;

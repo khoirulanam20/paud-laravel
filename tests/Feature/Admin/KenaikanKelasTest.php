@@ -291,6 +291,30 @@ class KenaikanKelasTest extends TestCase
             ->where('pencapaians.id', $p->id)->count());
     }
 
+    public function test_pencapaian_per_kelas_mengikuti_kelas_kegiatan_bukan_kelas_siswa(): void
+    {
+        Carbon::setTestNow('2026-06-01 10:00:00');
+        $f = $this->createFixtures();
+
+        $shift = \App\Models\PresensiShift::create(['sekolah_id' => $f['sekolah']->id, 'name' => 'Shift Pagi', 'is_default' => true]);
+        $pengajar = Pengajar::create(['user_id' => $f['admin']->id, 'sekolah_id' => $f['sekolah']->id, 'presensi_shift_id' => $shift->id, 'name' => 'Guru Uji']);
+        $matrikulasi = \App\Models\Matrikulasi::create(['sekolah_id' => $f['sekolah']->id, 'indicator' => 'Indikator uji', 'aspek' => 'Aspek uji']);
+        $kegiatanA = \App\Models\Kegiatan::create([
+            'sekolah_id' => $f['sekolah']->id, 'kelas_id' => $f['kelasA']->id, 'pengajar_id' => $pengajar->id,
+            'title' => 'Kegiatan kelas A', 'date' => '2026-05-10',
+        ]);
+        $p = Pencapaian::create([
+            'anak_id' => $f['anakA']->id, 'kegiatan_id' => $kegiatanA->id,
+            'matrikulasi_id' => $matrikulasi->id, 'pengajar_id' => $pengajar->id,
+        ]);
+
+        // Siswa naik ke kelas B: kelas pencapaian tetap kelas kegiatannya (A).
+        $f['anakA']->update(['kelas_id' => $f['kelasB']->id]);
+
+        $this->assertSame(1, Pencapaian::diKelas($f['kelasA']->id)->where('pencapaians.id', $p->id)->count());
+        $this->assertSame(0, Pencapaian::diKelas($f['kelasB']->id)->where('pencapaians.id', $p->id)->count());
+    }
+
     /**
      * @return array{lembaga: Lembaga, sekolah: Sekolah, admin: User, kelasA: Kelas, kelasB: Kelas, kelasC: Kelas, anakA: Anak, anakB: Anak, anakMuda: Anak, anakNoDob: Anak}
      */
