@@ -132,6 +132,13 @@ class KegiatanController extends Controller
 
         abort_if(! in_array((int) $request->kelas_id, $kelasIds), 403);
 
+        // Pencapaian terikat ke kelas kegiatan; mengganti kelas membuat siswa kelas lain menempel di kegiatan ini.
+        if ((int) $request->kelas_id !== (int) $kegiatan->kelas_id && $kegiatan->pencapaians()->exists()) {
+            $msg = 'Kelas tidak bisa diubah karena kegiatan ini sudah memiliki pencapaian siswa. Hapus pencapaiannya dulu atau buat kegiatan baru.';
+
+            return back()->withInput()->withErrors(['kelas_id' => $msg])->with('error', $msg);
+        }
+
         $data = [
             'date' => $request->date,
             'title' => $request->title,
