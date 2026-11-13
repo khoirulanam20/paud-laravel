@@ -100,6 +100,9 @@
         <div x-show="showDeleteModal" class="modal-overlay" style="display:none;"><div x-show="showDeleteModal" x-transition class="modal-box" @click.away="showDeleteModal=false">
             <form :action="deleteRoute" method="POST">@csrf @method('DELETE')
                 <div class="modal-header"><h3 class="section-title">Hapus Lembaga?</h3></div>
+                <div class="modal-body">
+                    <p class="text-sm" style="color:#6B6560;">Pendaftaran yang ditolak atau masih pending ikut menghapus sekolah dan akun adminnya. Lembaga aktif yang masih punya sekolah harus dihapus dari data sekolah.</p>
+                </div>
                 <div class="modal-footer"><button type="button" @click="showDeleteModal=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" style="background:#C0392B;">Hapus</button></div>
             </form>
         </div></div>
